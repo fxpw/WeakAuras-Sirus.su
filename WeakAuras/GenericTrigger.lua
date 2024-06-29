@@ -79,13 +79,21 @@ local timers = WeakAuras.timers;
 local LoadEvent, HandleEvent, HandleUnitEvent, TestForTriState, TestForToggle, TestForLongString, TestForMultiSelect
 local ConstructTest, ConstructFunction
 
+local nameplateExists = {}
+
+---@param unit UnitToken
+---@param smart? boolean
+---@return boolean unitExists
 function WeakAuras.UnitExistsFixed(unit, smart)
+  if #unit > 9 and unit:sub(1, 9) == "nameplate" then
+    return nameplateExists[unit]
+  end
   if smart and IsInRaid() then
-    if unit:sub(1, 5) == "party" or unit == "player" then
+    if unit:sub(1, 5) == "party" or unit == "player" or unit == "pet" then
       return false
     end
   end
-  return UnitExists(unit) == 1 and true or false
+  return UnitExists(unit) or UnitGUID(unit)
 end
 
 function WeakAuras.split(input)
@@ -860,6 +868,12 @@ end
 
 function HandleEvent(frame, event, arg1, arg2, ...)
   Private.StartProfileSystem("generictrigger " .. event);
+  if event == "NAME_PLATE_UNIT_ADDED" then
+    nameplateExists[arg1] = true
+  elseif event == "NAME_PLATE_UNIT_REMOVED" then
+    nameplateExists[arg1] = false
+  end
+
   if not(WeakAuras.IsPaused()) then
     if(event == "COMBAT_LOG_EVENT_UNFILTERED") then
       WeakAuras.ScanEvents(event, arg1, arg2, ...);
@@ -933,7 +947,11 @@ local frame = CreateFrame("FRAME");
 frame.unitFrames = {};
 WeakAuras.frames["WeakAuras Generic Trigger Frame"] = frame;
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");
+frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 genericTriggerRegisteredEvents["PLAYER_ENTERING_WORLD"] = true;
+genericTriggerRegisteredEvents["NAME_PLATE_UNIT_ADDED"] = true;
+genericTriggerRegisteredEvents["NAME_PLATE_UNIT_REMOVED"] = true;
 frame:SetScript("OnEvent", HandleEvent);
 
 function GenericTrigger.Delete(id)
@@ -974,6 +992,10 @@ local function MultiUnitLoop(Func, unit, includePets, ...)
     end
   elseif unit == "arena" then
     for i = 1, 5 do
+      Func(unit..i, ...)
+    end
+  elseif unit == "nameplate" then
+    for i = 1, 40 do
       Func(unit..i, ...)
     end
   elseif unit == "group" then
@@ -2426,7 +2448,9 @@ end
 local watchUnitChange
 
 -- Nameplates only distinguish between friends and everyone else
-function WeakAuras.GetPlayerReaction(unit)
+---@param unit UnitToken
+---@return string? reaction
+  function WeakAuras.GetPlayerReaction(unit)
   local r = UnitReaction("player", unit)
   if r then
     return r < 5 and "hostile" or "friendly"
@@ -2436,10 +2460,11 @@ end
 function WeakAuras.WatchUnitChange(unit)
   unit = string.lower(unit)
   if not watchUnitChange then
-    watchUnitChange = CreateFrame("FRAME");
+    watchUnitChange = CreateFrame("Frame");
     watchUnitChange.unitChangeGUIDS = {}
     watchUnitChange.unitRoles = {}
     watchUnitChange.inRaid = IsInRaid()
+    watchUnitChange.nameplateFaction = {}
     watchUnitChange.raidmark = {}
 
     WeakAuras.frames["Unit Change Frame"] = watchUnitChange;
@@ -2449,6 +2474,9 @@ function WeakAuras.WatchUnitChange(unit)
     watchUnitChange:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT");
     watchUnitChange:RegisterEvent("PARTY_MEMBERS_CHANGED");
     watchUnitChange:RegisterEvent("RAID_ROSTER_UPDATE");
+    watchUnitChange:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+    watchUnitChange:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+    watchUnitChange:RegisterEvent("UNIT_FACTION")
     watchUnitChange:RegisterEvent("PLAYER_ENTERING_WORLD")
     watchUnitChange:RegisterEvent("UNIT_PET")
     watchUnitChange:RegisterEvent("RAID_TARGET_UPDATE")
@@ -2468,6 +2496,21 @@ function WeakAuras.WatchUnitChange(unit)
             WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
           end
         end
+      elseif event == "NAME_PLATE_UNIT_ADDED" then
+        watchUnitChange.raidmark[unit] = GetRaidTargetIndex(unit) or 0
+        watchUnitChange.nameplateFaction[unit] = WeakAuras.GetPlayerReaction(unit)
+        WeakAuras.ScanEvents(event, unit)
+      elseif event == "NAME_PLATE_UNIT_REMOVED" then
+        watchUnitChange.raidmark[unit] = nil
+        watchUnitChange.nameplateFaction[unit] = nil
+        WeakAuras.ScanEvents(event, unit)
+      elseif event == "UNIT_FACTION" then
+        local oldReaction = watchUnitChange.nameplateFaction[unit]
+        local newReaction = WeakAuras.GetPlayerReaction(unit)
+        if oldReaction ~= newReaction then
+          watchUnitChange.nameplateFaction[unit] = newReaction
+          WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+        end
       else
         local inRaid = IsInRaid()
         local inRaidChanged = inRaid ~= watchUnitChange.inRaid
@@ -2482,6 +2525,14 @@ function WeakAuras.WatchUnitChange(unit)
             WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
             watchUnitChange.unitChangeGUIDS[unit] = newGuid
             watchUnitChange.raidmark[unit] = newMarker
+
+            local oldReaction = watchUnitChange.nameplateFaction[unit]
+            local newReaction = WeakAuras.GetPlayerReaction(unit)
+            if oldReaction ~= newReaction then
+              watchUnitChange.nameplateFaction[unit] = newReaction
+              WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+            end
+
           elseif Private.multiUnitUnits.group[unit] then
             -- If in raid changed we send a UNIT_CHANGED for the group units
             if inRaidChanged then
@@ -3102,6 +3153,49 @@ do
       castLatencyFrame:SetScript("OnEvent", function(event)
         Private.LAST_CURRENT_SPELL_CAST_CHANGED = GetTime()
       end)
+    end
+  end
+end
+
+-- Nameplate Target
+do
+  local nameplateTargetFrame = nil
+  local nameplateTargets = {}
+
+  local function nameplateTargetOnEvent(self, event, unit)
+    if event == "NAME_PLATE_UNIT_ADDED" then
+      nameplateTargets[unit] = UnitGUID(unit.."-target") or true
+    elseif event == "NAME_PLATE_UNIT_REMOVED" then
+      nameplateTargets[unit] = nil
+    end
+  end
+
+  local tick_throttle = 0.2
+  local throttle_update = tick_throttle
+  local function nameplateTargetOnUpdate(self, delta)
+    throttle_update = throttle_update - delta
+    if throttle_update < 0 then
+      for unit, targetGUID in pairs(nameplateTargets) do
+        local newTargetGUID = UnitGUID(unit.."-target")
+        if (newTargetGUID == nil and targetGUID ~= true)
+        or (newTargetGUID ~= nil and targetGUID ~= newTargetGUID)
+        then
+          nameplateTargets[unit] = newTargetGUID or true
+          WeakAuras.ScanEvents("WA_UNIT_TARGET_NAME_PLATE", unit)
+        end
+      end
+      throttle_update = tick_throttle
+    end
+  end
+
+  WeakAuras.frames["Nameplate Target Handler"] = nameplateTargetFrame
+  function WeakAuras.WatchForNameplateTargetChange()
+    if not nameplateTargetFrame then
+      nameplateTargetFrame = CreateFrame("Frame")
+      nameplateTargetFrame:SetScript("OnUpdate", nameplateTargetOnUpdate)
+      nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+      nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+      nameplateTargetFrame:SetScript("OnEvent", nameplateTargetOnEvent)
     end
   end
 end

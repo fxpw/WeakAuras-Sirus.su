@@ -276,6 +276,22 @@ local function CreateTestForCondition(uid, input, allConditionsTemplate, usedSta
           end
         ]]
         fn = fn:format(input.op_range, input.range, op, value)
+      elseif input.type == "enemies" then
+        fn = [[
+          return function()
+            local found = 0
+            local op = %q
+            local range = %s
+            for i = 1, 40 do
+              local unit = "nameplate" .. i
+              if UnitExists(unit) and UnitCanAttack("player", unit) and WeakAuras.CheckRange(unit, range, op) then
+                found = found + 1
+              end
+            end
+            return found %s %d
+          end
+        ]]
+        fn = fn:format(input.op_range, input.range, op, value)
       end
       if fn then
         local customCheck = WeakAuras.LoadFunction(fn, Private.UIDtoID(uid), "conditions range check")

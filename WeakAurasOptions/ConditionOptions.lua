@@ -1802,6 +1802,7 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
         order = order,
         values = {
           group = L["Group player(s) found"],
+          enemies = L["Enemy nameplate(s) found"]
         },
         get = function()
           return check.type

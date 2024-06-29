@@ -360,6 +360,28 @@ local function staggerCoefficient(alignment, stagger)
 end
 
 local anchorers = {
+  ["NAMEPLATE"] = function(data)
+    return function(frames, activeRegions)
+      for _, regionData in ipairs(activeRegions) do
+        local unit = regionData.region.state and regionData.region.state.unit
+        local found
+        if unit then
+          local frame = WeakAuras.GetUnitNameplate(unit)
+          if frame then
+            frames[frame] = frames[frame] or {}
+            tinsert(frames[frame], regionData)
+            found = true
+          end
+        end
+        --if not found and WeakAuras.IsOptionsOpen() and regionData.region.state then
+        --  Private.ensurePRDFrame()
+        --  Private.personalRessourceDisplayFrame:anchorFrame(regionData.region.state.id, "NAMEPLATE")
+        --  frames[Private.personalRessourceDisplayFrame] = frames[Private.personalRessourceDisplayFrame] or {}
+        --  tinsert(frames[Private.personalRessourceDisplayFrame], regionData)
+        --end
+      end
+    end
+  end,
   ["UNITFRAME"] = function(data)
     return function(frames, activeRegions)
       for _, regionData in ipairs(activeRegions) do
@@ -389,7 +411,7 @@ local anchorers = {
 }
 
 local function createAnchorPerUnitFunc(data)
-  local anchorer = anchorers[data.anchorPerUnit] or anchorers.UNITFRAME
+  local anchorer = anchorers[data.anchorPerUnit] or anchorers.NAMEPLATE or anchorers.UNITFRAME
   return anchorer(data)
 end
 

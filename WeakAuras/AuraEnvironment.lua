@@ -115,6 +115,11 @@ WeakAuras.HideOverlayGlow = LCG.ButtonGlow_Stop
 
 local LGF = LibStub("LibGetFrame-1.0")
 WeakAuras.GetUnitFrame = LGF.GetUnitFrame
+WeakAuras.GetUnitNameplate =  function(unit)
+  if (Private.multiUnitUnits.nameplate[unit] and UnitName(unit) ~= WeakAuras.me) then
+    return LGF.GetUnitNameplate(unit)
+  end
+end
 
 local blockedFunctions = {
   -- Lua functions that may allow breaking out of the environment

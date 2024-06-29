@@ -25,6 +25,7 @@ Private.glow_action_types = {
 
 Private.glow_frame_types = {
   UNITFRAME = L["Unit Frame"],
+  NAMEPLATE = L["Nameplate"],
   FRAMESELECTOR = L["Frame Selector"]
 }
 
@@ -772,6 +773,7 @@ Private.unit_types_bufftrigger_2 = {
   party = L["Party"],
   boss = L["Boss"],
   arena = L["Arena"],
+  nameplate = L["Nameplate"],
   pet = L["Pet"],
   member = L["Specific Unit"],
   multi = L["Multi-target"]
@@ -794,6 +796,7 @@ Private.actual_unit_types_cast = {
   raid = L["Raid"],
   boss = L["Boss"],
   arena = L["Arena"],
+  nameplate = L["Nameplate"],
   pet = L["Pet"],
   member = L["Specific Unit"],
 }
@@ -803,6 +806,7 @@ Private.actual_unit_types_cast_tooltip = L["• |cff00ff00Player|r, |cff00ff00Ta
 Private.threat_unit_types = {
   target = L["Target"],
   focus = L["Focus"],
+  nameplate = L["Nameplate"],
   boss = L["Boss"],
   member = L["Specific Unit"],
   none = L["At Least One Enemy"]
@@ -918,6 +922,7 @@ Private.anchor_frame_types = {
   SCREEN = L["Screen/Parent Group"],
   MOUSE = L["Mouse Cursor"],
   SELECTFRAME = L["Select Frame"],
+  NAMEPLATE = L["Nameplates"],
   UNITFRAME = L["Unit Frames"],
   CUSTOM = L["Custom"]
 }
@@ -1919,7 +1924,8 @@ Private.classification_types = {
   elite = L["Elite"],
   rare = L["Rare"],
   normal = L["Normal"],
-  trivial = L["Trivial (Low Level)"]
+  trivial = L["Trivial (Low Level)"],
+  minus = L["Minus (Small Nameplate)"]
 }
 
 Private.anim_start_preset_types = {
@@ -2622,6 +2628,7 @@ Private.baseUnitId = {
 }
 
 Private.multiUnitId = {
+  ["nameplate"] = true,
   ["boss"] = true,
   ["arena"] = true,
   ["group"] = true,
@@ -2634,6 +2641,7 @@ Private.multiUnitId = {
 }
 
 Private.multiUnitUnits = {
+  ["nameplate"] = {},
   ["boss"] = {},
   ["arena"] = {},
   ["group"] = {},
@@ -2669,6 +2677,8 @@ end
 for i = 1, 40 do
   Private.baseUnitId["raid"..i] = true
   Private.baseUnitId["raidpet"..i] = true
+  Private.baseUnitId["nameplate"..i] = true
+  Private.multiUnitUnits.nameplate["nameplate"..i] = true
   Private.multiUnitUnits.group["raid"..i] = true
   Private.multiUnitUnits.raid["raid"..i] = true
   Private.multiUnitUnits.group["raidpet"..i] = true

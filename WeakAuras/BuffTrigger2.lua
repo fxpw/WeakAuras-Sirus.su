@@ -103,8 +103,25 @@ local matchDataByTrigger = {}
 
 local matchDataChanged = {}
 
+local nameplateExists = {}
+local unitVisible = {}
+
+-- Returns whether a unit id exists. If it exists, the GUID is returned
+-- Otherwise false
+-- Work around a issue where UnitExists returns true for nameplates even
+-- if the nameplate doesn't exist anymore
 local function UnitExistsFixed(unit)
-  return UnitExists(unit) or UnitGUID(unit)
+  if #unit > 9 and unit:sub(1, 9) == "nameplate" then
+    return nameplateExists[unit] or false
+  end
+  return UnitExists(unit) or UnitGUID(unit) or false
+end
+
+local function UnitIsVisibleFixed(unit)
+  if unitVisible[unit] == nil then
+    unitVisible[unit] = UnitIsVisible(unit)
+  end
+  return unitVisible[unit]
 end
 
 local function UnitInSubgroupOrPlayer(unit, includePets)
@@ -140,7 +157,7 @@ end
 
 local function IsGroupTrigger(trigger)
   return trigger.unit == "group" or trigger.unit == "party" or trigger.unit == "raid"
-         or trigger.unit == "boss" or trigger.unit == "arena" or trigger.unit == "multi"
+         or trigger.unit == "boss" or trigger.unit == "nameplate" or trigger.unit == "arena" or trigger.unit == "multi"
 end
 
 local function IsSingleMissing(trigger)
@@ -944,13 +961,15 @@ local function GetAllUnits(unit, allUnits, includePets)
         i = 0
       end
     end
-  elseif unit == "boss" or unit == "arena" then
+  elseif unit == "boss" or unit == "arena" or unit == "nameplate" then
     local i = 1
     local max
     if unit == "boss" then
       max = MAX_BOSS_FRAMES
     elseif unit == "arena" then
       max = 5
+    elseif unit == "nameplate" then
+      max = 40
     else
       return function() end
     end
@@ -1009,7 +1028,7 @@ local function TriggerInfoApplies(triggerInfo, unit)
     return false
   end
 
-  if triggerInfo.ignoreInvisible and not UnitIsVisible(unit) then
+  if triggerInfo.ignoreInvisible and not UnitIsVisibleFixed(unit) then
     return false
   end
 
@@ -1561,6 +1580,8 @@ local function ScanUnit(time, arg1)
     ScanGroupUnit(time, matchDataChanged, "boss", arg1)
   elseif Private.multiUnitUnits.arena[arg1] then
     ScanGroupUnit(time, matchDataChanged, "arena", arg1)
+  elseif arg1:sub(1, 9) == "nameplate" then
+    ScanGroupUnit(time, matchDataChanged, "nameplate", arg1)
   else
     ScanGroupUnit(time, matchDataChanged, nil, arg1)
   end
@@ -1700,6 +1721,17 @@ local function EventHandler(frame, event, arg1, arg2, ...)
         tinsert(unitsToRemove, pet)
       end
     end
+  elseif event == "NAME_PLATE_UNIT_ADDED" then
+    nameplateExists[arg1] = UnitGUID(arg1)
+    RecheckActiveForUnitType("nameplate", arg1, deactivatedTriggerInfos)
+  elseif event == "NAME_PLATE_UNIT_REMOVED" then
+    nameplateExists[arg1] = false
+    RecheckActiveForUnitType("nameplate", arg1, deactivatedTriggerInfos)
+    tinsert(unitsToRemove, arg1)
+  elseif event == "UNIT_FACTION" then
+    if arg1:sub(1, 9) == "nameplate" then
+      RecheckActiveForUnitType("nameplate", arg1, deactivatedTriggerInfos)
+    end
   elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
     for unit in GetAllUnits("boss", true) do
       RecheckActiveForUnitType("boss", unit, deactivatedTriggerInfos)
@@ -1754,6 +1786,7 @@ local function EventHandler(frame, event, arg1, arg2, ...)
 end
 
 frame:RegisterEvent("UNIT_AURA")
+frame:RegisterEvent("UNIT_FACTION")
 frame:RegisterEvent("UNIT_NAME_UPDATE")
 frame:RegisterEvent("UNIT_FLAGS")
 frame:RegisterEvent("PLAYER_FLAGS_CHANGED")
@@ -1767,6 +1800,8 @@ frame:RegisterEvent("PLAYER_TARGET_CHANGED")
 frame:RegisterEvent("PARTY_MEMBERS_CHANGED")
 frame:RegisterEvent("RAID_ROSTER_UPDATE")
 frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
+frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:SetScript("OnEvent", EventHandler)
 
@@ -2331,12 +2366,14 @@ function BuffTrigger.Add(data)
       end
 
       local groupTrigger = trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
-      local effectiveIgnoreSelf = groupTrigger and trigger.ignoreSelf
+      local effectiveIgnoreSelf = (groupTrigger or trigger.unit == "nameplate") and trigger.ignoreSelf
       local effectiveClass = groupTrigger and trigger.useClass and trigger.class
       local effectiveIgnoreDead = groupTrigger and trigger.ignoreDead
       local effectiveIgnoreDisconnected = groupTrigger and trigger.ignoreDisconnected
       local effectiveIgnoreInvisible = groupTrigger and trigger.ignoreInvisible
+      local effectiveHostility = trigger.unit == "nameplate" and trigger.useHostility and trigger.hostility
       local effectiveNameCheck = groupTrigger and trigger.useUnitName and trigger.unitName
+      local effectiveNpcId = trigger.unit == "nameplate" and trigger.useNpcId and Private.ExecEnv.ParseStringCheck(trigger.npcId)
 
       if trigger.unit == "multi" then
         BuffTrigger.InitMultiAura()
@@ -2394,12 +2431,14 @@ function BuffTrigger.Add(data)
         groupSubType = groupSubType,
         groupCountFunc = groupCountFunc,
         class = effectiveClass,
+        hostility = effectiveHostility,
         matchCountFunc = matchCountFunc,
         matchPerUnitCountFunc = matchPerUnitCountFunc,
         useAffected = unit == "group" and trigger.useAffected,
         isMulti = trigger.unit == "multi",
         nameChecker = effectiveNameCheck and WeakAuras.ParseNameCheck(trigger.unitName),
-        includePets = trigger.use_includePets and trigger.includePets
+        includePets = trigger.use_includePets and trigger.includePets,
+        npcId = effectiveNpcId
       }
       triggerInfos[id] = triggerInfos[id] or {}
       triggerInfos[id][triggernum] = triggerInformation
@@ -3233,7 +3272,9 @@ function BuffTrigger.InitMultiAura()
     multiAuraFrame:RegisterEvent("UNIT_TARGET")
     multiAuraFrame:RegisterEvent("UNIT_AURA")
     multiAuraFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
-	multiAuraFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
+	  multiAuraFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
+    multiAuraFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+    multiAuraFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
     multiAuraFrame:RegisterEvent("PLAYER_LEAVING_WORLD")
     multiAuraFrame:SetScript("OnEvent", BuffTrigger.HandleMultiEvent)
     WeakAuras.frames["Multi-target 2 Aura Trigger Handler"] = multiAuraFrame
@@ -3250,6 +3291,13 @@ function BuffTrigger.HandleMultiEvent(frame, event, ...)
     TrackUid("target")
   elseif event == "PLAYER_FOCUS_CHANGED" then
     TrackUid("focus")
+  elseif event == "NAME_PLATE_UNIT_ADDED" then
+    TrackUid(...)
+  elseif event == "NAME_PLATE_UNIT_REMOVED" then
+    local unit = ...
+    ReleaseUID(unit)
+    unit = unit.."target"
+    ReleaseUID(unit)
   elseif event == "UNIT_AURA" then
     local unit = ...
     if not unit then return end

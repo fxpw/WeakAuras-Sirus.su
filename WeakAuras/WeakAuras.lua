@@ -2839,7 +2839,10 @@ end
 function Private.HandleGlowAction(actions, region)
   if actions.glow_action
   and (
-    (actions.glow_frame_type == "UNITFRAME" and region.state.unit)
+    (
+      (actions.glow_frame_type == "UNITFRAME" or actions.glow_frame_type == "NAMEPLATE")
+      and region.state.unit
+    )
     or (actions.glow_frame_type == "FRAMESELECTOR" and actions.glow_frame)
   )
   then
@@ -2856,6 +2859,8 @@ function Private.HandleGlowAction(actions, region)
       end
     elseif actions.glow_frame_type == "UNITFRAME" and region.state.unit then
       glow_frame = WeakAuras.GetUnitFrame(region.state.unit)
+    elseif actions.glow_frame_type == "NAMEPLATE" and region.state.unit then
+      glow_frame = WeakAuras.GetUnitNameplate(region.state.unit)
     end
 
     if glow_frame then
@@ -3153,6 +3158,14 @@ end
 function Private.HideTooltip()
   currentTooltipRegion = nil;
   currentTooltipOwner = nil;
+  -- If a tooltip was shown for a "restricted" frame, that is e.g. for a aura
+  -- anchored to a nameplate, then that frame is no longer clamped to the screen,
+  -- because restricted frames can't be clamped. So dance to make the tooltip
+  -- unrestricted and then clamp it again.
+  GameTooltip:ClearAllPoints()
+  GameTooltip:SetPoint("RIGHT", UIParent, "LEFT");
+  GameTooltip:SetClampedToScreen(true)
+
   GameTooltip:Hide();
 end
 
@@ -4386,6 +4399,19 @@ local function GetAnchorFrame(data, region, parent)
     return mouseFrame;
   end
 
+  if (anchorFrameType == "NAMEPLATE") then
+    local unit = region.state and region.state.unit
+    if unit then
+      local frame = unit and WeakAuras.GetUnitNameplate(unit)
+      if frame then return frame end
+    end
+    --if WeakAuras.IsOptionsOpen() then
+      --Private.ensurePRDFrame()
+      --personalRessourceDisplayFrame:anchorFrame(id, anchorFrameType)
+      --return personalRessourceDisplayFrame
+    --end
+  end
+
   if (anchorFrameType == "UNITFRAME") then
     local unit = region.state.unit
     if unit then
@@ -4629,6 +4655,7 @@ do
   for i = 1, 40 do
     trackableUnits["raid" .. i] = true
     trackableUnits["raidpet" .. i] = true
+    trackableUnits["nameplate" .. i] = true
   end
 
   function WeakAuras.UntrackableUnit(unit)

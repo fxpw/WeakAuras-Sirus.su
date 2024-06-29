@@ -55,7 +55,7 @@ end
 
 local function IsGroupTrigger(trigger)
   return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
-         or trigger.unit == "boss" or trigger.unit == "arena" or trigger.unit == "multi"
+         or trigger.unit == "boss" or  trigger.unit == "nameplate" or trigger.unit == "arena" or trigger.unit == "multi"
 end
 
 local function IsSingleMissing(trigger)
@@ -238,7 +238,7 @@ local function GetBuffTriggerOptions(data, triggernum)
         return OptionsPrivate.Private.unit_types_bufftrigger_2
       end,
       hidden = function() return not trigger.type == "aura2" end,
-      desc = L["• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.\n• |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.\n|cffff0000Note|r: The game will not fire events for all valid unitIDs, making some untrackable by this trigger.\n• |cffffff00Party|r, |cffffff00Raid|r, |cffffff00Boss|r, |cffffff00Arena|r, and |cffffff00Nameplate|r can match multiple corresponding unitIDs.\n• |cffffff00Smart Group|r adjusts to your current group type, matching just the \"player\" when solo, \"party\" units (including \"player\") in a party or \"raid\" units in a raid.\n• |cffffff00Multi-target|r attempts to use the Combat Log events, rather than unitID, to track affected units.\n|cffff0000Note|r: Without a direct relationship to actual unitIDs, results may vary.\n\n|cffffff00*|r Yellow Unit settings can match multiple units and will default to being active even while no affected units are found without a Unit Count or Match Count setting."],
+      desc = L["ï¿½ |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.\nï¿½ |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.\n|cffff0000Note|r: The game will not fire events for all valid unitIDs, making some untrackable by this trigger.\nï¿½ |cffffff00Party|r, |cffffff00Raid|r, |cffffff00Boss|r, |cffffff00Arena|r, and |cffffff00Nameplate|r can match multiple corresponding unitIDs.\nï¿½ |cffffff00Smart Group|r adjusts to your current group type, matching just the \"player\" when solo, \"party\" units (including \"player\") in a party or \"raid\" units in a raid.\nï¿½ |cffffff00Multi-target|r attempts to use the Combat Log events, rather than unitID, to track affected units.\n|cffff0000Note|r: Without a direct relationship to actual unitIDs, results may vary.\n\n|cffffff00*|r Yellow Unit settings can match multiple units and will default to being active even while no affected units are found without a Unit Count or Match Count setting."],
     },
     useSpecificUnit = {
       type = "toggle",
@@ -755,6 +755,56 @@ local function GetBuffTriggerOptions(data, triggernum)
         return not (trigger.type == "aura2"
                     and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party") and not trigger.useUnitName)
       end
+    },
+
+    useHostility = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Filter by Nameplate Type"],
+      order = 69.1,
+      hidden = function() return
+        not (trigger.type == "aura2" and trigger.unit == "nameplate")
+      end
+    },
+    hostility = {
+      type = "select",
+      width = WeakAuras.normalWidth,
+      name = L["Hostility"],
+      values = OptionsPrivate.Private.hostility_types,
+      hidden = function() return not (trigger.type == "aura2" and trigger.useHostility) end,
+      order = 69.2
+    },
+    hostilitySpace = {
+      type = "description",
+      name = "",
+      order = 69.3,
+      width = WeakAuras.normalWidth,
+      hidden = function() return not (trigger.type == "aura2" and trigger.unit == "nameplate" and not trigger.useHostility) end
+    },
+
+    useNpcId = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Filter by Npc ID"],
+      order = 69.31,
+      hidden = function() return
+        not (trigger.type == "aura2" and trigger.unit == "nameplate")
+      end
+    },
+    npcId = {
+      type = "input",
+      width = WeakAuras.normalWidth,
+      name = L["Npc ID"],
+      hidden = function() return not (trigger.type == "aura2" and trigger.unit == "nameplate" and trigger.useNpcId) end,
+      order = 69.32,
+      desc = L["Supports multiple entries, separated by commas"]
+    },
+    npcIdSpace = {
+      type = "description",
+      name = "",
+      order = 69.33,
+      width = WeakAuras.normalWidth,
+      hidden = function() return not (trigger.type == "aura2" and trigger.unit == "nameplate" and not trigger.useNpcId) end
     },
 
     ignoreSelf = {

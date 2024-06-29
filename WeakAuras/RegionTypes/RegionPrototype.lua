@@ -553,6 +553,7 @@ function WeakAuras.regionPrototype.modify(parent, region, data)
       not (
         data.anchorFrameType == "CUSTOM"
         or data.anchorFrameType == "UNITFRAME"
+        or data.anchorFrameType == "NAMEPLATE"
       )
       -- Group Auras that will never be expanded, so those need
       -- to be always anchored here
@@ -892,6 +893,7 @@ function WeakAuras.regionPrototype.AddExpandFunction(data, region, cloneId, pare
       if data.anchorFrameType == "SELECTFRAME"
       or data.anchorFrameType == "CUSTOM"
       or data.anchorFrameType == "UNITFRAME"
+      or data.anchorFrameType == "NAMEPLATE"
       then
         Private.AnchorFrame(data, region, parent);
       end

@@ -299,3 +299,44 @@ function lib.GetUnitFrame(target, opt)
     end
 end
 lib.GetFrame = lib.GetUnitFrame -- compatibility
+
+-- nameplates
+function lib.GetUnitNameplate(unit)
+    if not unit then
+      return
+    end
+    local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
+    if nameplate then
+      -- credit to Exality for https://wago.io/explosiveorbs
+      if nameplate.unitFrame and nameplate.unitFrame.Health then
+        -- elvui
+        return nameplate.unitFrame.Health
+      elseif nameplate.unitFramePlater and nameplate.unitFramePlater.healthBar then
+        -- plater
+        return nameplate.unitFramePlater.healthBar
+      elseif nameplate.kui and nameplate.kui.HealthBar then
+        -- kui
+        return nameplate.kui.HealthBar
+      elseif nameplate.extended and nameplate.extended.visual and nameplate.extended.visual.healthbar then
+        -- tidyplates
+        return nameplate.extended.visual.healthbar
+      elseif nameplate.TPFrame and nameplate.TPFrame.visual and nameplate.TPFrame.visual.healthbar then
+        -- tidyplates: threat plates
+        return nameplate.TPFrame.visual.healthbar
+      elseif nameplate.unitFrame and nameplate.unitFrame.Health then
+        -- bdui nameplates
+        return nameplate.unitFrame.Health
+      elseif nameplate.ouf and nameplate.ouf.Health then
+        -- bdNameplates
+        return nameplate.ouf.Health
+      elseif nameplate.slab and nameplate.slab.components and nameplate.slab.components.healthBar and nameplate.slab.components.healthBar.frame then
+        -- Slab
+        return nameplate.slab.components.healthBar.frame
+      elseif nameplate.UnitFrame and nameplate.UnitFrame.healthBar then
+        -- default
+        return nameplate.UnitFrame.healthBar
+      else
+        return nameplate
+      end
+    end
+end

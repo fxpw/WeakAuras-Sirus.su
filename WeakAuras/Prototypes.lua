@@ -1250,7 +1250,7 @@ Private.event_prototypes = {
         type = "toggle",
         width = WeakAuras.doubleWidth,
         enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+          return trigger.unit == "nameplate" or trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
         init = "not UnitIsUnit(\"player\", unit)"
       },
@@ -1633,7 +1633,7 @@ Private.event_prototypes = {
         type = "toggle",
         width = WeakAuras.doubleWidth,
         enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+          return trigger.unit == "nameplate" or trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
         init = "not UnitIsUnit(\"player\", unit)"
       },
@@ -1656,6 +1656,15 @@ Private.event_prototypes = {
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
         init = "UnitIsConnected(unit)"
+      },
+      {
+        name = "nameplateType",
+        display = L["Nameplate Type"],
+        type = "select",
+        init = "WeakAuras.GetPlayerReaction(unit)",
+        values = "hostility_types",
+        conditionType = "select",
+        store = true,
       },
       {
         name = "name",
@@ -5171,6 +5180,9 @@ Private.event_prototypes = {
     internal_events = function(trigger)
       local unit = trigger.unit
       local result = {}
+      if unit == "nameplate" and trigger.use_onUpdateUnitTarget then
+        tinsert(result, "WA_UNIT_TARGET_NAME_PLATE")
+      end
       AddRemainingCastInternalEvents(unit, result)
       local includePets = trigger.use_includePets == true and trigger.includePets or nil
       AddUnitChangeInternalEvents(unit, result, includePets)
@@ -5179,6 +5191,9 @@ Private.event_prototypes = {
     loadFunc = function(trigger)
       if trigger.use_showLatency and trigger.unit == "player" then
         WeakAuras.WatchForCastLatency()
+      end
+      if trigger.unit == "nameplate" and trigger.use_onUpdateUnitTarget then
+        WeakAuras.WatchForNameplateTargetChange()
       end
     end,
     force_events = unitHelperFunctions.UnitChangedForceEventsWithPets,
@@ -5373,6 +5388,15 @@ Private.event_prototypes = {
         init = "raidMarkIndex > 0 and '{rt'..raidMarkIndex..'}' or ''"
       },
       {
+        name = "nameplateType",
+        display = L["Nameplate Type"],
+        type = "select",
+        init = "WeakAuras.GetPlayerReaction(unit)",
+        values = "hostility_types",
+        store = true,
+        conditionType = "select",
+      },
+      {
         name = "includePets",
         display = WeakAuras.newFeatureString .. L["Include Pets"],
         type = "select",
@@ -5389,9 +5413,19 @@ Private.event_prototypes = {
         type = "toggle",
         width = WeakAuras.doubleWidth,
         enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+          return trigger.unit == "nameplate" or trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
         init = "not UnitIsUnit(\"player\", unit)"
+      },
+      {
+        name = "onUpdateUnitTarget",
+        display = WeakAuras.newFeatureString .. L["Advanced Caster's Target Check"],
+        desc = L["Check nameplate's target every 0.2s"],
+        type = "toggle",
+        test = "true",
+        enable = function(trigger)
+          return trigger.unit == "nameplate"
+        end
       },
       {
         name = "sourceUnit",
