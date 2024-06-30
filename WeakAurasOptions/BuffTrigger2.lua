@@ -812,7 +812,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = L["Ignore Self"],
       order = 69.35,
       width = WeakAuras.doubleWidth,
-      hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party")) end
+      hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "nameplate")) end
     },
 
     ignoreDead = {

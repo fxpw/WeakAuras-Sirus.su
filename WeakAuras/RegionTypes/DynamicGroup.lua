@@ -366,7 +366,7 @@ local anchorers = {
         local unit = regionData.region.state and regionData.region.state.unit
         local found
         if unit then
-          local frame = WeakAuras.GetUnitNameplate(unit)
+          local frame = WeakAuras.GetNamePlateForUnit(unit)
           if frame then
             frames[frame] = frames[frame] or {}
             tinsert(frames[frame], regionData)

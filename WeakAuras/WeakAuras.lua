@@ -2860,7 +2860,7 @@ function Private.HandleGlowAction(actions, region)
     elseif actions.glow_frame_type == "UNITFRAME" and region.state.unit then
       glow_frame = WeakAuras.GetUnitFrame(region.state.unit)
     elseif actions.glow_frame_type == "NAMEPLATE" and region.state.unit then
-      glow_frame = WeakAuras.GetUnitNameplate(region.state.unit)
+      glow_frame = WeakAuras.GetNamePlateForUnit(region.state.unit)
     end
 
     if glow_frame then
@@ -4402,7 +4402,7 @@ local function GetAnchorFrame(data, region, parent)
   if (anchorFrameType == "NAMEPLATE") then
     local unit = region.state and region.state.unit
     if unit then
-      local frame = unit and WeakAuras.GetUnitNameplate(unit)
+      local frame = unit and WeakAuras.GetNamePlateForUnit(unit)
       if frame then return frame end
     end
     --if WeakAuras.IsOptionsOpen() then

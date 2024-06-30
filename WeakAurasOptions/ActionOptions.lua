@@ -263,10 +263,7 @@ function OptionsPrivate.GetActionOptions(data)
         end,
         name = L["Glow Frame Type"],
         order = 10.3,
-        values = {
-          UNITFRAME = L["Unit Frame"],
-          FRAMESELECTOR = L["Frame Selector"]
-        },
+        values = OptionsPrivate.Private.glow_frame_types,
         hidden = function()
           return not data.actions.start.do_glow
           or data.actions.start.glow_action == nil
