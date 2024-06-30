@@ -1903,7 +1903,7 @@ Private.event_prototypes = {
         type = "toggle",
         width = WeakAuras.doubleWidth,
         enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+          return trigger.unit == "nameplate" or trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
         init = "not UnitIsUnit(\"player\", unit)"
       },
@@ -1926,6 +1926,15 @@ Private.event_prototypes = {
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
         init = "UnitIsConnected(unit)"
+      },
+      {
+        name = "nameplateType",
+        display = L["Nameplate Type"],
+        type = "select",
+        init = "WeakAuras.GetPlayerReaction(unit)",
+        values = "hostility_types",
+        store = true,
+        conditionType = "select",
       },
       {
         hidden = true,
@@ -5397,37 +5406,6 @@ Private.event_prototypes = {
         conditionType = "select",
       },
       {
-        name = "includePets",
-        display = WeakAuras.newFeatureString .. L["Include Pets"],
-        type = "select",
-        values = "include_pets_types",
-        width = WeakAuras.normalWidth,
-        test = "true",
-        enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
-        end
-      },
-      {
-        name = "ignoreSelf",
-        display = L["Ignore Self"],
-        type = "toggle",
-        width = WeakAuras.doubleWidth,
-        enable = function(trigger)
-          return trigger.unit == "nameplate" or trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
-        end,
-        init = "not UnitIsUnit(\"player\", unit)"
-      },
-      {
-        name = "onUpdateUnitTarget",
-        display = WeakAuras.newFeatureString .. L["Advanced Caster's Target Check"],
-        desc = L["Check nameplate's target every 0.2s"],
-        type = "toggle",
-        test = "true",
-        enable = function(trigger)
-          return trigger.unit == "nameplate"
-        end
-      },
-      {
         name = "sourceUnit",
         init = "unit",
         display = L["Caster"],
@@ -5534,6 +5512,37 @@ Private.event_prototypes = {
           return trigger.unit == "player"
         end,
         reloadOptions = true
+      },
+      {
+        name = "includePets",
+        display = WeakAuras.newFeatureString .. L["Include Pets"],
+        type = "select",
+        values = "include_pets_types",
+        width = WeakAuras.normalWidth,
+        test = "true",
+        enable = function(trigger)
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+        end
+      },
+      {
+        name = "ignoreSelf",
+        display = L["Ignore Self"],
+        type = "toggle",
+        width = WeakAuras.doubleWidth,
+        enable = function(trigger)
+          return trigger.unit == "nameplate" or trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+        end,
+        init = "not UnitIsUnit(\"player\", unit)"
+      },
+      {
+        name = "onUpdateUnitTarget",
+        display = WeakAuras.newFeatureString .. L["Advanced Caster's Target Check"],
+        desc = L["Check nameplate's target every 0.2s"],
+        type = "toggle",
+        test = "true",
+        enable = function(trigger)
+          return trigger.unit == "nameplate"
+        end
       },
       {
         name = "inverse",

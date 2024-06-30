@@ -1067,6 +1067,10 @@ local function TriggerInfoApplies(triggerInfo, unit)
     return false
   end
 
+  if triggerInfo.npcId and not triggerInfo.npcId:Check(select(6, strsplit('-', UnitGUID(unit) or ''))) then
+    return false
+  end
+
   if triggerInfo.nameChecker and not triggerInfo.nameChecker:Check(WeakAuras.UnitNameWithRealm(unit)) then
     return false
   end
@@ -2373,7 +2377,7 @@ function BuffTrigger.Add(data)
       local effectiveIgnoreInvisible = groupTrigger and trigger.ignoreInvisible
       local effectiveHostility = trigger.unit == "nameplate" and trigger.useHostility and trigger.hostility
       local effectiveNameCheck = groupTrigger and trigger.useUnitName and trigger.unitName
-      local effectiveNpcId = trigger.unit == "nameplate" and trigger.useNpcId and Private.ExecEnv.ParseStringCheck(trigger.npcId)
+      local effectiveNpcId = trigger.unit == "nameplate" and trigger.useNpcId and WeakAuras.ParseNameCheck(trigger.npcId)
 
       if trigger.unit == "multi" then
         BuffTrigger.InitMultiAura()
