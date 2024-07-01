@@ -25,9 +25,11 @@ Private.glow_action_types = {
 
 Private.glow_frame_types = {
   UNITFRAME = L["Unit Frame"],
-  NAMEPLATE = L["Nameplate"],
   FRAMESELECTOR = L["Frame Selector"]
 }
+if WeakAuras.isAwesomeEnabled then
+  Private.glow_frame_types.NAMEPLATE = L["Nameplate"]
+end
 
 Private.circular_group_constant_factor_types = {
   RADIUS = L["Radius"],
@@ -928,10 +930,12 @@ Private.anchor_frame_types = {
   SCREEN = L["Screen/Parent Group"],
   MOUSE = L["Mouse Cursor"],
   SELECTFRAME = L["Select Frame"],
-  NAMEPLATE = L["Nameplates"],
   UNITFRAME = L["Unit Frames"],
   CUSTOM = L["Custom"]
 }
+if WeakAuras.isAwesomeEnabled then
+  Private.anchor_frame_types.NAMEPLATE = L["Nameplates"]
+end
 
 Private.anchor_frame_types_group = {
   SCREEN = L["Screen/Parent Group"],
@@ -1930,9 +1934,11 @@ Private.classification_types = {
   elite = L["Elite"],
   rare = L["Rare"],
   normal = L["Normal"],
-  trivial = L["Trivial (Low Level)"],
-  minus = L["Minus (Small Nameplate)"]
+  trivial = L["Trivial (Low Level)"]
 }
+if WeakAuras.isAwesomeEnabled then
+  Private.classification_types.minus = L["Minus (Small Nameplate)"]
+end
 
 Private.anim_start_preset_types = {
   slidetop = L["Slide from Top"],

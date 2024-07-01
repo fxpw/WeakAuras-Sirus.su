@@ -2840,7 +2840,7 @@ function Private.HandleGlowAction(actions, region)
   if actions.glow_action
   and (
     (
-      (actions.glow_frame_type == "UNITFRAME" or actions.glow_frame_type == "NAMEPLATE")
+      (actions.glow_frame_type == "UNITFRAME" or (actions.glow_frame_type == "NAMEPLATE" and WeakAuras.isAwesomeEnabled))
       and region.state.unit
     )
     or (actions.glow_frame_type == "FRAMESELECTOR" and actions.glow_frame)
@@ -2860,7 +2860,7 @@ function Private.HandleGlowAction(actions, region)
     elseif actions.glow_frame_type == "UNITFRAME" and region.state.unit then
       glow_frame = WeakAuras.GetUnitFrame(region.state.unit)
     elseif actions.glow_frame_type == "NAMEPLATE" and region.state.unit then
-      glow_frame = WeakAuras.GetNamePlateForUnit(region.state.unit)
+      glow_frame = WeakAuras.isAwesomeEnabled and WeakAuras.GetNamePlateForUnit(region.state.unit) or nil
     end
 
     if glow_frame then
