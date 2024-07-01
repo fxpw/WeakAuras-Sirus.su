@@ -8,13 +8,15 @@ WeakAuras.halfWidth = WeakAuras.normalWidth / 2
 WeakAuras.doubleWidth = WeakAuras.normalWidth * 2
 
 local versionStringFromToc = GetAddOnMetadata("WeakAuras", "Version")
-local versionString = "4.0.0"
-local buildTime = "20201210233053"
+local versionString = "4.1.0"
+local buildTime = "20240701180000"
+local isAwesomeEnabled = C_NamePlate and C_NamePlate.GetNamePlateForUnit or false
 
 WeakAuras.versionString = versionStringFromToc
 WeakAuras.buildTime = buildTime
 WeakAuras.newFeatureString = "|TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:0|t"
 WeakAuras.BuildInfo = select(4, GetBuildInfo())
+WeakAuras.isAwesomeEnabled = isAwesomeEnabled
 
 function WeakAuras.IsClassic()
   return false

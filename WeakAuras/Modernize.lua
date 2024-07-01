@@ -288,16 +288,17 @@ function Private.Modernize(data)
   -- Version 18 was a migration for stance/form trigger, but deleted later because of migration issue
 
   -- Version 19 were introduced in July 2019 in BfA
-  if data.internalVersion < 19 then
-    if data.triggers then
-      for triggerId, triggerData in ipairs(data.triggers) do
-        if triggerData.trigger.type == "status" and triggerData.trigger.event == "Cast" and triggerData.trigger.unit == "multi" then
-          triggerData.trigger.unit = "nameplate"
+  if WeakAuras.isAwesomeEnabled then
+    if data.internalVersion < 19 then
+      if data.triggers then
+        for triggerId, triggerData in ipairs(data.triggers) do
+          if triggerData.trigger.type == "status" and triggerData.trigger.event == "Cast" and triggerData.trigger.unit == "multi" then
+            triggerData.trigger.unit = "nameplate"
+          end
         end
       end
     end
   end
-
   -- Version 20 was introduced July 2019 in BfA
   if data.internalVersion < 20 then
     if data.regionType == "icon" then

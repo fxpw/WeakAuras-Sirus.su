@@ -856,6 +856,7 @@ Supports multiple entries, separated by commas
 	--[[Translation missing --]]
 	L["Update %s by %s"] = "Update %s by %s"
 	L["Update Auras"] = "효과 업데이트"
+	L["Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"] = "Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"
 	L["Update Custom Text On..."] = "사용자 설정 문자 갱신 중..."
 	--[[Translation missing --]]
 	L["Update in Group"] = "Update in Group"

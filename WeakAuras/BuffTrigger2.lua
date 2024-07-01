@@ -969,7 +969,7 @@ local function GetAllUnits(unit, allUnits, includePets)
     elseif unit == "arena" then
       max = 5
     elseif unit == "nameplate" then
-      max = 40
+      max = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates() or 40
     else
       return function() end
     end
@@ -1804,8 +1804,10 @@ frame:RegisterEvent("PLAYER_TARGET_CHANGED")
 frame:RegisterEvent("PARTY_MEMBERS_CHANGED")
 frame:RegisterEvent("RAID_ROSTER_UPDATE")
 frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
-frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+if WeakAuras.isAwesomeEnabled then
+  frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+  frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+end
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:SetScript("OnEvent", EventHandler)
 
@@ -3277,8 +3279,10 @@ function BuffTrigger.InitMultiAura()
     multiAuraFrame:RegisterEvent("UNIT_AURA")
     multiAuraFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 	  multiAuraFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
-    multiAuraFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-    multiAuraFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+    if WeakAuras.isAwesomeEnabled then
+      multiAuraFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+      multiAuraFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+    end
     multiAuraFrame:RegisterEvent("PLAYER_LEAVING_WORLD")
     multiAuraFrame:SetScript("OnEvent", BuffTrigger.HandleMultiEvent)
     WeakAuras.frames["Multi-target 2 Aura Trigger Handler"] = multiAuraFrame

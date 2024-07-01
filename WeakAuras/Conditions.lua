@@ -282,7 +282,7 @@ local function CreateTestForCondition(uid, input, allConditionsTemplate, usedSta
             local found = 0
             local op = %q
             local range = %s
-            local max = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates or 40
+            local max = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates() or 40
             for i = 1, max do
               local unit = "nameplate" .. i
               if UnitExists(unit) and UnitCanAttack("player", unit) and WeakAuras.CheckRange(unit, range, op) then

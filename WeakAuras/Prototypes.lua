@@ -5201,7 +5201,7 @@ Private.event_prototypes = {
       if trigger.use_showLatency and trigger.unit == "player" then
         WeakAuras.WatchForCastLatency()
       end
-      if trigger.unit == "nameplate" and trigger.use_onUpdateUnitTarget then
+      if trigger.unit == "nameplate" and WeakAuras.isAwesomeEnabled and trigger.use_onUpdateUnitTarget then
         WeakAuras.WatchForNameplateTargetChange()
       end
     end,

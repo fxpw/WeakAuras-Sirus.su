@@ -947,11 +947,13 @@ local frame = CreateFrame("FRAME");
 frame.unitFrames = {};
 WeakAuras.frames["WeakAuras Generic Trigger Frame"] = frame;
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");
-frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 genericTriggerRegisteredEvents["PLAYER_ENTERING_WORLD"] = true;
-genericTriggerRegisteredEvents["NAME_PLATE_UNIT_ADDED"] = true;
-genericTriggerRegisteredEvents["NAME_PLATE_UNIT_REMOVED"] = true;
+if WeakAuras.isAwesomeEnabled then
+  frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+  frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+  genericTriggerRegisteredEvents["NAME_PLATE_UNIT_ADDED"] = true;
+  genericTriggerRegisteredEvents["NAME_PLATE_UNIT_REMOVED"] = true;
+end
 frame:SetScript("OnEvent", HandleEvent);
 
 function GenericTrigger.Delete(id)
@@ -995,7 +997,7 @@ local function MultiUnitLoop(Func, unit, includePets, ...)
       Func(unit..i, ...)
     end
   elseif unit == "nameplate" then
-    local max = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates or 40
+    local max = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates() or 40
     for i = 1, max do
       Func(unit..i, ...)
     end
@@ -2475,8 +2477,10 @@ function WeakAuras.WatchUnitChange(unit)
     watchUnitChange:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT");
     watchUnitChange:RegisterEvent("PARTY_MEMBERS_CHANGED");
     watchUnitChange:RegisterEvent("RAID_ROSTER_UPDATE");
-    watchUnitChange:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-    watchUnitChange:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+    if WeakAuras.isAwesomeEnabled then
+      watchUnitChange:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+      watchUnitChange:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+    end
     watchUnitChange:RegisterEvent("UNIT_FACTION")
     watchUnitChange:RegisterEvent("PLAYER_ENTERING_WORLD")
     watchUnitChange:RegisterEvent("UNIT_PET")
@@ -3159,44 +3163,46 @@ do
 end
 
 -- Nameplate Target
-do
-  local nameplateTargetFrame = nil
-  local nameplateTargets = {}
+if WeakAuras.isAwesomeEnabled then
+  do
+    local nameplateTargetFrame = nil
+    local nameplateTargets = {}
 
-  local function nameplateTargetOnEvent(self, event, unit)
-    if event == "NAME_PLATE_UNIT_ADDED" then
-      nameplateTargets[unit] = UnitGUID(unit.."-target") or true
-    elseif event == "NAME_PLATE_UNIT_REMOVED" then
-      nameplateTargets[unit] = nil
-    end
-  end
-
-  local tick_throttle = 0.2
-  local throttle_update = tick_throttle
-  local function nameplateTargetOnUpdate(self, delta)
-    throttle_update = throttle_update - delta
-    if throttle_update < 0 then
-      for unit, targetGUID in pairs(nameplateTargets) do
-        local newTargetGUID = UnitGUID(unit.."-target")
-        if (newTargetGUID == nil and targetGUID ~= true)
-        or (newTargetGUID ~= nil and targetGUID ~= newTargetGUID)
-        then
-          nameplateTargets[unit] = newTargetGUID or true
-          WeakAuras.ScanEvents("WA_UNIT_TARGET_NAME_PLATE", unit)
-        end
+    local function nameplateTargetOnEvent(self, event, unit)
+      if event == "NAME_PLATE_UNIT_ADDED" then
+        nameplateTargets[unit] = UnitGUID(unit.."-target") or true
+      elseif event == "NAME_PLATE_UNIT_REMOVED" then
+        nameplateTargets[unit] = nil
       end
-      throttle_update = tick_throttle
     end
-  end
 
-  WeakAuras.frames["Nameplate Target Handler"] = nameplateTargetFrame
-  function WeakAuras.WatchForNameplateTargetChange()
-    if not nameplateTargetFrame then
-      nameplateTargetFrame = CreateFrame("Frame")
-      nameplateTargetFrame:SetScript("OnUpdate", nameplateTargetOnUpdate)
-      nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-      nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
-      nameplateTargetFrame:SetScript("OnEvent", nameplateTargetOnEvent)
+    local tick_throttle = 0.2
+    local throttle_update = tick_throttle
+    local function nameplateTargetOnUpdate(self, delta)
+      throttle_update = throttle_update - delta
+      if throttle_update < 0 then
+        for unit, targetGUID in pairs(nameplateTargets) do
+          local newTargetGUID = UnitGUID(unit.."-target")
+          if (newTargetGUID == nil and targetGUID ~= true)
+          or (newTargetGUID ~= nil and targetGUID ~= newTargetGUID)
+          then
+            nameplateTargets[unit] = newTargetGUID or true
+            WeakAuras.ScanEvents("WA_UNIT_TARGET_NAME_PLATE", unit)
+          end
+        end
+        throttle_update = tick_throttle
+      end
+    end
+
+    WeakAuras.frames["Nameplate Target Handler"] = nameplateTargetFrame
+    function WeakAuras.WatchForNameplateTargetChange()
+      if not nameplateTargetFrame then
+        nameplateTargetFrame = CreateFrame("Frame")
+        nameplateTargetFrame:SetScript("OnUpdate", nameplateTargetOnUpdate)
+        nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+        nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+        nameplateTargetFrame:SetScript("OnEvent", nameplateTargetOnEvent)
+      end
     end
   end
 end

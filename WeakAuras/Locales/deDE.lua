@@ -1461,6 +1461,7 @@ L["Up, then Left"] = "Hoch, dann links"
 L["Up, then Right"] = "Hoch, dann rechts"
 --[[Translation missing --]]
 L["Update Auras"] = "Update Auras"
+L["Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"] = "Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"
 L["Usage:"] = "Benutzung:"
 --[[Translation missing --]]
 L["Use /wa minimap to show the minimap icon again."] = "Use /wa minimap to show the minimap icon again."

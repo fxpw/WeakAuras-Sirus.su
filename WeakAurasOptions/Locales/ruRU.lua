@@ -863,6 +863,7 @@ Supports multiple entries, separated by commas
 	L["Unlike the start or finish animations, the main animation will loop over and over until the display is hidden."] = "В отличие от начальной или конечной анимации, основная зациклена и будет повторяться пока индикация не пропадет."
 	L["Update %s by %s"] = "Обновить %s (автор %s)"
 	L["Update Auras"] = "Обновить индикации"
+	L["Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"] = "Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"
 	L["Update Custom Text On..."] = "Обновление текста, заданного с помощью функции, происходит"
 	L["Update in Group"] = "Доступно обновление"
 	L["Update this Aura"] = "Применить к индикации"

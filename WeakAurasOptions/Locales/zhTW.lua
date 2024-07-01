@@ -737,6 +737,7 @@ Supports multiple entries, separated by commas
 	L["Unlike the start or finish animations, the main animation will loop over and over until the display is hidden."] = "不同於開始或結束時的動畫，主要動畫將重複循環直到提醒效果被隱藏。"
 	L["Update %s by %s"] = "更新 %s 透過 %s"
 	L["Update Auras"] = "更新提醒效果"
+	L["Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"] = "Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"
 	L["Update Custom Text On..."] = "更新自訂文字於..."
 	L["Update in Group"] = "群組中的更新"
 	L["Update this Aura"] = "更新這個提醒效果"

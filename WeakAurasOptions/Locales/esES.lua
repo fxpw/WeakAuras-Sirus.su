@@ -1197,6 +1197,7 @@ Sólo un valor coincidente puede ser escogido.]=]
 	L["Update %s by %s"] = "Update %s by %s"
 	--[[Translation missing --]]
 	L["Update Auras"] = "Update Auras"
+	L["Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"] = "Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"
 	L["Update Custom Text On..."] = "Actualizar Texto Personalizado En..."
 	--[[Translation missing --]]
 	L["Update in Group"] = "Update in Group"
