@@ -4655,11 +4655,10 @@ do
   for i = 1, 40 do
     trackableUnits["raid" .. i] = true
     trackableUnits["raidpet" .. i] = true
-    trackableUnits["nameplate" .. i] = true
   end
 
   function WeakAuras.UntrackableUnit(unit)
-    return not trackableUnits[unit]
+    return not (trackableUnits[unit] or string.match(unit, "^nameplate%d+$"))
   end
 end
 

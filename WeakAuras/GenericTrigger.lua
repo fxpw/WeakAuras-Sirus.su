@@ -995,7 +995,8 @@ local function MultiUnitLoop(Func, unit, includePets, ...)
       Func(unit..i, ...)
     end
   elseif unit == "nameplate" then
-    for i = 1, 40 do
+    local max = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates or 40
+    for i = 1, max do
       Func(unit..i, ...)
     end
   elseif unit == "group" then
