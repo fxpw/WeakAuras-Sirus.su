@@ -59,6 +59,8 @@ L["|cffeda55fMiddle-Click|r to toggle the minimap icon on or off."] = "|cffeda55
 L["|cffeda55fRight-Click|r to toggle performance profiling window."] = "|cffeda55fRight-Click|r to toggle performance profiling window."
 L["|cffeda55fShift-Click|r to pause addon execution."] = "|cffeda55fMaj-Clic|r Pour suspendre l'exécution de l'addon."
 --[[Translation missing --]]
+L["|cffff0000deprecated|r"] = "|cffff0000deprecated|r"
+--[[Translation missing --]]
 L["|cFFFF0000Not|r Item Bonus Id Equipped"] = "|cFFFF0000Not|r Item Bonus Id Equipped"
 --[[Translation missing --]]
 L["|cFFFF0000Not|r Player Name/Realm"] = "|cFFFF0000Not|r Player Name/Realm"
@@ -699,6 +701,8 @@ L["Load Conditions"] = "Conditions de Chargement"
 --[[Translation missing --]]
 L["Loatheb"] = "Loatheb"
 --[[Translation missing --]]
+L["Location"] = "Location"
+--[[Translation missing --]]
 L["Looking for Raid"] = "Looking for Raid"
 L["Loop"] = "Boucle"
 L["Lost"] = "Perdu"
@@ -907,6 +911,8 @@ L["Player Effective Level"] = "Player Effective Level"
 L["Player Experience"] = "Player Experience"
 L["Player Faction"] = "Faction joueur"
 L["Player Level"] = "Niveau du joueur"
+--[[Translation missing --]]
+L["Player Location ID(s)"] = "Player Location ID(s)"
 --[[Translation missing --]]
 L["Player Name/Realm"] = "Player Name/Realm"
 L["Player Race"] = "Race du Joueur"
@@ -1182,6 +1188,7 @@ L["Subtract Cast"] = "Subtract Cast"
 L["Subtract Channel"] = "Subtract Channel"
 --[[Translation missing --]]
 L["Subtract GCD"] = "Subtract GCD"
+L["Subzone Name"] = "Subzone Name"
 --[[Translation missing --]]
 L["Sulfuron Harbinger"] = "Sulfuron Harbinger"
 L["Summon"] = "Invocation"
@@ -1397,6 +1404,7 @@ L["Your threat as a percentage of the tank's current threat."] = "Your threat as
 L["Your threat on the mob as a percentage of the amount required to pull aggro. Will pull aggro at 100."] = "Your threat on the mob as a percentage of the amount required to pull aggro. Will pull aggro at 100."
 --[[Translation missing --]]
 L["Your total threat on the mob."] = "Your total threat on the mob."
+L["Zone ID"] = "Zone ID"
 L["Zone ID(s)"] = "ID de la Zone"
 L["Zone Name"] = "Nom de la Zone"
 L["Zoom"] = "Zoom"

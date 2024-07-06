@@ -605,6 +605,8 @@ Plusieurs valeurs peuvent être choisies]=]
 Seule une unique valeur peut être choisie]=]
 	L["Name Info"] = "Info du nom"
 	L["Name Pattern Match"] = "Correspondance de modèle de nom"
+	--[[Translation missing --]]
+	L["Name of the (sub-)zone currently shown above the minimap."] = "Name of the (sub-)zone currently shown above the minimap."
 	L["Name(s)"] = "Nom(s)"
 	L["Name:"] = "Nom:"
 	--[[Translation missing --]]

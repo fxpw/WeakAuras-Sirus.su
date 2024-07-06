@@ -55,6 +55,8 @@ L["|cffeda55fMiddle-Click|r to toggle the minimap icon on or off."] = "|cffeda55
 L["|cffeda55fRight-Click|r to toggle performance profiling window."] = "|cffeda55fRight-Click|r mostrar/esconder a janela de perfil de desempenho."
 L["|cffeda55fShift-Click|r to pause addon execution."] = "|cffeda55fShift-Click|r para pausar a execução do addon."
 --[[Translation missing --]]
+L["|cffff0000deprecated|r"] = "|cffff0000deprecated|r"
+--[[Translation missing --]]
 L["|cFFFF0000Not|r Item Bonus Id Equipped"] = "|cFFFF0000Not|r Item Bonus Id Equipped"
 --[[Translation missing --]]
 L["|cFFFF0000Not|r Player Name/Realm"] = "|cFFFF0000Not|r Player Name/Realm"
@@ -838,6 +840,8 @@ L["Load Conditions"] = "Load Conditions"
 --[[Translation missing --]]
 L["Loatheb"] = "Loatheb"
 --[[Translation missing --]]
+L["Location"] = "Location"
+--[[Translation missing --]]
 L["Looking for Raid"] = "Looking for Raid"
 --[[Translation missing --]]
 L["Loop"] = "Loop"
@@ -949,6 +953,8 @@ L["Mythic+ Affix"] = "Mythic+ Affix"
 L["Name"] = "Nome"
 --[[Translation missing --]]
 L["Name of Caster's Target"] = "Name of Caster's Target"
+--[[Translation missing --]]
+L["Name of the (sub-)zone currently shown above the minimap."] = "Name of the (sub-)zone currently shown above the minimap."
 --[[Translation missing --]]
 L["Name/Realm of Caster's Target"] = "Name/Realm of Caster's Target"
 --[[Translation missing --]]
@@ -1116,6 +1122,8 @@ L["Player Experience"] = "Player Experience"
 --[[Translation missing --]]
 L["Player Faction"] = "Player Faction"
 L["Player Level"] = "Nível do jogador"
+  --[[Translation missing --]]
+L["Player Location ID(s)"] = "Player Location ID(s)"
 --[[Translation missing --]]
 L["Player Name/Realm"] = "Player Name/Realm"
 --[[Translation missing --]]
@@ -1460,6 +1468,8 @@ L["Subtract Channel"] = "Subtract Channel"
 --[[Translation missing --]]
 L["Subtract GCD"] = "Subtract GCD"
 --[[Translation missing --]]
+L["Subzone Name"] = "Subzone Name"
+--[[Translation missing --]]
 L["Sulfuron Harbinger"] = "Sulfuron Harbinger"
 L["Summon"] = "Invocar"
 --[[Translation missing --]]
@@ -1743,6 +1753,8 @@ L["Your threat as a percentage of the tank's current threat."] = "Your threat as
 L["Your threat on the mob as a percentage of the amount required to pull aggro. Will pull aggro at 100."] = "Your threat on the mob as a percentage of the amount required to pull aggro. Will pull aggro at 100."
 --[[Translation missing --]]
 L["Your total threat on the mob."] = "Your total threat on the mob."
+--[[Translation missing --]]
+L["Zone ID"] = "Zone ID"
 --[[Translation missing --]]
 L["Zone ID(s)"] = "Zone ID(s)"
 --[[Translation missing --]]

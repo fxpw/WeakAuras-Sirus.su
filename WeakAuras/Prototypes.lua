@@ -924,6 +924,15 @@ Private.load_prototype = {
 	  end
     },
     {
+      name = "subzone",
+      display = L["Subzone Name"],
+      type = "string",
+      init = "arg",
+      test = "WeakAuras.CheckString(%q, subzone)",
+      events = { "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE" },
+      desc = L["Supports multiple entries, separated by commas"]
+    },
+    {
       name = "size",
       display = L["Instance Size Type"],
       type = "multiselect",
@@ -5977,7 +5986,7 @@ Private.event_prototypes = {
       },
       {
         name = "instance_size",
-        display = L["Instance Type"],
+        display = L["Instance Type"].." "..L["|cffff0000deprecated|r"],
         type = "multiselect",
         values = "instance_types",
         init = "WeakAuras.InstanceType()",
@@ -5986,7 +5995,7 @@ Private.event_prototypes = {
       },
       {
         name = "instance_difficulty",
-        display = L["Instance Difficulty"],
+        display = L["Instance Difficulty"].." "..L["|cffff0000deprecated|r"],
         type = "multiselect",
         values = "difficulty_types",
         init = "WeakAuras.InstanceDifficulty()"
@@ -6241,7 +6250,103 @@ Private.event_prototypes = {
     },
     automaticrequired = true
   },
-
+  ["Location"] = {
+    type = "unit",
+    events = {
+      ["events"] = {
+        "ZONE_CHANGED",
+        "ZONE_CHANGED_INDOORS",
+        "ZONE_CHANGED_NEW_AREA",
+        "PLAYER_DIFFICULTY_CHANGED"
+      }
+    },
+    internal_events = {"INSTANCE_LOCATION_CHECK"},
+    force_events = "INSTANCE_LOCATION_CHECK",
+    name = WeakAuras.newFeatureString..L["Location"],
+    init = function(trigger)
+      local ret = [=[
+        local instanceName, instanceType, difficultyID = GetInstanceInfo()
+        local minimapZoneText = GetMinimapZoneText()
+        local zoneText = GetZoneText()
+        local MapId = GetCurrentMapAreaID()
+      ]=]
+      return ret
+    end,
+    statesParameter = "one",
+    args = {
+      {
+        name = "zoneIds",
+        display = L["Player Location ID(s)"],
+        desc = function()
+          return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas"])
+        end,
+        type = "string",
+        preamble = "local zoneChecker = WeakAuras.ParseZoneCheck(%q)",
+        test = "zoneChecker:Check(MapId)",
+        conditionType = "string",
+        conditionPreamble = function(input)
+          return WeakAuras.ParseZoneCheck(input)
+        end,
+        conditionTest = function(state, needle, op, preamble)
+          return preamble:Check(state.zoneId)
+        end,
+        operator_types = "none",
+      },
+      {
+        name = "zoneId",
+        display = L["Zone ID"],
+        init = "MapId",
+        store = true,
+        hidden = true,
+        test = "true",
+      },
+      {
+        name = "zone",
+        display = L["Zone Name"],
+        type = "string",
+        conditionType = "string",
+        store = true,
+        init = "zoneText",
+      },
+      {
+        name = "subzone",
+        display = L["Subzone Name"],
+        desc = L["Name of the (sub-)zone currently shown above the minimap."],
+        type = "string",
+        conditionType = "string",
+        store = true,
+        init = "minimapZoneText",
+      },
+      {
+        name = "instance",
+        display = L["Instance Name"],
+        test = "true",
+        hidden = "true",
+        store = true,
+      },
+      {
+        name = "instanceSize",
+        display = L["Instance Size Type"],
+        type = "multiselect",
+        values = "instance_types",
+        init = "WeakAuras.InstanceType()",
+        conditionType = "select",
+        control = "WeakAurasSortedDropdown",
+        store = true,
+      },
+      {
+        name = "instanceDifficulty",
+        display = L["Instance Difficulty"],
+        type = "multiselect",
+        values = "difficulty_types",
+        init = "WeakAuras.InstanceDifficulty()",
+        conditionType = "select",
+        store = true,
+      },
+    },
+    automaticrequired = true,
+    progressType = "none"
+  },
 };
 
 if not (DBM and DBM.ReleaseRevision >= 7003) then
