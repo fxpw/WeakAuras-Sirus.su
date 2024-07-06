@@ -781,6 +781,8 @@ L["Mythic+ Affix"] = "Affixe de Mythique +"
 L["Name"] = "Nom"
 L["Name of Caster's Target"] = "Nom de la cible du lanceur"
 --[[Translation missing --]]
+L["Name of the (sub-)zone currently shown above the minimap."] = "Name of the (sub-)zone currently shown above the minimap."
+--[[Translation missing --]]
 L["Name/Realm of Caster's Target"] = "Name/Realm of Caster's Target"
 L["Nameplate"] = "Barre de vie"
 --[[Translation missing --]]
