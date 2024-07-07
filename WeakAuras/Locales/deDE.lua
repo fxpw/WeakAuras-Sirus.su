@@ -155,6 +155,7 @@ L["Armor Rating"] = "Armor Rating"
 L["Array"] = "Array"
 L["Ascending"] = "Aufsteigend"
 L["Assigned Role"] = "Zugewiesene Rolle"
+L["Assist"] = "Assist"
 L["At Least One Enemy"] = "Zumindest ein Feind"
 --[[Translation missing --]]
 L["At missing Value"] = "At missing Value"
@@ -578,6 +579,8 @@ L["Grid"] = "Grid"
 L["Grobbulus"] = "Grobbulus"
 L["Group"] = "Gruppe"
 L["Group Arrangement"] = "Gruppenanordnung"
+--[[Translation missing --]]
+L["Group Leader/Assist"] = "Group Leader/Assist"
 L["Grow"] = "Wachsen"
 L["GTFO Alert"] = "GTFO-Warnung"
 L["Guardian"] = "Wächter"
@@ -728,6 +731,8 @@ L["Kurinnaxx"] = "Kurinnaxx"
 L["Large"] = "Large"
 --[[Translation missing --]]
 L["Latency"] = "Latency"
+--[[Translation missing --]]
+L["Leader"] = "Leader"
 --[[Translation missing --]]
 L["Least remaining time"] = "Least remaining time"
 L["Leaving"] = "Verlassen"

@@ -1241,7 +1241,11 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   local player, realm, zone, subzone = UnitName("player"), GetRealmName(), GetRealZoneText(), GetSubZoneText();
   local faction = UnitFactionGroup("player")
   local zoneId = GetCurrentMapAreaID()
-
+  local raidRole = false;
+  local raidID = UnitInRaid("player")
+  if raidID then
+    raidRole = select(10, GetRaidRosterInfo(raidID + 1))
+  end
   local _, class = UnitClass("player");
 
   local inCombat = UnitAffectingCombat("player") -- or UnitAffectingCombat("pet");
@@ -1249,6 +1253,13 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   local pvp = UnitIsPVPFreeForAll("player") or UnitIsPVP("player")
   local vehicle = UnitInVehicle("player") or UnitOnTaxi("player")
   local vehicleUi = UnitHasVehicleUI("player")
+
+  local raidMemberType = 0
+  if UnitIsPartyLeader("player") then
+    raidMemberType = raidMemberType + 1
+  elseif UnitIsRaidOfficer("player") then
+    raidMemberType = raidMemberType + 2
+  end
 
   local size, difficulty, instanceType = GetInstanceTypeAndSize()
   local group = WeakAuras.GroupType()
@@ -1264,8 +1275,8 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
     if (data and not data.controlledChildren) then
       local loadFunc = loadFuncs[id];
       local loadOpt = loadFuncsForOptions[id];
-      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, group, player, realm, class, faction, playerLevel, zone, zoneId, subzone, size, difficulty);
-      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, group, player, realm, class, faction, playerLevel, zone, zoneId, subzone, size, difficulty);
+      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, raidRole, group, player, realm, class, faction, playerLevel, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, raidRole, group, player, realm, class, faction, playerLevel, raidMemberType, zone, zoneId, subzone, size, difficulty);
 
       if(shouldBeLoaded and not loaded[id]) then
         changed = changed + 1;
@@ -1351,6 +1362,7 @@ loadFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
 loadFrame:RegisterEvent("PLAYER_LEVEL_UP");
 loadFrame:RegisterEvent("PLAYER_REGEN_DISABLED");
 loadFrame:RegisterEvent("PLAYER_REGEN_ENABLED");
+loadFrame:RegisterEvent("PLAYER_ROLES_ASSIGNED");
 loadFrame:RegisterEvent("SPELLS_CHANGED");
 loadFrame:RegisterEvent("UNIT_INVENTORY_CHANGED")
 loadFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
@@ -1358,6 +1370,7 @@ loadFrame:RegisterEvent("PLAYER_DEAD")
 loadFrame:RegisterEvent("PLAYER_ALIVE")
 loadFrame:RegisterEvent("PLAYER_UNGHOST")
 loadFrame:RegisterEvent("PLAYER_FLAGS_CHANGED")
+loadFrame:RegisterEvent("PARTY_LEADER_CHANGED")
 
 local unitLoadFrame = CreateFrame("FRAME");
 WeakAuras.unitLoadFrame = unitLoadFrame;

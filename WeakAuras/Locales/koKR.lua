@@ -119,6 +119,7 @@ L["Array"] = "정렬"
 L["Ascending"] = "오름차순"
 L["Assigned Role"] = "할당된 역할"
 L["At Least One Enemy"] = "최소 1명의 적 대상"
+L["Assist"] = "부공격대장"
 --[[Translation missing --]]
 L["At missing Value"] = "At missing Value"
 --[[Translation missing --]]
@@ -469,6 +470,7 @@ L["Grid"] = "Grid"
 L["Grobbulus"] = "그라불루스"
 L["Group"] = "그룹"
 L["Group Arrangement"] = "그룹 편성"
+L["Group Leader/Assist"] = "공격대장/부공격대장"
 L["Grow"] = "성장"
 L["GTFO Alert"] = "GTFO 경보"
 --[[Translation missing --]]
@@ -583,6 +585,7 @@ L["Kurinnaxx"] = "쿠린낙스"
 L["Large"] = "큰"
 --[[Translation missing --]]
 L["Latency"] = "Latency"
+L["Leader"] = "공격대장"
 L["Least remaining time"] = "최소 남은 시간"
 L["Leaving"] = "떠남"
 L["Leech"] = "마력 흡수"

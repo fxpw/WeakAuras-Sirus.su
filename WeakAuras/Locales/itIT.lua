@@ -137,6 +137,7 @@ L["Ascending"] = "Crescente"
 --[[Translation missing --]]
 L["Assigned Role"] = "Assigned Role"
 L["At Least One Enemy"] = "Almeno un nemico"
+L["Assist"] = "Assist"
 --[[Translation missing --]]
 L["At missing Value"] = "At missing Value"
 --[[Translation missing --]]
@@ -664,6 +665,8 @@ L["Group"] = "Group"
 --[[Translation missing --]]
 L["Group Arrangement"] = "Group Arrangement"
 --[[Translation missing --]]
+L["Group Leader/Assist"] = "Group Leader/Assist"
+--[[Translation missing --]]
 L["Grow"] = "Grow"
 --[[Translation missing --]]
 L["GTFO Alert"] = "GTFO Alert"
@@ -869,6 +872,8 @@ L["Kurinnaxx"] = "Kurinnaxx"
 L["Large"] = "Large"
 --[[Translation missing --]]
 L["Latency"] = "Latency"
+--[[Translation missing --]]
+L["Leader"] = "Leader"
 --[[Translation missing --]]
 L["Least remaining time"] = "Least remaining time"
 --[[Translation missing --]]

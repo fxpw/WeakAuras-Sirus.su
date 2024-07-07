@@ -133,6 +133,7 @@ L["Array"] = "Array"
 L["Ascending"] = "Ascendente"
 --[[Translation missing --]]
 L["Assigned Role"] = "Assigned Role"
+L["Assist"] = "Ayudante"
 L["At Least One Enemy"] = "Como Mínimo un Enemigo"
 --[[Translation missing --]]
 L["At missing Value"] = "At missing Value"
@@ -623,6 +624,7 @@ L["Grobbulus"] = "Grobbulus"
 L["Group"] = "Grupo"
 --[[Translation missing --]]
 L["Group Arrangement"] = "Group Arrangement"
+L["Group Leader/Assist"] = "Líder/ayudante de grupo"
 L["Grow"] = "Crecer"
 L["GTFO Alert"] = "Alerta GTFO"
 --[[Translation missing --]]
@@ -797,6 +799,7 @@ L["Kurinnaxx"] = "Kurinnaxx"
 L["Large"] = "Large"
 --[[Translation missing --]]
 L["Latency"] = "Latency"
+L["Leader"] = "Líder"
 --[[Translation missing --]]
 L["Least remaining time"] = "Least remaining time"
 --[[Translation missing --]]
