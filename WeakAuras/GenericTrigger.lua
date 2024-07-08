@@ -2466,6 +2466,7 @@ function WeakAuras.WatchUnitChange(unit)
     watchUnitChange = CreateFrame("Frame");
     watchUnitChange.unitChangeGUIDS = {}
     watchUnitChange.unitRoles = {}
+    watchUnitChange.unitRaidRole = {}
     watchUnitChange.inRaid = IsInRaid()
     watchUnitChange.nameplateFaction = {}
     watchUnitChange.raidmark = {}
@@ -2473,6 +2474,7 @@ function WeakAuras.WatchUnitChange(unit)
     WeakAuras.frames["Unit Change Frame"] = watchUnitChange;
     watchUnitChange:RegisterEvent("PLAYER_TARGET_CHANGED")
     watchUnitChange:RegisterEvent("PLAYER_FOCUS_CHANGED");
+    watchUnitChange:RegisterEvent("PLAYER_ROLES_ASSIGNED");
     watchUnitChange:RegisterEvent("UNIT_TARGET");
     watchUnitChange:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT");
     watchUnitChange:RegisterEvent("PARTY_MEMBERS_CHANGED");
@@ -2515,6 +2517,15 @@ function WeakAuras.WatchUnitChange(unit)
         if oldReaction ~= newReaction then
           watchUnitChange.nameplateFaction[unit] = newReaction
           WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+        end
+      elseif event == "PLAYER_ROLES_ASSIGNED" then
+        for unit in pairs(Private.multiUnitUnits.group) do
+          local oldRaidRole = watchUnitChange.unitRaidRole[unit]
+          local newRaidRole = WeakAuras.UnitRaidRole(unit)
+          if oldRaidRole ~= newRaidRole then
+            WeakAuras.ScanEvents("UNIT_ROLE_CHANGED_" .. unit, unit)
+            watchUnitChange.unitRaidRole[unit] = newRaidRole
+          end
         end
       else
         local inRaid = IsInRaid()

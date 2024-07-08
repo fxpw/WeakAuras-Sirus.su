@@ -1032,6 +1032,10 @@ local function TriggerInfoApplies(triggerInfo, unit)
     return false
   end
 
+  if triggerInfo.raidRole and not triggerInfo.raidRole[WeakAuras.UnitRaidRole(unit) or ""] then
+    return false
+  end
+
   if triggerInfo.unit == "group" then
     local isPet = WeakAuras.UnitIsPet(unit)
     if triggerInfo.includePets == "PetsOnly" and not isPet then
@@ -2373,6 +2377,7 @@ function BuffTrigger.Add(data)
 
       local groupTrigger = trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
       local effectiveIgnoreSelf = (groupTrigger or trigger.unit == "nameplate") and trigger.ignoreSelf
+      local effectiveRaidRole = groupTrigger and trigger.useRaidRole and trigger.raid_role or nil
       local effectiveClass = groupTrigger and trigger.useClass and trigger.class
       local effectiveIgnoreDead = groupTrigger and trigger.ignoreDead
       local effectiveIgnoreDisconnected = groupTrigger and trigger.ignoreDisconnected
@@ -2434,6 +2439,7 @@ function BuffTrigger.Add(data)
         ignoreDead = effectiveIgnoreDead,
         ignoreDisconnected = effectiveIgnoreDisconnected,
         ignoreInvisible = effectiveIgnoreInvisible,
+        raidRole = effectiveRaidRole,
         groupSubType = groupSubType,
         groupCountFunc = groupCountFunc,
         class = effectiveClass,
