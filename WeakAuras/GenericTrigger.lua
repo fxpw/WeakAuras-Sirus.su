@@ -587,16 +587,16 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       end
     elseif (data.statesParameter == "unit") then
       if optionsEvent then
-        if Private.multiUnitUnits[data.trigger.unit] then
+        if Private.multiUnitUnits[data.trigger.unit] or data.trigger.unit:sub(1, 9) == "nameplate" then
           arg1 = next(Private.multiUnitUnits[data.trigger.unit])
         else
           arg1 = data.trigger.unit
         end
-      elseif event == "FRAME_UPDATE" and not Private.multiUnitUnits[data.trigger.unit] then
+      elseif event == "FRAME_UPDATE" and not (Private.multiUnitUnits[data.trigger.unit] or data.trigger.unit:sub(1, 9) == "nameplate") then
         arg1 = data.trigger.unit
       end
       if arg1 then
-        if Private.multiUnitUnits[data.trigger.unit] then
+        if Private.multiUnitUnits[data.trigger.unit] or data.trigger.unit:sub(1, 9) == "nameplate" then
           unitForUnitTrigger = arg1
           cloneIdForUnitTrigger = arg1
         else
