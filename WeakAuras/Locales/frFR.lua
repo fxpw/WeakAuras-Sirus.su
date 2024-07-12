@@ -61,9 +61,12 @@ L["|cffeda55fShift-Click|r to pause addon execution."] = "|cffeda55fMaj-Clic|r P
 --[[Translation missing --]]
 L["|cffff0000deprecated|r"] = "|cffff0000deprecated|r"
 --[[Translation missing --]]
+L["|cFFFF0000Not|r Item Equipped"] = "|cFFFF0000Not|r Item Equipped"
+--[[Translation missing --]]
 L["|cFFFF0000Not|r Item Bonus Id Equipped"] = "|cFFFF0000Not|r Item Bonus Id Equipped"
 --[[Translation missing --]]
 L["|cFFFF0000Not|r Player Name/Realm"] = "|cFFFF0000Not|r Player Name/Realm"
+L["|cFFFF0000Not|r Spell Known"] = "|cFFFF0000Not|r Spell Known"
 L["|cFFffcc00Extra Options:|r %s"] = "|cFFffcc00Options supplémentaires :|r %s"
 L["|cFFffcc00Extra Options:|r None"] = "|cFFffcc00Options supplémentaires :|r Aucun"
 L["10 Man Raid"] = "Raid 10 Joueurs"

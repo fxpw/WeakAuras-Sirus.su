@@ -57,6 +57,7 @@ L["|cffff0000deprecated|r"] = "|cffff0000deprecated|r"
 --[[Translation missing --]]
 L["|cFFFF0000Not|r Item Bonus Id Equipped"] = "|cFFFF0000Not|r Item Bonus Id Equipped"
 L["|cFFFF0000Not|r Player Name/Realm"] = "|cFFFF0000Not|r 플레이어 이름/서버"
+L["|cFFFF0000Not|r Spell Known"] = "습득하지 |cFFFF0000않은|r 주문"
 L["|cFFffcc00Extra Options:|r %s"] = "|cFFffcc00추가 옵션:|r %s"
 L["|cFFffcc00Extra Options:|r None"] = "|cFFffcc00추가 옵션:|r 없음"
 L["10 Man Raid"] = "10인 공격대"

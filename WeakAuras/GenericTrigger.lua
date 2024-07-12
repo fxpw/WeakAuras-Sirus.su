@@ -2504,10 +2504,22 @@ function WeakAuras.WatchUnitChange(unit)
           end
         end
       elseif event == "NAME_PLATE_UNIT_ADDED" then
+        local oldGUID = watchUnitChange.unitChangeGUIDS[unit]
+        local newGUID = WeakAuras.UnitExistsFixed(unit) and UnitGUID(unit)
+        if oldGUID ~= newGUID then
+          WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+        end
+        watchUnitChange.unitChangeGUIDS[unit] = newGUID
         watchUnitChange.raidmark[unit] = GetRaidTargetIndex(unit) or 0
         watchUnitChange.nameplateFaction[unit] = WeakAuras.GetPlayerReaction(unit)
         WeakAuras.ScanEvents(event, unit)
       elseif event == "NAME_PLATE_UNIT_REMOVED" then
+        local oldGUID = watchUnitChange.unitChangeGUIDS[unit]
+        local newGUID = WeakAuras.UnitExistsFixed(unit) and UnitGUID(unit)
+        if oldGUID ~= newGUID then
+          WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+        end
+        watchUnitChange.unitChangeGUIDS[unit] = newGUID
         watchUnitChange.raidmark[unit] = nil
         watchUnitChange.nameplateFaction[unit] = nil
         WeakAuras.ScanEvents(event, unit)

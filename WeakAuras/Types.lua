@@ -840,6 +840,19 @@ for i, class in ipairs(CLASS_SORT_ORDER) do
   WeakAuras.class_types[class] = string.format("|c%s%s|r", WA_GetClassColor(class), LOCALIZED_CLASS_NAMES_MALE[class])
 end
 
+WeakAuras.race_types = {
+  Human = "Human",
+  Orc = "Orc",
+  Dwarf = "Dwarf",
+  NightElf = "Night Elf",
+  Scourge = "Undead",
+  Tauren = "Tauren",
+  Gnome = "Gnome",
+  Troll = "Troll",
+  BloodElf = "Blood Elf",
+  Draenei = "Draenei",
+}
+
 Private.faction_group = {
   Alliance = L["Alliance"],
   Horde = L["Horde"],

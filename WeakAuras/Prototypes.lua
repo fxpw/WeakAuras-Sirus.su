@@ -915,6 +915,21 @@ Private.load_prototype = {
       showExactOption = true
     },
     {
+      name = "not_spellknown",
+      display = WeakAuras.newFeatureString .. L["|cFFFF0000Not|r Spell Known"],
+      type = "spell",
+      test = "not WeakAuras.IsSpellKnownForLoad(%s, %s)",
+      events = {"SPELLS_CHANGED"},
+      showExactOption = true
+    },
+    {
+      name = "race",
+      display = L["Player Race"],
+      type = "multiselect",
+      values = "race_types",
+      init = "arg"
+    },
+    {
       name = "faction",
       display = L["Player Faction"],
       type = "multiselect",
@@ -990,7 +1005,14 @@ Private.load_prototype = {
       type = "item",
       test = "IsEquippedItem(%s)",
       events = { "UNIT_INVENTORY_CHANGED", "PLAYER_EQUIPMENT_CHANGED"}
-    }
+    },
+    {
+      name = "not_itemequiped",
+      display = WeakAuras.newFeatureString .. L["|cFFFF0000Not|r Item Equipped"],
+      type = "item",
+      test = "not IsEquippedItem(%s)",
+      events = { "UNIT_INVENTORY_CHANGED", "PLAYER_EQUIPMENT_CHANGED"}
+    },
   }
 };
 

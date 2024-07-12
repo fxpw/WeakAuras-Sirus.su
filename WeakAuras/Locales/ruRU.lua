@@ -60,8 +60,10 @@ L["|cffeda55fMiddle-Click|r to toggle the minimap icon on or off."] = "|cFFEDA55
 L["|cffeda55fRight-Click|r to toggle performance profiling window."] = "|cFFEDA55FПравый клик|r - показать или скрыть окно профилирования."
 L["|cffeda55fShift-Click|r to pause addon execution."] = "|cFFEDA55FShift-клик|r - приостановить выполнение аддона."
 L["|cffff0000deprecated|r"] = "|cffff0000устарело|r"
+L["|cFFFF0000Not|r Item Equipped"] = "Предмет |cFFFF0000НЕ|r надет"
 L["|cFFFF0000Not|r Item Bonus Id Equipped"] = "ID бонуса надетого предмета |cFFFF0000НЕ|r"
 L["|cFFFF0000Not|r Player Name/Realm"] = "Имя / Игровой мир игрока |cFFFF0000НЕ|r"
+L["|cFFFF0000Not|r Spell Known"] = "Заклинание |cFFFF0000НЕ|rизвестно"
 L["|cFFffcc00Extra Options:|r %s"] = "|cFFFFCC00Дополнительные параметры:|r %s"
 L["|cFFffcc00Extra Options:|r None"] = "|cFFFFCC00Дополнительные параметры:|r нет"
 --[[Translation missing --]]
