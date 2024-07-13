@@ -3279,7 +3279,7 @@ do
   end
 
   function WeakAuras.WatchPlayerMoveSpeed()
-    if not(playerMovingFrame) then
+    if not (playerMovingFrame) then
       playerMovingFrame = CreateFrame("frame");
       WeakAuras.frames["Player Moving Frame"] =  playerMovingFrame;
     end

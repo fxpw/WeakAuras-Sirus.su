@@ -6037,8 +6037,12 @@ Private.event_prototypes = {
     internal_events = function(trigger, untrigger)
       local events = { "CONDITIONS_CHECK"};
 
+      if trigger.use_ismoving ~= nil then
+        tinsert(events, "PLAYER_MOVE_SPEED_UPDATE");
+      end
+
       if (trigger.use_HasPet ~= nil) then
-        AddUnitChangeInternalEvents("pet", events)
+        AddUnitChangeInternalEvents("pet", events);
       end
 
       return events;
@@ -6046,6 +6050,10 @@ Private.event_prototypes = {
     force_events = "CONDITIONS_CHECK",
     name = L["Conditions"],
     loadFunc = function(trigger)
+      if (trigger.use_ismoving ~= nil) then
+        WeakAuras.WatchPlayerMoveSpeed();
+      end
+
       if (trigger.use_mounted ~= nil) then
         WeakAuras.WatchForMounts();
       end
@@ -6101,6 +6109,12 @@ Private.event_prototypes = {
         display = L["HasPet"],
         type = "tristate",
         init = "UnitExists('pet') and not UnitIsDead('pet')"
+      },
+      {
+        name = "ismoving",
+        display = L["Is Moving"],
+        type = "tristate",
+        init = "GetUnitSpeed('player') > 0"
       },
       {
         name = "afk",
