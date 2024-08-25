@@ -4786,6 +4786,40 @@ function WeakAuras.ParseZoneCheck(input)
   return matcher
 end
 
+function WeakAuras.ParseStringCheck(input)
+  if not input then return end
+  local matcher = {
+    zones = {},
+    Check = function(self, zone)
+      return self.zones[zone]
+    end,
+    Add = function(self, z)
+      self.zones[z] = true
+    end
+  }
+
+  local start = 1
+  local escaped = false
+  local partial = ""
+  for i = 1, #input do
+    local c = input:sub(i, i)
+    if escaped then
+      escaped = false
+    elseif c == '\\' then
+      partial = partial .. input:sub(start, i - 1)
+      start = i + 1
+      escaped = true
+    elseif c == "," then
+      matcher:Add(partial .. input:sub(start, i - 1):trim())
+      start = i + 1
+      partial = ""
+    end
+  end
+  matcher:Add(partial .. input:sub(start, #input):trim())
+
+  return matcher
+end
+
 function WeakAuras.IsAuraLoaded(id)
   return Private.loaded[id]
 end

@@ -1417,8 +1417,21 @@ Private.event_prototypes = {
         display = L["Npc ID"],
         type = "string",
         store = true,
+        init = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '')",
         conditionType = "string",
-        test = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '') == %q",
+        preamble = "local npcIdChecker = WeakAuras.ParseStringCheck(%q)",
+        test = "npcIdChecker:Check(npcId)",
+        conditionPreamble = function(input)
+            return WeakAuras.ParseStringCheck(input)
+        end,
+        conditionTest = function(state, needle, op, preamble)
+            return preamble:Check(state.npcId)
+        end,
+        operator_types = "none",
+        desc = L["Supports multiple entries, separated by commas"],
+        enable = function(trigger)
+            return not trigger.use_inverse
+        end,
       },
       {
         name = "attackable",
@@ -1702,8 +1715,21 @@ Private.event_prototypes = {
         display = L["Npc ID"],
         type = "string",
         store = true,
+        init = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '')",
         conditionType = "string",
-        test = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '') == %q",
+        preamble = "local npcIdChecker = WeakAuras.ParseStringCheck(%q)",
+        test = "npcIdChecker:Check(npcId)",
+        conditionPreamble = function(input)
+            return WeakAuras.ParseStringCheck(input)
+        end,
+        conditionTest = function(state, needle, op, preamble)
+            return preamble:Check(state.npcId)
+        end,
+        operator_types = "none",
+        desc = L["Supports multiple entries, separated by commas"],
+        enable = function(trigger)
+            return not trigger.use_inverse
+        end,
       },
       {
         name = "class",
@@ -1986,8 +2012,21 @@ Private.event_prototypes = {
         display = L["Npc ID"],
         type = "string",
         store = true,
+        init = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '')",
         conditionType = "string",
-        test = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '') == %q",
+        preamble = "local npcIdChecker = WeakAuras.ParseStringCheck(%q)",
+        test = "npcIdChecker:Check(npcId)",
+        conditionPreamble = function(input)
+            return WeakAuras.ParseStringCheck(input)
+        end,
+        conditionTest = function(state, needle, op, preamble)
+            return preamble:Check(state.npcId)
+        end,
+        operator_types = "none",
+        desc = L["Supports multiple entries, separated by commas"],
+        enable = function(trigger)
+            return not trigger.use_inverse
+        end,
       },
       {
         name = "class",
@@ -5505,11 +5544,21 @@ Private.event_prototypes = {
         display = L["Npc ID"],
         type = "string",
         store = true,
+        init = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '')",
         conditionType = "string",
-        test = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '') == %q",
+        preamble = "local npcIdChecker = WeakAuras.ParseStringCheck(%q)",
+        test = "npcIdChecker:Check(npcId)",
+        conditionPreamble = function(input)
+            return WeakAuras.ParseStringCheck(input)
+        end,
+        conditionTest = function(state, needle, op, preamble)
+            return preamble:Check(state.npcId)
+        end,
+        operator_types = "none",
+        desc = L["Supports multiple entries, separated by commas"],
         enable = function(trigger)
-          return not trigger.use_inverse
-        end
+            return not trigger.use_inverse
+        end,
       },
       {
         name = "class",
