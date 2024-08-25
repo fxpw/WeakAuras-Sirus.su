@@ -587,8 +587,10 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       end
     elseif (data.statesParameter == "unit") then
       if optionsEvent then
-        if Private.multiUnitUnits[data.trigger.unit] or data.trigger.unit:sub(1, 9) == "nameplate" then
+        if Private.multiUnitUnits[data.trigger.unit] then
           arg1 = next(Private.multiUnitUnits[data.trigger.unit])
+        elseif data.trigger.unit:sub(1, 9) == "nameplate" then
+          arg1 = next(C_NamePlate.GetNamePlates())
         else
           arg1 = data.trigger.unit
         end
@@ -997,8 +999,7 @@ local function MultiUnitLoop(Func, unit, includePets, ...)
       Func(unit..i, ...)
     end
   elseif unit == "nameplate" then
-    local max = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates() or 40
-    for i = 1, max do
+    for i = 1, 400 do
       Func(unit..i, ...)
     end
   elseif unit == "group" then
@@ -2500,24 +2501,28 @@ function WeakAuras.WatchUnitChange(unit)
           local newMarker = GetRaidTargetIndex(unit) or 0
           if marker ~= newMarker then
             watchUnitChange.raidmark[unit] = newMarker
-            WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+            if string.match(unit, "^nameplate%d+$") then
+              WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
+            else
+              WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+            end
           end
         end
       elseif event == "NAME_PLATE_UNIT_ADDED" then
         local oldGUID = watchUnitChange.unitChangeGUIDS[unit]
         local newGUID = WeakAuras.UnitExistsFixed(unit) and UnitGUID(unit)
         if oldGUID ~= newGUID then
-          WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+          WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
         end
         watchUnitChange.unitChangeGUIDS[unit] = newGUID
         watchUnitChange.raidmark[unit] = GetRaidTargetIndex(unit) or 0
         watchUnitChange.nameplateFaction[unit] = WeakAuras.GetPlayerReaction(unit)
-        WeakAuras.ScanEvents(event, unit)
+        WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
       elseif event == "NAME_PLATE_UNIT_REMOVED" then
         local oldGUID = watchUnitChange.unitChangeGUIDS[unit]
         local newGUID = WeakAuras.UnitExistsFixed(unit) and UnitGUID(unit)
         if oldGUID ~= newGUID then
-          WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+          WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
         end
         watchUnitChange.unitChangeGUIDS[unit] = newGUID
         watchUnitChange.raidmark[unit] = nil
@@ -2528,14 +2533,22 @@ function WeakAuras.WatchUnitChange(unit)
         local newReaction = WeakAuras.GetPlayerReaction(unit)
         if oldReaction ~= newReaction then
           watchUnitChange.nameplateFaction[unit] = newReaction
-          WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+          if string.match(unit, "^nameplate%d+$") then
+            WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
+          else
+            WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+          end
         end
       elseif event == "PLAYER_ROLES_ASSIGNED" then
         for unit in pairs(Private.multiUnitUnits.group) do
           local oldRaidRole = watchUnitChange.unitRaidRole[unit]
           local newRaidRole = WeakAuras.UnitRaidRole(unit)
           if oldRaidRole ~= newRaidRole then
-            WeakAuras.ScanEvents("UNIT_ROLE_CHANGED_" .. unit, unit)
+            if string.match(unit, "^nameplate%d+$") then
+              WeakAuras.ScanEvents("UNIT_ROLE_CHANGED_nameplate", unit)
+            else
+              WeakAuras.ScanEvents("UNIT_ROLE_CHANGED_" .. unit, unit)
+            end
             watchUnitChange.unitRaidRole[unit] = newRaidRole
           end
         end
@@ -2550,7 +2563,11 @@ function WeakAuras.WatchUnitChange(unit)
           or newMarker ~= watchUnitChange.raidmark[unit]
           or event == "PLAYER_ENTERING_WORLD"
           then
-            WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+            if string.match(unit, "^nameplate%d+$") then
+              WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
+            else
+              WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+            end
             watchUnitChange.unitChangeGUIDS[unit] = newGuid
             watchUnitChange.raidmark[unit] = newMarker
 
@@ -2558,7 +2575,11 @@ function WeakAuras.WatchUnitChange(unit)
             local newReaction = WeakAuras.GetPlayerReaction(unit)
             if oldReaction ~= newReaction then
               watchUnitChange.nameplateFaction[unit] = newReaction
-              WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+              if string.match(unit, "^nameplate%d+$") then
+                WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
+              else
+                WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+              end
             end
 
           elseif Private.multiUnitUnits.group[unit] then
@@ -3463,7 +3484,12 @@ do
 
   local function doCastScan(firetime, unit)
     scheduled_scans[unit][firetime] = nil;
-    WeakAuras.ScanEvents("CAST_REMAINING_CHECK_" .. string.lower(unit), unit);
+
+    if string.match(unit, "^nameplate%d+$") then
+      WeakAuras.ScanEvents("CAST_REMAINING_CHECK_nameplate", unit);
+    else
+      WeakAuras.ScanEvents("CAST_REMAINING_CHECK_" .. string.lower(unit), unit);
+    end
   end
   function WeakAuras.ScheduleCastCheck(fireTime, unit)
     scheduled_scans[unit] = scheduled_scans[unit] or {}

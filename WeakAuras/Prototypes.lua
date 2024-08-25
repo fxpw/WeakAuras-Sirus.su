@@ -1025,6 +1025,17 @@ local function AddUnitChangeInternalEvents(triggerUnit, t, includePets)
   elseif triggerUnit == "pet" then
     WeakAuras.WatchForPetDeath();
     tinsert(t, "PET_UPDATE")
+  elseif (triggerUnit == "nameplate") then
+    if not WeakAuras.isAwesomeEnabled then return end
+    tinsert(t, "UNIT_CHANGED_nameplate")
+    local nameplates = C_NamePlate.GetNamePlates()
+    if nameplates then
+      for i, v in pairs(nameplates) do
+        if v then
+          WeakAuras.WatchUnitChange("nameplate" .. i)
+        end
+      end
+    end
   else
     if Private.multiUnitUnits[triggerUnit] then
       local isPet
@@ -1103,6 +1114,8 @@ local unitHelperFunctions = {
           tinsert(events, {"UNIT_CHANGED_" .. unit, unit})
         end
       end
+    elseif trigger.unit == "nameplate" then
+      tinsert(events, {"UNIT_CHANGED_" .. trigger.unit})
     else
       if trigger.unit then
         tinsert(events, {"UNIT_CHANGED_" .. trigger.unit, trigger.unit})
@@ -1119,6 +1132,8 @@ local unitHelperFunctions = {
           tinsert(events, {"UNIT_CHANGED_" .. unit, unit})
         end
       end
+    elseif trigger.unit == "nameplate" then
+      tinsert(events, {"UNIT_CHANGED_" .. trigger.unit})
     else
       if trigger.unit then
         tinsert(events, {"UNIT_CHANGED_" .. trigger.unit, trigger.unit})
