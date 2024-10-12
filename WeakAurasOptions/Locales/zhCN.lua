@@ -217,17 +217,30 @@ Off Screen]=] ] = "光环在屏幕外"
 	L["Custom Options"] = "自定义选项"
 	L["Custom Sort"] = "自定义排序"
 	L["Custom Trigger"] = "自定义生效触发器"
-	L["Custom trigger event tooltip"] = [=[选择用于检查自订触发的事件。
-如果有多个事件,可以用逗号或空白分隔。
+	--[[Translation missing --]]
+	L["Custom trigger event tooltip"] = [=[
+Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
 
-|cFF4444FF例：|r
-UNIT_POWER, UNIT_AURA PLAYER_TARGET_CHANGED]=]
-	L["Custom trigger status tooltip"] = [=[选择用于检查自订触发的事件。
-因为这一个是状态触发器, 指定的事件 可以被 WeakAuras 调用, 而不需指定参数.
-如果有多个事件,可以用逗号或空白分隔。
+• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
+• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
+• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
 
-|cFF4444FF例：|r
-UNIT_POWER, UNIT_AURA PLAYER_TARGET_CHANGED]=]
+|cFF4444FFFor example:|r
+UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
+]=]
+	--[[Translation missing --]]
+	L["Custom trigger status tooltip"] = [=[
+Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
+	
+• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
+• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
+• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
+	
+Since this is a status-type trigger, the specified events may be called by WeakAuras without the expected arguments.
+	
+|cFF4444FFFor example:|r
+UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
+]=]
 	L["Custom Untrigger"] = "自定义失效触发器"
 	L["Custom Variables"] = "自定义变量"
 	L["Debuff Type"] = "减益类型"
@@ -559,6 +572,7 @@ Supports multiple entries, separated by commas
 	L["Raid Role"] = "团队角色"
 	L["Re-center X"] = "到中心 X 偏移"
 	L["Re-center Y"] = "到中心 Y 偏移"
+	L["Reciprocal TRIGGER:# requests will be ignored!"] = "相互的TRIGGER:#请求将被忽略！"
 	L["Regions of type \"%s\" are not supported."] = "%s 区域类型不被支持。"
 	L["Remaining Time"] = "剩余时间"
 	L["Remove"] = "移除"

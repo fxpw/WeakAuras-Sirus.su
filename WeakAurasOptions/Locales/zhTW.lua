@@ -218,17 +218,30 @@ Off Screen]=] ] = "提醒效果不在畫面上 / 跑出畫面"
 	L["Custom Options"] = "自訂選項"
 	L["Custom Sort"] = "自訂排序"
 	L["Custom Trigger"] = "自訂觸發"
-	L["Custom trigger event tooltip"] = [=[選擇自訂觸發要檢查的事件。
-可用逗號分隔多個事件。
+	--[[Translation missing --]]
+	L["Custom trigger event tooltip"] = [=[
+Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
 
-|cFF4444FF例如:|r
-UNIT_POWER, UNIT_AURA PLAYER_TARGET_CHANGED]=]
-	L["Custom trigger status tooltip"] = [=[選擇自訂觸發要檢查的事件。
-因為這是狀態類型的觸發，所指定的事件必須不用加參數就能夠被 WeakAuras 呼叫。
-可用逗號分隔多個事件。
+• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
+• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
+• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
 
-|cFF4444FF例如:|r
-UNIT_POWER, UNIT_AURA PLAYER_TARGET_CHANGED]=]
+|cFF4444FFFor example:|r
+UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
+]=]
+	--[[Translation missing --]]
+	L["Custom trigger status tooltip"] = [=[
+Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
+	
+• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
+• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
+• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
+	
+Since this is a status-type trigger, the specified events may be called by WeakAuras without the expected arguments.
+	
+|cFF4444FFFor example:|r
+UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
+]=]
 	L["Custom Untrigger"] = "自訂取消觸發"
 	L["Custom Variables"] = "自訂變數"
 	L["Debuff Type"] = "減益類型"
@@ -561,6 +574,7 @@ Supports multiple entries, separated by commas
 	L["Raid Role"] = "團隊職責"
 	L["Re-center X"] = "重新水平置中"
 	L["Re-center Y"] = "重新垂直置中"
+	L["Reciprocal TRIGGER:# requests will be ignored!"] = "對應的觸發器：# 請求將被忽略！"
 	L["Regions of type \"%s\" are not supported."] = "不支援區域類型 \"%s\"。"
 	L["Remaining Time"] = "剩餘時間"
 	L["Remove"] = "移除"

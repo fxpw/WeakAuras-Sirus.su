@@ -257,20 +257,29 @@ Off Screen]=]
 	L["Custom Options"] = "Options personnalisées"
 	L["Custom Sort"] = "Tri personnalisé"
 	L["Custom Trigger"] = "Déclencheur personnalisé"
+	--[[Translation missing --]]
 	L["Custom trigger event tooltip"] = [=[
-Choisissez quels évènements peuvent activer le déclencheur.
-Plusieurs évènements peuvent être spécifiés avec des virgules ou des espaces.
-
-|cFF4444FFPar exemple:|r
-UNIT_POWER, UNIT_AURA PLAYER_TARGET_CHANGED
+Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
+		
+• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
+• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
+• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
+		
+|cFF4444FFFor example:|r
+UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
 ]=]
+	--[[Translation missing --]]
 	L["Custom trigger status tooltip"] = [=[
-Choisissez quels évènements peuvent activer le déclencheur.
-Comme c'est un déclencheur de type statut, les évènements spécifiés peuvent être appelés par WeakAuras sans les arguments attendus.
-Plusieurs évènements peuvent être spécifiés avec des virgules ou des espaces.
-
-|cFF4444FFPar exemple:|r
-UNIT_POWER, UNIT_AURA PLAYER_TARGET_CHANGED
+Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
+	
+• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
+• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
+• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
+	
+Since this is a status-type trigger, the specified events may be called by WeakAuras without the expected arguments.
+	
+|cFF4444FFFor example:|r
+UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
 ]=]
 	L["Custom Untrigger"] = "Désactivation personnalisée"
 	L["Custom Variables"] = "Variables personnalisées"
@@ -696,6 +705,8 @@ Seule une unique valeur peut être choisie]=]
 	L["Raid Role"] = "Raid Role"
 	L["Re-center X"] = "Recentrer X"
 	L["Re-center Y"] = "Recentrer Y"
+		--[[Translation missing --]]
+	L["Reciprocal TRIGGER:# requests will be ignored!"] = "Reciprocal TRIGGER:# requests will be ignored!"
 	L["Regions of type \"%s\" are not supported."] = "Les régions de type \"%s\" ne sont pas prises en charge."
 	L["Remaining Time"] = "Temps restant"
 	L["Remove"] = "Retirer"

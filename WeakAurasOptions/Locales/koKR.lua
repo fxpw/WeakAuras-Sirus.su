@@ -250,19 +250,30 @@ Off Screen]=]
 	L["Custom Options"] = "사용자 설정 옵션"
 	L["Custom Sort"] = "사용자 설정 정렬"
 	L["Custom Trigger"] = "사용자 설정 활성 조건"
+	--[[Translation missing --]]
 	L["Custom trigger event tooltip"] = [=[
-사용자 설정 활성 조건을 확인할 이벤트를 선택하세요.
-쉼표나 공백을 사용해 여러 이벤트를 지정할 수 있습니다.
-
-|cFF4444FF예제:|r
-UNIT_POWER_UPDATE, UNIT_AURA PLAYER_TARGET_CHANGED]=]
+Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
+		
+• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
+• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
+• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
+		
+|cFF4444FFFor example:|r
+UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
+]=]
+	--[[Translation missing --]]
 	L["Custom trigger status tooltip"] = [=[
-사용자 설정 활성 조건을 확인할 이벤트를 선택하세요.
-이는 상태-유형 활성 조건이므로, 지정된 이벤트는 예상 인수 없이 WeakAuras에 의해 호출될 수 있습니다.
-쉼표나 공백을 사용해 여러 이벤트를 지정할 수 있습니다.
-
-|cFF4444FF예제:|r
-UNIT_POWER_UPDATE, UNIT_AURA PLAYER_TARGET_CHANGED]=]
+Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
+	
+• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
+• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
+• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
+	
+Since this is a status-type trigger, the specified events may be called by WeakAuras without the expected arguments.
+	
+|cFF4444FFFor example:|r
+UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
+]=]
 	L["Custom Untrigger"] = "사용자 설정 비활성 조건"
 	L["Custom Variables"] = "사용자 설정 변수"
 	L["Debuff Type"] = "약화 효과 유형"
@@ -652,6 +663,7 @@ Supports multiple entries, separated by commas
 	L["Raid Role"] = "공격대 역할"
 	L["Re-center X"] = "내부 X 좌표"
 	L["Re-center Y"] = "내부 Y 좌표"
+	L["Reciprocal TRIGGER:# requests will be ignored!"] = "서로 상응하는 활성 조건 # 요청은 무시됩니다!"
 	--[[Translation missing --]]
 	L["Regions of type \"%s\" are not supported."] = "Regions of type \"%s\" are not supported."
 	L["Remaining Time"] = "남은 시간"
