@@ -428,6 +428,8 @@ UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:S
 	L["Event(s)"] = "Ereignis(se)"
 	L["Everything"] = "Alles"
 	--[[Translation missing --]]
+	L["Exact Item Match"] = "Exact Item Match"
+	--[[Translation missing --]]
 	L["Exact Spell ID(s)"] = "Exact Spell ID(s)"
 	--[[Translation missing --]]
 	L["Exact Spell Match"] = "Exact Spell Match"
@@ -1059,6 +1061,8 @@ Nur ein Wert kann ausgewählt werden.]=]
 	L["UnitName Filter"] = "UnitName Filter"
 	--[[Translation missing --]]
 	L["Unknown property '%s' found in '%s'"] = "Unknown property '%s' found in '%s'"
+	--[[Translation missing --]]
+	L["Unknown Spell"] = "Unknown Spell"
 	L["Unlike the start or finish animations, the main animation will loop over and over until the display is hidden."] = "Anders als die Start- und Endanimation wird die Hauptanimation immer wieder wiederholt, bis die Anzeige in den Endstatus versetzt wird."
 	--[[Translation missing --]]
 	L["Update %s by %s"] = "Update %s by %s"

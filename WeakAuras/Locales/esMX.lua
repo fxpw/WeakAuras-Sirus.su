@@ -252,6 +252,7 @@ L["Buru the Gorger"] = "Buru the Gorger"
 L["Can be used for e.g. checking if \"boss1target\" is the same as \"player\"."] = "Can be used for e.g. checking if \"boss1target\" is the same as \"player\"."
 --[[Translation missing --]]
 L["Cancel"] = "Cancel"
+L["Case Insensitive"] = "Insensible a mayúsculas/minúsculas"
 --[[Translation missing --]]
 L["Can't schedule timer with %i, due to a World of Warcraft bug with high computer uptime. (Uptime: %i). Please restart your computer."] = "Can't schedule timer with %i, due to a World of Warcraft bug with high computer uptime. (Uptime: %i). Please restart your computer."
 L["Cast"] = "Lanzar hechizo"
@@ -372,6 +373,7 @@ L["Debuff Class"] = "Debuff Class"
 L["Debuff Class Icon"] = "Debuff Class Icon"
 --[[Translation missing --]]
 L["Debuff Type"] = "Debuff Type"
+L["Defensive Stats"] = "Estadísticas defensivas"
 L["Deflect"] = "Desviar"
 L["Desaturate"] = "Desaturar"
 L["Desaturate Background"] = "Desaturar fondo"
@@ -385,6 +387,7 @@ L["Dest Raid Mark"] = "Dest Raid Mark"
 L["Destination Affiliation"] = "Destination Affiliation"
 --[[Translation missing --]]
 L["Destination GUID"] = "Destination GUID"
+L["Destination Info"] = "Info del destino"
 L["Destination Name"] = "Nombre de destino"
 --[[Translation missing --]]
 L["Destination NPC Id"] = "Destination NPC Id"
@@ -474,6 +477,7 @@ L["Entering/Leaving Combat"] = "Entrando/abandonando batalla"
 L["Entry Order"] = "Entry Order"
 L["Environment Type"] = "Tipo de entorno"
 L["Environmental"] = "Ambiental"
+L["Equipment"] = "Equipo"
 L["Equipment Set"] = "Equipamiento"
 --[[Translation missing --]]
 L["Equipment Set Equipped"] = "Equipment Set Equipped"
@@ -584,6 +588,7 @@ L["Gained"] = "Obtenido"
 L["Garr"] = "Garr"
 --[[Translation missing --]]
 L["Gehennas"] = "Gehennas"
+L["General"] = "General"
 --[[Translation missing --]]
 L["General Rajaxx"] = "General Rajaxx"
 L["Glancing"] = "Observar de refilón"
@@ -701,6 +706,7 @@ L["Instakill"] = "Muerte instantánea "
 L["Instance"] = "Instancia"
 --[[Translation missing --]]
 L["Instance Difficulty"] = "Instance Difficulty"
+L["Instance Info"] = "Info de estancia"
 --[[Translation missing --]]
 L["Instance Size Type"] = "Instance Size Type"
 L["Instance Type"] = "Tipo de instancia"
@@ -853,6 +859,8 @@ L["Matches (Pattern)"] = "Coincidencias (Patrones)"
 L["Max Char "] = "Max Char "
 --[[Translation missing --]]
 L["Max Charges"] = "Max Charges"
+L["Max Health"] = "Salud máx."
+L["Max Power"] = "Poder máx."
 --[[Translation missing --]]
 L["Maximum"] = "Maximum"
 --[[Translation missing --]]
@@ -874,6 +882,7 @@ L["Minimum Estimate"] = "Minimum Estimate"
 L["Minus (Small Nameplate)"] = "Minus (Small Nameplate)"
 --[[Translation missing --]]
 L["Mirror"] = "Mirror"
+L["Miscellaneous"] = "Misceláneos"
 L["Miss"] = "Fallo"
 L["Miss Type"] = "Tipo de fallo"
 L["Missed"] = "Fallado"
@@ -1081,6 +1090,7 @@ L["Power Type"] = "Tipo de poder"
 --[[Translation missing --]]
 L["Precision"] = "Precision"
 L["Preset"] = "Predefinido"
+L["Primary Stats"] = "Estadísticas primarias"
 --[[Translation missing --]]
 L["Princess Huhuran"] = "Princess Huhuran"
 --[[Translation missing --]]
@@ -1170,6 +1180,7 @@ L["Requested display not authorized"] = "El aura requerida no está autorizada"
 L["Requesting display information from %s ..."] = "Requesting display information from %s ..."
 L["Require Valid Target"] = "Requiere un objetivo válido"
 L["Resist"] = "Resistir"
+L["Resistances"] = "Resistencias"
 L["Resisted"] = "Resistido"
 L["Resolve collisions dialog"] = "Resolver colisiones en diálogos"
 L["Resolve collisions dialog singular"] = "Resolver colisiones en diálogos singulares"
@@ -1226,6 +1237,7 @@ L["Screen/Parent Group"] = "Pantalla/Grupo primario"
 L["Second"] = "Second"
 --[[Translation missing --]]
 L["Second Value of Tooltip Text"] = "Second Value of Tooltip Text"
+L["Secondary Stats"] = "Estadísticas secundarias"
 L["Seconds"] = "Segundos"
 L["Select Frame"] = "Seleccionar macro"
 --[[Translation missing --]]
@@ -1304,6 +1316,7 @@ L["Source"] = "Source"
 L["Source Affiliation"] = "Source Affiliation"
 --[[Translation missing --]]
 L["Source GUID"] = "Source GUID"
+L["Source Info"] = "Info de la fuente"
 L["Source Name"] = "Nombre de origen"
 --[[Translation missing --]]
 L["Source NPC Id"] = "Source NPC Id"
@@ -1325,6 +1338,7 @@ L["Spacing"] = "Espaciar"
 L["Spark"] = "Spark"
 --[[Translation missing --]]
 L["Spec Role"] = "Spec Role"
+L["Specific Currency ID"] = "ID de moneda específica"
 --[[Translation missing --]]
 L["Specific Type"] = "Specific Type"
 L["Specific Unit"] = "Unidad específica"
@@ -1374,6 +1388,7 @@ L["Stop"] = "Stop"
 L["Strength"] = "Strength"
 --[[Translation missing --]]
 L["String"] = "String"
+L["Subevent Info"] = "Info de subevento"
 --[[Translation missing --]]
 L["Subtract Cast"] = "Subtract Cast"
 --[[Translation missing --]]
@@ -1416,6 +1431,7 @@ L["Tanking But Not Highest"] = "Tanqueando - No el más alto"
 L["Target"] = "Objetivo"
 --[[Translation missing --]]
 L["Targeted"] = "Targeted"
+L["Tertiary Stats"] = "Estadísticas terciarias"
 --[[Translation missing --]]
 L["Text"] = "Text"
 L["Thaddius"] = "Thaddius"

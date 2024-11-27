@@ -949,11 +949,24 @@ local function CreateSetAll(subOption, getAll)
 
       if (childOption and not disabledOrHiddenChild(childOptionTable, info)) then
         for i=#childOptionTable,0,-1 do
-          if(childOptionTable[i].set) then
-            if (childOptionTable[i].type == "multiselect") then
-              childOptionTable[i].set(info, ..., not before);
+          local optionTable = childOptionTable[i]
+          if(optionTable.set) then
+            if (optionTable.type == "multiselect") then
+              local newValue
+              if optionTable.multiTristate then
+                if before == true then
+                  newValue = false
+                elseif before == false then
+                  newValue = nil
+                elseif before == nil then
+                  newValue = true
+                end
+              else
+                newValue = not before
+              end
+              optionTable.set(info, ..., newValue)
             else
-              childOptionTable[i].set(info, ...);
+              optionTable.set(info, ...);
             end
             break;
           end
@@ -1012,6 +1025,7 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
     __order = metaOrder,
     width = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Width"],
       order = 60,
@@ -1023,6 +1037,7 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
     },
     height = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Height"],
       order = 61,
@@ -1032,62 +1047,44 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
       bigStep = 1,
       hidden = hideWidthHeight,
     },
-    xOffset = {
-      type = "range",
-      width = WeakAuras.normalWidth,
-      name = L["X Offset"],
-      order = 62,
-      softMin = (-1 * screenWidth),
-      min = (-4 * screenWidth),
-      softMax = screenWidth,
-      max = 4 * screenWidth,
-      bigStep = 10,
-      get = function() return data.xOffset end,
-      set = function(info, v)
-        data.xOffset = v;
-        WeakAuras.Add(data);
-        WeakAuras.UpdateThumbnail(data);
-        OptionsPrivate.ResetMoverSizer();
-        OptionsPrivate.Private.AddParents(data)
-      end
-    },
-    yOffset = {
-      type = "range",
-      width = WeakAuras.normalWidth,
-      name = L["Y Offset"],
-      order = 63,
-      softMin = (-1 * screenHeight),
-      min = (-4 * screenHeight),
-      softMax = screenHeight,
-      max = 4 * screenHeight,
-      bigStep = 10,
-      get = function() return data.yOffset end,
-      set = function(info, v)
-        data.yOffset = v;
-        WeakAuras.Add(data);
-        WeakAuras.UpdateThumbnail(data);
-        OptionsPrivate.ResetMoverSizer();
-        OptionsPrivate.Private.AddParents(data)
-      end
-    },
-    selfPoint = {
-      type = "select",
-      width = WeakAuras.normalWidth,
-      name = L["Anchor"],
-      order = 70,
-      hidden = IsParentDynamicGroup,
-      values = OptionsPrivate.Private.point_types,
-      disabled = disableSelfPoint,
-    },
     anchorFrameType = {
       type = "select",
       width = WeakAuras.normalWidth,
       name = L["Anchored To"],
-      order = 72,
+      order = 70,
       hidden = function()
         return IsParentDynamicGroup() or IsGroupByFrame()
       end,
-      values = (data.regionType == "group" or data.regionType == "dynamicgroup") and OptionsPrivate.Private.anchor_frame_types_group or OptionsPrivate.Private.anchor_frame_types,
+      values = (data.regionType == "group" or data.regionType == "dynamicgroup")
+                and OptionsPrivate.Private.anchor_frame_types_group
+                or OptionsPrivate.Private.anchor_frame_types,
+      sorting = OptionsPrivate.Private.SortOrderForValues(
+                (data.regionType == "group" or data.regionType == "dynamicgroup")
+                and OptionsPrivate.Private.anchor_frame_types_group
+                or OptionsPrivate.Private.anchor_frame_types),
+    },
+    anchorFrameParent = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Set Parent to Anchor"],
+      desc = L["Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."],
+      order = 71,
+      get = function()
+        return data.anchorFrameParent or data.anchorFrameParent == nil;
+      end,
+      hidden = function()
+        return (data.anchorFrameType == "SCREEN" or data.anchorFrameType == "MOUSE" or IsParentDynamicGroup());
+      end,
+    },
+    anchorFrameSpaceOne = {
+      type = "execute",
+      width = WeakAuras.normalWidth,
+      name = "",
+      order = 72,
+      image = function() return "", 0, 0 end,
+      hidden = function()
+        return IsParentDynamicGroup() or IsGroupByFrame() or not (data.anchorFrameType == "SCREEN" or data.anchorFrameType == "MOUSE")
+      end,
     },
     -- Input field to select frame to anchor on
     anchorFrameFrame = {
@@ -1107,7 +1104,7 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
       type = "execute",
       width = WeakAuras.normalWidth,
       name = L["Choose"],
-      order = 72.4,
+      order = 74,
       hidden = function()
         if (IsParentDynamicGroup()) then
           return true;
@@ -1117,6 +1114,16 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
       func = function()
         OptionsPrivate.StartFrameChooser(data, {"anchorFrameFrame"});
       end
+    },
+    selfPoint = {
+      type = "select",
+      width = WeakAuras.normalWidth,
+      name = L["Anchor"],
+      order = 75,
+      hidden = IsParentDynamicGroup,
+      values = OptionsPrivate.Private.point_types,
+      disabled = disableSelfPoint,
+      control = "WeakAurasAnchorButtons",
     },
     anchorPoint = {
       type = "select",
@@ -1130,7 +1137,7 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
           return L["To Frame's"];
         end
       end,
-      order = 75,
+      order = 76,
       hidden = function()
         if (data.parent) then
           if IsGroupByFrame() then
@@ -1141,13 +1148,14 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
           return data.anchorFrameType == "MOUSE";
         end
       end,
-      values = OptionsPrivate.Private.point_types
+      values = OptionsPrivate.Private.point_types,
+      control = "WeakAurasAnchorButtons",
     },
     anchorPointGroup = {
       type = "select",
       width = WeakAuras.normalWidth,
       name = L["To Group's"],
-      order = 76,
+      order = 77,
       hidden = function()
         if IsGroupByFrame() then
           return true
@@ -1162,33 +1170,70 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
       end,
       disabled = true,
       values = {["CENTER"] = L["Anchor Point"]},
-      get = function() return "CENTER"; end
+      get = function() return "CENTER"; end,
+      control = "WeakAurasAnchorButtons",
     },
-    anchorFrameParent = {
-      type = "toggle",
-      width = WeakAuras.normalWidth,
-      name = L["Set Parent to Anchor"],
-      desc = L["Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."],
-      order = 77,
-      get = function()
-        return data.anchorFrameParent or data.anchorFrameParent == nil;
-      end,
+    anchorFramePoints = {
+      type = "execute",
+      name = "",
+      order = 78,
+      image = function() return "", 0, 0 end,
       hidden = function()
-        return (data.anchorFrameType == "SCREEN" or data.anchorFrameType == "MOUSE" or IsParentDynamicGroup());
-      end,
+        return not (data.anchorFrameType == "MOUSE") or IsParentDynamicGroup();
+      end
+    },
+    xOffset = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = L["X Offset"],
+      order = 79,
+      softMin = (-1 * screenWidth),
+      min = (-4 * screenWidth),
+      softMax = screenWidth,
+      max = 4 * screenWidth,
+      bigStep = 10,
+      get = function() return data.xOffset end,
+      set = function(info, v)
+        data.xOffset = v;
+        WeakAuras.Add(data);
+        WeakAuras.UpdateThumbnail(data);
+        OptionsPrivate.ResetMoverSizer();
+        OptionsPrivate.Private.AddParents(data)
+      end
+    },
+    yOffset = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = L["Y Offset"],
+      order = 80,
+      softMin = (-1 * screenHeight),
+      min = (-4 * screenHeight),
+      softMax = screenHeight,
+      max = 4 * screenHeight,
+      bigStep = 10,
+      get = function() return data.yOffset end,
+      set = function(info, v)
+        data.yOffset = v;
+        WeakAuras.Add(data);
+        WeakAuras.UpdateThumbnail(data);
+        OptionsPrivate.ResetMoverSizer();
+        OptionsPrivate.Private.AddParents(data)
+      end
     },
     frameStrata = {
       type = "select",
       width = WeakAuras.normalWidth,
       name = L["Frame Strata"],
-      order = 78,
+      order = 81,
       values = OptionsPrivate.Private.frame_strata_types
     },
     anchorFrameSpace = {
       type = "execute",
       width = WeakAuras.normalWidth,
       name = "",
-      order = 79,
+      order = 82,
       image = function() return "", 0, 0 end,
       hidden = function()
         return not (data.anchorFrameType ~= "SCREEN" or IsParentDynamicGroup());
@@ -1197,7 +1242,7 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
   };
 
   OptionsPrivate.commonOptions.AddCodeOption(positionOptions, data, L["Custom Anchor"], "custom_anchor", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-anchor-function",
-                          72.1, function() return not(data.anchorFrameType == "CUSTOM" and not IsParentDynamicGroup()) end, {"customAnchor"}, false, { setOnParent = group })
+                          71.5, function() return not(data.anchorFrameType == "CUSTOM" and not IsParentDynamicGroup()) end, {"customAnchor"}, false, { setOnParent = group })
   return positionOptions;
 end
 
@@ -1236,6 +1281,7 @@ local function BorderOptions(id, data, showBackDropOptions, hiddenFunc, order)
     },
     borderOffset = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Border Offset"],
       order = order + 0.3,
@@ -1246,6 +1292,7 @@ local function BorderOptions(id, data, showBackDropOptions, hiddenFunc, order)
     },
     borderSize = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Border Size"],
       order = order + 0.4,
@@ -1256,6 +1303,7 @@ local function BorderOptions(id, data, showBackDropOptions, hiddenFunc, order)
     },
     borderInset = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Border Inset"],
       order = order + 0.5,
@@ -1443,6 +1491,7 @@ local function AddCommonTriggerOptions(options, data, triggernum, doubleWidth)
     desc = L["The type of trigger"],
     order = 1.1,
     values = trigger_types,
+    sorting = OptionsPrivate.Private.SortOrderForValues(trigger_types),
     get = function(info)
       return trigger.type
     end,
@@ -1458,7 +1507,6 @@ local function AddCommonTriggerOptions(options, data, triggernum, doubleWidth)
       WeakAuras.UpdateThumbnail(data);
       WeakAuras.ClearAndUpdateOptions(data.id);
     end,
-    control = "WeakAurasSortedDropdown"
   }
 end
 

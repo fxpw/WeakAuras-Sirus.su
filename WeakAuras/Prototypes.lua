@@ -584,18 +584,48 @@ function WeakAuras.CheckNumericIds(loadids, currentId)
   return false;
 end
 
-function WeakAuras.CheckString(ids, currentId)
-  if (not ids or not currentId) then
-    return false;
-  end
-
-  for id in ids:gmatch('([^,]+)') do
-    if id:trim() == currentId then
-      return true
+function WeakAuras.TimeToSeconds(val)
+  if tonumber(val) then
+    return tonumber(val)
+  else
+    local sign = 1
+    if val:sub(1,1) == "-" then
+      sign = -1
+      val = val:sub(2, #val)
+    end
+    local h, m, s = val:match("^(%d+):(%d+):([%d%.]+)$")
+    if h and m and s then
+      return (h*3600 + m*60 + s) * sign
+    else
+      local m, s = val:match("^(%d+):([%d%.]+)$")
+      if m and s then
+        return (m*60 + s) * sign
+      end
     end
   end
+end
 
-  return false;
+Private.tinySecondFormat = function(value)
+  if type(value) == "string" then value = tonumber(value) end
+  if type(value) == "number" then
+     local negative = value < 0
+     value = math.abs(value)
+     local fraction = value - math.floor(value)
+     local ret
+     if value > 3600 then
+        ret = ("%i:%02i:%02i"):format(math.floor(value / 3600), math.floor((value % 3600) / 60), value % 60)
+     elseif value > 60 then
+        ret = ("%i:%02i"):format(math.floor(value / 60), value % 60)
+     else
+        ret = ("%i"):format(value)
+     end
+     local negSign = negative and "-" or ""
+     if fraction > 0 then
+        return negSign .. ret .. tostring(Round(fraction * 100) / 100):sub(2)
+     else
+        return negSign .. ret
+     end
+  end
 end
 
 function WeakAuras.ValidateNumeric(info, val)
@@ -773,6 +803,11 @@ end
 Private.load_prototype = {
   args = {
     {
+      name ="generalTitle",
+      display = L["General"],
+      type = "description",
+    },
+    {
       name = "combat",
       display = L["In Combat"],
       type = "tristate",
@@ -839,7 +874,13 @@ Private.load_prototype = {
       width = WeakAuras.normalWidth,
       init = "arg",
       values = "group_types",
-      events = {"PARTY_MEMBERS_CHANGED", "RAID_ROSTER_UPDATE"}
+      events = {"PARTY_MEMBERS_CHANGED", "RAID_ROSTER_UPDATE"},
+      optional = true,
+    },
+    {
+      name ="playerTitle",
+      display = L["Player"],
+      type = "description",
     },
     {
       name = "player",
@@ -857,6 +898,7 @@ Private.load_prototype = {
       name = "namerealm",
       display = L["Player Name/Realm"],
       type = "string",
+      multiline = true,
       test = "nameRealmChecker:Check(player, realm)",
       preamble = "local nameRealmChecker = WeakAuras.ParseNameCheck(%q)",
       desc = constants.nameRealmFilterDesc,
@@ -865,6 +907,7 @@ Private.load_prototype = {
       name = "ignoreNameRealm",
       display = L["|cFFFF0000Not|r Player Name/Realm"],
       type = "string",
+      multiline = true,
       test = "not nameRealmIgnoreChecker:Check(player, realm)",
       preamble = "local nameRealmIgnoreChecker = WeakAuras.ParseNameCheck(%q)",
       desc = constants.nameRealmFilterDesc,
@@ -891,7 +934,10 @@ Private.load_prototype = {
       values = valuesForTalentFunction,
       test = "WeakAuras.CheckTalentByIndex(%d)",
       enable = function(trigger)
-        return trigger.use_talent ~= nil or trigger.use_talent2 ~= nil;
+        return trigger.use_talent ~= nil or trigger.use_talent2 ~= nil
+      end,
+      hidden = function(trigger)
+        return not (trigger.use_talent ~= nil or trigger.use_talent2 ~= nil)
       end,
       events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"}
     },
@@ -902,7 +948,10 @@ Private.load_prototype = {
       values = valuesForTalentFunction,
       test = "WeakAuras.CheckTalentByIndex(%d)",
       enable = function(trigger)
-        return (trigger.use_talent ~= nil and trigger.use_talent2 ~= nil) or trigger.use_talent3 ~= nil;
+        return (trigger.use_talent ~= nil and trigger.use_talent2 ~= nil) or trigger.use_talent3 ~= nil
+      end,
+      hidden = function(trigger)
+        return not ((trigger.use_talent ~= nil and trigger.use_talent2 ~= nil) or trigger.use_talent3 ~= nil)
       end,
       events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"}
     },
@@ -941,7 +990,11 @@ Private.load_prototype = {
       display = L["Player Level"],
       type = "number",
       init = "arg",
-      events = {"PLAYER_LEVEL_UP"}
+      events = {"PLAYER_LEVEL_UP"},
+      multiEntry = {
+        operator = "and",
+        limit = 2
+      },
     },
     {
       name = "group_leader",
@@ -954,55 +1007,83 @@ Private.load_prototype = {
       optional = true,
     },
     {
+      name ="locationTitle",
+      display = L["Location"],
+      type = "description",
+    },
+    {
       name = "zone",
       display = L["Zone Name"],
       type = "string",
+      multiline = true,
       init = "arg",
-      test = "WeakAuras.CheckString(%q, zone)",
-      events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE"},
-      desc = L["Supports multiple entries, separated by commas"]
+      preamble = "local zoneChecker = WeakAuras.ParseStringCheck(%q)",
+      test = "zoneChecker:Check(zone)",
+      events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
+      desc = function()
+        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), L["Supports multiple entries, separated by commas"])
+      end,
+      optional = true,
     },
     {
       name = "zoneId",
       display = L["Zone ID(s)"],
       type = "string",
+      multiline = true,
       init = "arg",
       test = "WeakAuras.CheckNumericIds(%q, zoneId)",
-      events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE"},
+      events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
 	    return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas"])
-	    end
+	    end,
+      optional = true,
     },
     {
       name = "subzone",
       display = L["Subzone Name"],
       type = "string",
+      multiline = true,
       init = "arg",
-      test = "WeakAuras.CheckString(%q, subzone)",
-      events = { "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE" },
-      desc = L["Supports multiple entries, separated by commas"]
+      preamble = "local subzoneChecker = WeakAuras.ParseStringCheck(%q)",
+      test = "subzoneChecker:Check(subzone)",
+      events = { "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
+      desc = function()
+        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetMinimapZoneText(), L["Supports multiple entries, separated by commas"])
+      end,
+      optional = true,
     },
     {
       name = "size",
       display = L["Instance Size Type"],
       type = "multiselect",
       values = "instance_types",
+      sorted = true,
       init = "arg",
-      control = "WeakAurasSortedDropdown",
-      events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA"}
+      events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
+      optional = true,
     },
     {
       name = "difficulty",
       display = L["Instance Difficulty"],
       type = "multiselect",
       values = "difficulty_types",
+      sorted = true,
       init = "arg",
-      events = {"PLAYER_DIFFICULTY_CHANGED", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA"}
+      events = {"PLAYER_DIFFICULTY_CHANGED", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
+      optional = true,
+    },
+    {
+      name ="equipmentTitle",
+      display = L["Equipment"],
+      type = "description",
     },
     {
       name = "itemequiped",
       display = L["Item Equipped"],
       type = "item",
+      multiEntry = {
+        operator = "or"
+      },
       test = "IsEquippedItem(%s)",
       events = { "UNIT_INVENTORY_CHANGED", "PLAYER_EQUIPMENT_CHANGED"}
     },
@@ -1010,6 +1091,9 @@ Private.load_prototype = {
       name = "not_itemequiped",
       display = WeakAuras.newFeatureString .. L["|cFFFF0000Not|r Item Equipped"],
       type = "item",
+      multiEntry = {
+        operator = "or"
+      },
       test = "not IsEquippedItem(%s)",
       events = { "UNIT_INVENTORY_CHANGED", "PLAYER_EQUIPMENT_CHANGED"}
     },
@@ -1298,6 +1382,7 @@ Private.event_prototypes = {
         display = L["Unit Name/Realm"],
         desc = constants.nameRealmFilterDesc,
         type = "string",
+        multiline = true,
         preamble = "local nameRealmChecker = WeakAuras.ParseNameCheck(%q)",
         test = "nameRealmChecker:Check(name, realm)",
         conditionType = "string",
@@ -1410,12 +1495,17 @@ Private.event_prototypes = {
         type = "number",
         init = "UnitLevel(unit)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "npcId",
         display = L["Npc ID"],
         type = "string",
+        multiline = true,
         store = true,
         init = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '')",
         conditionType = "string",
@@ -1496,6 +1586,10 @@ Private.event_prototypes = {
         store = true,
         init = [[UnitLevel("player")]],
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "currentXP",
@@ -1504,6 +1598,10 @@ Private.event_prototypes = {
         store = true,
         init = [[UnitXP("player")]],
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "totalXP",
@@ -1512,6 +1610,10 @@ Private.event_prototypes = {
         store = true,
         init = [[UnitXPMax("player")]],
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "value",
@@ -1542,7 +1644,16 @@ Private.event_prototypes = {
         type = "number",
         init = "total ~= 0 and (value / total) * 100 or nil",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
+      },
+      {
+        type = "header",
+        name = "restedExperienceHeader",
+        display = L["Rested Experience"],
       },
       {
         name = "showRested",
@@ -1558,6 +1669,10 @@ Private.event_prototypes = {
         type = "number",
         store = true,
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "percentrested",
@@ -1566,6 +1681,10 @@ Private.event_prototypes = {
         type = "number",
         store = true,
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
     },
     overlayFuncs = {
@@ -1639,7 +1758,11 @@ Private.event_prototypes = {
         type = "number",
         init = "UnitHealth(unit)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "value",
@@ -1668,7 +1791,11 @@ Private.event_prototypes = {
         type = "number",
         init = "total ~= 0 and (value / total) * 100 or nil",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "deficit",
@@ -1676,7 +1803,23 @@ Private.event_prototypes = {
         type = "number",
         init = "total - value",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
+      },
+      {
+        name = "maxhealth",
+        display = WeakAuras.newFeatureString .. L["Max Health"],
+        type = "number",
+        init = "total",
+        store = true,
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "name",
@@ -1695,9 +1838,15 @@ Private.event_prototypes = {
         test = "true"
       },
       {
+        type = "header",
+        name = "unitCharacteristicsHeader",
+        display = L["Unit Characteristics"],
+      },
+      {
         name = "namerealm",
         display = L["Unit Name/Realm"],
         type = "string",
+        multiline = true,
         preamble = "local nameRealmChecker = WeakAuras.ParseNameCheck(%q)",
         test = "nameRealmChecker:Check(name, realm)",
         conditionType = "string",
@@ -1714,6 +1863,7 @@ Private.event_prototypes = {
         name = "npcId",
         display = L["Npc ID"],
         type = "string",
+        multiline = true,
         store = true,
         init = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '')",
         conditionType = "string",
@@ -1768,6 +1918,14 @@ Private.event_prototypes = {
         hidden = true,
         test = "true",
         init = "raidMarkIndex > 0 and '{rt'..raidMarkIndex..'}' or ''"
+      },
+      {
+        type = "header",
+        name = "miscellaneousHeader",
+        display = L["Miscellaneous"],
+        enable = function(trigger)
+          return trigger.unit == "nameplate" or trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+        end,
       },
       {
         name = "includePets",
@@ -1930,6 +2088,10 @@ Private.event_prototypes = {
         init = "UnitPower(unit, powerType)",
         store = true,
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "value",
@@ -1965,7 +2127,11 @@ Private.event_prototypes = {
         type = "number",
         init = "total ~= 0 and (value / total) * 100 or nil",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "deficit",
@@ -1973,7 +2139,23 @@ Private.event_prototypes = {
         type = "number",
         init = "total - value",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
+      },
+      {
+        name = "maxpower",
+        display = WeakAuras.newFeatureString .. L["Max Power"],
+        type = "number",
+        init = "total",
+        store = true,
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "name",
@@ -1992,9 +2174,15 @@ Private.event_prototypes = {
         test = "true"
       },
       {
+        type = "header",
+        name = "unitCharacteristicsHeader",
+        display = L["Unit Characteristics"],
+      },
+      {
         name = "namerealm",
         display = L["Unit Name/Realm"],
         type = "string",
+        multiline = true,
         preamble = "local nameRealmChecker = WeakAuras.ParseNameCheck(%q)",
         test = "nameRealmChecker:Check(name, realm)",
         conditionType = "string",
@@ -2011,6 +2199,7 @@ Private.event_prototypes = {
         name = "npcId",
         display = L["Npc ID"],
         type = "string",
+        multiline = true,
         store = true,
         init = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '')",
         conditionType = "string",
@@ -2065,6 +2254,14 @@ Private.event_prototypes = {
         hidden = true,
         test = "true",
         init = "raidMarkIndex > 0 and '{rt'..raidMarkIndex..'}' or ''"
+      },
+      {
+        type = "header",
+        name = "miscellaneousHeader",
+        display = L["Miscellaneous"],
+        enable = function(trigger)
+          return trigger.unit == "nameplate" or trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+        end,
       },
       {
         name = "includePets",
@@ -2140,6 +2337,11 @@ Private.event_prototypes = {
       {}, -- timestamp ignored with _ argument
       {}, -- messageType ignored with _ argument (it is checked before the dynamic function)
       {
+        type = "header",
+        name = "sourceHeader",
+        display = L["Source Info"],
+      },
+      {
         name = "sourceGUID",
         init = "arg",
         hidden = "true",
@@ -2166,15 +2368,32 @@ Private.event_prototypes = {
         name = "sourceName",
         display = L["Source Name"],
         type = "string",
+        multiline = true,
         init = "arg",
         store = true,
-        conditionType = "string"
+        conditionType = "string",
+        preamble = "local sourceNameChecker = WeakAuras.ParseStringCheck(%q)",
+        test = "sourceNameChecker:Check(sourceName)",
+        desc = L["Supports multiple entries, separated by commas"],
       },
       {
         name = "sourceNpcId",
         display = L["Source NPC Id"],
         type = "string",
-        test = "tostring(tonumber(string.sub(sourceGUID or '', 8, 12), 16) or '') == %q",
+        multiline = true,
+        init = "tostring(tonumber(string.sub(sourceGUID or '', 8, 12), 16) or '')",
+        store = true,
+        conditionType = "string",
+        preamble = "local sourceNpcIdChecker = WeakAuras.ParseStringCheck(%q)",
+        test = "sourceNpcIdChecker:Check(sourceNpcId)",
+        conditionPreamble = function(input)
+            return WeakAuras.ParseStringCheck(input)
+        end,
+        conditionTest = function(state, needle, op, preamble)
+            return preamble:Check(state.sourceNpcId)
+        end,
+        operator_types = "none",
+        desc = L["Supports multiple entries, separated by commas"],
         enable = function(trigger)
           return not (trigger.subeventPrefix == "ENVIRONMENTAL")
         end,
@@ -2215,6 +2434,14 @@ Private.event_prototypes = {
         end
       },
       {
+        type = "header",
+        name = "destHeader",
+        display = L["Destination Info"],
+        enable = function(trigger)
+          return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
+        end,
+      },
+      {
         name = "destGUID",
         init = "arg",
         hidden = "true",
@@ -2241,18 +2468,35 @@ Private.event_prototypes = {
         name = "destName",
         display = L["Destination Name"],
         type = "string",
+        multiline = true,
         init = "arg",
+        store = true,
+        conditionType = "string",
+        preamble = "local destNameChecker = WeakAuras.ParseStringCheck(%q)",
+        test = "destNameChecker:Check(destName)",
+        desc = L["Supports multiple entries, separated by commas"],
         enable = function(trigger)
           return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
         end,
-        store = true,
-        conditionType = "string"
       },
       {
         name = "destNpcId",
         display = L["Destination NPC Id"],
         type = "string",
-        test = "tostring(tonumber(string.sub(destGUID or '', 8, 12), 16) or '') == %q",
+        multiline = true,
+        init = "tostring(tonumber(string.sub(destGUID or '', 8, 12), 16) or '')",
+        store = true,
+        conditionType = "string",
+        preamble = "local destNpcIdChecker = WeakAuras.ParseStringCheck(%q)",
+        test = "destNpcIdChecker:Check(destNpcId)",
+        conditionPreamble = function(input)
+            return WeakAuras.ParseStringCheck(input)
+        end,
+        conditionTest = function(state, needle, op, preamble)
+            return preamble:Check(state.destNpcId)
+        end,
+        operator_types = "none",
+        desc = L["Supports multiple entries, separated by commas"],
         enable = function(trigger)
           return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
         end,
@@ -2312,25 +2556,75 @@ Private.event_prototypes = {
         end,
       },
       {
+        type = "header",
+        name = "subeventHeader",
+        display = L["Subevent Info"],
+        enable = function(trigger)
+          return trigger.subeventPrefix and (
+            trigger.subeventPrefix == "RANGE"
+            or trigger.subeventPrefix == "ENVIRONMENTAL"
+            or trigger.subeventPrefix:find("DAMAGE")
+            or trigger.subeventPrefix:find("SPELL"))
+
+            or trigger.subeventSuffix and (
+              trigger.subeventSuffix == "_ABSORBED"
+              or trigger.subeventSuffix == "_INTERRUPT"
+              or trigger.subeventSuffix == "_DISPEL"
+              or trigger.subeventSuffix == "_DISPEL_FAILED"
+              or trigger.subeventSuffix == "_STOLEN"
+              or trigger.subeventSuffix == "_AURA_BROKEN_SPELL"
+              or trigger.subeventSuffix == "_DAMAGE"
+              or trigger.subeventSuffix == "_HEAL"
+              or trigger.subeventSuffix == "_ENERGIZE"
+              or trigger.subeventSuffix == "_DRAIN"
+              or trigger.subeventSuffix == "_LEECH"
+              or trigger.subeventSuffix == "_DAMAGE"
+              or trigger.subeventSuffix == "_MISSED"
+              or trigger.subeventSuffix == "_EXTRA_ATTACKS"
+              or trigger.subeventSuffix == "_CAST_FAILED"
+              or trigger.subeventSuffix:find("DOSE")
+              or trigger.subeventSuffix:find("AURA"))
+        end,
+      },
+      {
         name = "spellId",
         display = L["Spell Id"],
-        type = "string",
         init = "arg",
         enable = function(trigger)
           return trigger.subeventPrefix and (trigger.subeventPrefix:find("SPELL") or trigger.subeventPrefix == "RANGE" or trigger.subeventPrefix:find("DAMAGE"))
         end,
         store = true,
-        conditionType = "number"
+        preambleGroup = "spell",
+        preamble = "local spellChecker = WeakAuras.CreateSpellChecker()",
+        multiEntry = {
+          operator = "preamble",
+          preambleAdd = "spellChecker:AddExact(%q)"
+        },
+        test = "spellChecker:Check(spellId)",
+        testGroup = "spell",
+        conditionType = "number",
+        type = "spell",
+        showExactOption = false,
+        noProgressSource = true
       },
       {
         name = "spellName",
         display = L["Spell Name"],
-        type = "string",
+        type = "spell",
+        --noValidation = true,
         init = "arg",
         enable = function(trigger)
           return trigger.subeventPrefix and (trigger.subeventPrefix:find("SPELL") or trigger.subeventPrefix == "RANGE" or trigger.subeventPrefix:find("DAMAGE"))
         end,
         store = true,
+        preambleGroup = "spell",
+        preamble = "local spellChecker = WeakAuras.CreateSpellChecker()",
+        multiEntry = {
+          operator = "preamble",
+          preambleAdd = "spellChecker:AddName(%q)"
+        },
+        test = "spellChecker:Check(spellId)",
+        testGroup = "spell",
         conditionType = "string"
       },
       {
@@ -2338,9 +2632,9 @@ Private.event_prototypes = {
         display = WeakAuras.newFeatureString .. L["Spell School"],
         type = "select",
         values = "combatlog_spell_school_types_for_ui",
+        sorted = true,
         test = "spellSchool == %d",
         init = "arg",
-        control = "WeakAurasSortedDropdown",
         conditionType = "select",
         store = true,
         enable = function(trigger)
@@ -2552,6 +2846,11 @@ Private.event_prototypes = {
           return trigger.subeventSuffix == "_CAST_FAILED"
         end
       }, -- failedType ignored with _ argument - theoretically this is not necessary because it is the last argument in the event, but it is added here for completeness
+      {
+        type = "header",
+        name = "miscellaneousHeader",
+        display = L["Miscellaneous"],
+      },
       {
         name = "cloneId",
         display = L["Clone per Event"],
@@ -3603,7 +3902,7 @@ Private.event_prototypes = {
 
       return ret:format(
         trigger.use_id and trigger.id or "",
-        trigger.use_spellId and trigger.spellId or "",
+        trigger.use_spellId and tostring(trigger.spellId) or "",
         trigger.use_message and trigger.message or "",
         trigger.use_message and trigger.message_operator or "",
         trigger.use_cloneId and "true" or "false",
@@ -3834,7 +4133,7 @@ Private.event_prototypes = {
         end
       ]=]
       return ret:format(
-        trigger.use_spellId and trigger.spellId or "",
+        trigger.use_spellId and tostring(trigger.spellId) or "",
         trigger.use_text and trigger.text or "",
         trigger.use_text and trigger.text_operator or "",
         trigger.use_cloneId and "true" or "false",
@@ -4844,8 +5143,8 @@ Private.event_prototypes = {
         display = L["Message Type"],
         type = "select",
         values = "chat_message_types",
+        sorted = true,
         test = "event == %q",
-        control = "WeakAurasSortedDropdown"
       },
       {
         name = "message",
@@ -5282,6 +5581,10 @@ Private.event_prototypes = {
         store = true,
         conditionType = "number",
         enable = function(trigger) return trigger.threatUnit ~= "none" end,
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "rawthreatpct",
@@ -5291,6 +5594,10 @@ Private.event_prototypes = {
         store = true,
         conditionType = "number",
         enable = function(trigger) return trigger.threatUnit ~= "none" end,
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "threatvalue",
@@ -5300,6 +5607,10 @@ Private.event_prototypes = {
         store = true,
         conditionType = "number",
         enable = function(trigger) return trigger.threatUnit ~= "none" end,
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "value",
@@ -5450,22 +5761,51 @@ Private.event_prototypes = {
         store = true
       },
       {
-        name = "spell",
-        display = L["Spell Name"],
-        type = "string",
+        name = "spellNames",
+        display = L["Name(s)"],
+        type = "spell",
         enable = function(trigger) return not trigger.use_inverse end,
-        conditionType = "string",
-        store = true,
+        preambleGroup = "spell",
+        preamble = "local spellChecker = WeakAuras.CreateSpellChecker()",
+        multiEntry = {
+          operator = "preamble",
+          preambleAdd = "spellChecker:AddName(%q)"
+        },
+        test = "spellChecker:Check(spellId)",
+        testGroup = "spell",
+        --noValidation = true,
+      },
+      {
+        name = "spellIds",
+        display = L["Exact Spell ID(s)"],
+        type = "spell",
+        enable = function(trigger) return not trigger.use_inverse end,
+        preambleGroup = "spell",
+        preamble = "local spellChecker = WeakAuras.CreateSpellChecker()",
+        multiEntry = {
+          operator = "preamble",
+          preambleAdd = "spellChecker:AddExact(%q)"
+        },
+        test = "spellChecker:Check(spellId)",
+        testGroup = "spell",
       },
       {
         name = "spellId",
-        display = L["Spell Id"],
-        type = "spell",
-        enable = function(trigger) return not trigger.use_inverse end,
+        display = L["Spell ID"],
         conditionType = "number",
-        forceExactOption = true,
-        test = "GetSpellInfo(%s) == spell",
         store = true,
+        test = "true",
+        hidden = true,
+        noProgressSource = true
+      },
+      {
+        name = "spell",
+        display = L["Spellname"],
+        type = "string",
+        conditionType = "string",
+        store = true,
+        test = "true",
+        hidden = true
       },
       {
         name = "castType",
@@ -5540,9 +5880,15 @@ Private.event_prototypes = {
         store = true
       },
       {
+        type = "header",
+        name = "unitCharacteristicsHeader",
+        display = L["Unit Characteristics"],
+      },
+      {
         name = "npcId",
         display = L["Npc ID"],
         type = "string",
+        multiline = true,
         store = true,
         init = "tostring(tonumber(string.sub(UnitGUID(unit) or '', 8, 12), 16) or '')",
         conditionType = "string",
@@ -5647,6 +5993,7 @@ Private.event_prototypes = {
         name = "sourceNameRealm",
         display = L["Source Unit Name/Realm"],
         type = "string",
+        multiline = true,
         preamble = "local sourceNameRealmChecker = WeakAuras.ParseNameCheck(%q)",
         test = "sourceNameRealmChecker:Check(sourceName, sourceRealm)",
         conditionType = "string",
@@ -5695,6 +6042,7 @@ Private.event_prototypes = {
         name = "destNameRealm",
         display = L["Name/Realm of Caster's Target"],
         type = "string",
+        multiline = true,
         preamble = "local destNameRealmChecker = WeakAuras.ParseNameCheck(%q)",
         test = "destNameRealmChecker:Check(destName, destRealm)",
         conditionType = "string",
@@ -5707,6 +6055,11 @@ Private.event_prototypes = {
         operator_types = "none",
         enable = function(trigger) return not trigger.use_inverse end,
         desc = constants.nameRealmFilterDesc,
+      },
+      {
+        type = "header",
+        name = "miscellaneousHeader",
+        display = L["Miscellaneous"],
       },
       {
         name = "showLatency",
@@ -5803,12 +6156,21 @@ Private.event_prototypes = {
     statesParameter = "one",
     args = {
       {
+        type = "header",
+        name = "primaryStatsHeader",
+        display = L["Primary Stats"],
+      },
+      {
         name = "strength",
         display = L["Strength"],
         type = "number",
         init = "UnitStat('player', 1)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "agility",
@@ -5816,7 +6178,11 @@ Private.event_prototypes = {
         type = "number",
         init = "UnitStat('player', 2)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "stamina",
@@ -5824,7 +6190,11 @@ Private.event_prototypes = {
         type = "number",
         init = "UnitStat('player', 3)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "intellect",
@@ -5832,7 +6202,11 @@ Private.event_prototypes = {
         type = "number",
         init = "UnitStat('player', 4)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "spirit",
@@ -5840,7 +6214,16 @@ Private.event_prototypes = {
         type = "number",
         init = "UnitStat('player', 5)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
+      },
+      {
+        type = "header",
+        name = "secondaryStatsHeader",
+        display = L["Secondary Stats"],
       },
       {
         name = "meleecriticalrating",
@@ -5849,6 +6232,10 @@ Private.event_prototypes = {
         init = "GetCombatRating(CR_CRIT_MELEE)",
         store = true,
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "rangedcriticalrating",
@@ -5857,6 +6244,10 @@ Private.event_prototypes = {
         init = "GetCombatRating(CR_CRIT_RANGED)",
         store = true,
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "spellcriticalrating",
@@ -5865,6 +6256,10 @@ Private.event_prototypes = {
         init = "GetCombatRating(CR_CRIT_SPELL)",
         store = true,
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "meleecriticalpercent",
@@ -5872,7 +6267,11 @@ Private.event_prototypes = {
         type = "number",
         init = "GetCritChance()",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "rangedcriticalpercent",
@@ -5880,7 +6279,11 @@ Private.event_prototypes = {
         type = "number",
         init = "GetRangedCritChance()",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "spellcriticalpercent",
@@ -5888,7 +6291,11 @@ Private.event_prototypes = {
         type = "number",
         init = "WeakAuras.GetSpellCritChance()",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "meleehasterating",
@@ -5896,7 +6303,11 @@ Private.event_prototypes = {
         type = "number",
         init = "GetCombatRating(CR_HASTE_MELEE)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "rangedhasterating",
@@ -5904,7 +6315,11 @@ Private.event_prototypes = {
         type = "number",
         init = "GetCombatRating(CR_HASTE_RANGED)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "spellhasterating",
@@ -5912,7 +6327,16 @@ Private.event_prototypes = {
         type = "number",
         init = "GetCombatRating(CR_HASTE_SPELL)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
+      },
+      {
+        type = "header",
+        name = "resistanceHeader",
+        display = L["Resistances"],
       },
       {
         name = "resistancefire",
@@ -5920,7 +6344,11 @@ Private.event_prototypes = {
         type = "number",
         init = "select(2, UnitResistance('player', 2))",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "resistancenature",
@@ -5928,7 +6356,11 @@ Private.event_prototypes = {
         type = "number",
         init = "select(2, UnitResistance('player', 3))",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "resistancefrost",
@@ -5936,7 +6368,11 @@ Private.event_prototypes = {
         type = "number",
         init = "select(2, UnitResistance('player', 4))",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "resistanceshadow",
@@ -5944,7 +6380,11 @@ Private.event_prototypes = {
         type = "number",
         init = "select(2, UnitResistance('player', 5))",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "resistancearcane",
@@ -5952,7 +6392,16 @@ Private.event_prototypes = {
         type = "number",
         init = "select(2, UnitResistance('player', 6))",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
+      },
+      {
+        type = "header",
+        name = "tertiaryStatsHeader",
+        display = L["Tertiary Stats"],
       },
       {
         name = "moveSpeed",
@@ -5967,7 +6416,16 @@ Private.event_prototypes = {
         type = "number",
         init = "GetUnitSpeed('player') / 7 * 100",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
+      },
+      {
+        type = "header",
+        name = "defensiveStatsHeader",
+        display = L["Defensive Stats"],
       },
       {
         name = "dodgerating",
@@ -5975,7 +6433,11 @@ Private.event_prototypes = {
         type = "number",
         init = "GetCombatRating(CR_DODGE)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "dodgepercent",
@@ -5983,7 +6445,11 @@ Private.event_prototypes = {
         type = "number",
         init = "GetDodgeChance()",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "parryrating",
@@ -5991,7 +6457,11 @@ Private.event_prototypes = {
         type = "number",
         init = "GetCombatRating(CR_PARRY)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "parrypercent",
@@ -5999,7 +6469,11 @@ Private.event_prototypes = {
         type = "number",
         init = "GetParryChance()",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "blockrating",
@@ -6007,7 +6481,11 @@ Private.event_prototypes = {
         type = "number",
         init = "GetCombatRating(CR_BLOCK)",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "blockpercent",
@@ -6015,7 +6493,11 @@ Private.event_prototypes = {
         type = "number",
         init = "GetBlockChance()",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "armorrating",
@@ -6023,7 +6505,11 @@ Private.event_prototypes = {
         type = "number",
         init = "select(2, UnitArmor('player'))",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "armorpercent",
@@ -6031,7 +6517,11 @@ Private.event_prototypes = {
         type = "number",
         init = "PaperDollFrame_GetArmorReduction(select(2, UnitArmor('player')), UnitLevel('player'))",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
     },
     automaticrequired = true
@@ -6199,8 +6689,8 @@ Private.event_prototypes = {
         display = L["Instance Type"].." "..L["|cffff0000deprecated|r"],
         type = "multiselect",
         values = "instance_types",
+        sorted = true,
         init = "WeakAuras.InstanceType()",
-        control = "WeakAurasSortedDropdown",
         events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA"}
       },
       {
@@ -6467,7 +6957,8 @@ Private.event_prototypes = {
         "ZONE_CHANGED",
         "ZONE_CHANGED_INDOORS",
         "ZONE_CHANGED_NEW_AREA",
-        "PLAYER_DIFFICULTY_CHANGED"
+        "PLAYER_DIFFICULTY_CHANGED",
+        "WA_DELAYED_PLAYER_ENTERING_WORLD",
       }
     },
     internal_events = {"INSTANCE_LOCATION_CHECK"},
@@ -6491,6 +6982,7 @@ Private.event_prototypes = {
           return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas"])
         end,
         type = "string",
+        multiline = true,
         preamble = "local zoneChecker = WeakAuras.ParseZoneCheck(%q)",
         test = "zoneChecker:Check(MapId)",
         conditionType = "string",
@@ -6513,19 +7005,35 @@ Private.event_prototypes = {
       {
         name = "zone",
         display = L["Zone Name"],
+        desc = function()
+          return ("|cffffd200%s|r%s"):format(L["Current Zone\n"], GetRealZoneText())
+        end,
         type = "string",
         conditionType = "string",
         store = true,
         init = "zoneText",
+        multiEntry = {
+          operator = "or",
+        }
       },
       {
         name = "subzone",
         display = L["Subzone Name"],
-        desc = L["Name of the (sub-)zone currently shown above the minimap."],
+        desc = function()
+          return ("%s\n\n|cffffd200%s|r%s"):format(L["Name of the (sub-)zone currently shown above the minimap."], L["Current Zone\n"], GetMinimapZoneText())
+        end,
         type = "string",
         conditionType = "string",
         store = true,
         init = "minimapZoneText",
+        multiEntry = {
+          operator = "or",
+        },
+      },
+      {
+        type = "header",
+        name = "instanceHeader",
+        display = L["Instance Info"],
       },
       {
         name = "instance",
@@ -6539,9 +7047,9 @@ Private.event_prototypes = {
         display = L["Instance Size Type"],
         type = "multiselect",
         values = "instance_types",
+        sorted = true,
         init = "WeakAuras.InstanceType()",
         conditionType = "select",
-        control = "WeakAurasSortedDropdown",
         store = true,
       },
       {
