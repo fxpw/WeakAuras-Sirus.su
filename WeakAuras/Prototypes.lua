@@ -817,6 +817,13 @@ Private.load_prototype = {
       events = {"PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED"}
     },
     {
+      name = "never",
+      display = L["Never"],
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      init = "false",
+    },
+    {
       name = "alive",
       display = L["Alive"],
       type = "tristate",
@@ -835,13 +842,6 @@ Private.load_prototype = {
       events = {"PLAYER_FLAGS_CHANGED", "UNIT_FACTION", "ZONE_CHANGED"}
     },
     {
-      name = "never",
-      display = L["Never"],
-      type = "toggle",
-      width = WeakAuras.normalWidth,
-      init = "false",
-    },
-    {
       name = "vehicle",
       display = L["In Vehicle"],
       type = "tristate",
@@ -858,23 +858,6 @@ Private.load_prototype = {
       width = WeakAuras.normalWidth,
       optional = true,
       events = {"VEHICLE_UPDATE", "UNIT_ENTERED_VEHICLE", "UNIT_EXITED_VEHICLE"}
-    },
-    {
-      name = "raid_role",
-      display = L["Raid Role"],
-      type = "multiselect",
-      values = "raid_role_types",
-      init = "arg",
-      events = {"PLAYER_ROLES_ASSIGNED"}
-    },
-    {
-      name = "ingroup",
-      display = L["Group Type"],
-      type = "multiselect",
-      width = WeakAuras.normalWidth,
-      init = "arg",
-      values = "group_types",
-      events = {"PARTY_MEMBERS_CHANGED", "RAID_ROSTER_UPDATE"},
     },
     {
       name ="playerTitle",
@@ -994,6 +977,23 @@ Private.load_prototype = {
         operator = "and",
         limit = 2
       },
+    },
+    {
+      name = "raid_role",
+      display = L["Raid Role"],
+      type = "multiselect",
+      values = "raid_role_types",
+      init = "arg",
+      events = {"PLAYER_ROLES_ASSIGNED"}
+    },
+    {
+      name = "ingroup",
+      display = L["Group Type"],
+      type = "multiselect",
+      width = WeakAuras.normalWidth,
+      init = "arg",
+      values = "group_types",
+      events = {"PARTY_MEMBERS_CHANGED", "RAID_ROSTER_UPDATE"},
     },
     {
       name = "group_leader",
