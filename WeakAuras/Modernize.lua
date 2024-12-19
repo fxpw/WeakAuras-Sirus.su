@@ -1195,7 +1195,8 @@ function Private.Modernize(data)
     end
   end
 
-  if data.internalVersion < 67 then
+  if data.internalVersion < 67 or data.internalVersion > WeakAuras.InternalVersion() then
+    data.internalVersion = WeakAuras.InternalVersion()
     local function migrateToTable(tab, field)
       local value = tab[field]
       if value ~= nil and type(value) ~= "table" then
