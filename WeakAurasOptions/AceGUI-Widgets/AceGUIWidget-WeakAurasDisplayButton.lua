@@ -1416,9 +1416,9 @@ local methods = {
     if self.view.visibility >= 1 then
       if(self.view.region and self.view.region.Expand) then
         OptionsPrivate.Private.FakeStatesFor(self.view.region.id, true)
-        if (OptionsPrivate.Private.personalRessourceDisplayFrame) then
-          OptionsPrivate.Private.personalRessourceDisplayFrame:expand(self.view.region.id);
-        end
+        --if (OptionsPrivate.Private.personalRessourceDisplayFrame) then
+          --OptionsPrivate.Private.personalRessourceDisplayFrame:expand(self.view.region.id);
+        --end
         if (OptionsPrivate.Private.mouseFrame) then
           OptionsPrivate.Private.mouseFrame:expand(self.view.region.id);
         end

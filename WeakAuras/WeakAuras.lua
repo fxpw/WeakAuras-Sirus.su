@@ -4580,6 +4580,14 @@ function Private.ensurePRDFrame()
     wipe(personalRessourceDisplayFrame.attachedVisibleFrames);
   end
 
+  personalRessourceDisplayFrame.expand = function(self, id)
+    local data = WeakAuras.GetData(id);
+    if (data.anchorFrameType == "PRD") then
+      self.attachedVisibleFrames[id] = true;
+      self:updateVisible();
+    end
+  end
+
   personalRessourceDisplayFrame.collapse = function(self, id)
     self.attachedVisibleFrames[id] = nil;
     self:updateVisible();
