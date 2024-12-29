@@ -27,7 +27,7 @@ Private.glow_frame_types = {
   UNITFRAME = L["Unit Frame"],
   FRAMESELECTOR = L["Frame Selector"]
 }
-if WeakAuras.isAwesomeEnabled then
+if WeakAuras.isAwesomeEnabled() then
   Private.glow_frame_types.NAMEPLATE = L["Nameplate"]
 end
 
@@ -783,7 +783,7 @@ Private.unit_types_bufftrigger_2 = {
   member = L["Specific Unit"],
   multi = L["Multi-target"]
 }
-if WeakAuras.isAwesomeEnabled then
+if WeakAuras.isAwesomeEnabled() then
   Private.unit_types_bufftrigger_2.nameplate = L["Nameplate"]
 end
 
@@ -807,7 +807,7 @@ Private.actual_unit_types_cast = {
   pet = L["Pet"],
   member = L["Specific Unit"],
 }
-if WeakAuras.isAwesomeEnabled then
+if WeakAuras.isAwesomeEnabled() then
   Private.actual_unit_types_cast.nameplate = L["Nameplate"]
 end
 
@@ -820,7 +820,7 @@ Private.threat_unit_types = {
   member = L["Specific Unit"],
   none = L["At Least One Enemy"]
 }
-if WeakAuras.isAwesomeEnabled then
+if WeakAuras.isAwesomeEnabled() then
   Private.threat_unit_types.nameplate = L["Nameplate"]
 end
 
@@ -950,7 +950,7 @@ Private.anchor_frame_types = {
   UNITFRAME = L["Unit Frames"],
   CUSTOM = L["Custom"]
 }
-if WeakAuras.isAwesomeEnabled then
+if WeakAuras.isAwesomeEnabled() then
   Private.anchor_frame_types.NAMEPLATE = L["Nameplates"]
 end
 
@@ -1965,7 +1965,7 @@ Private.classification_types = {
   normal = L["Normal"],
   trivial = L["Trivial (Low Level)"]
 }
-if WeakAuras.isAwesomeEnabled then
+if WeakAuras.isAwesomeEnabled() then
   Private.classification_types.minus = L["Minus (Small Nameplate)"]
 end
 
@@ -2679,7 +2679,7 @@ Private.multiUnitId = {
   ["partypetsonly"] = true,
   ["raid"] = true,
 }
---if WeakAuras.isAwesomeEnabled then
+--if WeakAuras.isAwesomeEnabled() then
 --  Private.multiUnitId["nameplate"] = true
 --end
 
@@ -2690,7 +2690,7 @@ Private.multiUnitUnits = {
   ["party"] = {},
   ["raid"] = {}
 }
-if WeakAuras.isAwesomeEnabled then
+if WeakAuras.isAwesomeEnabled() then
   Private.multiUnitUnits["nameplate"] = {}
 end
 

@@ -147,7 +147,7 @@ local function createOptions(id, data)
           ["UNITFRAME"] = L["Unit Frames"],
           ["CUSTOM"] = L["Custom Frames"]
         }
-        if WeakAuras.isAwesomeEnabled then
+        if WeakAuras.isAwesomeEnabled() then
           v["NAMEPLATE"] = L["Nameplates"]
         end
         return v

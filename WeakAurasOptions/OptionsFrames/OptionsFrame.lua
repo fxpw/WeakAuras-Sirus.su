@@ -193,6 +193,10 @@ function OptionsPrivate.CreateFrame()
     if OptionsPrivate.Private.mouseFrame then
       OptionsPrivate.Private.mouseFrame:OptionsClosed()
     end
+
+    if OptionsPrivate.Private.personalRessourceDisplayFrame then
+      OptionsPrivate.Private.personalRessourceDisplayFrame:OptionsClosed()
+    end
   end)
 
   local width, height
@@ -484,7 +488,7 @@ function OptionsPrivate.CreateFrame()
   addFooter(L["Documentation"], [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/WeakAuras/WeakAuras2/wiki",
             L["Check out our wiki for a large collection of examples and snippets."])
 
-  if not WeakAuras.isAwesomeEnabled then
+  if not WeakAuras.isAwesomeEnabled() then
     addFooter("Awesome WotLK", [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/FrostAtom/awesome_wotlk",
               L["Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"])
   end

@@ -669,16 +669,16 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       if optionsEvent then
         if Private.multiUnitUnits[data.trigger.unit] then
           arg1 = next(Private.multiUnitUnits[data.trigger.unit])
-        elseif data.trigger.unit:sub(1, 9) == "nameplate" then
+        elseif data.trigger.unit == "nameplate" then
           arg1 = next(C_NamePlate.GetNamePlates())
         else
           arg1 = data.trigger.unit
         end
-      elseif event == "FRAME_UPDATE" and not (Private.multiUnitUnits[data.trigger.unit] or data.trigger.unit:sub(1, 9) == "nameplate") then
+      elseif event == "FRAME_UPDATE" and (not Private.multiUnitUnits[data.trigger.unit] or data.trigger.unit ~= "nameplate") then
         arg1 = data.trigger.unit
       end
       if arg1 then
-        if Private.multiUnitUnits[data.trigger.unit] or data.trigger.unit:sub(1, 9) == "nameplate" then
+        if Private.multiUnitUnits[data.trigger.unit] or data.trigger.unit == "nameplate" then
           unitForUnitTrigger = arg1
           cloneIdForUnitTrigger = arg1
         else
@@ -792,7 +792,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
     end
   end
   if updateTriggerState and watched_trigger_events[id] and watched_trigger_events[id][triggernum] then
-    -- if this trigger's udpates are requested to be sent into one of the Aura's custom triggers
+    -- if this trigger's updates are requested to be sent into one of the Aura's custom triggers
     Private.AddToWatchedTriggerDelay(id, triggernum)
   end
   return updateTriggerState;
@@ -1061,7 +1061,7 @@ frame.unitFrames = {};
 WeakAuras.frames["WeakAuras Generic Trigger Frame"] = frame;
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");
 genericTriggerRegisteredEvents["PLAYER_ENTERING_WORLD"] = true;
-if WeakAuras.isAwesomeEnabled then
+if WeakAuras.isAwesomeEnabled() then
   frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
   frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
   genericTriggerRegisteredEvents["NAME_PLATE_UNIT_ADDED"] = true;
@@ -2610,7 +2610,7 @@ function WeakAuras.WatchUnitChange(unit)
     watchUnitChange:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT");
     watchUnitChange:RegisterEvent("PARTY_MEMBERS_CHANGED");
     watchUnitChange:RegisterEvent("RAID_ROSTER_UPDATE");
-    if WeakAuras.isAwesomeEnabled then
+    if WeakAuras.isAwesomeEnabled() then
       watchUnitChange:RegisterEvent("NAME_PLATE_UNIT_ADDED")
       watchUnitChange:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
     end
@@ -2631,7 +2631,7 @@ function WeakAuras.WatchUnitChange(unit)
           local newMarker = GetRaidTargetIndex(unit) or 0
           if marker ~= newMarker then
             watchUnitChange.raidmark[unit] = newMarker
-            if string.match(unit, "^nameplate%d+$") then
+            if unit:find("^nameplate%d+$") then
               WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
             else
               WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
@@ -2663,7 +2663,7 @@ function WeakAuras.WatchUnitChange(unit)
         local newReaction = WeakAuras.GetPlayerReaction(unit)
         if oldReaction ~= newReaction then
           watchUnitChange.nameplateFaction[unit] = newReaction
-          if string.match(unit, "^nameplate%d+$") then
+          if unit:find("^nameplate%d+$") then
             WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
           else
             WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
@@ -2674,7 +2674,7 @@ function WeakAuras.WatchUnitChange(unit)
           local oldRaidRole = watchUnitChange.unitRaidRole[unit]
           local newRaidRole = WeakAuras.UnitRaidRole(unit)
           if oldRaidRole ~= newRaidRole then
-            if string.match(unit, "^nameplate%d+$") then
+            if unit:find("^nameplate%d+$") then
               WeakAuras.ScanEvents("UNIT_ROLE_CHANGED_nameplate", unit)
             else
               WeakAuras.ScanEvents("UNIT_ROLE_CHANGED_" .. unit, unit)
@@ -2693,7 +2693,7 @@ function WeakAuras.WatchUnitChange(unit)
           or newMarker ~= watchUnitChange.raidmark[unit]
           or event == "PLAYER_ENTERING_WORLD"
           then
-            if string.match(unit, "^nameplate%d+$") then
+            if unit:find("^nameplate%d+$") then
               WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
             else
               WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
@@ -2705,7 +2705,7 @@ function WeakAuras.WatchUnitChange(unit)
             local newReaction = WeakAuras.GetPlayerReaction(unit)
             if oldReaction ~= newReaction then
               watchUnitChange.nameplateFaction[unit] = newReaction
-              if string.match(unit, "^nameplate%d+$") then
+              if unit:find("^nameplate%d+$") then
                 WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
               else
                 WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
@@ -3337,7 +3337,7 @@ do
 end
 
 -- Nameplate Target
-if WeakAuras.isAwesomeEnabled then
+if WeakAuras.isAwesomeEnabled() then
   do
     local nameplateTargetFrame = nil
     local nameplateTargets = {}
@@ -3615,7 +3615,7 @@ do
   local function doCastScan(firetime, unit)
     scheduled_scans[unit][firetime] = nil;
 
-    if string.match(unit, "^nameplate%d+$") then
+    if unit:find("^nameplate%d+$") then
       WeakAuras.ScanEvents("CAST_REMAINING_CHECK_nameplate", unit);
     else
       WeakAuras.ScanEvents("CAST_REMAINING_CHECK_" .. string.lower(unit), unit);

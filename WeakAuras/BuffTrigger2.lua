@@ -1817,7 +1817,7 @@ frame:RegisterEvent("PLAYER_TARGET_CHANGED")
 frame:RegisterEvent("PARTY_MEMBERS_CHANGED")
 frame:RegisterEvent("RAID_ROSTER_UPDATE")
 frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
-if WeakAuras.isAwesomeEnabled then
+if WeakAuras.isAwesomeEnabled() then
   frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
   frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 end
@@ -3294,7 +3294,7 @@ function BuffTrigger.InitMultiAura()
     multiAuraFrame:RegisterEvent("UNIT_AURA")
     multiAuraFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 	  multiAuraFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
-    if WeakAuras.isAwesomeEnabled then
+    if WeakAuras.isAwesomeEnabled() then
       multiAuraFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
       multiAuraFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
     end

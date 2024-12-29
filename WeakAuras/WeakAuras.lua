@@ -1697,6 +1697,10 @@ function WeakAuras.Delete(data)
   Private.DeleteAuraEnvironment(id)
   triggerState[id] = nil;
 
+  if (Private.personalRessourceDisplayFrame) then
+    Private.personalRessourceDisplayFrame:delete(id);
+  end
+
   if (Private.mouseFrame) then
     Private.mouseFrame:delete(id);
   end
@@ -1787,6 +1791,10 @@ function WeakAuras.Rename(data, newid)
     if regions[newid].ReloadControlledChildren then
       regions[newid]:ReloadControlledChildren()
     end
+  end
+
+  if (Private.personalRessourceDisplayFrame) then
+    Private.personalRessourceDisplayFrame:rename(oldid, newid);
   end
 
   if (Private.mouseFrame) then
@@ -2941,7 +2949,7 @@ function Private.HandleGlowAction(actions, region)
   if actions.glow_action
   and (
     (
-      (actions.glow_frame_type == "UNITFRAME" or (actions.glow_frame_type == "NAMEPLATE" and WeakAuras.isAwesomeEnabled))
+      (actions.glow_frame_type == "UNITFRAME" or (actions.glow_frame_type == "NAMEPLATE" and WeakAuras.isAwesomeEnabled()))
       and region.state.unit
     )
     or (actions.glow_frame_type == "FRAMESELECTOR" and actions.glow_frame)
@@ -2961,7 +2969,7 @@ function Private.HandleGlowAction(actions, region)
     elseif actions.glow_frame_type == "UNITFRAME" and region.state.unit then
       glow_frame = WeakAuras.GetUnitFrame(region.state.unit)
     elseif actions.glow_frame_type == "NAMEPLATE" and region.state.unit then
-      glow_frame = WeakAuras.isAwesomeEnabled and WeakAuras.GetNamePlateForUnit(region.state.unit) or nil
+      glow_frame = WeakAuras.isAwesomeEnabled() and WeakAuras.GetNamePlateForUnit(region.state.unit) or nil
     end
 
     if glow_frame then
@@ -4468,6 +4476,159 @@ local function ensureMouseFrame()
   Private.mouseFrame = mouseFrame;
 end
 
+local personalRessourceDisplayFrame;
+function Private.ensurePRDFrame()
+  if (personalRessourceDisplayFrame) then
+    return;
+  end
+  personalRessourceDisplayFrame = CreateFrame("Frame", "WeakAurasAttachToPRD", UIParent);
+  personalRessourceDisplayFrame:Hide();
+  personalRessourceDisplayFrame.attachedVisibleFrames = {};
+  -- force an early frame draw; otherwise this frame won't be drawn until the next frame,
+  -- and any attached auras won't have a valid rect
+  personalRessourceDisplayFrame:SetPoint("CENTER", UIParent, "CENTER");
+  personalRessourceDisplayFrame:SetSize(16, 16)
+  personalRessourceDisplayFrame:GetSize()
+  Private.personalRessourceDisplayFrame = personalRessourceDisplayFrame;
+
+  local moverFrame = CreateFrame("Frame", "WeakAurasPRDMoverFrame", personalRessourceDisplayFrame);
+  personalRessourceDisplayFrame.moverFrame = moverFrame;
+  moverFrame:SetPoint("TOPLEFT", personalRessourceDisplayFrame, "TOPLEFT", -2, 2);
+  moverFrame:SetPoint("BOTTOMRIGHT", personalRessourceDisplayFrame, "BOTTOMRIGHT", 2, -2);
+  moverFrame:SetFrameStrata("FULLSCREEN"); -- above settings dialog
+
+  moverFrame:EnableMouse(true)
+  moverFrame:SetScript("OnMouseDown", function()
+    personalRessourceDisplayFrame:SetMovable(true);
+    personalRessourceDisplayFrame:StartMoving()
+  end);
+  moverFrame:SetScript("OnMouseUp", function()
+    personalRessourceDisplayFrame:StopMovingOrSizing();
+    personalRessourceDisplayFrame:SetMovable(false);
+    local xOffset = personalRessourceDisplayFrame:GetRight();
+    local yOffset = personalRessourceDisplayFrame:GetTop();
+
+    db.personalRessourceDisplayFrame = db.personalRessourceDisplayFrame or {};
+    local scale = UIParent:GetEffectiveScale() / personalRessourceDisplayFrame:GetEffectiveScale();
+    db.personalRessourceDisplayFrame.xOffset = xOffset / scale - GetScreenWidth();
+    db.personalRessourceDisplayFrame.yOffset = yOffset / scale - GetScreenHeight();
+  end);
+  moverFrame:Hide();
+
+  local texture = moverFrame:CreateTexture(nil, "BACKGROUND");
+  personalRessourceDisplayFrame.texture = texture;
+  texture:SetAllPoints(moverFrame);
+  texture:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\PRDFrame");
+
+  local label = moverFrame:CreateFontString(nil, "BACKGROUND", "GameFontHighlight")
+  label:SetPoint("CENTER", moverFrame, "CENTER");
+  label:SetText("WeakAuras Anchor");
+
+  personalRessourceDisplayFrame.OptionsOpened = function()
+    personalRessourceDisplayFrame:ClearAllPoints();
+    personalRessourceDisplayFrame:Show()
+    local xOffset, yOffset;
+    if (db.personalRessourceDisplayFrame) then
+      xOffset = db.personalRessourceDisplayFrame.xOffset;
+      yOffset = db.personalRessourceDisplayFrame.yOffset;
+    end
+
+    -- Calculate size of self nameplate
+    local prdWidth = 156.65118520899; -- Default Size
+    local prdHeight = 39.162796302247; -- Default Size
+
+    if KuiNameplates and KuiNameplates.db and KuiNameplates.db.profile then
+      prdWidth = KuiNameplates.db.profile.width or prdWidth;
+      prdHeight = KuiNameplates.db.profile.hheight or prdHeight;
+
+      personalRessourceDisplayFrame.texture:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\PRDFrameKui");
+    else
+      if ElvUI and ElvUI[1]
+      and ElvUI[1].private
+      and ElvUI[1].private.nameplates
+      and ElvUI[1].private.nameplates.enable then
+        local plateSize = ElvUI and ElvUI[1] and ElvUI[1].db and ElvUI[1].db.nameplates and ElvUI[1].db.nameplates.plateSize
+        prdWidth = plateSize.enemyWidth or prdWidth;
+        prdHeight = plateSize.enemyHeight or prdHeight;
+
+      elseif TidyPlatesThreat
+      and TidyPlatesThreat.db
+      and TidyPlatesThreat.db.profile
+      and TidyPlatesThreat.db.profile.nameplate
+      and TidyPlatesThreat.db.profile.nameplate.scale
+      and TidyPlatesThreat.db.profile.nameplate.scale.Normal then
+        local scaleNormal = TidyPlatesThreat.db.profile.nameplate.scale.Normal
+        prdWidth = scaleNormal and scaleNormal * prdWidth or prdWidth
+        prdHeight = scaleNormal and scaleNormal * prdHeight or prdHeight
+      end
+    end
+
+    if (not xOffset or not yOffset) then
+        local optionsFrame = WeakAuras.OptionsFrame();
+        yOffset = optionsFrame:GetBottom() + prdHeight - GetScreenHeight();
+        xOffset = xPositionNextToOptions() + prdWidth / 2 - GetScreenWidth();
+    end
+
+    personalRessourceDisplayFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", xOffset, yOffset);
+    personalRessourceDisplayFrame:SetPoint("BOTTOMLEFT", UIParent, "TOPRIGHT", xOffset - prdWidth, yOffset - prdHeight);
+  end
+
+  personalRessourceDisplayFrame.OptionsClosed = function()
+    personalRessourceDisplayFrame:Hide();
+    personalRessourceDisplayFrame.texture:Hide();
+    personalRessourceDisplayFrame.moverFrame:Hide();
+    wipe(personalRessourceDisplayFrame.attachedVisibleFrames);
+  end
+
+  personalRessourceDisplayFrame.collapse = function(self, id)
+    self.attachedVisibleFrames[id] = nil;
+    self:updateVisible();
+  end
+
+  personalRessourceDisplayFrame.rename = function(self, oldid, newid)
+    self.attachedVisibleFrames[newid] = self.attachedVisibleFrames[oldid];
+    self.attachedVisibleFrames[oldid] = nil;
+    self:updateVisible();
+  end
+
+  personalRessourceDisplayFrame.delete = function(self, id)
+    self.attachedVisibleFrames[id] = nil;
+    self:updateVisible();
+  end
+
+  personalRessourceDisplayFrame.anchorFrame = function(self, id, anchorFrameType)
+    if (anchorFrameType == "NAMEPLATE") then
+      self.attachedVisibleFrames[id] = true;
+    else
+      self.attachedVisibleFrames[id] = nil;
+    end
+    self:updateVisible();
+  end
+
+  personalRessourceDisplayFrame.updateVisible = function(self)
+    if (not WeakAuras.IsOptionsOpen()) then
+      return;
+    end
+
+    if (next(self.attachedVisibleFrames)) then
+      personalRessourceDisplayFrame.texture:Show();
+      personalRessourceDisplayFrame.moverFrame:Show();
+      personalRessourceDisplayFrame:Show();
+    else
+      personalRessourceDisplayFrame.texture:Hide();
+      personalRessourceDisplayFrame.moverFrame:Hide();
+      personalRessourceDisplayFrame:Hide();
+    end
+  end
+
+  if (WeakAuras.IsOptionsOpen()) then
+    personalRessourceDisplayFrame.OptionsOpened();
+  else
+    personalRessourceDisplayFrame.OptionsClosed();
+  end
+  Private.personalRessourceDisplayFrame = personalRessourceDisplayFrame
+end
+
 local postPonedAnchors = {};
 local anchorTimer
 
@@ -4506,6 +4667,10 @@ local function GetAnchorFrame(data, region, parent)
   local anchorFrameFrame = data.anchorFrameFrame
   if not id then return end
 
+  if (personalRessourceDisplayFrame) then
+    personalRessourceDisplayFrame:anchorFrame(id, anchorFrameType);
+  end
+
   if (mouseFrame) then
     mouseFrame:anchorFrame(id, anchorFrameType);
   end
@@ -4526,15 +4691,15 @@ local function GetAnchorFrame(data, region, parent)
       local frame = unit and WeakAuras.GetNamePlateForUnit(unit)
       if frame then return frame end
     end
-    --if WeakAuras.IsOptionsOpen() then
-      --Private.ensurePRDFrame()
-      --personalRessourceDisplayFrame:anchorFrame(id, anchorFrameType)
-      --return personalRessourceDisplayFrame
-    --end
+    if WeakAuras.IsOptionsOpen() then
+      Private.ensurePRDFrame()
+      personalRessourceDisplayFrame:anchorFrame(id, anchorFrameType)
+      return personalRessourceDisplayFrame
+    end
   end
 
   if (anchorFrameType == "UNITFRAME") then
-    local unit = region.state.unit
+    local unit = region.state and region.state.unit
     if unit then
       local frame = WeakAuras.GetUnitFrame(unit) or WeakAuras.HiddenFrames
       if frame then
@@ -4590,14 +4755,16 @@ end
 
 local anchorFrameDeferred = {}
 
-function Private.AnchorFrame(data, region, parent)
+function Private.AnchorFrame(data, region, parent, force)
   if data.anchorFrameType == "CUSTOM"
   and (data.regionType == "group" or data.regionType == "dynamicgroup")
   and not WeakAuras.IsLoginFinished()
-  and not anchorFrameDeferred[data.id]
+  and not force
   then
-    loginQueue[#loginQueue + 1] = {Private.AnchorFrame, {data, region, parent}}
-    anchorFrameDeferred[data.id] = true
+    if not anchorFrameDeferred[data.id] then
+      loginQueue[#loginQueue + 1] = {Private.AnchorFrame, {data, region, parent, true}}
+      anchorFrameDeferred[data.id] = true
+    end
   else
     local anchorParent = GetAnchorFrame(data, region, parent);
     if not anchorParent then return end
@@ -4779,7 +4946,7 @@ do
   end
 
   function WeakAuras.UntrackableUnit(unit)
-    return not (trackableUnits[unit] or string.match(unit, "^nameplate%d+$"))
+    return not (trackableUnits[unit] or unit:find("^nameplate%d+$"))
   end
 end
 

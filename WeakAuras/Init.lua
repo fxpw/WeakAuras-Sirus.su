@@ -16,7 +16,10 @@ WeakAuras.versionString = versionStringFromToc
 WeakAuras.buildTime = buildTime
 WeakAuras.newFeatureString = "|TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:0|t"
 WeakAuras.BuildInfo = select(4, GetBuildInfo())
-WeakAuras.isAwesomeEnabled = isAwesomeEnabled
+
+function WeakAuras.isAwesomeEnabled()
+  return isAwesomeEnabled
+end
 
 function WeakAuras.IsClassic()
   return false

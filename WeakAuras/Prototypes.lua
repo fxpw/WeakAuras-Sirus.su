@@ -1100,15 +1100,13 @@ local function AddUnitChangeInternalEvents(triggerUnit, t, includePets)
   if (triggerUnit == "multi") then
     -- Handled by normal events"
   elseif triggerUnit == "pet" then
-    WeakAuras.WatchForPetDeath();
     tinsert(t, "PET_UPDATE")
   elseif (triggerUnit == "nameplate") then
-    if not WeakAuras.isAwesomeEnabled then return end
     tinsert(t, "UNIT_CHANGED_nameplate")
     local nameplates = C_NamePlate.GetNamePlates()
     if nameplates then
-      for i, v in pairs(nameplates) do
-        if v then
+      for i, unitData in pairs(nameplates) do
+        if unitData then
           WeakAuras.WatchUnitChange("nameplate" .. i)
         end
       end
@@ -1125,6 +1123,38 @@ local function AddUnitChangeInternalEvents(triggerUnit, t, includePets)
       end
     else
       tinsert(t, "UNIT_CHANGED_" .. string.lower(triggerUnit))
+      WeakAuras.WatchUnitChange(triggerUnit)
+    end
+  end
+end
+
+local function AddWatchedUnits(triggerUnit, includePets)
+  if (triggerUnit == nil) then
+    return
+  end
+  if (triggerUnit == "multi") then
+    -- Handled by normal events"
+  elseif triggerUnit == "pet" then
+    WeakAuras.WatchForPetDeath();
+  elseif (triggerUnit == "nameplate") then
+    local nameplates = C_NamePlate.GetNamePlates()
+    if nameplates then
+      for i, unitData in pairs(nameplates) do
+        if unitData then
+          WeakAuras.WatchUnitChange("nameplate" .. i)
+        end
+      end
+    end
+  else
+    if Private.multiUnitUnits[triggerUnit] then
+      local isPet
+      for unit in pairs(Private.multiUnitUnits[triggerUnit]) do
+        isPet = WeakAuras.UnitIsPet(unit)
+        if (includePets ~= nil and isPet) or (includePets ~= "PetsOnly" and not isPet) then
+          WeakAuras.WatchUnitChange(unit)
+        end
+      end
+    else
       WeakAuras.WatchUnitChange(triggerUnit)
     end
   end
@@ -1313,6 +1343,9 @@ Private.event_prototypes = {
         AddUnitChangeInternalEvents(trigger.unitisunit, result)
       end
       return result
+    end,
+    loadFunc = function(trigger)
+      AddWatchedUnits(trigger.unit, nil)
     end,
     force_events = unitHelperFunctions.UnitChangedForceEvents,
     name = L["Unit Characteristics"],
@@ -1718,6 +1751,10 @@ Private.event_prototypes = {
       end
       return result
     end,
+    loadFunc = function(trigger)
+      local includePets = trigger.use_includePets == true and trigger.includePets or nil
+      AddWatchedUnits(trigger.unit, includePets)
+    end,
     force_events = unitHelperFunctions.UnitChangedForceEventsWithPets,
     name = L["Health"],
     init = function(trigger)
@@ -2022,6 +2059,10 @@ Private.event_prototypes = {
         AddUnitRoleChangeInternalEvents(unit, result)
       end
       return result
+    end,
+    loadFunc = function(trigger)
+      local includePets = trigger.use_includePets == true and trigger.includePets or nil
+      AddWatchedUnits(trigger.unit, includePets)
     end,
     force_events = unitHelperFunctions.UnitChangedForceEventsWithPets,
     name = L["Power"],
@@ -5522,6 +5563,12 @@ Private.event_prototypes = {
       end
       return result
     end,
+    loadFunc = function(trigger)
+      local unit = trigger.threatUnit
+      if unit and unit ~= "none" then
+        AddWatchedUnits(unit)
+      end
+    end,
     force_events = "UNIT_THREAT_LIST_UPDATE",
     name = L["Threat Situation"],
     init = function(trigger)
@@ -5689,9 +5736,11 @@ Private.event_prototypes = {
       if trigger.use_showLatency and trigger.unit == "player" then
         WeakAuras.WatchForCastLatency()
       end
-      if trigger.unit == "nameplate" and WeakAuras.isAwesomeEnabled and trigger.use_onUpdateUnitTarget then
+      if trigger.unit == "nameplate" and trigger.use_onUpdateUnitTarget then
         WeakAuras.WatchForNameplateTargetChange()
       end
+      local includePets = trigger.use_includePets == true and trigger.includePets or nil
+      AddWatchedUnits(trigger.unit, includePets)
     end,
     force_events = unitHelperFunctions.UnitChangedForceEventsWithPets,
     canHaveDuration = "timed",
@@ -6600,9 +6649,11 @@ Private.event_prototypes = {
       if (trigger.use_ismoving ~= nil) then
         WeakAuras.WatchPlayerMoveSpeed();
       end
-
       if (trigger.use_mounted ~= nil) then
         WeakAuras.WatchForMounts();
+      end
+      if (trigger.use_HasPet ~= nil) then
+        AddWatchedUnits("pet")
       end
     end,
     init = function(trigger)

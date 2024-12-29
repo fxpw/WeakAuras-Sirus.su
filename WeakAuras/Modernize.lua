@@ -288,7 +288,7 @@ function Private.Modernize(data)
   -- Version 18 was a migration for stance/form trigger, but deleted later because of migration issue
 
   -- Version 19 were introduced in July 2019 in BfA
-  if WeakAuras.isAwesomeEnabled then
+  if WeakAuras.isAwesomeEnabled() then
     if data.internalVersion < 19 then
       if data.triggers then
         for triggerId, triggerData in ipairs(data.triggers) do
