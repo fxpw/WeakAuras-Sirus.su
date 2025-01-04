@@ -277,7 +277,7 @@ local methods = {
 Constructor
 -------------------------------------------------------------------------------]]
 local function Constructor()
-  local widgetName = ("%s%d"):format(Type, AceGUI:GetNextWidgetNum(Type)) -- Needs a name for 3.3.5 (InputBoxTemplate ($parent))
+  local widgetName = ("%s%d"):format(Type, AceGUI:GetNextWidgetNum(Type))
 
   local frame = CreateFrame("Frame", widgetName, UIParent)
   frame:SetScript("OnEnter", Frame_OnEnter)
@@ -304,7 +304,7 @@ local function Constructor()
 	rightbutton:SetDisabledTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\spinboxrightp")
   rightbutton:SetScript("OnClick", SpinBox_OnValueUp)
 
-  local editbox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+  local editbox = CreateFrame("EditBox", nil, frame, "WA_InputBoxTemplate")
   editbox:SetAutoFocus(false)
   editbox:SetFontObject(ChatFontNormal)
   editbox:SetHeight(19)
