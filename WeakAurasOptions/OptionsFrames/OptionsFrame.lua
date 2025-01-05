@@ -7,8 +7,8 @@ local pairs, type, error = pairs, type, error
 local _G = _G
 
 -- WoW APIs
-local GetScreenWidth, GetScreenHeight, CreateFrame, GetAddOnInfo, PlaySound, IsAddOnLoaded, LoadAddOn, UnitName
-  = GetScreenWidth, GetScreenHeight, CreateFrame, GetAddOnInfo, PlaySound, IsAddOnLoaded, LoadAddOn, UnitName
+local GetScreenWidth, GetScreenHeight, CreateFrame, GetAddOnInfo, UnitName
+  = GetScreenWidth, GetScreenHeight, CreateFrame, GetAddOnInfo, UnitName
 
 local AceGUI = LibStub("AceGUI-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")

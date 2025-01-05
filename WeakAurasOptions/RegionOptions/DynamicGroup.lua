@@ -557,7 +557,7 @@ local function modifyThumbnail(parent, frame, data)
 end
 
 local function createIcon()
-  local thumbnail = createThumbnail(UIParent)
+  local thumbnail = createThumbnail()
   thumbnail.defaultIcon = createAnimatedDefaultIcon(thumbnail)
   return thumbnail
 end

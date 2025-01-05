@@ -9,11 +9,10 @@ local ceil, min = ceil, min
 
 -- WoW APIs
 local GetTalentInfo = GetTalentInfo
-local UnitClass, UnitHealth, UnitHealthMax, UnitName, UnitPower, UnitPowerMax = UnitClass, UnitHealth, UnitHealthMax, UnitName, UnitPower, UnitPowerMax
+local UnitClass = UnitClass
 local GetSpellInfo, GetItemInfo, GetItemCount, GetItemIcon = GetSpellInfo, GetItemInfo, GetItemCount, GetItemIcon
 local GetShapeshiftFormInfo, GetShapeshiftForm = GetShapeshiftFormInfo, GetShapeshiftForm
-local GetRuneCooldown, UnitCastingInfo, UnitChannelInfo = GetRuneCooldown, UnitCastingInfo, UnitChannelInfo
-local UnitDetailedThreatSituation, UnitThreatSituation = UnitDetailedThreatSituation, UnitThreatSituation
+local UnitDetailedThreatSituation = UnitDetailedThreatSituation
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L

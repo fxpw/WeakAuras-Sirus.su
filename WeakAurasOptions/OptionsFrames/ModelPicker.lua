@@ -8,7 +8,6 @@ local rad = rad
 local CreateFrame = CreateFrame
 
 local AceGUI = LibStub("AceGUI-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L

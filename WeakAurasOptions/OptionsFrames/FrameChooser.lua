@@ -6,9 +6,7 @@ local pairs = pairs
 
 -- WoW APIs
 local CreateFrame, IsMouseButtonDown, SetCursor, GetMouseFocus, MouseIsOver, ResetCursor
-  = CreateFrame, IsMouseButtonDown, SetCursor, GetMouseFocus, MouseIsOver, ResetCursor
-
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+= CreateFrame, IsMouseButtonDown, SetCursor, GetMouseFocus, MouseIsOver, ResetCursor
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L

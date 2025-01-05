@@ -1459,7 +1459,7 @@ function GenericTrigger.Add(data, region)
           if (trigger.custom_type == "stateupdate") then
             tsuConditionVariables = WeakAuras.LoadFunction("return function() return \n" .. (trigger.customVariables or "") .. "\n end");
             if not tsuConditionVariables then
-              tsuConditionVariables = function() return end
+              tsuConditionVariables = function() end
             end
           end
 
