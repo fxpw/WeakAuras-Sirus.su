@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local texture_types = WeakAuras.StopMotion.texture_types;
@@ -90,7 +90,7 @@ local properties = {
 WeakAuras.regionPrototype.AddProperties(properties, default);
 
 local function create(parent)
-    local frame = CreateFrame("FRAME", nil, UIParent);
+    local frame = CreateFrame("Frame", nil, UIParent);
     frame.regionType = "stopmotion"
     frame:SetMovable(true);
     frame:SetResizable(true);

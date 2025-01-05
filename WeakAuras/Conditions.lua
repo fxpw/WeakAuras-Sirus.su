@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local L = WeakAuras.L
@@ -843,7 +843,7 @@ function Private.RegisterForGlobalConditions(uid)
   end
 
   if (next(register) and not dynamicConditionsFrame) then
-    dynamicConditionsFrame = CreateFrame("FRAME");
+    dynamicConditionsFrame = CreateFrame("Frame");
     dynamicConditionsFrame:SetScript("OnEvent", handleDynamicConditions);
     dynamicConditionsFrame.units = {}
     WeakAuras.frames["Rerun Conditions Frame"] = dynamicConditionsFrame
@@ -860,7 +860,7 @@ function Private.RegisterForGlobalConditions(uid)
       if unitEvent and unit then
         unit = unit:lower()
         if not dynamicConditionsFrame.units[unit] then
-          dynamicConditionsFrame.units[unit] = CreateFrame("FRAME");
+          dynamicConditionsFrame.units[unit] = CreateFrame("Frame");
           dynamicConditionsFrame.units[unit]:SetScript("OnEvent", handleDynamicConditionsPerUnit);
         end
         dynamicConditionsFrame.units[unit].unit = unit;
@@ -909,7 +909,7 @@ function Private.UnloadAllConditions()
   dynamicConditions = {}
   if dynamicConditionsFrame then
     dynamicConditionsFrame:UnregisterAllEvents()
-    for unit, frame in pairs(dynamicConditionsFrame.units) do
+    for _, frame in pairs(dynamicConditionsFrame.units) do
       frame:UnregisterAllEvents()
     end
     dynamicConditionsFrame:SetScript("OnUpdate", nil)

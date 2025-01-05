@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local SharedMedia = LibStub("LibSharedMedia-3.0");
@@ -297,7 +297,7 @@ local funcs = {
 }
 
 local function create()
-  local region = CreateFrame("FRAME", nil, UIParent)
+  local region = CreateFrame("Frame", nil, UIParent)
 
   for name, func  in pairs(funcs) do
     region[name] = func

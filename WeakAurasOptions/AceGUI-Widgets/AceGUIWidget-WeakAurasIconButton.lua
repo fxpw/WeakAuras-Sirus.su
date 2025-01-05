@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 
 local Type, Version = "WeakAurasIconButton", 21
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
@@ -62,7 +62,7 @@ Constructor
 -------------------------------------------------------------------------------]]
 
 local function Constructor()
-  local button = CreateFrame("BUTTON", nil, UIParent);
+  local button = CreateFrame("Button", nil, UIParent);
   button:SetHeight(52);
   button:SetWidth(52);
 

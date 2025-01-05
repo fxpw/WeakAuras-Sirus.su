@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
@@ -21,8 +21,8 @@ local oldFocusName
 function OptionsPrivate.StartFrameChooser(data, path)
   local frame = WeakAuras.OptionsFrame();
   if not(frameChooserFrame) then
-    frameChooserFrame = CreateFrame("frame");
-    frameChooserBox = CreateFrame("frame", nil, frameChooserFrame);
+    frameChooserFrame = CreateFrame("Frame");
+    frameChooserBox = CreateFrame("Frame", nil, frameChooserFrame);
     frameChooserBox:SetFrameStrata("TOOLTIP");
     frameChooserBox:SetBackdrop({
       edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",

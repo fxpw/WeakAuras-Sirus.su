@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local WeakAuras = WeakAuras;
@@ -150,8 +150,8 @@ local simpleFormatters = {
       local fmt, time = SecondsToTimeAbbrev(value)
       -- Remove the space between the value and unit
       return fmt:gsub(" ", ""):format(time)
-    end
-  }
+    end,
+  },
 }
 
 Private.format_types = {
@@ -257,7 +257,7 @@ Private.format_types = {
           if value < threshold then
             return string.format(formatString, value)
           else
-            return mainFormater(value, state)
+            return mainFormater(value)
           end
         end
       end
@@ -874,7 +874,7 @@ local function update_forms()
     end
   end
 end
-local form_frame = CreateFrame("frame");
+local form_frame = CreateFrame("Frame");
 form_frame:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 form_frame:RegisterEvent("PLAYER_LOGIN")
 form_frame:SetScript("OnEvent", update_forms);

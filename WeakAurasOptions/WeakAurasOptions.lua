@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
@@ -181,7 +181,7 @@ local frame;
 local db;
 local odb;
 local reopenAfterCombat = false;
-local loadedFrame = CreateFrame("FRAME");
+local loadedFrame = CreateFrame("Frame");
 loadedFrame:RegisterEvent("ADDON_LOADED");
 loadedFrame:RegisterEvent("PLAYER_REGEN_ENABLED");
 loadedFrame:RegisterEvent("PLAYER_REGEN_DISABLED");

@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
@@ -57,7 +57,7 @@ local function ConstructModelPicker(frame)
   group.frame:Hide();
   group:SetLayout("flow");
 
-  local filterInput = CreateFrame("editbox", "WeakAurasModelFilterInput", group.frame, "WA_InputBoxTemplate")
+  local filterInput = CreateFrame("EditBox", "WeakAurasModelFilterInput", group.frame, "WA_InputBoxTemplate")
   filterInput:SetAutoFocus(false)
   filterInput:SetTextInsets(16, 20, 0, 0)
 

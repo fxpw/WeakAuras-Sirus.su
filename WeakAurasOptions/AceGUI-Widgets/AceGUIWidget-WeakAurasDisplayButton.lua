@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local tinsert, tconcat, tremove, wipe = table.insert, table.concat, table.remove, wipe
@@ -1855,7 +1855,7 @@ local function Constructor()
     renamebox:Hide();
   end);
 
-  local group = CreateFrame("BUTTON", nil, button);
+  local group = CreateFrame("Button", nil, button);
   button.group = group;
   group:SetWidth(16);
   group:SetHeight(16);
@@ -1870,7 +1870,7 @@ local function Constructor()
   group:SetScript("OnEnter", function() Show_Tooltip(button, L["Group (verb)"], L["Put this display in a group"]) end);
   group:SetScript("OnLeave", Hide_Tooltip);
 
-  local ungroup = CreateFrame("BUTTON", nil, button);
+  local ungroup = CreateFrame("Button", nil, button);
   button.ungroup = ungroup;
   ungroup:SetWidth(11);
   ungroup:SetHeight(11);
@@ -1885,7 +1885,7 @@ local function Constructor()
   ungroup:SetScript("OnLeave", Hide_Tooltip);
   ungroup:Hide();
 
-  local upgroup = CreateFrame("BUTTON", nil, button);
+  local upgroup = CreateFrame("Button", nil, button);
   button.upgroup = upgroup;
   upgroup:SetWidth(11);
   upgroup:SetHeight(11);
@@ -1902,7 +1902,7 @@ local function Constructor()
   upgroup:SetScript("OnLeave", Hide_Tooltip);
   upgroup:Hide();
 
-  local downgroup = CreateFrame("BUTTON", nil, button);
+  local downgroup = CreateFrame("Button", nil, button);
   button.downgroup = downgroup;
   downgroup:SetWidth(11);
   downgroup:SetHeight(11);
@@ -1918,7 +1918,7 @@ local function Constructor()
   downgroup:SetScript("OnLeave", Hide_Tooltip);
   downgroup:Hide();
 
-  local expand = CreateFrame("BUTTON", nil, button);
+  local expand = CreateFrame("Button", nil, button);
   button.expand = expand;
   expand.expanded = true;
   expand.disabled = true;

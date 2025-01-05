@@ -49,7 +49,7 @@ Returns the a tooltip for the additional properties.
 GetTriggerConditions(data, triggernum)
 Returns potential conditions that this trigger provides.
 ]]--
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 -- Lua APIs
@@ -1086,7 +1086,7 @@ end
 
 local genericTriggerRegisteredEvents = {};
 local genericTriggerRegisteredUnitEvents = {};
-local frame = CreateFrame("FRAME");
+local frame = CreateFrame("Frame");
 frame.unitFrames = {};
 WeakAuras.frames["WeakAuras Generic Trigger Frame"] = frame;
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");
@@ -1631,7 +1631,7 @@ do
       update_clients_num = update_clients_num + 1;
     end
     if not(update_frame) then
-      update_frame = CreateFrame("FRAME");
+      update_frame = CreateFrame("Frame");
     end
     if not(updating) then
       update_frame:SetScript("OnUpdate", function()
@@ -1885,7 +1885,7 @@ do
 
   function WeakAuras.InitSwingTimer()
     if not(swingTimerFrame) then
-      swingTimerFrame = CreateFrame("frame");
+      swingTimerFrame = CreateFrame("Frame");
       swingTimerFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
       swingTimerFrame:RegisterEvent("PLAYER_ENTER_COMBAT");
       swingTimerFrame:RegisterEvent("UNIT_ATTACK_SPEED");
@@ -2084,7 +2084,7 @@ do
   local spellDetails = {}
 
   function WeakAuras.InitCooldownReady()
-    cdReadyFrame = CreateFrame("FRAME");
+    cdReadyFrame = CreateFrame("Frame");
     WeakAuras.frames["Cooldown Trigger Handler"] = cdReadyFrame
     cdReadyFrame:RegisterEvent("RUNE_POWER_UPDATE");
     cdReadyFrame:RegisterEvent("RUNE_TYPE_UPDATE");
@@ -3350,7 +3350,7 @@ do
   WeakAuras.frames["Pet Use Handler"] = petFrame;
   function WeakAuras.WatchForPetDeath()
     if not(petFrame) then
-      petFrame = CreateFrame("frame");
+      petFrame = CreateFrame("Frame");
       petFrame:RegisterEvent("UNIT_PET")
       petFrame:SetScript("OnEvent", function(_, event, unit)
         if unit ~= "player" then return end
@@ -3445,7 +3445,7 @@ do
 
   function WeakAuras.WatchForMounts()
     if not(mountedFrame) then
-      mountedFrame = CreateFrame("frame");
+      mountedFrame = CreateFrame("Frame");
 	  WeakAuras.frames["Mount Use Handler"] = mountedFrame;
       mountedFrame:RegisterEvent("COMPANION_UPDATE");
       mountedFrame:SetScript("OnEvent", function()
@@ -3472,7 +3472,7 @@ do
 
   function WeakAuras.WatchPlayerMoveSpeed()
     if not (playerMovingFrame) then
-      playerMovingFrame = CreateFrame("frame");
+      playerMovingFrame = CreateFrame("Frame");
       WeakAuras.frames["Player Moving Frame"] =  playerMovingFrame;
     end
     playerMovingFrame.speed = GetUnitSpeed("player")
@@ -3567,7 +3567,7 @@ end
 local itemCountWatchFrame;
 function WeakAuras.RegisterItemCountWatch()
   if not(itemCountWatchFrame) then
-    itemCountWatchFrame = CreateFrame("frame");
+    itemCountWatchFrame = CreateFrame("Frame");
     itemCountWatchFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED");
     itemCountWatchFrame:SetScript("OnEvent", function(_, _, unit)
       if unit ~= "player" then return end
@@ -3604,7 +3604,7 @@ do
 
   function WeakAuras.WatchQueuedAction()
     if not(queuedActionFrame) then
-      queuedActionFrame = CreateFrame("frame");
+      queuedActionFrame = CreateFrame("Frame");
       WeakAuras.frames["Queued Action Frame"] = queuedActionFrame
       for slotID = 1, 120 do
         local spellID = GetActionSpellID(slotID)

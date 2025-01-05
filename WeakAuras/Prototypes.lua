@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 -- Lua APIs
@@ -133,7 +133,7 @@ Private.function_strings = {
   ]]
 };
 
-local hsvFrame = CreateFrame("Colorselect")
+local hsvFrame = CreateFrame("ColorSelect")
 
 -- HSV transition, for a much prettier color transition in many cases
 -- see http://www.wowinterface.com/forums/showthread.php?t=48236
@@ -1084,7 +1084,7 @@ Private.load_prototype = {
       multiEntry = {
         operator = "or"
       },
-      test = "IsEquippedItem(%s)",
+      test = "IsEquippedItem(GetItemInfo(%s))",
       events = { "UNIT_INVENTORY_CHANGED", "PLAYER_EQUIPMENT_CHANGED"}
     },
     {
@@ -1094,7 +1094,7 @@ Private.load_prototype = {
       multiEntry = {
         operator = "or"
       },
-      test = "not IsEquippedItem(%s)",
+      test = "not IsEquippedItem(GetItemInfo(%s))",
       events = { "UNIT_INVENTORY_CHANGED", "PLAYER_EQUIPMENT_CHANGED"}
     },
   }
@@ -5440,7 +5440,7 @@ Private.event_prototypes = {
 
       local ret = [[
         local inverse = %s;
-        local equipped = IsEquippedItem(%s);
+        local equipped = IsEquippedItem(GetItemInfo(%s));
       ]];
 
       return ret:format(trigger.use_inverse and "true" or "false", itemName);
@@ -5555,18 +5555,20 @@ Private.event_prototypes = {
   ["Threat Situation"] = {
     type = "unit",
     events = function(trigger)
+      local unit = trigger.unit
       local result = {}
-      if trigger.threatUnit and trigger.threatUnit ~= "none" then
-        AddUnitEventForEvents(result, trigger.threatUnit, "UNIT_THREAT_LIST_UPDATE")
+      if unit and unit ~= "none" then
+        AddUnitEventForEvents(result, unit, "UNIT_THREAT_LIST_UPDATE")
       else
         AddUnitEventForEvents(result, "player", "UNIT_THREAT_SITUATION_UPDATE")
       end
       return result
     end,
     internal_events = function(trigger)
+      local unit = trigger.unit
       local result = {}
-      if trigger.threatUnit and trigger.threatUnit ~= "none" then
-        AddUnitChangeInternalEvents(trigger.threatUnit, result)
+      if unit and unit ~= "none" then
+        AddUnitChangeInternalEvents(unit, result)
       end
       return result
     end,
@@ -5576,14 +5578,15 @@ Private.event_prototypes = {
         AddWatchedUnits(unit)
       end
     end,
-    force_events = "UNIT_THREAT_LIST_UPDATE",
+    force_events = unitHelperFunctions.UnitChangedForceEvents,
     name = L["Threat Situation"],
     init = function(trigger)
+      trigger.unit = trigger.unit or "target";
       local ret = [[
-        local unit = %s
+        unit = string.lower(unit)
         local ok = true
         local aggro, status, threatpct, rawthreatpct, threatvalue, threattotal
-        if unit then
+        if unit and unit ~= "none" then
           aggro, status, threatpct, rawthreatpct, threatvalue = WeakAuras.UnitDetailedThreatSituation('player', unit)
           threattotal = (threatvalue or 0) * 100 / (threatpct ~= 0 and threatpct or 1)
         else
@@ -5592,18 +5595,20 @@ Private.event_prototypes = {
           threatpct, rawthreatpct, threatvalue, threattotal = 100, 100, 0, 100
         end
       ]];
-      return ret:format(trigger.threatUnit and trigger.threatUnit ~= "none" and "[["..trigger.threatUnit.."]]" or "nil");
+      return ret;
     end,
     canHaveDuration = true,
-    statesParameter = "one",
+    statesParameter = "unit",
     args = {
       {
-        name = "threatUnit",
+        name = "unit",
         display = L["Unit"],
         required = true,
         type = "unit",
+        init = "arg",
         values = "threat_unit_types",
         test = "true",
+        store = true,
         default = "target"
       },
       {
@@ -5628,7 +5633,7 @@ Private.event_prototypes = {
         type = "number",
         store = true,
         conditionType = "number",
-        enable = function(trigger) return trigger.threatUnit ~= "none" end,
+        enable = function(trigger) return trigger.unit ~= "none" end,
         multiEntry = {
           operator = "and",
           limit = 2
@@ -5641,7 +5646,7 @@ Private.event_prototypes = {
         type = "number",
         store = true,
         conditionType = "number",
-        enable = function(trigger) return trigger.threatUnit ~= "none" end,
+        enable = function(trigger) return trigger.unit ~= "none" end,
         multiEntry = {
           operator = "and",
           limit = 2
@@ -5654,7 +5659,7 @@ Private.event_prototypes = {
         type = "number",
         store = true,
         conditionType = "number",
-        enable = function(trigger) return trigger.threatUnit ~= "none" end,
+        enable = function(trigger) return trigger.unit ~= "none" end,
         multiEntry = {
           operator = "and",
           limit = 2

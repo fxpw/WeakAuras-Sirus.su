@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local Masque = LibStub("Masque", true)
@@ -231,7 +231,7 @@ local function createOptions(id, data)
 end
 
 local function createThumbnail()
-  local frame = CreateFrame("FRAME", nil, UIParent)
+  local frame = CreateFrame("Frame", nil, UIParent)
   local icon = frame:CreateTexture();
   icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark");
   icon:SetAllPoints(frame)

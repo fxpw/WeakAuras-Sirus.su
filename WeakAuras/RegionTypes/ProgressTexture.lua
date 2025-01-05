@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local L = WeakAuras.L;
@@ -424,7 +424,7 @@ WeakAuras.createSpinner = createSpinner;
 local function create(parent)
   local font = "GameFontHighlight";
 
-  local region = CreateFrame("FRAME", nil, parent);
+  local region = CreateFrame("Frame", nil, parent);
   region.regionType = "progresstexture"
   region:SetMovable(true);
   region:SetResizable(true);

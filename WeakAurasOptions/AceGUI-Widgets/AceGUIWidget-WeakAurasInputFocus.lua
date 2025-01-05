@@ -1,7 +1,7 @@
 --[[-----------------------------------------------------------------------------
 Input Widget that allows to show an alternative text when it does not have focus
 -------------------------------------------------------------------------------]]
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 
 local Type, Version = "WeakAurasInputFocus", 1
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)

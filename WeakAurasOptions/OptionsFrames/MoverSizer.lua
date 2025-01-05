@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
@@ -56,11 +56,11 @@ local function ConstructMover(frame)
   topAndBottom:SetClampedToScreen(true)
   topAndBottom:SetSize(25, 45)
   topAndBottom:SetPoint("LEFT", frame, "RIGHT", 1, 0)
-  local top = CreateFrame("BUTTON", nil, topAndBottom)
+  local top = CreateFrame("Button", nil, topAndBottom)
   top:SetSize(25, 25)
   top:SetPoint("TOP", topAndBottom)
   top:SetFrameStrata("BACKGROUND")
-  local bottom = CreateFrame("BUTTON", nil, topAndBottom)
+  local bottom = CreateFrame("Button", nil, topAndBottom)
   bottom:SetSize(25, 25)
   bottom:SetPoint("BOTTOM", topAndBottom)
   bottom:SetFrameStrata("BACKGROUND")
@@ -69,11 +69,11 @@ local function ConstructMover(frame)
   leftAndRight:SetClampedToScreen(true)
   leftAndRight:SetSize(45, 25)
   leftAndRight:SetPoint("TOP", frame, "BOTTOM", 0, 1)
-  local left = CreateFrame("BUTTON", nil, leftAndRight)
+  local left = CreateFrame("Button", nil, leftAndRight)
   left:SetSize(25, 25)
   left:SetPoint("LEFT", leftAndRight)
   left:SetFrameStrata("BACKGROUND")
-  local right = CreateFrame("BUTTON", nil, leftAndRight)
+  local right = CreateFrame("Button", nil, leftAndRight)
   right:SetSize(25, 25)
   right:SetPoint("RIGHT", leftAndRight)
   right:SetFrameStrata("BACKGROUND")
@@ -107,7 +107,7 @@ local function ConstructMover(frame)
   right:GetPushedTexture():SetRotation(-math.pi/2)
   right:SetScript("OnClick", function() moveOnePxl("right") end)
 
-  local arrow = CreateFrame("frame", nil, frame)
+  local arrow = CreateFrame("Frame", nil, frame)
   arrow:SetClampedToScreen(true)
   arrow:SetSize(196, 196)
   arrow:SetPoint("CENTER", frame, "CENTER")
@@ -146,7 +146,7 @@ end
 local function ConstructSizer(frame)
   -- topright, bottomright, bottomleft, topleft
 
-  local topright = CreateFrame("FRAME", nil, frame)
+  local topright = CreateFrame("Frame", nil, frame)
   topright:EnableMouse()
   topright:SetWidth(16)
   topright:SetHeight(16)
@@ -178,7 +178,7 @@ local function ConstructSizer(frame)
     texTR2:Hide()
   end
 
-  local bottomright = CreateFrame("FRAME", nil, frame)
+  local bottomright = CreateFrame("Frame", nil, frame)
   bottomright:EnableMouse()
   bottomright:SetWidth(16)
   bottomright:SetHeight(16)
@@ -210,7 +210,7 @@ local function ConstructSizer(frame)
     texBR2:Hide()
   end
 
-  local bottomleft = CreateFrame("FRAME", nil, frame)
+  local bottomleft = CreateFrame("Frame", nil, frame)
   bottomleft:EnableMouse()
   bottomleft:SetSize(16, 16)
   bottomleft:SetHeight(16)
@@ -242,7 +242,7 @@ local function ConstructSizer(frame)
     texBL2:Hide()
   end
 
-  local topleft = CreateFrame("FRAME", nil, frame)
+  local topleft = CreateFrame("Frame", nil, frame)
   topleft:EnableMouse()
   topleft:SetWidth(16)
   topleft:SetHeight(16)
@@ -276,7 +276,7 @@ local function ConstructSizer(frame)
 
   -- top, right, bottom, left
 
-  local top = CreateFrame("FRAME", nil, frame)
+  local top = CreateFrame("Frame", nil, frame)
   top:EnableMouse()
   top:SetHeight(8)
   top:SetPoint("TOPRIGHT", topright, "TOPLEFT")
@@ -298,7 +298,7 @@ local function ConstructSizer(frame)
     texT:Hide()
   end
 
-  local right = CreateFrame("FRAME", nil, frame)
+  local right = CreateFrame("Frame", nil, frame)
   right:EnableMouse()
   right:SetWidth(8)
   right:SetPoint("BOTTOMRIGHT", bottomright, "TOPRIGHT")
@@ -320,7 +320,7 @@ local function ConstructSizer(frame)
     texR:Hide()
   end
 
-  local bottom = CreateFrame("FRAME", nil, frame)
+  local bottom = CreateFrame("Frame", nil, frame)
   bottom:EnableMouse()
   bottom:SetHeight(8)
   bottom:SetPoint("BOTTOMLEFT", bottomleft, "BOTTOMRIGHT")
@@ -343,7 +343,7 @@ local function ConstructSizer(frame)
     texB:Hide()
   end
 
-  local left = CreateFrame("FRAME", nil, frame)
+  local left = CreateFrame("Frame", nil, frame)
   left:EnableMouse()
   left:SetWidth(8)
   left:SetPoint("TOPLEFT", topleft, "BOTTOMLEFT")
@@ -417,7 +417,7 @@ local function BuildAlignLines(mover)
 end
 
 local function ConstructMoverSizer(parent)
-  local frame = CreateFrame("FRAME", nil, parent)
+  local frame = CreateFrame("Frame", nil, parent)
   frame:SetBackdrop({
     edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
     edgeSize = 12,
@@ -439,7 +439,7 @@ local function ConstructMoverSizer(parent)
   frame.left.Clear()
   frame.topleft.Clear()
 
-  local mover = CreateFrame("FRAME", nil, frame)
+  local mover = CreateFrame("Frame", nil, frame)
   mover:RegisterEvent("PLAYER_REGEN_DISABLED")
   mover:EnableMouse()
   mover.moving = {}

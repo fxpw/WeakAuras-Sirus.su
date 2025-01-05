@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 local L = WeakAuras.L
 
@@ -1157,6 +1157,17 @@ function Private.Modernize(data)
     end
     if broken then
       WeakAuras.prettyPrint(L["Trying to repair broken conditions in %s likely caused by a WeakAuras bug."]:format(data.id))
+    end
+  end
+
+  if (data.internalVersion < 51) then
+    for _, triggerData in ipairs(data.triggers) do
+      if triggerData.trigger.event == "Threat Situation" then
+        triggerData.trigger.unit = triggerData.trigger.threatUnit
+        triggerData.trigger.use_unit = triggerData.trigger.use_threatUnit
+        triggerData.trigger.threatUnit = nil
+        triggerData.trigger.use_threatUnit = nil
+      end
     end
   end
 

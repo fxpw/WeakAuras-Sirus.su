@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 
 local Type, Version = "WeakAurasLoadedHeaderButton", 22
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
@@ -142,7 +142,7 @@ Constructor
 
 local function Constructor()
   local name = Type..AceGUI:GetNextWidgetNum(Type)
-  local button = CreateFrame("BUTTON", name, UIParent, "OptionsListButtonTemplate");
+  local button = CreateFrame("Button", name, UIParent, "OptionsListButtonTemplate");
   button:SetHeight(20);
   button:SetWidth(1000);
   button:SetDisabledFontObject("GameFontNormal");
@@ -154,7 +154,7 @@ local function Constructor()
   background:SetVertexColor(0.5, 0.5, 0.5, 0.6);
   background:SetAllPoints(button);
 
-  local expand = CreateFrame("BUTTON", nil, button);
+  local expand = CreateFrame("Button", nil, button);
   button.expand = expand;
   expand.expanded = true;
   expand.disabled = true;
@@ -172,7 +172,7 @@ local function Constructor()
   expand:SetScript("OnEnter", function() Show_Tooltip(button, expand.title, expand.desc) end);
   expand:SetScript("OnLeave", Hide_Tooltip);
 
-  local view = CreateFrame("BUTTON", nil, button);
+  local view = CreateFrame("Button", nil, button);
   button.view = view;
   view:SetWidth(16);
   view:SetHeight(16);

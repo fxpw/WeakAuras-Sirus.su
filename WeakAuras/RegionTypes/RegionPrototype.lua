@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local WeakAuras = WeakAuras;
@@ -624,7 +624,7 @@ end
 
 local regionsForFrameTick = {}
 
-local frameForFrameTick = CreateFrame("FRAME");
+local frameForFrameTick = CreateFrame("Frame");
 
 WeakAuras.frames["Frame Tick Frame"] = frameForFrameTick
 
