@@ -78,8 +78,8 @@ end
 local function valueToString(a, propertytype)
   if (propertytype == "color") then
     if (type(a) == "table") then
-      local r, g, b, a = floor((a[1] or 0) * 255), floor((a[2] or 0) * 255), floor((a[3] or 0) * 255), floor((a[4] or 0) * 255)
-      return string.format("|c%02X%02X%02X%02X", a, r, g, b) .. L["color"];
+      local r, g, b, alpha = floor((a[1] or 0) * 255), floor((a[2] or 0) * 255), floor((a[3] or 0) * 255), floor((a[4] or 0) * 255)
+      return string.format("|c%02X%02X%02X%02X", alpha, r, g, b) .. L["color"];
     else
       return "";
     end
@@ -822,7 +822,7 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
 
     if data.controlledChildren then
       local ordered = {}
-      for id, reference in pairs(conditions[i].changes[j].references) do
+      for _, reference in pairs(conditions[i].changes[j].references) do
         tinsert(ordered, reference)
       end
       for index, reference in ipairs(ordered) do
@@ -1843,8 +1843,6 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
       }
       order = order + 1;
 
-      local multipath = {}
-
       args["condition" .. i .. tostring(path) .. "_value"] = {
         type = "input",
         width = WeakAuras.doubleWidth,
@@ -1865,10 +1863,10 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
                 if (data.controlledChildren) then
                   -- Collect multi paths
                   local multipath = {};
-                  for id, reference in pairs(conditions[i].check.references) do
+                  for id in pairs(conditions[i].check.references) do
                     local conditionIndex = conditions[i].check.references[id].conditionIndex;
                     multipath[id] ={ "conditions", conditionIndex, "check" }
-                    for i, v in ipairs(path) do
+                    for _, v in ipairs(path) do
                       tinsert(multipath[id], "checks")
                       tinsert(multipath[id], v)
                     end
@@ -1877,7 +1875,7 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
                   OptionsPrivate.OpenTextEditor(data, multipath, nil, true, nil, nil, "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-check");
                 else
                   local fullPath = { "conditions", i, "check" }
-                  for i, v in ipairs(path) do
+                  for _, v in ipairs(path) do
                     tinsert(fullPath, "checks")
                     tinsert(fullPath, v)
                   end
@@ -1983,7 +1981,7 @@ local function addControlsForCondition(args, order, data, conditionVariable, tot
     order = order,
     disabled = function()
       if (data.controlledChildren) then
-        for id, reference in pairs(conditions[i].check.references) do
+        for _, reference in pairs(conditions[i].check.references) do
           local index = reference.conditionIndex;
           if (index > 1) then
             return false;
@@ -2526,7 +2524,6 @@ local function findMatchingProperty(all, change, id)
   return nil;
 end
 
-local noop = function() end
 local function SubPropertiesForChange(change)
   if change.property == "sound" then
     return { "sound", "sound_channel", "sound_path", "sound_kit_id", "sound_repeat", "sound_type"}
@@ -2705,7 +2702,7 @@ local function mergeConditions(all, aura, id, allConditionTemplates, propertyTyp
 end
 
 local fixupConditions = function(conditions)
-  for index, condition in ipairs(conditions) do
+  for _, condition in ipairs(conditions) do
     condition.check = condition.check or {}
     condition.changes = condition.changes or {}
   end

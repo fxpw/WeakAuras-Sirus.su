@@ -69,7 +69,7 @@ local conflictBlue = "|cFF4080FF"
 local conflict = {} -- magic value
 
 local function atLeastOneSet(references, key)
-  for id, optionData in pairs(references) do
+  for _, optionData in pairs(references) do
     local childOption = optionData.options[optionData.index]
     if childOption[key] ~= nil then
       return true
@@ -138,7 +138,7 @@ local function nameUserDesc(option)
     return option.text
   else
     local text = {}
-    for id, optionData in pairs(option.references) do
+    for _, optionData in pairs(option.references) do
       local childOption = optionData.options[optionData.index]
       if childOption.text and childOption.text ~= nil then
         tinsert(text, childOption.text)
@@ -288,7 +288,7 @@ end
 local function getUser(option)
   return function()
     local value
-    for id, optionData in pairs(option.references) do
+    for _, optionData in pairs(option.references) do
       if not optionData.config then
         return
       elseif value == nil then
@@ -335,7 +335,7 @@ end
 local function getValues(option)
   local values = {}
   local firstChild = true
-  for id, optionData in pairs(option.references) do
+  for _, optionData in pairs(option.references) do
     local childOption = optionData.options[optionData.index]
     local childValues = childOption.values
     local i = 1
@@ -400,7 +400,7 @@ end
 -- setters for AceConfig
 local function set(data, option, key)
   return function(_, value)
-    for id, optionData in pairs(option.references) do
+    for _, optionData in pairs(option.references) do
       local childOption = optionData.options[optionData.index]
       local childData = optionData.data
       childOption[key] = value
@@ -412,7 +412,7 @@ end
 
 local function setUser(data, option)
   return function(_, value)
-    for id, optionData in pairs(option.references) do
+    for _, optionData in pairs(option.references) do
       local childData = optionData.data
       local childConfig = optionData.config
       childConfig[option.key] = value
@@ -465,7 +465,7 @@ local function setUserNum(data, option)
     if value ~= "" then
       local num = tonumber(value)
       if not num or math.abs(num) == math.huge or tostring(num) == "nan" then return end
-      for id, optionData in pairs(option.references) do
+      for _, optionData in pairs(option.references) do
         local childData = optionData.data
         local childConfig = optionData.config
         childConfig[option.key] = num
@@ -532,7 +532,7 @@ local function ensureUniqueKey(candidate, suffix, options, index)
   local goodKey = true
   local key = candidate
   local existingKeys = {}
-  for index, option in ipairs(options) do
+  for _, option in ipairs(options) do
     if option.key then
       if option.key == key then
         goodKey = false
@@ -836,7 +836,7 @@ typeControlAdders = {
         type = "input",
         width = WeakAuras.normalWidth - 0.15,
         name = (value == conflict and conflictBlue or "") .. L["Value %i"]:format(j),
-        desc = descSelect(option, j, conflict),
+        desc = descSelect(option, j),
         order = order(),
         get = function()
           if value ~= conflict then
@@ -1015,7 +1015,7 @@ typeControlAdders = {
         type = "input",
         width = WeakAuras.normalWidth - 0.15,
         name = (value == conflict and conflictBlue or "") .. L["Value %i"]:format(j),
-        desc = descSelect(option, j, conflict),
+        desc = descSelect(option, j),
         order = order(),
         get = function()
           if value ~= conflict then
@@ -1599,7 +1599,6 @@ function addAuthorModeOption(options, args, data, order, prefix, i)
         local parent = optionData.parent
         local parentOptions = parent and parent.references[id].options or optionData.data.authorOptions
         local childOption = tremove(optionData.options, optionData.index)
-        local childCollapsed = OptionsPrivate.IsCollapsed(id, "author", optionData.path, true)
         if parent and parent.groupType == "array" then
           local dereferencedParent = parent.references[id].options[parent.references[id].index]
           if dereferencedParent.nameSource == optionData.index then
@@ -1634,7 +1633,6 @@ function addAuthorModeOption(options, args, data, order, prefix, i)
         local parent = optionData.parent
         local parentOptions = parent and parent.references[id].options or optionData.data.authorOptions
         local childOption = tremove(optionData.options, optionData.index)
-        local childCollapsed = OptionsPrivate.IsCollapsed(id, "author", optionData.path, true)
         if parent and parent.groupType == "array" then
           local dereferencedParent = parent.references[id].options[parent.references[id].index]
           if dereferencedParent.nameSource == optionData.index then
@@ -1867,7 +1865,6 @@ function addAuthorModeOption(options, args, data, order, prefix, i)
   local addControlsForType = typeControlAdders[option.type]
   if addControlsForType then
     addControlsForType(options, args, data, order, prefix, i)
-    local option = options[i]
   end
 end
 
@@ -2220,7 +2217,7 @@ local function addUserModeOption(options, args, data, order, prefix, i)
     elseif optionType == "number" then
       userOption.type = "input"
       userOption.get = getUserNumAsString(option)
-      userOption.set = setUserNum(data, option, true)
+      userOption.set = setUserNum(data, option)
     elseif optionType == "range" then
       userOption.softMax = option.softMax
       userOption.softMin = option.softMin
@@ -2251,7 +2248,7 @@ local function addUserModeOption(options, args, data, order, prefix, i)
         return value
       end
       userOption.set = function(_, k, v)
-        for id, optionData in pairs(option.references) do
+        for _, optionData in pairs(option.references) do
           optionData.config[option.key][k] = v
           WeakAuras.Add(optionData.data)
         end
@@ -2264,7 +2261,7 @@ local function addUserModeOption(options, args, data, order, prefix, i)
       local name = {}
       local firstName = nil
       local conflict = false
-      for id, optionData in pairs(option.references) do
+      for _, optionData in pairs(option.references) do
         local childOption = optionData.options[optionData.index]
         if childOption.useName and #childOption.text > 0 then
           if firstName == nil then
@@ -2347,7 +2344,6 @@ local function mergeOptions(mergedOptions, data, options, config, prepath, paren
   local nextInsert = 1
   for i = 1, #options do
     local path = CopyTable(prepath)
-    local option = options[i]
     path[#path + 1] = i
     -- find the best place to start inserting the next option to merge
     local nextToMerge = options[i]
@@ -2622,9 +2618,9 @@ function OptionsPrivate.GetAuthorOptions(data)
       desc = L["Configure what options appear on this panel."],
       order = order(),
       func = function()
-        for data in OptionsPrivate.Private.TraverseLeafsOrAura(data) do
+        for configData in OptionsPrivate.Private.TraverseLeafsOrAura(data) do
           -- no need to add, author mode is picked up by ClearAndUpdateOptions
-          data.authorMode = true
+          configData.authorMode = true
         end
         WeakAuras.ClearAndUpdateOptions(data.id, true)
       end

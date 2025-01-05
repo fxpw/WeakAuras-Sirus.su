@@ -4,7 +4,6 @@ local AddonName, OptionsPrivate = ...
 local L = WeakAuras.L;
 
 local function GetCustomTriggerOptions(data, triggernum)
-  local id = data.id;
   local trigger = data.triggers[triggernum].trigger
   local function appendToTriggerPath(...)
     local ret = {...};
@@ -31,7 +30,7 @@ local function GetCustomTriggerOptions(data, triggernum)
       width = WeakAuras.doubleWidth,
       values = OptionsPrivate.Private.custom_trigger_types,
       hidden = function() return not (trigger.type == "custom") end,
-      get = function(info)
+      get = function()
         return trigger.custom_type
       end,
       set = function(info, v)
@@ -110,7 +109,7 @@ local function GetCustomTriggerOptions(data, triggernum)
       name = function()
         local events = trigger.custom_type == "event" and trigger.events2 or trigger.events
         -- Check for errors
-        for index, event in pairs(WeakAuras.split(events)) do
+        for _, event in pairs(WeakAuras.split(events)) do
           local trueEvent
           for i in event:gmatch("[^:]+") do
             if not trueEvent then
@@ -159,7 +158,7 @@ local function GetCustomTriggerOptions(data, triggernum)
         end
         local events = trigger.custom_type == "event" and trigger.events2 or trigger.events
         -- Check for errors
-        for index, event in pairs(WeakAuras.split(events)) do
+        for _, event in pairs(WeakAuras.split(events)) do
           local trueEvent
           for i in event:gmatch("[^:]+") do
             if not trueEvent then

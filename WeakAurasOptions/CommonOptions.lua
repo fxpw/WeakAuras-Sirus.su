@@ -546,7 +546,6 @@ local function replaceNameDescFuncs(intable, data, subOption)
           local values = {};
           if (get) then
             values = { get(info) };
-            local childOption = getChildOption(childOptions, info)
             if isToggle and values[1] == nil then
               values[1] = false
             end
@@ -1372,7 +1371,7 @@ local function AddCodeOption(args, data, name, prefix, url, order, hiddenFunc, p
   options.extraFunctions = options.extraFunctions or {};
   tinsert(options.extraFunctions, 1, {
     buttonLabel = L["Expand"],
-    func = function(info)
+    func = function()
       OptionsPrivate.OpenTextEditor(OptionsPrivate.GetPickedDisplay(), path, encloseInFunction, options.multipath, options.reloadOptions, options.setOnParent, url, options.validator)
     end
   });
@@ -1405,7 +1404,7 @@ local function AddCodeOption(args, data, name, prefix, url, order, hiddenFunc, p
         OptionsPrivate.ClearOptions(data.id)
       end
     end,
-    get = function(info)
+    get = function()
       return GetCustomCode(data, path);
     end
   };

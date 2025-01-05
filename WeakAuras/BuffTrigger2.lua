@@ -1708,8 +1708,8 @@ local function RecheckActiveForUnitType(unitType, unit, unitsToRemoveScan)
   end
 end
 
-local frame = CreateFrame("Frame")
-WeakAuras.frames["WeakAuras Buff2 Frame"] = frame
+local Buff2Frame = CreateFrame("Frame")
+WeakAuras.frames["WeakAuras Buff2 Frame"] = Buff2Frame
 
 local function EventHandler(frame, event, arg1, arg2, ...)
 
@@ -1802,29 +1802,29 @@ local function EventHandler(frame, event, arg1, arg2, ...)
   Private.StopProfileSystem("bufftrigger2")
 end
 
-frame:RegisterEvent("UNIT_AURA")
-frame:RegisterEvent("UNIT_FACTION")
-frame:RegisterEvent("UNIT_NAME_UPDATE")
-frame:RegisterEvent("UNIT_FLAGS")
-frame:RegisterEvent("PLAYER_FLAGS_CHANGED")
-frame:RegisterEvent("UNIT_PET")
-frame:RegisterEvent("RAID_TARGET_UPDATE")
-frame:RegisterEvent("PLAYER_FOCUS_CHANGED")
-frame:RegisterEvent("ARENA_OPPONENT_UPDATE")
-frame:RegisterEvent("UNIT_ENTERED_VEHICLE")
-frame:RegisterEvent("UNIT_EXITED_VEHICLE")
-frame:RegisterEvent("PLAYER_TARGET_CHANGED")
-frame:RegisterEvent("PARTY_MEMBERS_CHANGED")
-frame:RegisterEvent("RAID_ROSTER_UPDATE")
-frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
+Buff2Frame:RegisterEvent("UNIT_AURA")
+Buff2Frame:RegisterEvent("UNIT_FACTION")
+Buff2Frame:RegisterEvent("UNIT_NAME_UPDATE")
+Buff2Frame:RegisterEvent("UNIT_FLAGS")
+Buff2Frame:RegisterEvent("PLAYER_FLAGS_CHANGED")
+Buff2Frame:RegisterEvent("UNIT_PET")
+Buff2Frame:RegisterEvent("RAID_TARGET_UPDATE")
+Buff2Frame:RegisterEvent("PLAYER_FOCUS_CHANGED")
+Buff2Frame:RegisterEvent("ARENA_OPPONENT_UPDATE")
+Buff2Frame:RegisterEvent("UNIT_ENTERED_VEHICLE")
+Buff2Frame:RegisterEvent("UNIT_EXITED_VEHICLE")
+Buff2Frame:RegisterEvent("PLAYER_TARGET_CHANGED")
+Buff2Frame:RegisterEvent("PARTY_MEMBERS_CHANGED")
+Buff2Frame:RegisterEvent("RAID_ROSTER_UPDATE")
+Buff2Frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
 if WeakAuras.isAwesomeEnabled() then
-  frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-  frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+  Buff2Frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+  Buff2Frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 end
-frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-frame:SetScript("OnEvent", EventHandler)
+Buff2Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+Buff2Frame:SetScript("OnEvent", EventHandler)
 
-frame:SetScript("OnUpdate", function()
+Buff2Frame:SetScript("OnUpdate", function()
   if WeakAuras.IsPaused() then
     return
   end

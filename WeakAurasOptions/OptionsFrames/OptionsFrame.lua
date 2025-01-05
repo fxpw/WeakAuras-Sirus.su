@@ -142,7 +142,7 @@ function OptionsPrivate.CreateFrame()
       data.region:Collapse()
       data.region:OptionsClosed()
       if WeakAuras.clones[id] then
-        for cloneId, cloneRegion in pairs(WeakAuras.clones[id]) do
+        for _, cloneRegion in pairs(WeakAuras.clones[id]) do
           cloneRegion:Collapse()
           cloneRegion:OptionsClosed()
         end
@@ -1375,7 +1375,7 @@ function OptionsPrivate.CreateFrame()
       alreadySelected[child.id] = true
     end
 
-    for index, id in ipairs(batchSelection) do
+    for _, id in ipairs(batchSelection) do
       if not alreadySelected[id] then
         displayButtons[id]:Pick()
         tinsert(tempGroup.controlledChildren, id)
