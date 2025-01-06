@@ -2303,6 +2303,19 @@ local function removeSpellNames(data)
   end
 end
 
+local function removeNameplateUnits(data)
+    for _, triggerData in ipairs(data.triggers) do
+        local trigger = triggerData.trigger
+        if trigger and trigger.type == "unit" then
+            if trigger.unit == "nameplate" then
+                trigger.unit = "target"
+            elseif trigger.threatUnit == "nameplate" then
+                trigger.threatUnit = "target"
+            end
+        end
+    end
+end
+
 local oldDataStub = {
   -- note: this is the minimal data stub which prevents false positives in diff upon reimporting an aura.
   -- pending a refactor of other code which adds unnecessary fields, it is possible to shrink it
@@ -2499,6 +2512,9 @@ function WeakAuras.PreAdd(data)
   end
   validateUserConfig(data, data.authorOptions, data.config)
   removeSpellNames(data)
+  if not(WeakAuras.isAwesomeEnabled()) then
+    removeNameplateUnits(data)
+  end
   data.init_started = nil
   data.init_completed = nil
   data.expanded = nil

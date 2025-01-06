@@ -1196,6 +1196,7 @@ function Private.Modernize(data)
   end
 
   if data.internalVersion < 67 or data.internalVersion > WeakAuras.InternalVersion() then
+    local castMigrationNeeded = data.internalVersion < 67
     data.internalVersion = WeakAuras.InternalVersion()
     local function migrateToTable(tab, field)
       local value = tab[field]
@@ -1334,27 +1335,29 @@ function Private.Modernize(data)
           end
         end
         -- cast trigger move data from 'spell' & 'spellId' to 'spellIds' & 'spellNames'
-        if t.event == "Cast" and t.type == "unit" then
-          if t.spellId then
-            if t.useExactSpellId then
-              t.use_spellIds = t.use_spellId
-              t.spellIds = t.spellIds or {}
-              tinsert(t.spellIds, t.spellId)
-            else
-              t.use_spellNames = t.use_spellId
-              t.spellNames = t.spellNames or {}
-              tinsert(t.spellNames, t.spellId)
+        if castMigrationNeeded then -- Newer imports do not require cast migration
+          if t.event == "Cast" and t.type == "unit" then
+            if t.spellId then
+              if t.useExactSpellId then
+                t.use_spellIds = t.use_spellId
+                t.spellIds = t.spellIds or {}
+                tinsert(t.spellIds, t.spellId)
+              else
+                t.use_spellNames = t.use_spellId
+                t.spellNames = t.spellNames or {}
+                tinsert(t.spellNames, t.spellId)
+              end
             end
+            if t.use_spell and t.spell then
+              t.use_spellNames = true
+              t.spellNames = t.spellNames or {}
+              tinsert(t.spellNames, t.spell)
+            end
+            t.use_spellId = nil
+            t.spellId = nil
+            t.use_spell = nil
+            t.spell = nil
           end
-          if t.use_spell and t.spell then
-            t.use_spellNames = true
-            t.spellNames = t.spellNames or {}
-            tinsert(t.spellNames, t.spell)
-          end
-          t.use_spellId = nil
-          t.spellId = nil
-          t.use_spell = nil
-          t.spell = nil
         end
       end
     end
