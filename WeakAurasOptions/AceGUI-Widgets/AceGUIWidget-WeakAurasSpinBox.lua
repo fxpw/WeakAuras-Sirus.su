@@ -1,6 +1,8 @@
 --[[-----------------------------------------------------------------------------
 Spin Box Widget
 -------------------------------------------------------------------------------]]
+if not WeakAuras.IsLibsOK() then return end
+
 local Type, Version = "WeakAurasSpinBox", 5
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then

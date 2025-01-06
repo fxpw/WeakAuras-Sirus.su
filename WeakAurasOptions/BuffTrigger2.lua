@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local L = WeakAuras.L
@@ -687,7 +687,7 @@ local function GetBuffTriggerOptions(data, triggernum)
     use_includePets = {
       type = "toggle",
       width = WeakAuras.normalWidth,
-      name = WeakAuras.newFeatureString .. L["Include Pets"],
+      name = L["Include Pets"],
       order = 66.1,
       hidden = function() return
         not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"))
@@ -697,7 +697,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       type = "select",
       values = OptionsPrivate.Private.include_pets_types,
       width = WeakAuras.normalWidth,
-      name = WeakAuras.newFeatureString .. L["Include Pets"],
+      name = L["Include Pets"],
       order = 66.15,
       hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party") and trigger.use_includePets) end,
     },

@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local WeakAuras = WeakAuras;
@@ -1166,6 +1166,18 @@ Private.combatlog_raid_mark_check_type = {
   "|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcon_7:14|t " .. RAID_TARGET_7, -- Cross
   "|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcon_8:14|t " .. RAID_TARGET_8, -- Skull
   L["Any"]
+}
+
+Private.combatlog_raidFlags = {
+  [0] = 0,
+  [1] = 1,
+  [2] = 2,
+  [4] = 3,
+  [8] = 4,
+  [16] = 5,
+  [32] = 6,
+  [64] = 7,
+  [128] = 8,
 }
 
 Private.raid_mark_check_type = CopyTable(Private.combatlog_raid_mark_check_type)
@@ -2620,6 +2632,7 @@ Private.author_option_fields = {
     hideReorder = true,
     entryNames = nil, -- handled as a special case in code
     subOptions = {},
+    noMerge = false,
   }
 }
 
@@ -2753,11 +2766,13 @@ Private.reset_swing_spells = {
   [GetSpellInfo(6807)] = true, -- Maul
   [GetSpellInfo(20549)] = true, -- War Stomp
   [GetSpellInfo(56815)] = true, -- Rune Strike
+  [GetSpellInfo(5384)] = true, -- Feign Death
 }
 Private.reset_ranged_swing_spells = {
   [GetSpellInfo(2764)] = true, -- Throw
   [GetSpellInfo(5019)] = true, -- Shoot Wands
   [GetSpellInfo(75)] = true, -- Auto Shot
+  [GetSpellInfo(5384)] = true, -- Feign Death
 }
 
 WeakAuras.StopMotion = {}

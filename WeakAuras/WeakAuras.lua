@@ -107,10 +107,6 @@ end
 
 SLASH_WEAKAURAS1, SLASH_WEAKAURAS2 = "/weakauras", "/wa";
 function SlashCmdList.WEAKAURAS(input)
-  if not WeakAuras.IsCorrectVersion() then
-    prettyPrint(Private.wrongTargetMessage)
-    return
-  end
 
   local args, msg = {}, nil
 
@@ -141,7 +137,7 @@ function SlashCmdList.WEAKAURAS(input)
   end
 end
 
-if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsLibsOK() then return end
 
 function Private.ToggleMinimap()
   WeakAurasSaved.minimap.hide = not WeakAurasSaved.minimap.hide
@@ -2311,8 +2307,6 @@ local function removeNameplateUnits(data)
         if trigger and trigger.type == "unit" then
             if trigger.unit == "nameplate" then
                 trigger.unit = "target"
-            elseif trigger.threatUnit == "nameplate" then
-                trigger.threatUnit = "target"
             end
         end
     end
@@ -3020,12 +3014,15 @@ do
           if new_frame and new_frame ~= data.frame then
             local id = region.id .. (region.cloneId or "")
             -- remove previous glow
-            actionGlowStop(data.actions, data.frame, id)
+            if data.frame then
+              actionGlowStop(data.actions, data.frame, id)
+            end
             -- apply the glow to new_frame
             data.frame = new_frame
             actionGlowStart(data.actions, data.frame, id)
             -- update hidefunc
             local region = region
+            region.active_glows_hidefunc = region.active_glows_hidefunc or {}
             region.active_glows_hidefunc[data.frame] = function()
               actionGlowStop(data.actions, data.frame, id)
               glow_frame_monitor[region] = nil
@@ -3081,7 +3078,7 @@ function Private.HandleGlowAction(actions, region)
     or (actions.glow_frame_type == "FRAMESELECTOR" and actions.glow_frame)
   )
   then
-    local glow_frame
+    local glow_frame, should_glow_frame
     if actions.glow_frame_type == "FRAMESELECTOR" then
       if actions.glow_frame:sub(1, 10) == "WeakAuras:" then
         local frame_name = actions.glow_frame:sub(11)
@@ -3090,45 +3087,55 @@ function Private.HandleGlowAction(actions, region)
         end
         if WeakAuras.regions[frame_name] then
           glow_frame = WeakAuras.regions[frame_name].region
+          should_glow_frame = true
         end
       else
         glow_frame = Private.GetSanitizedGlobal(actions.glow_frame)
+        should_glow_frame = true
       end
     elseif actions.glow_frame_type == "UNITFRAME" and region.state.unit then
       glow_frame = WeakAuras.GetUnitFrame(region.state.unit)
+      should_glow_frame = true
     elseif actions.glow_frame_type == "NAMEPLATE" and region.state.unit then
-      glow_frame = WeakAuras.isAwesomeEnabled() and WeakAuras.GetNamePlateForUnit(region.state.unit) or nil
+      if not(WeakAuras.isAwesomeEnabled()) then return end
+      glow_frame = WeakAuras.GetNamePlateForUnit(region.state.unit)
+      should_glow_frame = true
     end
 
-    if glow_frame then
+    if should_glow_frame then
       local id = region.id .. (region.cloneId or "")
       if actions.glow_action == "show" then
         -- remove previous glow
-        if region.active_glows_hidefunc
-        and region.active_glows_hidefunc[glow_frame]
-        then
-          region.active_glows_hidefunc[glow_frame]()
+        if glow_frame then
+          if region.active_glows_hidefunc
+          and region.active_glows_hidefunc[glow_frame]
+          then
+            region.active_glows_hidefunc[glow_frame]()
+          end
+          -- start glow
+          actionGlowStart(actions, glow_frame, id)
+          -- make unglow function & monitor unitframe changes
+          region.active_glows_hidefunc = region.active_glows_hidefunc or {}
+          if actions.glow_frame_type == "UNITFRAME" then
+            region.active_glows_hidefunc[glow_frame] = function()
+              actionGlowStop(actions, glow_frame, id)
+              glow_frame_monitor[region] = nil
+            end
+          else
+            region.active_glows_hidefunc[glow_frame] = function()
+              actionGlowStop(actions, glow_frame, id)
+            end
+          end
         end
-        -- start glow
-        actionGlowStart(actions, glow_frame, id)
-        -- make unglow function & monitor unitframe changes
-        region.active_glows_hidefunc = region.active_glows_hidefunc or {}
         if actions.glow_frame_type == "UNITFRAME" then
           glow_frame_monitor = glow_frame_monitor or {}
           glow_frame_monitor[region] = {
             actions = actions,
             frame = glow_frame
           }
-          region.active_glows_hidefunc[glow_frame] = function()
-            actionGlowStop(actions, glow_frame, id)
-            glow_frame_monitor[region] = nil
-          end
-        else
-          region.active_glows_hidefunc[glow_frame] = function()
-            actionGlowStop(actions, glow_frame, id)
-          end
         end
       elseif actions.glow_action == "hide"
+      and glow_frame
       and region.active_glows_hidefunc
       and region.active_glows_hidefunc[glow_frame]
       then

@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsLibsOK() then return end
 
 -- based on the AceGUI widget, overwrites the enter handling
 local Type, Version = "WeakAuras-MultiLineEditBoxWithEnter", 1

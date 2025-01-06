@@ -49,7 +49,7 @@ Returns the a tooltip for the additional properties.
 GetTriggerConditions(data, triggernum)
 Returns potential conditions that this trigger provides.
 ]]--
-if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 -- Lua APIs
@@ -1634,9 +1634,9 @@ do
       update_frame = CreateFrame("Frame");
     end
     if not(updating) then
-      update_frame:SetScript("OnUpdate", function()
+      update_frame:SetScript("OnUpdate", function(self, elapsed)
         if not(WeakAuras.IsPaused()) then
-          WeakAuras.ScanEvents("FRAME_UPDATE");
+          WeakAuras.ScanEvents("FRAME_UPDATE", elapsed);
         end
       end);
       updating = true;

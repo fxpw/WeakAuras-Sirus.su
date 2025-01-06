@@ -25,10 +25,6 @@ function WeakAuras.IsClassic()
   return false
 end
 
-function WeakAuras.IsCorrectVersion()
-  return true
-end
-
 WeakAuras.prettyPrint = function(...)
   print("|cff9900ffWeakAuras:|r ", ...)
 end

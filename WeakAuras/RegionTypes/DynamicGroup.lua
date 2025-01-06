@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local WeakAuras = WeakAuras
@@ -1096,6 +1096,11 @@ local function modify(parent, region, data)
       end
       controlPoint:SetWidth(regionData.dimensions.width)
       controlPoint:SetHeight(regionData.dimensions.height)
+      if data.anchorFrameParent then
+        controlPoint:SetParent(frame == "" and self.relativeTo or frame)
+      else
+        controlPoint:SetParent(self)
+      end
       if self.anchorPerUnit == "UNITFRAME" then
         Private.dyngroup_unitframe_monitor[regionData] = frame
       end

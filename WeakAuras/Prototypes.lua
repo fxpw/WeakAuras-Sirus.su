@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 -- Lua APIs
@@ -100,6 +100,10 @@ end
 function WeakAuras.TestSchool(spellSchool, test)
   print(spellSchool, test, type(spellSchool), type(test))
   return spellSchool == test
+end
+
+function WeakAuras.RaidFlagToIndex(flag)
+  return Private.combatlog_raidFlags[flag] or 0
 end
 
 Private.function_strings = {
@@ -941,7 +945,7 @@ Private.load_prototype = {
       display = L["Spell Known"],
       type = "spell",
       test = "WeakAuras.IsSpellKnownForLoad(%s, %s)",
-      events = {"SPELLS_CHANGED"},
+      events = {"SPELLS_CHANGED", "UNIT_PET"},
       showExactOption = true
     },
     {
@@ -949,7 +953,7 @@ Private.load_prototype = {
       display = WeakAuras.newFeatureString .. L["|cFFFF0000Not|r Spell Known"],
       type = "spell",
       test = "not WeakAuras.IsSpellKnownForLoad(%s, %s)",
-      events = {"SPELLS_CHANGED"},
+      events = {"SPELLS_CHANGED", "UNIT_PET"},
       showExactOption = true
     },
     {
@@ -1835,7 +1839,7 @@ Private.event_prototypes = {
       },
       {
         name = "deficit",
-        display = WeakAuras.newFeatureString .. L["Health Deficit"],
+        display = L["Health Deficit"],
         type = "number",
         init = "total - value",
         store = true,
@@ -1965,7 +1969,7 @@ Private.event_prototypes = {
       },
       {
         name = "includePets",
-        display = WeakAuras.newFeatureString .. L["Include Pets"],
+        display = L["Include Pets"],
         type = "select",
         values = "include_pets_types",
         width = WeakAuras.normalWidth,
@@ -2175,7 +2179,7 @@ Private.event_prototypes = {
       },
       {
         name = "deficit",
-        display = WeakAuras.newFeatureString .. L["Power Deficit"],
+        display = L["Power Deficit"],
         type = "number",
         init = "total - value",
         store = true,
@@ -2305,7 +2309,7 @@ Private.event_prototypes = {
       },
       {
         name = "includePets",
-        display = WeakAuras.newFeatureString .. L["Include Pets"],
+        display = L["Include Pets"],
         type = "select",
         values = "include_pets_types",
         width = WeakAuras.normalWidth,
@@ -2474,6 +2478,35 @@ Private.event_prototypes = {
         end
       },
       {
+        name = "sourceRaidFlags",
+        display = L["Source Raid Mark"],
+        type = "select",
+        values = "combatlog_raid_mark_check_type",
+        init = "arg",
+        store = true,
+        test = "WeakAuras.CheckRaidFlags(sourceRaidFlags, %q)",
+        conditionType = "select",
+        conditionTest = function(state, needle)
+          return state and state.show and WeakAuras.CheckRaidFlags(state.sourceRaidFlags, needle);
+        end
+      },
+      {
+        name = "sourceRaidMarkIndex",
+        display = WeakAuras.newFeatureString .. L["Source unit's raid mark index"],
+        init = "WeakAuras.RaidFlagToIndex(sourceRaidFlags)",
+        test = "true",
+        store = true,
+        hidden = true,
+      },
+      {
+        name = "sourceRaidMark",
+        display = WeakAuras.newFeatureString .. L["Source unit's raid mark texture"],
+        test = "true",
+        init = "sourceRaidMarkIndex > 0 and '{rt'..sourceRaidMarkIndex..'}' or ''",
+        store = true,
+        hidden = true,
+      },
+      {
         type = "header",
         name = "destHeader",
         display = L["Destination Info"],
@@ -2590,6 +2623,54 @@ Private.event_prototypes = {
           return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
         end,
       },
+      { -- destFlags ignore for SPELL_CAST_START
+      enable = function(trigger)
+        return (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
+      end,
+      },
+      {
+        name = "destRaidFlags",
+        display = L["Dest Raid Mark"],
+        type = "select",
+        values = "combatlog_raid_mark_check_type",
+        init = "arg",
+        store = true,
+        test = "WeakAuras.CheckRaidFlags(destRaidFlags, %q)",
+        conditionType = "select",
+        conditionTest = function(state, needle)
+          return state and state.show and WeakAuras.CheckRaidFlags(state.destRaidFlags, needle);
+        end,
+        enable = function(trigger)
+          return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
+        end,
+      },
+      { -- destRaidFlags ignore for SPELL_CAST_START
+      enable = function(trigger)
+        return (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
+      end
+      },
+      {
+        name = "destRaidMarkIndex",
+        display = WeakAuras.newFeatureString .. L["Destination unit's raid mark index"],
+        init = "WeakAuras.RaidFlagToIndex(destRaidFlags)",
+        test = "true",
+        store = true,
+        hidden = true,
+        enable = function(trigger)
+          return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
+        end,
+      },
+      {
+        name = "destRaidMark",
+        display = WeakAuras.newFeatureString .. L["Destination unit's raid mark texture"],
+        test = "true",
+        init = "destRaidMarkIndex > 0 and '{rt'..destRaidMarkIndex..'}' or ''",
+        store = true,
+        hidden = true,
+        enable = function(trigger)
+          return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
+        end,
+      },
       {-- destFlags ignore for SPELL_CAST_START
         enable = function(trigger)
           return (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
@@ -2669,7 +2750,7 @@ Private.event_prototypes = {
       },
       {
         name = "spellSchool",
-        display = WeakAuras.newFeatureString .. L["Spell School"],
+        display = L["Spell School"],
         type = "select",
         values = "combatlog_spell_school_types_for_ui",
         sorted = true,
@@ -5594,7 +5675,7 @@ Private.event_prototypes = {
           threatpct, rawthreatpct, threatvalue, threattotal = 100, 100, 0, 100
         end
       ]];
-      return ret;
+      return ret .. unitHelperFunctions.SpecificUnitCheck(trigger);
     end,
     canHaveDuration = true,
     statesParameter = "unit",
@@ -5688,6 +5769,10 @@ Private.event_prototypes = {
       {
         hidden = true,
         test = "status ~= nil and ok"
+      },
+      {
+        hidden = true,
+        test = "WeakAuras.UnitExistsFixed(unit, smart) and specificUnitCheck"
       }
     },
     automaticrequired = true
@@ -6126,7 +6211,7 @@ Private.event_prototypes = {
       },
       {
         name = "includePets",
-        display = WeakAuras.newFeatureString .. L["Include Pets"],
+        display = L["Include Pets"],
         type = "select",
         values = "include_pets_types",
         width = WeakAuras.normalWidth,

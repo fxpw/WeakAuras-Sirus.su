@@ -50,7 +50,7 @@ Returns the tooltip text for additional properties.
 GetTriggerConditions(data, triggernum)
 Returns the potential conditions for a trigger
 ]]--
-if not WeakAuras.IsCorrectVersion() or not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 -- Lua APIs
@@ -230,7 +230,6 @@ local function ReferenceMatchDataMulti(matchData, id, triggernum, destGUID)
     local matchDataByTriggerBase = GetOrCreateSubTable(matchDataByTrigger, id, triggernum, destGUID)
     tinsert(matchDataByTriggerBase, matchData)
   end
-
   matchDataChanged[id] = matchDataChanged[id] or {}
   matchDataChanged[id][triggernum] = true
 end
@@ -566,6 +565,12 @@ local function UpdateStateWithMatch(time, bestMatch, triggerStates, cloneId, mat
       changed = true
     end
 
+    if not state.initialTime then
+      -- Only set initialTime if it wasn't set before
+      state.initialTime = time
+      changed = true
+    end
+
     if state.expirationTime ~= bestMatch.expirationTime then
       -- A bit fuzzy checking
       if state.expirationTime and bestMatch.expirationTime and bestMatch.expirationTime - state.expirationTime > 0.2  then
@@ -721,6 +726,15 @@ local function UpdateStateWithNoMatch(time, triggerStates, triggerInfo, cloneId,
 
     if state.duration then
       state.duration = nil
+      changed = true
+    end
+
+    if state.initialTime then
+      state.initialTime = nil
+      changed = true
+    end
+    if state.refreshTime then
+      state.refreshTime = nil
       changed = true
     end
 
@@ -2582,7 +2596,9 @@ function BuffTrigger.GetAdditionalProperties(data, triggernum)
   ret = ret .. "|cFFFF0000%".. triggernum .. ".debuffClass|r - " .. L["Debuff Class"] .. "\n"
   ret = ret .. "|cFFFF0000%".. triggernum .. ".unitCaster|r - " .. L["Caster Unit"] .. "\n"
   ret = ret .. "|cFFFF0000%".. triggernum .. ".casterName|r - " .. L["Caster Name"] .. "\n"
-  ret = ret .. "|cFFFF0000%".. triggernum .. ".unit|r - " .. L["Unit"] .. "\n"
+  if trigger.unit ~= "multi" then
+    ret = ret .. "|cFFFF0000%".. triggernum .. ".unit|r - " .. L["Unit"] .. "\n"
+  end
   ret = ret .. "|cFFFF0000%".. triggernum .. ".unitName|r - " .. L["Unit Name"] .. "\n"
   ret = ret .. "|cFFFF0000%".. triggernum .. ".matchCount|r - " .. L["Match Count"] .. "\n"
   ret = ret .. "|cFFFF0000%".. triggernum .. ".matchCountPerUnit|r - " .. L["Match Count per Unit"] .. "\n"
@@ -3126,17 +3142,11 @@ local function AugmentMatchDataMultiWith(matchData, unit, name, icon, stacks, de
     changed = true
   end
 
-  if (matchData.unit ~= unit) then
-    matchData.unit = unit
-    changed = true
-  end
-
   local unitName = GetUnitName(unit, false) or ""
   if matchData.unitName ~= unitName then
     matchData.unitName = unitName
     changed = true
   end
-
 
   if matchData.spellId ~= spellId then
     matchData.spellId = name
