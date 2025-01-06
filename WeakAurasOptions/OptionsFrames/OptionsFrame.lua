@@ -212,6 +212,7 @@ function OptionsPrivate.CreateFrame()
       self.update.frame:Hide()
       self.texteditor.frame:Hide()
       self.codereview.frame:Hide()
+      self.debugLog.frame:Hide()
       if self.newView then
         self.newView.frame:Hide()
       end
@@ -291,6 +292,12 @@ function OptionsPrivate.CreateFrame()
         self.update.frame:Show()
       else
         self.update.frame:Hide()
+      end
+      if self.window == "debuglog" then
+        OptionsPrivate.SetTitle(L["Debug Log"])
+        self.debugLog.frame:Show()
+      else
+        self.debugLog.frame:Hide()
       end
       if self.window == "default" then
         if self.loadProgessVisible then
@@ -486,6 +493,7 @@ function OptionsPrivate.CreateFrame()
   frame.texteditor = OptionsPrivate.TextEditor(frame)
   frame.codereview = OptionsPrivate.CodeReview(frame)
   frame.update = OptionsPrivate.UpdateFrame(frame)
+  frame.debugLog = OptionsPrivate.DebugLog(frame)
 
   frame.moversizer, frame.mover = OptionsPrivate.MoverSizer(frame)
 

@@ -276,6 +276,10 @@ function Private.ActivateAuraEnvironment(id, cloneId, state, states, onlyConfig)
   end
 end
 
+local function DebugPrint(...)
+  Private.DebugLog.Print(current_uid, ...)
+end
+
 local function blocked(key)
   Private.AuraWarnings.UpdateWarning(current_uid, "SandboxForbidden", "error",
           string.format(L["Forbidden function or table: %s"], key))
@@ -392,6 +396,8 @@ local exec_env = setmetatable({},
       return env_getglobal
     elseif k == "aura_env" then
       return current_aura_env
+    elseif k == "DebugPrint" then
+      return DebugPrint
     elseif blockedFunctions[k] then
       blocked(k)
       return function() end

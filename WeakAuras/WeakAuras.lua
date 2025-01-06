@@ -1570,6 +1570,10 @@ function Private.LoadDisplays(toLoad, ...)
     triggerState[id].show = false;
     triggerState[id].activeTrigger = nil;
     triggerState[id].activatedConditions = {};
+    if Private.DebugLog.IsEnabled(uid) then
+      WeakAuras.prettyPrint(L["Debug Logging enabled for '%s'"]:format(id))
+      Private.DebugLog.Print(uid, L["Aura loaded"])
+    end
   end
   for _, triggerSystem in pairs(triggerSystems) do
     triggerSystem.LoadDisplays(toLoad, ...);
@@ -2554,6 +2558,8 @@ local function pAdd(data, simpleChange)
     end
     Private.UpdatedTriggerState(id)
   else
+    Private.DebugLog.SetEnabled(data.uid, data.information.debugLog)
+
     if (data.controlledChildren) then
       Private.ClearAuraEnvironment(id);
       for parent in Private.TraverseParents(data) do

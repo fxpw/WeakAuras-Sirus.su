@@ -10,6 +10,7 @@ local printedWarnings = {}
 
 local function OnDelete(event, uid)
   warnings[uid] = nil
+  printedWarnings[uid] = nil
 end
 
 Private.callbacks:RegisterCallback("Delete", OnDelete)
@@ -37,6 +38,9 @@ local function UpdateWarning(uid, key, severity, message, printOnConsole)
   else
     if warnings[uid][key] then
       warnings[uid][key] = nil
+      if printedWarnings[uid] then
+        printedWarnings[uid][key] = nil
+      end
       Private.callbacks:Fire("AuraWarningsUpdated", uid)
     end
   end
@@ -50,7 +54,7 @@ local severityLevel = {
 }
 
 local icons = {
-  info = { path = [[Interface\friendsframe\informationicon]] },
+  info = { path = [[Interface\FriendsFrame\InformationIcon]] },
   sound = { path = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\ChatFrame", texCoords = {0.757812, 0.871094, 0.0078125, 0.234375} },
   warning = { path = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\ServicesAtlas", texCoords = {0.000976562, 0.0419922, 0.961914, 0.998047} },
   error = { path = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\HelpIcon-Bug" },
@@ -75,9 +79,9 @@ local function AddMessages(result, messages, icon, mixedSeverity)
       local iconPath = icon.path
       local texCoords = icon.texCoords
       if texCoords then
-      result = result .. string.format("|T%s:12:12:0:0:64:64:%d:%d:%d:%d|t", iconPath, texCoords[1] * 64, texCoords[2] * 64, texCoords[3] * 64, texCoords[4] * 64)
+        result = result .. string.format("|T%s:12:12:0:0:64:64:%d:%d:%d:%d|t", iconPath, texCoords[1] * 64, texCoords[2] * 64, texCoords[3] * 64, texCoords[4] * 64)
       else
-      result = result .. string.format("|T%s:12:12:0:0:64:64:4:60:4:60|t", iconPath)
+        result = result .. string.format("|T%s:12:12:0:0:64:64:4:60:4:60|t", iconPath)
       end
     end
     result = result .. message
