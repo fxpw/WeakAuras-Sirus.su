@@ -1691,7 +1691,7 @@ Private.texture_types["PowerAuras Separated"] = {
   [PowerAurasPath.."Aura104"] = "Shield Center",
   [PowerAurasPath.."Aura105"] = "Shield Full",
   [PowerAurasPath.."Aura106"] = "Shield Top Right",
-  [PowerAurasPath.."Aura107"] = "Shiled Top Left",
+  [PowerAurasPath.."Aura107"] = "Shield Top Left",
   [PowerAurasPath.."Aura108"] = "Shield Bottom Right",
   [PowerAurasPath.."Aura109"] = "Shield Bottom Left",
   [PowerAurasPath.."Aura121"] = "Vine Top Right Leaf",
@@ -2330,7 +2330,7 @@ Private.bool_types = {
 Private.update_categories = {
   {
     name = "anchor",
-    -- Note, these are special cased for child auras and considered arrangment
+    -- Note, these are special cased for child auras and considered arrangement
     fields = {
       "xOffset",
       "yOffset",

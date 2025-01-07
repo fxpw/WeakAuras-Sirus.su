@@ -1746,7 +1746,7 @@ local function EventHandler(frame, event, arg1, arg2, ...)
   elseif event == "UNIT_PET" then
     local pet = WeakAuras.unitToPetUnit[arg1]
     if pet then
-      ScanGroupUnit(time, matchDataChanged, nil, pet)
+      ScanGroupUnit(time, matchDataChanged, "group", pet)
       RecheckActiveForUnitType("group", pet, deactivatedTriggerInfos)
       if not UnitExistsFixed(pet) then
         tinsert(unitsToRemove, pet)
@@ -2472,7 +2472,7 @@ function BuffTrigger.Add(data)
         useAffected = unit == "group" and trigger.useAffected,
         isMulti = trigger.unit == "multi",
         nameChecker = effectiveNameCheck and WeakAuras.ParseNameCheck(trigger.unitName),
-        includePets = trigger.use_includePets and trigger.includePets,
+        includePets = trigger.use_includePets and trigger.includePets or nil,
         npcId = effectiveNpcId
       }
       triggerInfos[id] = triggerInfos[id] or {}
@@ -3353,7 +3353,7 @@ end
 
 function BuffTrigger.GetTriggerDescription(data, triggernum, namestable)
   local trigger = data.triggers[triggernum].trigger
-  if trigger.auranames then
+  if trigger.useName and trigger.auranames then
     for index, name in pairs(trigger.auranames) do
       local left = " "
       if(index == 1) then
@@ -3377,7 +3377,7 @@ function BuffTrigger.GetTriggerDescription(data, triggernum, namestable)
     end
   end
 
-  if trigger.auraspellids then
+  if trigger.useExactSpellId and  trigger.auraspellids then
     for index, spellId in pairs(trigger.auraspellids) do
       local left = " "
       if index == 1 then

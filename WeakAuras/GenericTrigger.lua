@@ -457,7 +457,7 @@ function Private.EndEvent(id, triggernum, force, state)
   end
 end
 
-local function RunOverlayFuncs(event, state, id)
+local function RunOverlayFuncs(event, state, id, errorHandler)
   state.additionalProgress = state.additionalProgress or {};
   local changed = false;
   for i, overlayFunc in ipairs(event.overlayFuncs) do
@@ -465,7 +465,7 @@ local function RunOverlayFuncs(event, state, id)
     local additionalProgress = state.additionalProgress[i];
     local ok, a, b, c = pcall(overlayFunc, event.trigger, state);
     if (not ok) then
-      Private.GetErrorHandlerId(id, L["Overlay %s"]:format(i))
+      (errorHandler or Private.GetErrorHandlerId(id, L["Overlay %s"]:format(i)))(a)
       additionalProgress.min = nil;
       additionalProgress.max = nil;
       additionalProgress.direction = nil;
@@ -522,7 +522,7 @@ local function callFunctionForActivateEvent(func, trigger, fallback, errorHandle
   end
 end
 
-function Private.ActivateEvent(id, triggernum, data, state)
+function Private.ActivateEvent(id, triggernum, data, state, errorHandler)
   local changed = state.changed or false;
   if (state.show ~= true) then
     state.show = true;
@@ -553,7 +553,7 @@ function Private.ActivateEvent(id, triggernum, data, state)
   elseif (data.durationFunc) then
     local ok, arg1, arg2, arg3, inverse = pcall(data.durationFunc, data.trigger);
     if not ok then
-      Private.GetErrorHandlerId(id, L["Duration Function"])
+      (errorHandler or Private.GetErrorHandlerId(id, L["Duration Function"]))(arg1)
       arg1 = 0;
       arg2 = 0;
     else
@@ -619,10 +619,10 @@ function Private.ActivateEvent(id, triggernum, data, state)
     end
   end
 
-  local name = callFunctionForActivateEvent(data.nameFunc, data.trigger, state.name, Private.GetErrorHandlerId(id, L["Name Function"]))
-  local icon = callFunctionForActivateEvent(data.iconFunc, data.trigger, state.icon, Private.GetErrorHandlerId(id, L["Icon Function"]))
-  local texture = callFunctionForActivateEvent(data.textureFunc, data.trigger, state.texture, Private.GetErrorHandlerId(id, L["Texture Function"]))
-  local stacks = callFunctionForActivateEvent(data.stacksFunc, data.trigger, state.stacks, Private.GetErrorHandlerId(id, L["Stacks Function"]))
+  local name = callFunctionForActivateEvent(data.nameFunc, data.trigger, state.name, errorHandler or Private.GetErrorHandlerId(id, L["Name Function"]))
+  local icon = callFunctionForActivateEvent(data.iconFunc, data.trigger, state.icon, errorHandler or Private.GetErrorHandlerId(id, L["Icon Function"]))
+  local texture = callFunctionForActivateEvent(data.textureFunc, data.trigger, state.texture, errorHandler or Private.GetErrorHandlerId(id, L["Texture Function"]))
+  local stacks = callFunctionForActivateEvent(data.stacksFunc, data.trigger, state.stacks, errorHandler or Private.GetErrorHandlerId(id, L["Stacks Function"]))
 
   if (state.name ~= name) then
     state.name = name;
@@ -642,7 +642,7 @@ function Private.ActivateEvent(id, triggernum, data, state)
   end
 
   if (data.overlayFuncs) then
-    RunOverlayFuncs(data, state, id);
+    RunOverlayFuncs(data, state, id, errorHandler);
   else
     state.additionalProgress = nil;
   end
@@ -735,7 +735,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       if not ok then
         errorHandler(returnValue)
       elseif (ok and returnValue) or optionsEvent then
-        if(Private.ActivateEvent(id, triggernum, data, state)) then
+        if(Private.ActivateEvent(id, triggernum, data, state, (optionsEvent and data.ignoreOptionsEventErrors) and ignoreErrorHandler or nil)) then
           updateTriggerState = true;
         end
       else
@@ -748,7 +748,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       elseif (ok and returnValue) or optionsEvent then
         allStates[""] = allStates[""] or {};
         local state = allStates[""];
-        if(Private.ActivateEvent(id, triggernum, data, state)) then
+        if(Private.ActivateEvent(id, triggernum, data, state, (optionsEvent and data.ignoreOptionsEventErrors) and ignoreErrorHandler or nil)) then
           updateTriggerState = true;
         end
       else
@@ -756,6 +756,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       end
     end
     if (untriggerCheck and not optionsEvent) then
+      errorHandler = (optionsEvent and data.ignoreOptionsEventErrors) and ignoreErrorHandler or Private.GetErrorHandlerId(id, L["Untrigger %s"]:format(triggernum))
       if (data.statesParameter == "all") then
         if data.untriggerFunc then
           local ok, returnValue = pcall(data.untriggerFunc, allStates, event, arg1, arg2, ...);
@@ -3271,6 +3272,7 @@ do
     if not(tenchFrame) then
       tenchFrame = CreateFrame("Frame");
       tenchFrame:RegisterEvent("UNIT_INVENTORY_CHANGED");
+      tenchFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
 
       tenchTip = WeakAuras.GetHiddenTooltip();
 
@@ -3323,11 +3325,9 @@ do
         Private.StopProfileSystem("generictrigger");
       end
 
-      tenchFrame:SetScript("OnEvent", function(self, event, arg1)
+      tenchFrame:SetScript("OnEvent", function()
         Private.StartProfileSystem("generictrigger");
-        if (event == "UNIT_INVENTORY_CHANGED" and arg1 == "player") then
-          timer:ScheduleTimer(tenchUpdate, 0.1);
-        end
+        timer:ScheduleTimer(tenchUpdate, 0.1);
         Private.StopProfileSystem("generictrigger");
       end);
 
@@ -4094,9 +4094,9 @@ function GenericTrigger.CreateFallbackState(data, triggernum, state)
   local event = events[data.id][triggernum];
 
   Private.ActivateAuraEnvironment(data.id, "", state);
-  local firstTrigger = data.triggers[1].trigger
+  local trigger = data.triggers[triggernum].trigger
   if (event.nameFunc) then
-    local ok, name = pcall(event.nameFunc, firstTrigger);
+    local ok, name = pcall(event.nameFunc, trigger);
     if not ok then
       Private.GetErrorHandlerUid(data.uid, L["Name Function (fallback state)"])
       state.name = nil
@@ -4105,7 +4105,7 @@ function GenericTrigger.CreateFallbackState(data, triggernum, state)
     end
   end
   if (event.iconFunc) then
-    local ok, icon = pcall(event.iconFunc, firstTrigger);
+    local ok, icon = pcall(event.iconFunc, trigger);
     if not ok then
       Private.GetErrorHandlerUid(data.uid, L["Icon Function (fallback state)"])
       state.icon = nil
@@ -4115,7 +4115,7 @@ function GenericTrigger.CreateFallbackState(data, triggernum, state)
   end
 
   if (event.textureFunc ) then
-    local ok, texture = pcall(event.textureFunc, firstTrigger);
+    local ok, texture = pcall(event.textureFunc, trigger);
     if not ok then
       Private.GetErrorHandlerUid(data.uid, L["Texture Function (fallback state)"])
       state.texture = nil
@@ -4125,7 +4125,7 @@ function GenericTrigger.CreateFallbackState(data, triggernum, state)
   end
 
   if (event.stacksFunc) then
-    local ok, stacks = pcall(event.stacksFunc, firstTrigger);
+    local ok, stacks = pcall(event.stacksFunc, trigger);
     if not ok then
       Private.GetErrorHandlerUid(data.uid, L["Stacks Function (fallback state)"])
       state.stacks = nil
@@ -4135,7 +4135,7 @@ function GenericTrigger.CreateFallbackState(data, triggernum, state)
   end
 
   if (event.durationFunc) then
-    local ok, arg1, arg2, arg3, inverse = pcall(event.durationFunc, firstTrigger);
+    local ok, arg1, arg2, arg3, inverse = pcall(event.durationFunc, trigger);
     if not ok then
       Private.GetErrorHandlerUid(data.uid, L["Duration Function (fallback state)"])
       state.progressType = "timed";

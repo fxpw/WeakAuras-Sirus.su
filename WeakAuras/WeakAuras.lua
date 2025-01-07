@@ -31,7 +31,7 @@ LibStub("AceTimer-3.0"):Embed(WeakAurasTimers)
 Private.watched_trigger_events = {}
 
 -- The worlds simplest callback system.
--- That supports 1:N, but no deregistration and breaks if registrating in a callback
+-- That supports 1:N, but no de-registration and breaks if registering in a callback
 Private.callbacks = {}
 Private.callbacks.events = {}
 
@@ -882,7 +882,7 @@ local function AddLegacyCompanionData()
 end
 
 function Private.PostAddCompanion()
-  -- add data from older verion of companion addons
+  -- add data from older version of companion addons
   AddLegacyCompanionData()
   -- nag if updates
   local count = Private.CountWagoUpdates()
@@ -5418,7 +5418,7 @@ do
     return coroutine.wrap(TraverseLeafs), data
   end
 
-  -- The root if it is a non-group, otherwise non-group childrens
+  -- The root if it is a non-group, otherwise non-group children
   function Private.TraverseLeafsOrAura(data)
     return coroutine.wrap(TraverseLeafsOrAura), data
   end
