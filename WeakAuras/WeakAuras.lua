@@ -63,6 +63,46 @@ function WeakAuras.InternalVersion()
   return internalVersion;
 end
 
+do
+  local currentErrorHandlerId
+  local currentErrorHandlerUid
+  local currentErrorHandlerContext
+  local function waErrorHandler(errorMessage)
+    local prefix = ""
+    local data
+    if currentErrorHandlerId then
+      data = WeakAuras.GetData(currentErrorHandlerId)
+    elseif currentErrorHandlerUid then
+      data = Private.GetDataByUID(currentErrorHandlerUid)
+    end
+    if data then
+      Private.AuraWarnings.UpdateWarning(data.uid, "LuaError", "error",
+        L["This aura has caused a Lua error."] .. "\n" .. L["Install the addons BugSack and BugGrabber for detailed error logs."], true)
+      prefix = L["Lua error in aura '%s': %s"]:format(data.id, currentErrorHandlerContext or L["unknown location"]) .. "\n"
+    else
+      prefix = L["Lua error"] .. "\n"
+    end
+    prefix = prefix .. L["WeakAuras Version: %s"]:format(WeakAuras.versionString) .. "\n"
+    local version = data and (data.semver or data.version)
+    if version then
+      prefix = prefix .. L["Aura Version: %s"]:format(version) .. "\n"
+    end
+    geterrorhandler()(prefix .. errorMessage)
+  end
+  function Private.GetErrorHandlerId(id, context)
+    currentErrorHandlerUid = nil
+    currentErrorHandlerId = id
+    currentErrorHandlerContext = context
+    return waErrorHandler
+  end
+  function Private.GetErrorHandlerUid(uid, context)
+    currentErrorHandlerUid = uid
+    currentErrorHandlerId = nil
+    currentErrorHandlerContext = context
+    return waErrorHandler
+  end
+end
+
 function Private.LoadOptions(msg)
   if not(IsAddOnLoaded("WeakAurasOptions")) then
     if not WeakAuras.IsLoginFinished() then
@@ -796,30 +836,30 @@ local function LoadCustomActionFunctions(data)
 
   if (data.actions) then
     if (data.actions.init and data.actions.init.do_custom and data.actions.init.custom) then
-      local func = WeakAuras.LoadFunction("return function() "..(data.actions.init.custom).."\n end", id, "initialization");
+      local func = WeakAuras.LoadFunction("return function() "..(data.actions.init.custom).."\n end");
       Private.customActionsFunctions[id]["init"] = func;
     end
 
     if (data.actions.start) then
       if (data.actions.start.do_custom and data.actions.start.custom) then
-        local func = WeakAuras.LoadFunction("return function() "..(data.actions.start.custom).."\n end", id, "show action");
+        local func = WeakAuras.LoadFunction("return function() "..(data.actions.start.custom).."\n end");
         Private.customActionsFunctions[id]["start"] = func;
       end
 
       if (data.actions.start.do_message and data.actions.start.message_custom) then
-        local func = WeakAuras.LoadFunction("return "..(data.actions.start.message_custom), id, "show message");
+        local func = WeakAuras.LoadFunction("return "..(data.actions.start.message_custom));
         Private.customActionsFunctions[id]["start_message"] = func;
       end
     end
 
     if (data.actions.finish) then
       if (data.actions.finish.do_custom and data.actions.finish.custom) then
-        local func = WeakAuras.LoadFunction("return function() "..(data.actions.finish.custom).."\n end", id, "hide action");
+        local func = WeakAuras.LoadFunction("return function() "..(data.actions.finish.custom).."\n end");
         Private.customActionsFunctions[id]["finish"] = func;
       end
 
       if (data.actions.finish.do_message and data.actions.finish.message_custom) then
-        local func = WeakAuras.LoadFunction("return "..(data.actions.finish.message_custom), id, "hide message");
+        local func = WeakAuras.LoadFunction("return "..(data.actions.finish.message_custom));
         Private.customActionsFunctions[id]["finish_message"] = func;
       end
     end
@@ -2605,11 +2645,11 @@ local function pAdd(data, simpleChange)
       loadEvents["SCAN_ALL"][id] = true
 
       local loadForOptionsFuncStr = ConstructFunction(load_prototype, data.load, true);
-      local loadFunc = WeakAuras.LoadFunction(loadFuncStr, id, "load");
-      local loadForOptionsFunc = WeakAuras.LoadFunction(loadForOptionsFuncStr, id, "options load");
+      local loadFunc = WeakAuras.LoadFunction(loadFuncStr);
+      local loadForOptionsFunc = WeakAuras.LoadFunction(loadForOptionsFuncStr);
       local triggerLogicFunc;
       if data.triggers.disjunctive == "custom" then
-        triggerLogicFunc = WeakAuras.LoadFunction("return "..(data.triggers.customTriggerLogic or ""), id, "trigger combination");
+        triggerLogicFunc = WeakAuras.LoadFunction("return "..(data.triggers.customTriggerLogic or ""));
       end
 
       LoadCustomActionFunctions(data);
@@ -2668,7 +2708,7 @@ function WeakAuras.Add(data, takeSnapshot, simpleChange)
   end
   local ok, ret = pcall(WeakAuras.PreAdd, data)
   if not ok then
-    geterrorhandler()(ret)
+    Private.GetErrorHandlerUid(data.uid, "PreAdd")
   elseif ok then
     pAdd(data, simpleChange)
   end
@@ -3177,7 +3217,7 @@ function Private.PerformActions(data, when, region)
     local func = Private.customActionsFunctions[data.id][when]
     if func then
       Private.ActivateAuraEnvironment(region.id, region.cloneId, region.state, region.states);
-      xpcall(func, geterrorhandler());
+      xpcall(func, Private.GetErrorHandlerId(data.id, L["Custom Action"]));
       Private.ActivateAuraEnvironment(nil);
     end
   end
@@ -3854,7 +3894,7 @@ local function evaluateTriggerStateTriggers(id)
     if (triggerState[id].disjunctive == "custom" and triggerState[id].triggerLogicFunc) then
       local ok, returnValue = pcall(triggerState[id].triggerLogicFunc, triggerState[id].triggers);
       if not ok then
-        geterrorhandler()(returnValue)
+        Private.GetErrorHandlerId(id, L["Custom Trigger Combination"])
         result = false
       else
         result = returnValue
@@ -4073,7 +4113,7 @@ function Private.RunCustomTextFunc(region, customFunc)
 
   local custom = {pcall(customFunc, expirationTime or math.huge, duration or 0, progress, dur, name, icon, stacks)}
   if not custom[1] then
-    geterrorhandler()(custom[2])
+    Private.GetErrorHandlerId(region.id, L["Custom Text Function"])
   else
     table.remove(custom, 1)
   end
@@ -4882,7 +4922,7 @@ local function GetAnchorFrame(data, region, parent)
     Private.StartProfileSystem("custom region anchor")
     Private.StartProfileAura(region.id)
     Private.ActivateAuraEnvironment(region.id, region.cloneId, region.state)
-    local ok, frame = xpcall(region.customAnchorFunc, geterrorhandler())
+    local ok, frame = xpcall(region.customAnchorFunc, Private.GetErrorHandlerId(region.id, L["Custom Anchor"]))
     Private.ActivateAuraEnvironment()
     Private.StopProfileSystem("custom region anchor")
     Private.StopProfileAura(region.id)
@@ -4915,12 +4955,9 @@ function Private.AnchorFrame(data, region, parent, force)
     if not anchorParent then return end
     if (data.anchorFrameParent or data.anchorFrameParent == nil
         or data.anchorFrameType == "SCREEN" or data.anchorFrameType == "MOUSE") then
-      local errorhandler = function(text)
-        geterrorhandler()(L["'ERROR: Anchoring %s': \n"]:format(data.id) .. text)
-      end
       local ok, ret = pcall(region.SetParent, region, anchorParent);
       if not ok then
-        errorhandler(ret)
+        Private.GetErrorHandlerId(data.id, L["Anchoring"])
       end
     else
       region:SetParent(parent or WeakAurasFrame);

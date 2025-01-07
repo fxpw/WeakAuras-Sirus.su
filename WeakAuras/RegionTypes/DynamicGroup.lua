@@ -2,6 +2,7 @@ if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local WeakAuras = WeakAuras
+local L = WeakAuras.L
 local SharedMedia = LibStub("LibSharedMedia-3.0")
 
 local default = {
@@ -317,13 +318,13 @@ local sorters = {
   end,
   custom = function(data)
     local sortStr = data.customSort or ""
-    local sortFunc = WeakAuras.LoadFunction("return " .. sortStr, data.id, "custom sort") or noop
+    local sortFunc = WeakAuras.LoadFunction("return " .. sortStr) or noop
     return function(a, b)
       Private.ActivateAuraEnvironment(data.id)
       local ok, result = pcall(sortFunc, a, b)
       Private.ActivateAuraEnvironment()
       if not ok then
-        geterrorhandler()(result)
+        Private.GetErrorHandlerId(data.id, L["Custom Sort"])
       else
         return result
       end
@@ -398,12 +399,12 @@ local anchorers = {
   end,
   ["CUSTOM"] = function(data)
     local anchorStr = data.customAnchorPerUnit or ""
-    local anchorFunc = WeakAuras.LoadFunction("return " .. anchorStr, data.id, "custom frame anchor") or noop
+    local anchorFunc = WeakAuras.LoadFunction("return " .. anchorStr) or noop
     return function(frames, activeRegions)
       Private.ActivateAuraEnvironment(data.id)
       local ok, ret = pcall(anchorFunc, frames, activeRegions)
       if not ok then
-        geterrorhandler()(ret)
+        Private.GetErrorHandlerUid(data.uid, L["Custom Anchor"])
       end
       Private.ActivateAuraEnvironment()
     end
@@ -763,13 +764,13 @@ local growers = {
   end,
   CUSTOM = function(data)
     local growStr = data.customGrow or ""
-    local growFunc = WeakAuras.LoadFunction("return " .. growStr, data.id, "custom grow") or noop
+    local growFunc = WeakAuras.LoadFunction("return " .. growStr) or noop
     return function(newPositions, activeRegions)
       Private.ActivateAuraEnvironment(data.id)
       local ok, ret = pcall(growFunc, newPositions, activeRegions)
       Private.ActivateAuraEnvironment()
       if not ok then
-        geterrorhandler()(ret)
+        Private.GetErrorHandlerId(data.id, L["Custom Sort"])
         wipe(newPositions)
       end
     end

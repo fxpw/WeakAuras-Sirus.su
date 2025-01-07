@@ -151,7 +151,7 @@ end
 function WeakAuras.CallCustomConditionTest(uid, testFunctionNumber, ...)
   local ok, result = pcall(WeakAuras.conditionHelpers[uid].customTestFunctions[testFunctionNumber], ...)
   if not ok then
-    geterrorhandler()(result)
+    Private.GetErrorHandlerUid(uid, L["Condition Custom Text"])
   elseif (ok) then
     return result
   end
@@ -223,7 +223,7 @@ local function CreateTestForCondition(uid, input, allConditionsTemplate, usedSta
       end
     elseif (cType == "customcheck") then
       if value then
-        local customCheck = WeakAuras.LoadFunction("return " .. value, Private.UIDtoID(uid), "conditions custom check")
+        local customCheck = WeakAuras.LoadFunction("return " .. value)
         if customCheck then
           WeakAuras.conditionHelpers[uid] = WeakAuras.conditionHelpers[uid] or {}
           WeakAuras.conditionHelpers[uid].customTestFunctions = WeakAuras.conditionHelpers[uid].customTestFunctions or {}
@@ -295,7 +295,7 @@ local function CreateTestForCondition(uid, input, allConditionsTemplate, usedSta
         fn = fn:format(input.op_range, input.range, op, value)
       end
       if fn then
-        local customCheck = WeakAuras.LoadFunction(fn, Private.UIDtoID(uid), "conditions range check")
+        local customCheck = WeakAuras.LoadFunction(fn)
         if customCheck then
           WeakAuras.conditionHelpers[uid] = WeakAuras.conditionHelpers[uid] or {}
           WeakAuras.conditionHelpers[uid].customTestFunctions = WeakAuras.conditionHelpers[uid].customTestFunctions or {}
@@ -517,7 +517,7 @@ function Private.LoadConditionPropertyFunctions(data)
             else
               prefix, suffix = "return function()", "\nend";
             end
-            local customFunc = WeakAuras.LoadFunction(prefix .. custom .. suffix, id, "condition");
+            local customFunc = WeakAuras.LoadFunction(prefix .. custom .. suffix);
             if (customFunc) then
               WeakAuras.customConditionsFunctions[id][conditionNumber] = WeakAuras.customConditionsFunctions[id][conditionNumber] or {};
               WeakAuras.customConditionsFunctions[id][conditionNumber].changes = WeakAuras.customConditionsFunctions[id][conditionNumber].changes or {};
@@ -697,7 +697,7 @@ function Private.LoadConditionFunction(data)
   CancelTimers(data.uid)
 
   local checkConditionsFuncStr = ConstructConditionFunction(data);
-  local checkCondtionsFunc = checkConditionsFuncStr and WeakAuras.LoadFunction(checkConditionsFuncStr, data.id, "condition checks");
+  local checkCondtionsFunc = checkConditionsFuncStr and WeakAuras.LoadFunction(checkConditionsFuncStr);
 
   checkConditions[data.uid] = checkCondtionsFunc;
 end

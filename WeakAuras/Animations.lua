@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
+local L = WeakAuras.L
 
 -- Animations
 local animations = {}
@@ -14,7 +15,6 @@ local updatingAnimations;
 local last_update = GetTime();
 local function UpdateAnimations()
   Private.StartProfileSystem("animations");
-  local errorHandler = WeakAuras.IsOptionsOpen() and noopErrorHandler or geterrorhandler()
   for groupUid, groupRegion in pairs(pending_controls) do
     pending_controls[groupUid] = nil;
     groupRegion:DoPositionChildren();
@@ -72,6 +72,7 @@ local function UpdateAnimations()
     progress = anim.easeFunc(progress, anim.easeStrength or 3)
     Private.ActivateAuraEnvironmentForRegion(anim.region)
     if(anim.translateFunc) then
+      local errorHandler = WeakAuras.IsOptionsOpen() and noopErrorHandler or Private.GetErrorHandlerUid(anim.auraUID, L["Slide Animation"])
       if (anim.region.SetOffsetAnim) then
         local ok, x, y = pcall(anim.translateFunc, progress, 0, 0, anim.dX, anim.dY);
         if not ok then
@@ -90,6 +91,7 @@ local function UpdateAnimations()
       end
     end
     if(anim.alphaFunc) then
+      local errorHandler = WeakAuras.IsOptionsOpen() and noopErrorHandler or Private.GetErrorHandlerUid(anim.auraUID, L["Fade Animation"])
       local ok, alpha = pcall(anim.alphaFunc, progress, anim.startAlpha, anim.dAlpha);
       if not ok then
         errorHandler(alpha)
@@ -102,6 +104,7 @@ local function UpdateAnimations()
       end
     end
     if(anim.scaleFunc) then
+      local errorHandler = WeakAuras.IsOptionsOpen() and noopErrorHandler or Private.GetErrorHandlerUid(anim.auraUID, L["Zoom Animation"])
       local ok, scaleX, scaleY = pcall(anim.scaleFunc, progress, 1, 1, anim.scaleX, anim.scaleY);
       if not ok then
         errorHandler(scaleX)
@@ -115,6 +118,7 @@ local function UpdateAnimations()
       end
     end
     if(anim.rotateFunc and anim.region.Rotate) then
+      local errorHandler = WeakAuras.IsOptionsOpen() and noopErrorHandler or Private.GetErrorHandlerUid(anim.auraUID, L["Rotate Animation"])
       local ok, rotate = pcall(anim.rotateFunc, progress, anim.startRotation, anim.rotate);
       if not ok then
         errorHandler(rotate)
@@ -123,6 +127,7 @@ local function UpdateAnimations()
       end
     end
     if(anim.colorFunc and anim.region.ColorAnim) then
+      local errorHandler = WeakAuras.IsOptionsOpen() and noopErrorHandler or Private.GetErrorHandlerUid(anim.auraUID, L["Color Animation"])
       local startR, startG, startB, startA = anim.region:GetColor();
       startR, startG, startB, startA = startR or 1, startG or 1, startB or 1, startA or 1;
       local ok, r, g, b, a = pcall(anim.colorFunc, progress, startR, startG, startB, startA, anim.colorR, anim.colorG, anim.colorB, anim.colorA);
@@ -240,7 +245,7 @@ function Private.Animate(namespace, uid, type, anim, region, inverse, onFinished
         anim.translateFunc = anim_function_strings[anim.translateType]
       end
       if (anim.translateFunc) then
-        translateFunc = WeakAuras.LoadFunction("return " .. anim.translateFunc, auraDisplayName, "translate animation");
+        translateFunc = WeakAuras.LoadFunction("return " .. anim.translateFunc);
       else
         if (region.SetOffsetAnim) then
           region:SetOffsetAnim(0, 0);
@@ -261,7 +266,7 @@ function Private.Animate(namespace, uid, type, anim, region, inverse, onFinished
         anim.alphaFunc = anim_function_strings[anim.alphaType]
       end
       if (anim.alphaFunc) then
-        alphaFunc = WeakAuras.LoadFunction("return " .. anim.alphaFunc, auraDisplayName, "alpha animation");
+        alphaFunc = WeakAuras.LoadFunction("return " .. anim.alphaFunc);
       else
         if (region.SetAnimAlpha) then
           region:SetAnimAlpha(nil);
@@ -282,7 +287,7 @@ function Private.Animate(namespace, uid, type, anim, region, inverse, onFinished
         anim.scaleFunc = anim_function_strings[anim.scaleType]
       end
       if (anim.scaleFunc) then
-        scaleFunc = WeakAuras.LoadFunction("return " .. anim.scaleFunc, auraDisplayName, "scale animation");
+        scaleFunc = WeakAuras.LoadFunction("return " .. anim.scaleFunc);
       else
         region:Scale(1, 1);
       end
@@ -295,7 +300,7 @@ function Private.Animate(namespace, uid, type, anim, region, inverse, onFinished
         anim.rotateFunc = anim_function_strings[anim.rotateType]
       end
       if (anim.rotateFunc) then
-        rotateFunc = WeakAuras.LoadFunction("return " .. anim.rotateFunc, auraDisplayName, "rotate animation");
+        rotateFunc = WeakAuras.LoadFunction("return " .. anim.rotateFunc);
       else
         region:Rotate(startRotation);
       end
@@ -308,7 +313,7 @@ function Private.Animate(namespace, uid, type, anim, region, inverse, onFinished
         anim.colorFunc = anim_function_strings[anim.colorType]
       end
       if (anim.colorFunc) then
-        colorFunc = WeakAuras.LoadFunction("return " .. anim.colorFunc, auraDisplayName, "color animation");
+        colorFunc = WeakAuras.LoadFunction("return " .. anim.colorFunc);
       else
         region:ColorAnim(nil);
       end

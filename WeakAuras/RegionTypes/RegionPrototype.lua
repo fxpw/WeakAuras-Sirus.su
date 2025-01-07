@@ -253,7 +253,7 @@ end
 local function RunCode(self, func)
   if func and not WeakAuras.IsOptionsOpen() then
     Private.ActivateAuraEnvironment(self.id, self.cloneId, self.state, self.states);
-    xpcall(func, geterrorhandler());
+    xpcall(func, Private.GetErrorHandlerId(self.id, L["Custom Condition Code"]));
     Private.ActivateAuraEnvironment(nil);
   end
 end
@@ -276,7 +276,7 @@ local function UpdatePosition(self)
 
   local ok, ret = pcall(self.SetPoint, self, self.anchorPoint, self.relativeTo, self.relativePoint, xOffset, yOffset);
   if not ok then
-    geterrorhandler()(ret)
+    Private.GetErrorHandlerId(self.id, L["Update Position"])
   end
 end
 
@@ -541,7 +541,7 @@ function WeakAuras.regionPrototype.modify(parent, region, data)
   region:SetOffsetAnim(0, 0);
 
   if data.anchorFrameType == "CUSTOM" and data.customAnchor then
-    region.customAnchorFunc = WeakAuras.LoadFunction("return " .. data.customAnchor, data.id, "custom anchor")
+    region.customAnchorFunc = WeakAuras.LoadFunction("return " .. data.customAnchor)
   else
     region.customAnchorFunc = nil
   end
