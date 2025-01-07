@@ -255,7 +255,7 @@ function OptionsPrivate.GetInformationOptions(data)
   order = order + 1
   args.debugLogDesc = {
     type = "description",
-    name = L["This enables the collection of debug logs. This requires custom coded auras that use DebugPrints."],
+    name = L["This enables the collection of debug logs. Custom code can add debug information to the log through the function DebugPrint."],
     width = WeakAuras.doubleWidth,
     order = order,
   }
