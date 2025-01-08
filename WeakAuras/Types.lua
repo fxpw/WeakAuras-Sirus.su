@@ -2466,6 +2466,9 @@ Private.non_transmissable_fields = {
   skipWagoUpdate = true,
   ignoreWagoUpdate = true,
   preferToUpdate = true,
+  information = {
+    saved = true
+  }
 }
 
 -- For nested groups, we do transmit parent + controlledChildren
@@ -2474,6 +2477,9 @@ Private.non_transmissable_fields_v2000 = {
   skipWagoUpdate = true,
   ignoreWagoUpdate = true,
   preferToUpdate = true,
+  information = {
+    saved = true
+  }
 }
 
 WeakAuras.data_stub = {

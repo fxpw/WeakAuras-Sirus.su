@@ -385,10 +385,10 @@ function OptionsPrivate.GetAnimationOptions(data)
           return (data.animation.start.type ~= "custom" or not OptionsPrivate.Private.EnsureRegion(id).Color)
         end,
         get = function()
-          return data.animation.start.colorR,
-            data.animation.start.colorG,
-            data.animation.start.colorB,
-            data.animation.start.colorA;
+          return data.animation.start.colorR or 1,
+            data.animation.start.colorG or 1,
+            data.animation.start.colorB or 1,
+            data.animation.start.colorA or 1;
         end,
         set = function(info, r, g, b, a)
           data.animation.start.colorR = r;
@@ -661,10 +661,10 @@ function OptionsPrivate.GetAnimationOptions(data)
           return (data.animation.main.type ~= "custom" or not OptionsPrivate.Private.EnsureRegion(id).Color)
         end,
         get = function()
-          return data.animation.main.colorR,
-            data.animation.main.colorG,
-            data.animation.main.colorB,
-            data.animation.main.colorA;
+          return data.animation.main.colorR or 1,
+            data.animation.main.colorG or 1,
+            data.animation.main.colorB or 1,
+            data.animation.main.colorA or 1;
         end,
         set = function(info, r, g, b, a)
           data.animation.main.colorR = r;
@@ -910,10 +910,10 @@ function OptionsPrivate.GetAnimationOptions(data)
           return (data.animation.finish.type ~= "custom" or not OptionsPrivate.Private.EnsureRegion(id).Color)
         end,
         get = function()
-          return data.animation.finish.colorR,
-            data.animation.finish.colorG,
-            data.animation.finish.colorB,
-            data.animation.finish.colorA;
+          return data.animation.finish.colorR or 1,
+            data.animation.finish.colorG or 1,
+            data.animation.finish.colorB or 1,
+            data.animation.finish.colorA or 1;
         end,
         set = function(info, r, g, b, a)
           data.animation.finish.colorR = r;

@@ -799,6 +799,19 @@ local function valuesForTalentFunction(trigger)
 end
 
 Private.load_prototype = {
+  -- Each entry
+  --   name: name of argument for load function/option for options/setting in saved data
+  --   Options data
+  --     display: name to be displayed in the options
+  --     type: type to be used for the options
+  --     width: width in the options
+  --     hidden: whether the option is shown in the options, defaults to false
+  --   Load Function Data
+  --     enable: whether the test should be tested or not, defaults to true
+  --     test: overrides the default test
+  --     init: whether the argument should be a function parameter or not. "arg" for yes. Defaults to no argument
+  --     events: the events on which the test must be reevaluated
+  --     optional: whether the test is relevant for the options classification between loaded and unloaded, defaults to false
   args = {
     {
       name ="generalTitle",
