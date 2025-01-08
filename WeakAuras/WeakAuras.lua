@@ -2083,8 +2083,12 @@ end
 
 function WeakAuras.AddMany(table, takeSnapshots)
   local idtable = {};
+  local anchorTargets = {}
   for _, data in ipairs(table) do
     idtable[data.id] = data;
+    if data.anchorFrameType == "SELECTFRAME" and data.anchorFrameFrame and data.anchorFrameFrame:sub(1, 10) == "WeakAuras:" then
+      anchorTargets[data.anchorFrameFrame:sub(11)] = true
+    end
   end
   local loaded = {};
   local function load(id, depends)
@@ -2120,6 +2124,14 @@ function WeakAuras.AddMany(table, takeSnapshots)
       groups[data] = true
     end
   end
+
+  for id in pairs(anchorTargets) do
+    local data = idtable[id]
+    if data and (data.parent == nil or idtable[data.parent].regionType ~= "dynamicgroup") then
+      Private.EnsureRegion(id)
+    end
+  end
+
   for data in pairs(groups) do
     if data.type == "dynamicgroup" then
       if WeakAuras.regions[data.id] then
