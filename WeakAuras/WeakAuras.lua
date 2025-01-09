@@ -2567,6 +2567,7 @@ function Private.ClearSounds(uid)
 end
 
 function WeakAuras.PreAdd(data)
+  if not data then return end
   -- Readd what Compress removed before version 8
   if (not data.internalVersion or data.internalVersion < 7) then
     Private.validate(data, oldDataStub)
@@ -3886,6 +3887,12 @@ local function startStopTimers(id, cloneId, triggernum, state)
             if (state.show ~= false and state.show ~= nil) then
               state.show = false;
               state.changed = true;
+
+              -- if the trigger has updated then check to see if it is flagged for WatchedTrigger and send to queue if it is
+              if Private.watched_trigger_events[id] and Private.watched_trigger_events[id][triggernum] then
+                Private.AddToWatchedTriggerDelay(id, triggernum)
+              end
+
               Private.UpdatedTriggerState(id);
             end
           end,

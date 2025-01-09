@@ -4181,6 +4181,7 @@ Private.event_prototypes = {
           local triggerEmphasized = %s
           local triggerCount = %q
           local triggerCast = %s
+          local triggerIsCooldown = %s
           local cloneId = useClone and id or ""
           local state = states[cloneId]
 
@@ -4206,7 +4207,7 @@ Private.event_prototypes = {
 
           if useClone then
             if event == "BigWigs_StartBar" then
-              if Private.ExecEnv.BigWigsTimerMatches(id, triggerText, triggerTextOperator, triggerSpellId, triggerEmphasized, triggerCount, triggerCast) then
+              if Private.ExecEnv.BigWigsTimerMatches(id, triggerText, triggerTextOperator, triggerSpellId, triggerEmphasized, triggerCount, triggerCast, triggerIsCooldown) then
                 local bar = WeakAuras.GetBigWigsTimerById(id)
                 if bar then
                   copyOrSchedule(bar, cloneId)
@@ -4273,6 +4274,7 @@ Private.event_prototypes = {
         trigger.use_emphasized == nil and "nil" or trigger.use_emphasized and "true" or "false",
         trigger.use_count and trigger.count or "",
         trigger.use_cast == nil and "nil" or trigger.use_cast and "true" or "false",
+        trigger.use_isCooldown == nil and "nil" or trigger.use_isCooldown and "true" or "false",
         trigger.remaining_operator or "<"
       )
     end,
@@ -4321,6 +4323,15 @@ Private.event_prototypes = {
         name = "cast",
         display = L["Cast Bar"],
         desc = L["Filter messages with format <message>"],
+        type = "tristate",
+        test = "true",
+        init = "false",
+        conditionType = "bool"
+      },
+      {
+        name = "isCooldown",
+        display = L["Cooldown"],
+        desc = L["Cooldown bars show time before an ability is ready to be use, BigWigs prefix them with '~'"],
         type = "tristate",
         test = "true",
         init = "false",
@@ -5553,20 +5564,12 @@ Private.event_prototypes = {
       }
     },
     nameFunc = function(trigger)
-      if not trigger.use_inverse then
-        local name = GetItemInfo(trigger.itemName);
-        return name;
-      else
-        return nil;
-      end
+      local name = GetItemInfo(trigger.itemName);
+      return name;
     end,
     iconFunc = function(trigger)
-      if not trigger.use_inverse then
-        local _, _, _, _, _, _, _, _, _, icon = GetItemInfo(trigger.itemName or 0);
-        return icon;
-      else
-        return nil;
-      end
+      local icon = select(10, GetItemInfo(trigger.itemName or 0));
+      return icon;
     end,
     hasItemID = true,
     automaticrequired = true

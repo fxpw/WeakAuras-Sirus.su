@@ -3059,7 +3059,7 @@ do
     if event == "BigWigs_Message" then
       WeakAuras.ScanEvents("BigWigs_Message", ...)
     elseif event == "BigWigs_StartBar" then
-      local addon, spellId, text, duration, icon = ...
+      local addon, spellId, text, duration, icon, isCD = ...
       local now = GetTime()
       local expirationTime = now + duration
 
@@ -3072,6 +3072,7 @@ do
       bar.duration = duration
       bar.expirationTime = expirationTime
       bar.icon = icon
+      bar.isCooldown = isCD or false
       local BWColorModule = BigWigs:GetPlugin("Colors")
       bar.bwBarColor = BWColorModule:GetColorTable("barColor", addon, spellId)
       bar.bwTextColor = BWColorModule:GetColorTable("barText", addon, spellId)
@@ -3152,9 +3153,10 @@ do
     if extendTimer ~= 0 then
       state.autoHide = true
     end
+    state.isCooldown = bar.isCooldown
   end
 
-  function Private.ExecEnv.BigWigsTimerMatches(id, message, operator, spellId, emphasized, count, cast)
+  function Private.ExecEnv.BigWigsTimerMatches(id, message, operator, spellId, emphasized, count, cast, cooldown)
     if not bars[id] then
       return false
     end
@@ -3186,6 +3188,9 @@ do
       return false
     end
     if cast ~= nil and v.cast ~= cast then
+      return false
+    end
+    if cooldown ~= nil and v.isCooldown ~= cooldown then
       return false
     end
     return true
