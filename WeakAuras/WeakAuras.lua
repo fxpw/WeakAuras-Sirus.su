@@ -1208,7 +1208,7 @@ loadedFrame:SetScript("OnEvent", function(self, event, addon)
     end
   elseif event == "PLAYER_LOGOUT" then
     for id in pairs(db.displays) do
-      Private.SaveAuraEnvironment(id)
+      Private.ClearAuraEnvironment(id)
     end
   else
     local callback
@@ -2183,6 +2183,7 @@ end
 
 function Private.AddMany(tbl, takeSnapshots)
   local idtable = {};
+  local anchorTargets = {}
   for _, data in ipairs(tbl) do
     -- There was an unfortunate bug in update.lua in 2022 that resulted
     -- in auras having a circular dependencies
@@ -2192,6 +2193,9 @@ function Private.AddMany(tbl, takeSnapshots)
       tDeleteItem(data.controlledChildren, data.id)
     end
     idtable[data.id] = data;
+    if data.anchorFrameType == "SELECTFRAME" and data.anchorFrameFrame and data.anchorFrameFrame:sub(1, 10) == "WeakAuras:" then
+      anchorTargets[data.anchorFrameFrame:sub(11)] = true
+    end
   end
 
   local order = loadOrder(tbl, idtable)
@@ -2204,6 +2208,14 @@ function Private.AddMany(tbl, takeSnapshots)
       groups[data] = true
     end
   end
+
+  for id in pairs(anchorTargets) do
+    local data = idtable[id]
+    if data and (data.parent == nil or idtable[data.parent].regionType ~= "dynamicgroup") then
+      Private.EnsureRegion(id)
+    end
+  end
+
   for data in pairs(groups) do
     if data.type == "dynamicgroup" then
       if Private.regions[data.id] then
@@ -3752,6 +3764,19 @@ end
 
 do
   local visibleFakeStates = {}
+
+  local function OnDelete(_, uid, id)
+    visibleFakeStates[id] = nil
+  end
+
+  local function OnRename(_, uid, oldId, newId)
+    visibleFakeStates[newId] = visibleFakeStates[oldId]
+    visibleFakeStates[oldId] = nil
+  end
+
+  Private.callbacks:RegisterCallback("Delete", OnDelete)
+  Private.callbacks:RegisterCallback("Rename", OnRename)
+
   local UpdateFakeTimesHandle
 
   local function UpdateFakeTimers()

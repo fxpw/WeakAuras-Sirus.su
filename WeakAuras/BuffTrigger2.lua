@@ -2165,13 +2165,13 @@ local function createScanFunc(trigger)
 
   if trigger.ownOnly then
     ret = ret .. [[
-      if matchData.unitCaster ~= 'player' and matchData.unitCaster ~= 'pet' then
+      if matchData.unitCaster ~= 'player' and matchData.unitCaster ~= 'pet' and matchData.unitCaster ~= 'vehicle' then
         return false
       end
     ]]
   elseif trigger.ownOnly == false then
     ret = ret .. [[
-      if matchData.unitCaster == 'player' or matchData.unitCaster == 'pet' then
+      if matchData.unitCaster == 'player' or matchData.unitCaster == 'pet' or matchData.unitCaster == 'vehicle' then
         return false
       end
     ]]
