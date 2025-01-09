@@ -74,7 +74,6 @@ local loaded_events = {}
 local loaded_unit_events = {};
 local watched_trigger_events = Private.watched_trigger_events
 local loaded_auras = {}; -- id to bool map
-local timers = WeakAuras.timers;
 
 -- Local functions
 local LoadEvent, HandleEvent, HandleUnitEvent, TestForTriState, TestForToggle, TestForLongString, TestForMultiSelect
@@ -1089,7 +1088,7 @@ local genericTriggerRegisteredEvents = {};
 local genericTriggerRegisteredUnitEvents = {};
 local frame = CreateFrame("Frame");
 frame.unitFrames = {};
-WeakAuras.frames["WeakAuras Generic Trigger Frame"] = frame;
+Private.frames["WeakAuras Generic Trigger Frame"] = frame;
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");
 genericTriggerRegisteredEvents["PLAYER_ENTERING_WORLD"] = true;
 if WeakAuras.isAwesomeEnabled() then
@@ -1392,7 +1391,7 @@ function GenericTrigger.Add(data, region)
             triggerFuncStr = ConstructFunction(prototype, trigger);
 
             statesParameter = prototype.statesParameter;
-            triggerFunc = WeakAuras.LoadFunction(triggerFuncStr);
+            triggerFunc = Private.LoadFunction(triggerFuncStr);
 
             durationFunc = prototype.durationFunc;
             nameFunc = prototype.nameFunc;
@@ -1623,7 +1622,7 @@ do
   local update_clients = {};
   local update_clients_num = 0;
   local update_frame = nil
-  WeakAuras.frames["Custom Trigger Every Frame Updater"] = update_frame;
+  Private.frames["Custom Trigger Every Frame Updater"] = update_frame;
   local updating = false;
 
   function Private.RegisterEveryFrameUpdate(id)
@@ -2084,9 +2083,9 @@ do
 
   local spellDetails = {}
 
-  function WeakAuras.InitCooldownReady()
+  function Private.InitCooldownReady()
     cdReadyFrame = CreateFrame("Frame");
-    WeakAuras.frames["Cooldown Trigger Handler"] = cdReadyFrame
+    Private.frames["Cooldown Trigger Handler"] = cdReadyFrame
     cdReadyFrame:RegisterEvent("RUNE_POWER_UPDATE");
     cdReadyFrame:RegisterEvent("RUNE_TYPE_UPDATE");
     cdReadyFrame:RegisterEvent("PLAYER_TALENT_UPDATE");
@@ -2504,13 +2503,13 @@ do
 
   function WeakAuras.WatchGCD()
     if not(cdReadyFrame) then
-      WeakAuras.InitCooldownReady();
+      Private.InitCooldownReady();
     end
   end
 
   function WeakAuras.WatchRuneCooldown(id)
     if not(cdReadyFrame) then
-      WeakAuras.InitCooldownReady();
+      Private.InitCooldownReady();
     end
 
     if not id or id == 0 then return end
@@ -2538,7 +2537,7 @@ do
 
   function WeakAuras.WatchSpellCooldown(id, ignoreRunes)
     if not(cdReadyFrame) then
-      WeakAuras.InitCooldownReady();
+      Private.InitCooldownReady();
     end
 
     if not id or id == 0 then return end
@@ -2570,7 +2569,7 @@ do
 
   function WeakAuras.WatchItemCooldown(id)
     if not(cdReadyFrame) then
-      WeakAuras.InitCooldownReady();
+      Private.InitCooldownReady();
     end
 
     if not id or id == 0 then return end
@@ -2599,7 +2598,7 @@ do
 
   function WeakAuras.WatchItemSlotCooldown(id)
     if not(cdReadyFrame) then
-      WeakAuras.InitCooldownReady();
+      Private.InitCooldownReady();
     end
 
     if not id or id == 0 then return end
@@ -2644,7 +2643,7 @@ function WeakAuras.WatchUnitChange(unit)
     watchUnitChange.nameplateFaction = {}
     watchUnitChange.raidmark = {}
 
-    WeakAuras.frames["Unit Change Frame"] = watchUnitChange;
+    Private.frames["Unit Change Frame"] = watchUnitChange;
     watchUnitChange:RegisterEvent("PLAYER_TARGET_CHANGED")
     watchUnitChange:RegisterEvent("PLAYER_FOCUS_CHANGED");
     watchUnitChange:RegisterEvent("PLAYER_ROLES_ASSIGNED");
@@ -2916,7 +2915,7 @@ do
     end
   end
 
-  function WeakAuras.DBMTimerMatches(timerId, id, message, operator, spellId, dbmType, count)
+  function Private.ExecEnv.DBMTimerMatches(timerId, id, message, operator, spellId, dbmType, count)
     if not bars[timerId] then
       return false
     end
@@ -2967,7 +2966,7 @@ do
   function WeakAuras.GetDBMTimer(id, message, operator, spellId, extendTimer, dbmType, count)
     local bestMatch
     for timerId, bar in pairs(bars) do
-      if WeakAuras.DBMTimerMatches(timerId, id, message, operator, spellId, dbmType, count)
+      if Private.ExecEnv.DBMTimerMatches(timerId, id, message, operator, spellId, dbmType, count)
       and (bestMatch == nil or bar.expirationTime < bestMatch.expirationTime)
       and bar.expirationTime + extendTimer > GetTime()
       then
@@ -2977,7 +2976,7 @@ do
     return bestMatch
   end
 
-  function WeakAuras.CopyBarToState(bar, states, id, extendTimer)
+  function Private.ExecEnv.CopyBarToState(bar, states, id, extendTimer)
     extendTimer = extendTimer or 0
     if extendTimer + bar.duration < 0 then return end
     states[id] = states[id] or {}
@@ -3021,7 +3020,7 @@ do
     scheduled_scans[fireTime] = nil
     WeakAuras.ScanEvents("DBM_TimerUpdate")
   end
-  function WeakAuras.ScheduleDbmCheck(fireTime)
+  function Private.ExecEnv.ScheduleDbmCheck(fireTime)
     if not scheduled_scans[fireTime] then
       scheduled_scans[fireTime] = timer:ScheduleTimer(doDbmScan, fireTime - GetTime() + 0.1, fireTime)
     end
@@ -3126,7 +3125,7 @@ do
     WeakAuras.RegisterBigWigsCallback("BigWigs_OnBossDisable")
   end
 
-  function WeakAuras.CopyBigWigsTimerToState(bar, states, id, extendTimer)
+  function Private.ExecEnv.CopyBigWigsTimerToState(bar, states, id, extendTimer)
     extendTimer = extendTimer or 0
     if extendTimer + bar.duration < 0 then return end
     states[id] = states[id] or {}
@@ -3153,7 +3152,7 @@ do
     end
   end
 
-  function WeakAuras.BigWigsTimerMatches(id, message, operator, spellId, emphasized, count, cast)
+  function Private.ExecEnv.BigWigsTimerMatches(id, message, operator, spellId, emphasized, count, cast)
     if not bars[id] then
       return false
     end
@@ -3201,7 +3200,7 @@ do
   function WeakAuras.GetBigWigsTimer(text, operator, spellId, extendTimer, emphasized, count, cast)
     local bestMatch
     for id, bar in pairs(bars) do
-      if WeakAuras.BigWigsTimerMatches(id, text, operator, spellId, emphasized, count, cast)
+      if Private.ExecEnv.BigWigsTimerMatches(id, text, operator, spellId, emphasized, count, cast)
       and (bestMatch == nil or bar.expirationTime < bestMatch.expirationTime)
       and bar.expirationTime + extendTimer > GetTime()
       then
@@ -3218,14 +3217,14 @@ do
     WeakAuras.ScanEvents("BigWigs_Timer_Update")
   end
 
-  function WeakAuras.ScheduleBigWigsCheck(fireTime)
+  function Private.ExecEnv.ScheduleBigWigsCheck(fireTime)
     if not scheduled_scans[fireTime] then
       scheduled_scans[fireTime] = timer:ScheduleTimer(doBigWigsScan, fireTime - GetTime() + 0.1, fireTime)
     end
   end
 end
 
-function WeakAuras.CheckTotemName(totemName, triggerTotemName, triggerTotemPattern, triggerTotemOperator)
+function Private.ExecEnv.CheckTotemName(totemName, triggerTotemName, triggerTotemPattern, triggerTotemOperator)
   if not totemName or totemName == "" then
     return false
   end
@@ -3265,7 +3264,7 @@ do
   local oh_icon = GetInventoryItemTexture("player", oh);
 
   local tenchFrame = nil
-  WeakAuras.frames["Temporary Enchant Handler"] = tenchFrame;
+  Private.frames["Temporary Enchant Handler"] = tenchFrame;
   local tenchTip;
 
   function WeakAuras.TenchInit()
@@ -3347,7 +3346,7 @@ end
 -- Pets
 do
   local petFrame = nil
-  WeakAuras.frames["Pet Use Handler"] = petFrame;
+  Private.frames["Pet Use Handler"] = petFrame;
   function WeakAuras.WatchForPetDeath()
     if not(petFrame) then
       petFrame = CreateFrame("Frame");
@@ -3365,7 +3364,7 @@ end
 -- Cast Latency
 do
   local castLatencyFrame = nil
-  WeakAuras.frames["Cast Latency Handler"] = castLatencyFrame
+  Private.frames["Cast Latency Handler"] = castLatencyFrame
   function WeakAuras.WatchForCastLatency()
     if not castLatencyFrame then
       castLatencyFrame = CreateFrame("Frame")
@@ -3431,7 +3430,7 @@ if WeakAuras.isAwesomeEnabled() then
       end
     end
 
-    WeakAuras.frames["Nameplate Target Handler"] = nameplateTargetFrame
+    Private.frames["Nameplate Target Handler"] = nameplateTargetFrame
     function WeakAuras.WatchForNameplateTargetChange()
       if not nameplateTargetFrame then
         nameplateTargetFrame = CreateFrame("Frame")
@@ -3468,7 +3467,7 @@ do
   function WeakAuras.WatchForMounts()
     if not(mountedFrame) then
       mountedFrame = CreateFrame("Frame");
-	  WeakAuras.frames["Mount Use Handler"] = mountedFrame;
+	  Private.frames["Mount Use Handler"] = mountedFrame;
       mountedFrame:RegisterEvent("COMPANION_UPDATE");
       mountedFrame:SetScript("OnEvent", function()
        elapsed = 0;
@@ -3495,7 +3494,7 @@ do
   function WeakAuras.WatchPlayerMoveSpeed()
     if not (playerMovingFrame) then
       playerMovingFrame = CreateFrame("Frame");
-      WeakAuras.frames["Player Moving Frame"] =  playerMovingFrame;
+      Private.frames["Player Moving Frame"] =  playerMovingFrame;
     end
     playerMovingFrame.speed = GetUnitSpeed("player")
     playerMovingFrame:SetScript("OnUpdate", PlayerMoveSpeedUpdate)
@@ -3579,7 +3578,7 @@ do
   function WeakAuras.WatchNamePlates()
     if not(watchNameplates) then
       watchNameplates = CreateFrame("Frame")
-      WeakAuras.frames["Watch NamePlates Frames"] = watchNameplates
+      Private.frames["Watch NamePlates Frames"] = watchNameplates
     end
     watchNameplates:SetScript("OnUpdate", nameplatesUpdate)
   end
@@ -3627,7 +3626,7 @@ do
   function WeakAuras.WatchQueuedAction()
     if not(queuedActionFrame) then
       queuedActionFrame = CreateFrame("Frame");
-      WeakAuras.frames["Queued Action Frame"] = queuedActionFrame
+      Private.frames["Queued Action Frame"] = queuedActionFrame
       for slotID = 1, 120 do
         local spellID = GetActionSpellID(slotID)
         if spellID then
@@ -3663,7 +3662,7 @@ do
     scheduled_scans[event][fireTime] = nil;
     WeakAuras.ScanEvents(event);
   end
-  function WeakAuras.ScheduleScan(fireTime, event)
+  function Private.ExecEnv.ScheduleScan(fireTime, event)
     event = event or "COOLDOWN_REMAINING_CHECK"
     scheduled_scans[event] = scheduled_scans[event] or {}
     if not(scheduled_scans[event][fireTime]) then
@@ -3684,7 +3683,7 @@ do
       WeakAuras.ScanEvents("CAST_REMAINING_CHECK_" .. string.lower(unit), unit);
     end
   end
-  function WeakAuras.ScheduleCastCheck(fireTime, unit)
+  function Private.ExecEnv.ScheduleCastCheck(fireTime, unit)
     scheduled_scans[unit] = scheduled_scans[unit] or {}
     if not(scheduled_scans[unit][fireTime]) then
       scheduled_scans[unit][fireTime] = timer:ScheduleTimer(doCastScan, fireTime - GetTime() + 0.1, fireTime, unit);

@@ -283,7 +283,7 @@ local Actions = {
   ["Group"] = function(source, groupId, target, before)
     if source and not source.data.parent then
       if groupId then
-        local group = WeakAuras.GetDisplayButton(groupId)
+        local group = OptionsPrivate.GetDisplayButton(groupId)
         if group and group:IsGroup() then
           local children = group.data.controlledChildren
           if target then
@@ -337,7 +337,7 @@ local Actions = {
         OptionsPrivate.Private.AddParents(parent)
         WeakAuras.UpdateGroupOrders(parent);
         WeakAuras.ClearAndUpdateOptions(parent.id);
-        local group = WeakAuras.GetDisplayButton(parent.id)
+        local group = OptionsPrivate.GetDisplayButton(parent.id)
         group.callbacks.UpdateExpandButton();
         group:UpdateParentWarning()
         group:ReloadTooltip()
@@ -376,7 +376,7 @@ end
 -------------------------
 
 local function GetDropTarget()
-  local buttonList = WeakAuras.displayButtons
+  local buttonList = OptionsPrivate.displayButtons
 
   for id, button in pairs(buttonList) do
     if not button.dragging and button:IsEnabled() and button:IsShown() then
@@ -405,7 +405,7 @@ end
 
 local function Show_DropIndicator(id)
   local indicator = OptionsPrivate.DropIndicator()
-  local source = WeakAuras.GetDisplayButton(id)
+  local source = OptionsPrivate.GetDisplayButton(id)
   local target, pos
   if source then
     target, pos = select(2, GetDropTarget())
@@ -519,7 +519,7 @@ local methods = {
       for index, selectedId in ipairs(self.grouping) do
         local selectedData = WeakAuras.GetData(selectedId);
         tinsert(self.data.controlledChildren, selectedId);
-        local selectedButton = WeakAuras.GetDisplayButton(selectedId);
+        local selectedButton = OptionsPrivate.GetDisplayButton(selectedId);
         while selectedData.parent do
           selectedButton:Ungroup();
         end
@@ -535,7 +535,7 @@ local methods = {
 
         if (selectedData.controlledChildren) then
           for child in OptionsPrivate.Private.TraverseAllChildren(selectedData) do
-            local childButton = WeakAuras.GetDisplayButton(child.id)
+            local childButton = OptionsPrivate.GetDisplayButton(child.id)
             childButton:UpdateOffset()
           end
         end
@@ -618,12 +618,12 @@ local methods = {
         -- And this fills in the leafs
         DuplicateAuras(self.data, newGroup, mapping)
 
-        local button = WeakAuras.GetDisplayButton(newGroup.id)
+        local button = OptionsPrivate.GetDisplayButton(newGroup.id)
         button.callbacks.UpdateExpandButton()
         button:UpdateParentWarning()
 
         for old, new in pairs(mapping) do
-          local button = WeakAuras.GetDisplayButton(new.id)
+          local button = OptionsPrivate.GetDisplayButton(new.id)
           button.callbacks.UpdateExpandButton()
           button:UpdateParentWarning()
         end
@@ -679,7 +679,7 @@ local methods = {
             OptionsPrivate.Private.AddParents(parentData)
             WeakAuras.ClearAndUpdateOptions(parentData.id)
             self:SetGroupOrder(index - 1, #parentData.controlledChildren);
-            local otherbutton = WeakAuras.GetDisplayButton(parentData.controlledChildren[index]);
+            local otherbutton = OptionsPrivate.GetDisplayButton(parentData.controlledChildren[index]);
             otherbutton:SetGroupOrder(index, #parentData.controlledChildren);
             OptionsPrivate.SortDisplayButtons();
             local updata = {duration = 0.15, type = "custom", use_translate = true, x = 0, y = -32};
@@ -718,7 +718,7 @@ local methods = {
             OptionsPrivate.Private.AddParents(parentData)
             WeakAuras.ClearAndUpdateOptions(parentData.id)
             self:SetGroupOrder(index + 1, #parentData.controlledChildren);
-            local otherbutton = WeakAuras.GetDisplayButton(parentData.controlledChildren[index]);
+            local otherbutton = OptionsPrivate.GetDisplayButton(parentData.controlledChildren[index]);
             otherbutton:SetGroupOrder(index, #parentData.controlledChildren);
             OptionsPrivate.SortDisplayButtons()
             local updata = {duration = 0.15, type = "custom", use_translate = true, x = 0, y = -32};
@@ -739,12 +739,12 @@ local methods = {
       local suspended = OptionsPrivate.Private.PauseAllDynamicGroups()
       if(self.view.visibility == 2) then
         for child in OptionsPrivate.Private.TraverseAllChildren(self.data) do
-          WeakAuras.GetDisplayButton(child.id):PriorityHide(2);
+          OptionsPrivate.GetDisplayButton(child.id):PriorityHide(2);
         end
         self:PriorityHide(2)
       else
         for child in OptionsPrivate.Private.TraverseAllChildren(self.data) do
-          WeakAuras.GetDisplayButton(child.id):PriorityShow(2);
+          OptionsPrivate.GetDisplayButton(child.id):PriorityShow(2);
         end
         self:PriorityShow(2)
       end
@@ -837,7 +837,7 @@ local methods = {
 
     if (not self.data.controlledChildren) then
       local convertMenu = {};
-      for regionType, regionData in pairs(WeakAuras.regionOptions) do
+      for regionType, regionData in pairs(OptionsPrivate.Private.regionOptions) do
         if(regionType ~= "group" and regionType ~= "dynamicgroup" and regionType ~= self.data.regionType) then
           tinsert(convertMenu, {
             text = regionData.displayName,
@@ -1016,7 +1016,7 @@ local methods = {
       tinsert(namestable, {" ", "|cFF00FFFF"..L["Control-click to select multiple displays"]});
     end
     tinsert(namestable, {" ", "|cFF00FFFF"..L["Shift-click to create chat link"]});
-    local regionData = WeakAuras.regionOptions[data.regionType or ""]
+    local regionData = OptionsPrivate.Private.regionOptions[data.regionType or ""]
     local displayName = regionData and regionData.displayName or "";
     self:SetDescription({data.id, displayName}, unpack(namestable));
   end,
@@ -1091,14 +1091,14 @@ local methods = {
     end
     WeakAuras.ClearAndUpdateOptions(self.data.id);
     WeakAuras.UpdateGroupOrders(parentData);
-    local parentButton = WeakAuras.GetDisplayButton(parentData.id)
+    local parentButton = OptionsPrivate.GetDisplayButton(parentData.id)
     if(#parentData.controlledChildren == 0) then
       parentButton:DisableExpand()
     end
     parentButton:UpdateParentWarning()
 
     for child in OptionsPrivate.Private.TraverseAllChildren(self.data) do
-      local button = WeakAuras.GetDisplayButton(child.id)
+      local button = OptionsPrivate.GetDisplayButton(child.id)
       button:UpdateOffset()
     end
 
@@ -1471,7 +1471,7 @@ local methods = {
   ["UpdateParentWarning"] = function(self)
     self:UpdateWarning()
     for parent in OptionsPrivate.Private.TraverseParents(self.data) do
-      local parentButton = WeakAuras.GetDisplayButton(parent.id)
+      local parentButton = OptionsPrivate.GetDisplayButton(parent.id)
       if parentButton then
         parentButton:UpdateWarning()
       end
@@ -1585,17 +1585,17 @@ local methods = {
   end,
   ["RecheckParentVisibility"] = function(self)
     if self.data.parent then
-      local parentButton = WeakAuras.GetDisplayButton(self.data.parent)
+      local parentButton = OptionsPrivate.GetDisplayButton(self.data.parent)
       parentButton:RecheckVisibility()
     else
-      WeakAuras.OptionsFrame().loadedButton:RecheckVisibility()
-      WeakAuras.OptionsFrame().unloadedButton:RecheckVisibility()
+      OptionsPrivate.Private.OptionsFrame().loadedButton:RecheckVisibility()
+      OptionsPrivate.Private.OptionsFrame().unloadedButton:RecheckVisibility()
     end
   end,
   ["RecheckVisibility"] = function(self)
     local none, all = true, true;
     for child in OptionsPrivate.Private.TraverseAllChildren(self.data) do
-      local childButton = WeakAuras.GetDisplayButton(child.id);
+      local childButton = OptionsPrivate.GetDisplayButton(child.id);
       if(childButton) then
         if(childButton:GetVisibility() ~= 2) then
           all = false;
@@ -1693,7 +1693,7 @@ local methods = {
       self:ReleaseThumbnail()
       self:AcquireThumbnail()
     else
-      local option = WeakAuras.regionOptions[self.thumbnailType]
+      local option = OptionsPrivate.Private.regionOptions[self.thumbnailType]
       if option and option.modifyThumbnail then
         option.modifyThumbnail(self.frame, self.thumbnail, self.data)
       end
@@ -1707,7 +1707,7 @@ local methods = {
 
     if self.thumbnail then
       local regionType = self.thumbnailType
-      local option = WeakAuras.regionOptions[regionType]
+      local option = OptionsPrivate.Private.regionOptions[regionType]
       option.releaseThumbnail(self.thumbnail)
       self.thumbnail = nil
     end
@@ -1727,7 +1727,7 @@ local methods = {
     local regionType = self.data.regionType
     self.thumbnailType = regionType
 
-    local option = WeakAuras.regionOptions[regionType]
+    local option = OptionsPrivate.Private.regionOptions[regionType]
     if option and option.acquireThumbnail then
       self.thumbnail = option.acquireThumbnail(button, self.data)
       self:SetIcon(self.thumbnail)

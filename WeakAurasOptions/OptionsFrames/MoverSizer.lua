@@ -380,7 +380,7 @@ local function BuildAlignLines(mover)
     skipIds[child.id] = true
   end
 
-  for k, v in pairs(WeakAuras.displayButtons) do
+  for k, v in pairs(OptionsPrivate.displayButtons) do
     local region = WeakAuras.GetRegion(v.data.id)
     if not skipIds[k] and v.view.visibility ~= 0 and region then
       local scale = region:GetEffectiveScale() / UIParent:GetEffectiveScale()

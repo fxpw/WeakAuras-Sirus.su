@@ -149,7 +149,7 @@ local function modifyThumbnail(parent, region, data)
 
   local model = region.model
   region:SetScript("OnUpdate", function()
-    local optionsFrame = WeakAuras.OptionsFrame();
+    local optionsFrame = OptionsPrivate.Private.OptionsFrame();
     if optionsFrame then
       model:SetParent(optionsFrame)
       region:SetScript("OnUpdate", nil)

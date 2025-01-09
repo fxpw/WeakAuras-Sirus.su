@@ -17,8 +17,8 @@ local setAll = OptionsPrivate.commonOptions.CreateSetAll("animation", getAll)
 local function filterAnimPresetTypes(intable, id)
   local ret = {};
   OptionsPrivate.Private.EnsureRegion(id)
-  local region = WeakAuras.regions[id] and WeakAuras.regions[id].region;
-  local regionType = WeakAuras.regions[id] and WeakAuras.regions[id].regionType;
+  local region = OptionsPrivate.Private.regions[id] and OptionsPrivate.Private.regions[id].region;
+  local regionType = OptionsPrivate.Private.regions[id] and OptionsPrivate.Private.regions[id].regionType;
   local data = WeakAuras.GetData(id);
 
   if data.controlledChildren then
@@ -82,8 +82,8 @@ function OptionsPrivate.GetAnimationOptions(data)
       if(field == "main") then
         local region = OptionsPrivate.Private.EnsureRegion(id)
         OptionsPrivate.Private.Animate("display", data.uid, "main", data.animation.main, region, false, nil, true);
-        if(WeakAuras.clones[id]) then
-          for cloneId, cloneRegion in pairs(WeakAuras.clones[id]) do
+        if(OptionsPrivate.Private.clones[id]) then
+          for cloneId, cloneRegion in pairs(OptionsPrivate.Private.clones[id]) do
             OptionsPrivate.Private.Animate("display", data.uid, "main", data.animation.main, cloneRegion, false, nil, true, cloneId);
           end
         end
@@ -928,8 +928,8 @@ function OptionsPrivate.GetAnimationOptions(data)
   local function extraSetFunction()
     OptionsPrivate.Private.Animate("display", data.uid, "main", data.animation.main,
     OptionsPrivate.Private.EnsureRegion(id), false, nil, true)
-    if(WeakAuras.clones[id]) then
-      for cloneId, cloneRegion in pairs(WeakAuras.clones[id]) do
+    if(OptionsPrivate.Private.clones[id]) then
+      for cloneId, cloneRegion in pairs(OptionsPrivate.Private.clones[id]) do
         OptionsPrivate.Private.Animate("display", data.uid, "main", data.animation.main,
         cloneRegion, false, nil, true, cloneId)
       end

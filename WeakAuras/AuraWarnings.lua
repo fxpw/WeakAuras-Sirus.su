@@ -4,7 +4,6 @@ local AddonName, Private = ...
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
--- keyed on uid, key, { severity, message }
 local warnings = {}
 local printedWarnings = {}
 
@@ -14,8 +13,9 @@ local function OnDelete(event, uid)
 end
 
 Private.callbacks:RegisterCallback("Delete", OnDelete)
+Private.AuraWarnings = {}
 
-local function UpdateWarning(uid, key, severity, message, printOnConsole)
+function Private.AuraWarnings.UpdateWarning(uid, key, severity, message, printOnConsole)
   if not uid then
     WeakAuras.prettyPrint(L["Warning for unknown aura:"], message)
     return
@@ -64,7 +64,7 @@ local titles = {
   info = L["Information"],
   sound = L["Sound"],
   warning = L["Warning"],
-  error = L["Error"]
+  error = L["Error"],
 }
 
 local function AddMessages(result, messages, icon, mixedSeverity)
@@ -89,7 +89,7 @@ local function AddMessages(result, messages, icon, mixedSeverity)
   return result
 end
 
-local function FormatWarnings(uid)
+function Private.AuraWarnings.FormatWarnings(uid)
   if not warnings[uid] then
     return
   end
@@ -123,7 +123,7 @@ local function FormatWarnings(uid)
   return icons[maxSeverity], titles[maxSeverity], result
 end
 
-local function GetAllWarnings(uid)
+function Private.AuraWarnings.GetAllWarnings(uid)
   local results = {}
   local thisWarnings
   local data = Private.GetDataByUID(uid)
@@ -163,8 +163,3 @@ local function GetAllWarnings(uid)
   end
   return results
 end
-
-Private.AuraWarnings = {}
-Private.AuraWarnings.UpdateWarning = UpdateWarning
-Private.AuraWarnings.FormatWarnings = FormatWarnings
-Private.AuraWarnings.GetAllWarnings = GetAllWarnings

@@ -9,7 +9,7 @@ local anim_function_strings = Private.anim_function_strings;
 
 local function noopErrorHandler() end
 
-local frame = WeakAuras.frames["WeakAuras Main Frame"]
+local frame = Private.frames["WeakAuras Main Frame"]
 
 local updatingAnimations;
 local last_update = GetTime();

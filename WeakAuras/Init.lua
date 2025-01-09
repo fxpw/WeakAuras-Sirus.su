@@ -1,7 +1,7 @@
 local AddonName, Private = ...
 WeakAuras = {}
 WeakAuras.L = {}
-WeakAuras.frames = {}
+Private.frames = {}
 
 WeakAuras.normalWidth = 1.3
 WeakAuras.halfWidth = WeakAuras.normalWidth / 2
@@ -116,6 +116,8 @@ end
 
 function Private.StopProfileUID()
 end
+
+Private.ExecEnv = {}
 
 -- If WeakAuras shuts down due to being installed on the wrong target, keep the bindings from erroring
 function WeakAuras.StartProfile()
