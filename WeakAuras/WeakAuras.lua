@@ -812,6 +812,11 @@ local function ConstructFunction(prototype, trigger, skipOptional)
   end
   local ret = {preambles .. "return function("..table.concat(input, ", ")..")\n"};
   table.insert(ret, (init or ""));
+  -- Enable to debug load function inputs
+  --ret = ret .. "print('INPUTS')"
+  --for _, i in ipairs(input) do
+  --  ret = ret .. "print('" .. i .. "'," .. i .. ")"
+  --end
   table.insert(ret, (#debug > 0 and table.concat(debug, "\n") or ""));
   table.insert(ret, "if(");
   table.insert(ret, ((#required > 0) and table.concat(required, " and ").." and " or ""));

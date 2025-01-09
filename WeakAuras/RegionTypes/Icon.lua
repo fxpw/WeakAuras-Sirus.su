@@ -31,7 +31,7 @@ local default = {
   zoom = 0,
   keepAspectRatio = false,
   frameStrata = 1,
-  cooldown = false,
+  cooldown = true,
   cooldownEdge = false
 };
 
@@ -393,8 +393,12 @@ local function modify(parent, region, data)
     end
 
     if region.MSQGroup then
-      region.MSQGroup:RemoveButton(button)
-      region.MSQGroup:AddButton(button, {Icon = icon, Cooldown = cooldown}, "WA_Aura", true)
+      if region.MSQGroup.ReSkin then
+        region.MSQGroup:ReSkin(button)
+      else
+        region.MSQGroup:RemoveButton(button)
+        region.MSQGroup:AddButton(button, {Icon = icon, Cooldown = cooldown}, "WA_Aura", true)
+      end
     end
 
     local ulx, uly, llx, lly, urx, ury, lrx, lry = GetTexCoord(region, texWidth, aspectRatio)

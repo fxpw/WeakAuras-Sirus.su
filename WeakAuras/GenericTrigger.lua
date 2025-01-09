@@ -1563,7 +1563,9 @@ function GenericTrigger.Add(data, region)
               else
                 tinsert(trigger_events, event)
               end
-              force_events = trigger.custom_type == "status" or trigger.custom_type == "stateupdate";
+              if trigger.custom_type == "status" or trigger.custom_type == "stateupdate" then
+                force_events = data.information.forceEvents or "STATUS"
+              end
             end
           end
           if (trigger.custom_type == "stateupdate") then
@@ -3363,11 +3365,11 @@ end
 
 -- Cast Latency
 do
-  local castLatencyFrame = nil
-  Private.frames["Cast Latency Handler"] = castLatencyFrame
+  local castLatencyFrame
   function WeakAuras.WatchForCastLatency()
     if not castLatencyFrame then
       castLatencyFrame = CreateFrame("Frame")
+      Private.frames["Cast Latency Handler"] = castLatencyFrame
       castLatencyFrame:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
       castLatencyFrame:RegisterEvent("UNIT_SPELLCAST_START")
       castLatencyFrame:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")

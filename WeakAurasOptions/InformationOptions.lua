@@ -4,7 +4,7 @@ local AddonName, OptionsPrivate = ...
 local L = WeakAuras.L
 
 function OptionsPrivate.GetInformationOptions(data)
-  local isGroup = data.controlledChildren
+  local isGroup = data.controlledChildren and true or false
   local isTmpGroup = type(data.id) == "table"
 
   local options = {
@@ -159,7 +159,10 @@ function OptionsPrivate.GetInformationOptions(data)
 
   local properties = {
     ignoreOptionsEventErrors = {
-      name = L["Ignore Lua Errors on OPTIONS event"],
+      name = L["Custom Trigger: Ignore Lua Errors on OPTIONS event"],
+    },
+    forceEvents = {
+      name = L["Custom Trigger: Send fake events instead of STATUS event"]
     },
     groupOffset = {
       name = L["Offset by 1px"],
@@ -170,6 +173,7 @@ function OptionsPrivate.GetInformationOptions(data)
 
   local same = {
     ignoreOptionsEventErrors = true,
+    forceEvents = true,
     groupOffset = true
   }
 

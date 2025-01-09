@@ -1206,6 +1206,26 @@ function Private.Modernize(data)
     end
   end
 
+  if data.internalVersion < 54 then
+    for _, triggerData in ipairs(data.triggers) do
+      if triggerData.trigger.type == "aura" then
+        triggerData.trigger.type = "unit"
+        triggerData.trigger.event = "Conditions"
+        triggerData.trigger.use_alwaystrue = false
+      end
+    end
+  end
+
+  if data.internalVersion < 55 then
+    data.forceEvents = true
+  end
+
+  -- Internal version 55 contained a incorrect Modernize
+  if data.internalVersion < 56 then
+    data.information.forceEvents = data.forceEvents
+    data.forceEvents = nil
+  end
+
   if data.internalVersion < 67 or data.internalVersion > WeakAuras.InternalVersion() then
     local castMigrationNeeded = data.internalVersion < 67
     data.internalVersion = WeakAuras.InternalVersion()
