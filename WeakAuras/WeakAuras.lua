@@ -2204,22 +2204,6 @@ function Private.AddMany(tbl, takeSnapshots)
     end
   end
 
-  -- Now fix up anchors, see #3971, where aura p was anchored to aura c and where c was a child of p, thus c was anchored to p
-  -- The game used to detect such anchoring circles. We can't detect all of them, but at least detect the one from the ticket.
-  for target, source in pairs(anchorTargets) do
-    -- We walk up the parent's of target, to check for source
-    local parent = target
-    if idtable[target] then
-      while(parent) do
-        if parent == source then
-          WeakAuras.prettyPrint(L["Warning: Anchoring to your own child '%s' in aura '%s' is imposssible."]:format(target, source))
-          idtable[source].anchorFrameType = "SCREEN"
-        end
-        parent = idtable[parent].parent
-      end
-    end
-  end
-
   local order = loadOrder(tbl, idtable)
   coroutine.yield()
   local groups = {}
@@ -5037,16 +5021,6 @@ local function GetAnchorFrame(data, region, parent)
       local frame_name = anchorFrameFrame:sub(11);
       if (frame_name == id) then
         return parent;
-      end
-
-      local targetData = WeakAuras.GetData(frame_name)
-      if targetData then
-        for parentData in Private.TraverseParents(targetData) do
-          if parentData.id == data.id then
-            WeakAuras.prettyPrint(L["Warning: Anchoring to your own child '%s' in aura '%s' is imposssible."]:format(frame_name, data.id))
-            return parent
-          end
-        end
       end
 
       if Private.regions[frame_name] and Private.regions[frame_name].region then
