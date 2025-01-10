@@ -2126,14 +2126,18 @@ do
       cdReadyFrame:SetScript("OnUpdate", nil)
 
       Private.StartProfileSystem("generictrigger cd tracking");
-      if(event == "SPELL_UPDATE_COOLDOWN"
+      if type(event) == "number" then-- Called from OnUpdate!
+        Private.CheckSpellKnown()
+        Private.CheckCooldownReady()
+        Private.CheckItemSlotCooldowns()
+      elseif(event == "SPELL_UPDATE_COOLDOWN"
         or event == "RUNE_POWER_UPDATE" or event == "RUNE_TYPE_UPDATE" or event == "ACTIONBAR_UPDATE_COOLDOWN"
         or event == "PLAYER_TALENT_UPDATE"
         or event == "CHARACTER_POINTS_CHANGED") then
         Private.CheckCooldownReady();
       elseif(event == "SPELLS_CHANGED") then
-        Private.CheckSpellKnown();
-        Private.CheckCooldownReady();
+        Private.CheckSpellKnown()
+        Private.CheckCooldownReady()
       elseif(event == "UNIT_SPELLCAST_SENT") then
         local unit, name, _ = ...;
         if(unit == "player") then
@@ -3403,31 +3407,35 @@ do
       castLatencyFrame:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
       castLatencyFrame:RegisterEvent("UNIT_SPELLCAST_START")
       castLatencyFrame:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
-
       castLatencyFrame:RegisterEvent("UNIT_SPELLCAST_STOP")
       castLatencyFrame:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
       castLatencyFrame:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
+      castLatencyFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 
-      castLatencyFrame:SetScript("OnEvent", function(self, event, unit)
+      castLatencyFrame:SetScript("OnEvent", function(self, event, unit, ...)
         if unit and unit ~= "player" then return end
-        if event == "UNIT_SPELLCAST_START" then
-          Private.LAST_CURRENT_SPELL_CAST_START = select(4, UnitCastingInfo("player")) / 1000
-        elseif event == "UNIT_SPELLCAST_CHANNEL_START" then
-          Private.LAST_CURRENT_SPELL_CAST_START = select(4, UnitChannelInfo("player")) / 1000
-        elseif event == "CURRENT_SPELL_CAST_CHANGED" then
-          -- We want to store the CURRENT_SPELL_CAST_CHANGED time
-          -- that was the last before the actual START event
-          -- This prevents updating the CURRENT_SPELL_CAST_CHANGED time after
-          -- we got the start time
-          if not Private.LAST_CURRENT_SPELL_CAST_START then
-            Private.LAST_CURRENT_SPELL_CAST_CHANGED = GetTime()
-          end
-        else -- STOP EVENTS
-          Private.LAST_CURRENT_SPELL_CAST_START = nil
+
+        if event == "CURRENT_SPELL_CAST_CHANGED" then
+          castLatencyFrame.sendTime = GetTime()
+          return
+        end
+        if event == "UNIT_SPELLCAST_SUCCEEDED" or event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP" or event == "UNIT_SPELLCAST_INTERRUPTED" then
+          castLatencyFrame.sendTime = nil
+          return
+        end
+        if castLatencyFrame.sendTime then
+          castLatencyFrame.timeDiff = (GetTime() - castLatencyFrame.sendTime)
+        else
+          castLatencyFrame.timeDiff = nil
         end
       end)
     end
   end
+
+  function WeakAuras.GetCastLatency()
+    return castLatencyFrame and castLatencyFrame.timeDiff or 0
+  end
+
 end
 
 -- Nameplate Target
@@ -3764,9 +3772,14 @@ function GenericTrigger.CanHaveDuration(data, triggernum)
   return false
 end
 
+function GenericTrigger.GetTsuConditionVariables(id, triggernum)
+  local ok, variables = xpcall(events[id][triggernum].tsuConditionVariables, Private.GetErrorHandlerId(id, L["Custom Variables"]));
+  if ok then
+    return variables
+  end
+end
+
 --- Returns a table containing the names of all overlays
--- @param data
--- @param triggernum
 function GenericTrigger.GetOverlayInfo(data, triggernum)
   local result;
 
@@ -3786,7 +3799,7 @@ function GenericTrigger.GetOverlayInfo(data, triggernum)
   if (trigger.type == "custom") then
     if (trigger.custom_type == "stateupdate") then
       local count = 0;
-      local variables = events[data.id][triggernum].tsuConditionVariables();
+      local variables = GenericTrigger.GetTsuConditionVariables(data.id, triggernum)
       if (type(variables) == "table") then
         if (type(variables.additionalProgress) == "table") then
           count = #variables.additionalProgress;
@@ -3941,7 +3954,7 @@ function GenericTrigger.GetAdditionalProperties(data, triggernum)
     end
   else
     if (trigger.custom_type == "stateupdate") then
-      local variables = events[data.id][triggernum].tsuConditionVariables();
+      local variables = GenericTrigger.GetTsuConditionVariables(data.id, triggernum)
       if (type(variables) == "table") then
         for var, varData in pairs(variables) do
           if (type(varData) == "table") then
@@ -4115,7 +4128,7 @@ function GenericTrigger.GetTriggerConditions(data, triggernum)
     elseif (trigger.custom_type == "stateupdate") then
       if (events[data.id][triggernum] and events[data.id][triggernum].tsuConditionVariables) then
         Private.ActivateAuraEnvironment(data.id, nil, nil, nil, true)
-        local result = events[data.id][triggernum].tsuConditionVariables()
+        local result = GenericTrigger.GetTsuConditionVariables(data.id, triggernum)
         Private.ActivateAuraEnvironment(nil)
         if (type(result)) ~= "table" then
           return nil;

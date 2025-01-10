@@ -341,6 +341,17 @@ local function BuildUidMap(data, children, type)
     if data.parent then
       uidMap.map[data.uid].parent = idToUid[data.parent]
     end
+
+    -- Handle anchorFrameFrame
+    if data.anchorFrameType == "SELECTFRAME"
+      and data.anchorFrameFrame
+      and data.anchorFrameFrame:sub(1, 10) == "WeakAuras:"
+    then
+      local target = data.anchorFrameFrame:sub(11)
+      if idToUid[target] then
+        uidMap.map[data.uid].anchorFrameFrame = idToUid[target]
+      end
+    end
   end
 
   local function handleSortHybridTable(data)
@@ -502,6 +513,13 @@ local function BuildUidMap(data, children, type)
       end
     else
       data.controlledChildren = nil
+    end
+
+    if self.map[uid].anchorFrameFrame then
+      local target = self:GetIdFor(self.map[uid].anchorFrameFrame)
+      if target then
+        data.anchorFrameFrame = "WeakAuras:" .. target
+      end
     end
 
     if data.regionType == "dynamicgroup" then
