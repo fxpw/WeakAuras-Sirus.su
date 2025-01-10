@@ -134,7 +134,10 @@ local function UpdateAnimations()
       if not ok then
         errorHandler(r)
       else
-        anim.region:ColorAnim(r, g, b, a);
+        local success = pcall(anim.region.ColorAnim, errorHandler, anim.region, r, g, b, a)
+        if not success then
+          Private.GetErrorHandlerId(anim.region.id, "Custom Color")
+        end
       end
     end
     Private.ActivateAuraEnvironment(nil);

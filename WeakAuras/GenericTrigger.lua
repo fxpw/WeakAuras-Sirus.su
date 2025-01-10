@@ -560,6 +560,7 @@ function Private.ActivateEvent(id, triggernum, data, state, errorHandler)
       arg2 = type(arg2) == "number" and arg2 or 0;
     end
 
+
     if (state.inverse ~= inverse) then
       state.inverse = inverse;
       changed = true;
@@ -600,6 +601,11 @@ function Private.ActivateEvent(id, triggernum, data, state, errorHandler)
       end
       if (state.duration ~= arg1) then
         state.duration = arg1;
+      end
+      -- The Icon's SetCooldown requires that the **startTime** is positive, so ensure that
+      -- the expirationTime is bigger than the duration
+      if arg2 <= arg1 then
+        arg2 = arg1
       end
       if (state.expirationTime ~= arg2) then
         state.expirationTime = arg2;
@@ -2087,6 +2093,7 @@ do
 
   function Private.InitCooldownReady()
     cdReadyFrame = CreateFrame("Frame");
+    cdReadyFrame.inWorld = 0
     Private.frames["Cooldown Trigger Handler"] = cdReadyFrame
     cdReadyFrame:RegisterEvent("RUNE_POWER_UPDATE");
     cdReadyFrame:RegisterEvent("RUNE_TYPE_UPDATE");
@@ -2100,7 +2107,24 @@ do
     cdReadyFrame:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN");
     cdReadyFrame:RegisterEvent("SPELLS_CHANGED");
     cdReadyFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
-    cdReadyFrame:SetScript("OnEvent", function(self, event, ...)
+    cdReadyFrame:RegisterEvent("PLAYER_LEAVING_WORLD");
+    cdReadyFrame.HandleEvent = function(self, event, ...)
+      if (event == "PLAYER_ENTERING_WORLD") then
+        cdReadyFrame.inWorld = GetTime()
+      end
+      if (event == "PLAYER_LEAVING_WORLD") then
+        cdReadyFrame.inWorld = nil
+      end
+      if not cdReadyFrame.inWorld then
+        return
+      end
+
+      if GetTime() - cdReadyFrame.inWorld < 2 then
+        cdReadyFrame:SetScript("OnUpdate", cdReadyFrame.HandleEvent)
+        return
+      end
+      cdReadyFrame:SetScript("OnUpdate", nil)
+
       Private.StartProfileSystem("generictrigger cd tracking");
       if(event == "SPELL_UPDATE_COOLDOWN"
         or event == "RUNE_POWER_UPDATE" or event == "RUNE_TYPE_UPDATE" or event == "ACTIONBAR_UPDATE_COOLDOWN"
@@ -2126,7 +2150,8 @@ do
         Private.CheckItemSlotCooldowns();
       end
       Private.StopProfileSystem("generictrigger cd tracking");
-    end);
+    end
+    cdReadyFrame:SetScript("OnEvent", cdReadyFrame.HandleEvent)
   end
 
   function WeakAuras.GetRuneCooldown(id)

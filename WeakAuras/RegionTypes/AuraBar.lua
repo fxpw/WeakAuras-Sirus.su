@@ -1014,8 +1014,8 @@ local function create(parent)
   local bar = CreateFrame("Frame", nil, region);
   WeakAuras.Mixin(bar, SmoothStatusBarMixin);
   local fg = bar:CreateTexture(nil, "BORDER");
-  local bg = bar:CreateTexture(nil, "BACKGROUND");
-  bg:SetAllPoints();
+  local bg = region:CreateTexture(nil, "BACKGROUND");
+  bg:SetAllPoints(bar);
   local fgFrame = CreateFrame("Frame", nil, bar)
   local spark = bar:CreateTexture(nil, "ARTWORK");
   bar.fg = fg;

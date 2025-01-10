@@ -94,6 +94,12 @@ local function createOptions(id, data)
           line = L["%s Keep Aspect Ratio"]:format(line)
           changed = true
         end
+        if data.texXOffset and data.texXOffset ~= 0 then
+          line = L["%s X offset by %d"]:format(line, data.texXOffset)
+        end
+        if data.texYOffset and data.texYOffset ~= 0 then
+          line = L["%s Y offset by %d"]:format(line, data.texYOffset)
+        end
         if not changed then
           line = L["%s Default Alpha, Zoom, Icon Inset, Aspect Ratio"]:format(line)
         end
@@ -153,12 +159,41 @@ local function createOptions(id, data)
       order = 7.05,
       hidden = hiddenIconExtra,
     },
+    texXOffset = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth - indentWidth,
+      name = L["Texture X Offset"],
+      order = 7.06,
+      min = -1,
+      max = 1,
+      bigStep = 0.1,
+      hidden = hiddenIconExtra,
+    },
+    texYOffset = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = L["Texture Y Offset"],
+      order = 7.07,
+      min = -1,
+      max = 1,
+      bigStep = 0.1,
+      hidden = hiddenIconExtra,
+    },
+    iconExtra_space3 = {
+      type = "description",
+      name = "",
+      width = indentWidth,
+      order = 7.08,
+      hidden = hiddenIconExtra,
+    },
     iconInset = {
       type = "range",
       control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth - indentWidth,
       name = L["Icon Inset"],
-      order = 7.06,
+      order = 7.09,
       min = 0,
       max = 1,
       bigStep = 0.01,
@@ -171,7 +206,7 @@ local function createOptions(id, data)
       type = "toggle",
       width = WeakAuras.normalWidth,
       name = L["Keep Aspect Ratio"],
-      order = 7.07,
+      order = 7.10,
       hidden = hiddenIconExtra,
     },
     iconExtraAnchor = {
@@ -221,6 +256,21 @@ local function createOptions(id, data)
       type = "header",
       order = 100,
       name = "",
+    },
+    ccWarning = {
+      type = "description",
+      width = WeakAuras.doubleWidth,
+      name = function()
+        if OmniCC then
+          return L["The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings"]
+        elseif ElvUI then
+          return L["The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings"]
+        else
+          return L["Cooldown Numbers might be added by WoW. You can configure these in the game settings."]
+        end
+      end,
+      order = 11.7,
+      hidden = function() return data.cooldownTextDisabled end
     },
   };
 

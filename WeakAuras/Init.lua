@@ -93,22 +93,22 @@ if not WeakAuras.IsLibsOK() then
 end
 
 -- These function stubs are defined here to reduce the number of errors that occur if WeakAuras.lua fails to compile
-function WeakAuras.RegisterRegionType()
+function WeakAuras.RegisterRegionType(_, _, _ ,_)
 end
 
-function WeakAuras.RegisterRegionOptions()
+function WeakAuras.RegisterRegionOptions(_, _ , _ ,_)
 end
 
-function Private.StartProfileSystem()
+function Private.StartProfileSystem(_)
 end
 
-function Private.StartProfileAura()
+function Private.StartProfileAura(_)
 end
 
-function Private.StopProfileSystem()
+function Private.StopProfileSystem(_)
 end
 
-function Private.StopProfileAura()
+function Private.StopProfileAura(_)
 end
 
 function Private.StartProfileUID()
@@ -120,7 +120,7 @@ end
 Private.ExecEnv = {}
 
 -- If WeakAuras shuts down due to being installed on the wrong target, keep the bindings from erroring
-function WeakAuras.StartProfile()
+function WeakAuras.StartProfile(_)
 end
 
 function WeakAuras.StopProfile()

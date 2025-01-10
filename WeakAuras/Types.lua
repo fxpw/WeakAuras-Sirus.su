@@ -1833,6 +1833,20 @@ Private.grid_types = {
   VH = L["Centered Vertical, then Centered Horizontal"],
 }
 
+Private.centered_types_h = {
+  LR = L["Left to Right"],
+  RL = L["Right to Left"],
+  CLR =L["Center, then alternating left and right"],
+  CRL = L["Center, then alternating right and left"]
+}
+
+Private.centered_types_v = {
+  LR = L["Bottom to Top"],
+  RL = L["Top to Bottom"],
+  CLR =L["Center, then alternating bottom and top"],
+  CRL = L["Center, then alternating top and bottom"]
+}
+
 Private.text_rotate_types = {
   ["LEFT"] = L["Left"],
   ["NONE"] = L["None"],

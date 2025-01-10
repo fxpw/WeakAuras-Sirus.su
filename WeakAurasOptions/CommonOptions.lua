@@ -143,7 +143,9 @@ local function addCollapsibleHeader(options, key, input, order, isGroupTab)
         if notcollapsable then
           return "Interface\\AddOns\\WeakAuras\\Media\\Textures\\bullet1", 18, 18
         else
-          return isCollapsed() and "Interface\\AddOns\\WeakAuras\\Media\\Textures\\expand" or "Interface\\AddOns\\WeakAuras\\Media\\Textures\\collapse", 18, 18
+          return isCollapsed() and "Interface\\AddOns\\WeakAuras\\Media\\Textures\\expand"
+                                    or "Interface\\AddOns\\WeakAuras\\Media\\Textures\\collapse",
+                                    18, 18
         end
       end,
       control = "WeakAurasExpand",
@@ -1248,8 +1250,10 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
     },
   };
 
-  OptionsPrivate.commonOptions.AddCodeOption(positionOptions, data, L["Custom Anchor"], "custom_anchor", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-anchor-function",
-                          71.5, function() return not(data.anchorFrameType == "CUSTOM" and not IsParentDynamicGroup()) end, {"customAnchor"}, false, { setOnParent = group })
+  OptionsPrivate.commonOptions.AddCodeOption(positionOptions, data, L["Custom Anchor"], "custom_anchor",
+                      "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-anchor-function",
+                      71.5, function() return not(data.anchorFrameType == "CUSTOM" and not IsParentDynamicGroup()) end,
+                      {"customAnchor"}, false, { setOnParent = group })
   return positionOptions;
 end
 
@@ -1380,7 +1384,8 @@ local function AddCodeOption(args, data, name, prefix, url, order, hiddenFunc, p
   tinsert(options.extraFunctions, 1, {
     buttonLabel = L["Expand"],
     func = function()
-      OptionsPrivate.OpenTextEditor(OptionsPrivate.GetPickedDisplay(), path, encloseInFunction, options.multipath, options.reloadOptions, options.setOnParent, url, options.validator)
+      OptionsPrivate.OpenTextEditor(OptionsPrivate.GetPickedDisplay(), path, encloseInFunction, options.multipath,
+                                    options.reloadOptions, options.setOnParent, url, options.validator)
     end
   });
 
