@@ -1563,10 +1563,10 @@ function GenericTrigger.Add(data, region)
               else
                 tinsert(trigger_events, event)
               end
-              if trigger.custom_type == "status" or trigger.custom_type == "stateupdate" then
-                force_events = data.information.forceEvents or "STATUS"
-              end
             end
+          end
+          if trigger.custom_type == "status" or trigger.custom_type == "stateupdate" then
+            force_events = data.information.forceEvents or "STATUS"
           end
           if (trigger.custom_type == "stateupdate") then
             statesParameter = "full";

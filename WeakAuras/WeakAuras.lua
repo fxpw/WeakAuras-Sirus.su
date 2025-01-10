@@ -1114,7 +1114,7 @@ function Private.Login(initialTime, takeNewSnapshots)
     loginFinished = true
     -- Tell Dynamic Groups that we are done with login
     for _, region in pairs(Private.regions) do
-      if (region.region.RunDelayedActions) then
+      if (region.region and region.region.RunDelayedActions) then
         region.region:RunDelayedActions();
       end
     end
@@ -1281,7 +1281,7 @@ end
 function Private.PauseAllDynamicGroups()
   local suspended = {}
   for id, region in pairs(Private.regions) do
-    if (region.region.Suspend) then
+    if (region.region and region.region.Suspend) then
       region.region:Suspend();
       tinsert(suspended, id)
     end
@@ -1587,7 +1587,9 @@ function Private.Resume()
   local suspended = Private.PauseAllDynamicGroups()
 
   for id, region in pairs(Private.regions) do
-    region.region:Collapse();
+    if region.region then
+      region.region:Collapse();
+    end
   end
 
   for id, cloneList in pairs(clones) do
@@ -1723,7 +1725,7 @@ function WeakAuras.Delete(data)
     end
   end
 
-  if Private.regions[id] then
+  if Private.regions[id] and Private.regions[id].region then
     Private.regions[id].region:Collapse()
     Private.CancelAnimation(Private.regions[id].region, true, true, true, true, true, true)
 
@@ -1804,7 +1806,7 @@ function WeakAuras.Rename(data, newid)
   UIDtoID[data.uid] = newid
   Private.regions[newid] = Private.regions[oldid];
   Private.regions[oldid] = nil;
-  if Private.regions[newid] then
+  if Private.regions[newid] and Private.regions[newid].region then
     Private.regions[newid].region.id = newid
   end
   if(clones[oldid]) then
@@ -2238,7 +2240,7 @@ function Private.AddMany(tbl, takeSnapshots)
 
   for data in pairs(groups) do
     if data.type == "dynamicgroup" then
-      if Private.regions[data.id] then
+      if Private.regions[data.id] and Private.regions[data.id].region then
         Private.regions[data.id].region:ReloadControlledChildren()
       end
     else
@@ -3206,7 +3208,7 @@ function Private.HandleGlowAction(actions, region)
         if WeakAuras.GetData(frame_name) then
           Private.EnsureRegion(frame_name)
         end
-        if Private.regions[frame_name] then
+        if Private.regions[frame_name] and Private.regions[frame_name].region then
           glow_frame = Private.regions[frame_name].region
           should_glow_frame = true
         end
@@ -3596,12 +3598,14 @@ local DisplayTimes = {};
 function WeakAuras.ProfileDisplays(all)
   UpdateAddOnCPUUsage();
   for id, regionData in pairs(Private.regions) do
-    local DisplayTime = GetFrameCPUUsage(regionData.region, true);
-    DisplayTimes[id] = DisplayTimes[id] or 0;
-    if(all or DisplayTime > DisplayTimes[id]) then
-      print("|cFFFF0000"..id.."|r -", DisplayTime, "-", DisplayTime - DisplayTimes[id]);
+    if regionData.region then
+      local DisplayTime = GetFrameCPUUsage(regionData.region, true);
+      DisplayTimes[id] = DisplayTimes[id] or 0;
+      if(all or DisplayTime > DisplayTimes[id]) then
+        print("|cFFFF0000"..id.."|r -", DisplayTime, "-", DisplayTime - DisplayTimes[id]);
+      end
+      DisplayTimes[id] = DisplayTime;
     end
-    DisplayTimes[id] = DisplayTime;
   end
 end
 
@@ -4161,7 +4165,7 @@ function Private.UpdatedTriggerState(id)
     for _, clone in pairs(clones[id]) do
       clone:Collapse()
     end
-    if Private.regions[id] then
+    if Private.regions[id] and Private.regions[id].region then
       Private.regions[id].region:Collapse()
     end
   elseif (show and oldShow) then -- Already shown, update regions
@@ -4172,7 +4176,7 @@ function Private.UpdatedTriggerState(id)
       end
     end
     if (not activeTriggerState[""] or not activeTriggerState[""].show) then
-      if Private.regions[id] then
+      if Private.regions[id] and Private.regions[id].region then
         Private.regions[id].region:Collapse()
       end
     end
@@ -4938,10 +4942,16 @@ local function tryAnchorAgain()
     local region = WeakAuras.GetRegion(id);
     if (data and region) then
       local parent = WeakAurasFrame;
-      if (data.parent and WeakAuras.GetData(data.parent) and Private.EnsureRegion(data.parent)) then
-        parent = Private.regions[data.parent].region;
+      local parentData
+      if data.parent then
+        parentData = WeakAuras.GetData(data.parent)
+        if parentData and Private.EnsureRegion(data.parent) then
+          parent = Private.regions[data.parent].region
+        end
       end
-      Private.AnchorFrame(data, region, parent);
+      if not parentData or parentData.regionType ~= "dynamicgroup" then
+        Private.AnchorFrame(data, region, parent)
+      end
     end
   end
 end
@@ -5027,7 +5037,7 @@ local function GetAnchorFrame(data, region, parent)
         end
       end
 
-      if(Private.regions[frame_name]) then
+      if Private.regions[frame_name] and Private.regions[frame_name].region then
         return Private.regions[frame_name].region;
       end
       postponeAnchor(id);

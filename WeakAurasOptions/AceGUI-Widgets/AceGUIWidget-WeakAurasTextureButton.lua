@@ -33,6 +33,7 @@ local methods = {
     self.texture:SetTexture(texturePath);
     self.texture.path = texturePath;
     self.texture.name = name;
+    self.texture:SetSize(120, 120);
   end,
   ["ChangeTexture"] = function(self, r, g, b, a, rotate, discrete_rotation, rotation, mirror, blendMode)
     local ulx,uly , llx,lly , urx,ury , lrx,lry;
@@ -107,8 +108,8 @@ local function Constructor()
   button:SetHighlightTexture(highlighttexture);
 
   local texture = button:CreateTexture(nil, "OVERLAY");
-  texture:SetPoint("BOTTOMLEFT", button, 4, 4);
-  texture:SetPoint("TOPRIGHT", button, -4, -4);
+  texture:SetPoint("CENTER")
+  texture:SetSize(120, 120)
 
   button:SetScript("OnEnter", function() Show_Tooltip(button, texture.name, texture.path:gsub("\\", "\n")) end);
   button:SetScript("OnLeave", Hide_Tooltip);
