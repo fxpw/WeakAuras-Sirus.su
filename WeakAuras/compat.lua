@@ -44,6 +44,15 @@ function tIndexOf(tbl, item)
 	end
 end
 
+function TableHasAnyEntries(tbl)
+    if tbl and type(tbl) == "table" then
+        for _ in pairs(tbl) do
+            return true
+        end
+    end
+    return false
+end
+
 function IsInGroup()
 	return GetNumPartyMembers() > 0 or GetNumRaidMembers() > 0
 end

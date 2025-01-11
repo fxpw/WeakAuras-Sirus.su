@@ -199,13 +199,11 @@ local funcs = {
     if self.tick_placement_mode == "ValueOffset" and self.state and self.state.progressType == "timed" and not self.paused then
       if not self.TimerTick then
         self.TimerTick = self.UpdateTickPlacement
-        self.parent:UpdateRegionHasTimerTick()
         self.parent.subRegionEvents:AddSubscriber("TimerTick", self)
       end
     else
       if self.TimerTick then
         self.TimerTick = nil
-        self.parent:UpdateRegionHasTimerTick()
         self.parent.subRegionEvents:RemoveSubscriber("TimerTick", self)
       end
     end

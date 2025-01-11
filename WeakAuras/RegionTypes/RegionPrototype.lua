@@ -6,47 +6,6 @@ local L = WeakAuras.L;
 
 WeakAuras.regionPrototype = {};
 
-
-local SubRegionEventSystem =
-{
-  ClearSubscribers = function(self)
-    self.events = {}
-  end,
-
-  AddSubscriber = function(self, event, subRegion)
-    if not subRegion[event] then
-      print("Can't register subregion for ", event, " ", subRegion.type)
-      return
-    end
-
-    self.events[event] = self.events[event] or {}
-    tinsert(self.events[event], subRegion)
-  end,
-
-  RemoveSubscriber = function(self, event, subRegion)
-    if self.events[event] then
-      tremove(self.events[event], tIndexOf(self.events[event], subRegion))
-    end
-  end,
-
-  Notify = function(self, event, ...)
-    if self.events[event] then
-      for _, subRegion in ipairs(self.events[event]) do
-        subRegion[event](subRegion, ...)
-      end
-    end
-  end
-}
-
-local function CreateSubRegionEventSystem()
-  local system = {}
-  for f, func in pairs(SubRegionEventSystem) do
-    system[f] = func
-    system.events = {}
-  end
-  return system
-end
-
 -- Alpha
 function WeakAuras.regionPrototype.AddAlphaToDefault(default)
   default.alpha = 1.0;
@@ -391,29 +350,9 @@ local function SetTriggerProvidesTimer(self, timerTick)
   self:UpdateTimerTick()
 end
 
-local function UpdateRegionHasTimerTick(self)
-  local hasTimerTick = false
-  if self.TimerTick then
-    hasTimerTick = true
-  elseif (self.subRegions) then
-    for index, subRegion in pairs(self.subRegions) do
-      if subRegion.TimerTick then
-        hasTimerTick = true
-        break;
-      end
-    end
-  end
-
-  self.regionHasTimer = hasTimerTick
-  self:UpdateTimerTick()
-end
-
 local function TimerTickForRegion(region)
   Private.StartProfileSystem("timer tick")
   Private.StartProfileAura(region.id);
-  if region.TimerTick then
-    region:TimerTick();
-  end
 
   region.subRegionEvents:Notify("TimerTick")
   Private.StopProfileAura(region.id);
@@ -421,7 +360,7 @@ local function TimerTickForRegion(region)
 end
 
 local function UpdateTimerTick(self)
-  if self.triggerProvidesTimer and self.regionHasTimer and self.toShow then
+  if self.triggerProvidesTimer and self.subRegionEvents:HasSubscribers("TimerTick") and self.toShow then
     if not self:GetScript("OnUpdate") then
       self:SetScript("OnUpdate", function()
         TimerTickForRegion(self)
@@ -432,6 +371,20 @@ local function UpdateTimerTick(self)
       self:SetScript("OnUpdate", nil);
     end
   end
+end
+
+local function UpdateFrameTick(self)
+  if self.subRegionEvents:HasSubscribers("FrameTick") and self.toShow then
+    Private.FrameTick:AddSubscriber("FrameTick", self)
+  else
+    Private.FrameTick:RemoveSubscriber("FrameTick", self)
+  end
+end
+
+local function FrameTick(self)
+  Private.StartProfileAura(self.id)
+  self.subRegionEvents:Notify("FrameTick")
+  Private.StopProfileAura(self.id)
 end
 
 local function AnchorSubRegion(self, subRegion, anchorType, selfPoint, anchorPoint, anchorXOffset, anchorYOffset)
@@ -486,10 +439,11 @@ function WeakAuras.regionPrototype.create(region)
   region.SetAnimAlpha = SetAnimAlpha;
 
   region.SetTriggerProvidesTimer = SetTriggerProvidesTimer
-  region.UpdateRegionHasTimerTick = UpdateRegionHasTimerTick
   region.UpdateTimerTick = UpdateTimerTick
+  region.UpdateFrameTick = UpdateFrameTick
+  region.FrameTick = FrameTick
 
-  region.subRegionEvents = CreateSubRegionEventSystem()
+  region.subRegionEvents = Private.CreateSubscribableObject()
   region.AnchorSubRegion = AnchorSubRegion
   region.values = {} -- For SubText
 
@@ -502,6 +456,8 @@ function WeakAuras.regionPrototype.modify(parent, region, data)
   region.state = nil
   region.states = nil
   region.subRegionEvents:ClearSubscribers()
+  region.subRegionEvents:ClearCallbacks()
+  Private.FrameTick:RemoveSubscriber("FrameTick", region)
 
   local defaultsForRegion = Private.regionTypes[data.regionType] and Private.regionTypes[data.regionType].default;
 
@@ -581,7 +537,6 @@ function WeakAuras.regionPrototype.modify(parent, region, data)
     end
     return data.actions.finish[fullKey]
   end, true)
-
 end
 
 function WeakAuras.regionPrototype.modifyFinish(parent, region, data)
@@ -612,7 +567,15 @@ function WeakAuras.regionPrototype.modifyFinish(parent, region, data)
     end
   end
 
-  region:UpdateRegionHasTimerTick()
+  region.subRegionEvents:SetOnSubscriptionStatusChanged("TimerTick", function()
+    region:UpdateTimerTick()
+  end)
+  region:UpdateTimerTick()
+
+  region.subRegionEvents:SetOnSubscriptionStatusChanged("FrameTick", function()
+    region:UpdateFrameTick()
+  end)
+  region:UpdateFrameTick()
 
   Private.ApplyFrameLevel(region)
 end
@@ -627,55 +590,25 @@ end
 local regionsForFrameTick = {}
 
 local frameForFrameTick = CreateFrame("Frame");
-
 Private.frames["Frame Tick Frame"] = frameForFrameTick
 
-local function FrameTick()
+Private.FrameTick = Private.CreateSubscribableObject()
+Private.FrameTick.OnUpdateHandler = function()
   if WeakAuras.IsOptionsOpen() then
     return
   end
   Private.StartProfileSystem("frame tick")
-  for region in pairs(regionsForFrameTick) do
-    Private.StartProfileAura(region.id);
-    if region.FrameTick then
-      region.FrameTick()
-    end
-    region.subRegionEvents:Notify("FrameTick")
-    Private.StopProfileAura(region.id);
-  end
+  Private.FrameTick:Notify("FrameTick")
   Private.StopProfileSystem("frame tick")
 end
 
-local function RegisterForFrameTick(region)
-  -- Check for a Frame Tick function
-  local hasFrameTick = region.FrameTick
-  if not hasFrameTick then
-    if (region.subRegions) then
-      for index, subRegion in pairs(region.subRegions) do
-        if subRegion.FrameTick then
-          hasFrameTick = true
-          break
-        end
-      end
-    end
-  end
-
-  if not hasFrameTick then
-    return
-  end
-
-  regionsForFrameTick[region] = true
-  if not frameForFrameTick:GetScript("OnUpdate") then
-    frameForFrameTick:SetScript("OnUpdate", FrameTick);
-  end
-end
-
-local function UnRegisterForFrameTick(region)
-  regionsForFrameTick[region] = nil
-  if not next(regionsForFrameTick) then
+Private.FrameTick:SetOnSubscriptionStatusChanged("FrameTick", function()
+  if Private.FrameTick:HasSubscribers("FrameTick") then
+    frameForFrameTick:SetScript("OnUpdate", Private.FrameTick.OnUpdateHandler);
+  else
     frameForFrameTick:SetScript("OnUpdate", nil)
   end
-end
+end)
 
 local function TimerTickForSetDuration(self)
   local duration = self.duration
@@ -707,13 +640,13 @@ function WeakAuras.regionPrototype.AddSetDurationInfo(region)
       if customValue then
         SetProgressValue(region, duration, expirationTime);
         region.TimerTick = nil
-        region:UpdateRegionHasTimerTick()
+        region.subRegionEvents:RemoveSubscriber("TimerTick", self)
       else
         local adjustMin = region.adjustedMin or 0;
         region:SetTime((duration ~= 0 and region.adjustedMax or duration) - adjustMin, expirationTime - adjustMin, inverse);
 
         region.TimerTick = TimerTickForSetDuration
-        region:UpdateRegionHasTimerTick()
+        region.subRegionEvents:AddSubscriber("TimerTick", self, true)
       end
     end
   elseif (region.generatedSetDurationInfo) then
@@ -827,7 +760,7 @@ function WeakAuras.regionPrototype.AddExpandFunction(data, region, cloneId, pare
         region:SoundRepeatStop();
       end
 
-      UnRegisterForFrameTick(region)
+      region:UpdateFrameTick()
       region:UpdateTimerTick()
     end
     function region:Expand()
@@ -863,7 +796,7 @@ function WeakAuras.regionPrototype.AddExpandFunction(data, region, cloneId, pare
       end
       parent:ActivateChild(data.id, cloneId);
 
-      RegisterForFrameTick(region)
+      region:UpdateFrameTick()
       region:UpdateTimerTick()
     end
   elseif not(data.controlledChildren) then
@@ -886,7 +819,7 @@ function WeakAuras.regionPrototype.AddExpandFunction(data, region, cloneId, pare
         region:SoundRepeatStop();
       end
 
-      UnRegisterForFrameTick(region)
+      region:UpdateFrameTick()
       region:UpdateTimerTick()
     end
     function region:Expand()
@@ -934,7 +867,7 @@ function WeakAuras.regionPrototype.AddExpandFunction(data, region, cloneId, pare
         parent:UpdateBorder(region);
       end
 
-      RegisterForFrameTick(region)
+      region:UpdateFrameTick()
       region:UpdateTimerTick()
     end
   end

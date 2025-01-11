@@ -49,6 +49,7 @@ GenericTrigger.lua
 AuraWarnings.lua
 AuraEnvironment.lua
 DebugLog.lua
+SubscribableObject.lua
 
 # Region support
 RegionTypes\RegionPrototype.lua
