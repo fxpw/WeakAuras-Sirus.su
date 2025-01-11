@@ -179,6 +179,7 @@ local function modify(parent, region, parentData, data, first)
       parent.customTextFunc = nil
     end
     parent.values.custom = nil
+    parent.values.lastCustomTextUpdate = nil
   end
 
   local UpdateText
@@ -202,16 +203,13 @@ local function modify(parent, region, parentData, data, first)
   end
 
   local Update
-  if first and parent.customTextFunc then
-    if UpdateText then
-      Update = function()
+  if parent.customTextFunc and UpdateText then
+    Update = function()
+      if parent.values.lastCustomTextUpdate ~= GetTime() then
         parent.values.custom = Private.RunCustomTextFunc(parent, parent.customTextFunc)
-        UpdateText()
+        parent.values.lastCustomTextUpdate = GetTime()
       end
-    else
-      Update = function()
-        parent.values.custom = Private.RunCustomTextFunc(parent, parent.customTextFunc)
-      end
+      UpdateText()
     end
   else
     Update = UpdateText
@@ -224,20 +222,13 @@ local function modify(parent, region, parentData, data, first)
 
   local FrameTick
   if parent.customTextFunc and parentData.customTextUpdate == "update" then
-    if first then
-      if Private.ContainsCustomPlaceHolder(data.text_text) then
-        FrameTick = function()
+    if Private.ContainsCustomPlaceHolder(data.text_text) then
+      FrameTick = function()
+        if parent.values.lastCustomTextUpdate ~= GetTime() then
           parent.values.custom = Private.RunCustomTextFunc(parent, parent.customTextFunc)
-          UpdateText()
+          parent.values.lastCustomTextUpdate = GetTime()
         end
-      else
-        FrameTick = function()
-          parent.values.custom = Private.RunCustomTextFunc(parent, parent.customTextFunc)
-        end
-      end
-    else
-      if Private.ContainsCustomPlaceHolder(data.text_text) then
-        FrameTick = UpdateText
+        UpdateText()
       end
     end
   end
@@ -265,8 +256,6 @@ local function modify(parent, region, parentData, data, first)
     text:SetTextColor(region.color_anim_r or r, region.color_anim_g or g, region.color_anim_b or b, region.color_anim_a or a);
   end
 
-  region:Color(data.text_color[1], data.text_color[2], data.text_color[3], data.text_color[4]);
-
   function region:SetTextHeight(size)
     local fontPath = SharedMedia:Fetch("font", data.text_font);
     region.text:SetFont(fontPath, size < 33 and size or 33, data.text_fontType);
@@ -285,6 +274,9 @@ local function modify(parent, region, parentData, data, first)
       if self.TimerTick then
         parent.subRegionEvents:AddSubscriber("TimerTick", region)
       end
+      if self.Update and parent.state then
+        self:Update()
+      end
     else
       if self.Update then
         parent.subRegionEvents:RemoveSubscriber("Update", region)
@@ -298,8 +290,6 @@ local function modify(parent, region, parentData, data, first)
       self:Hide()
     end
   end
-
-  region:SetVisible(data.text_visible)
 
   local selfPoint = data.text_selfPoint
   if selfPoint == "AUTO" then
@@ -333,8 +323,6 @@ local function modify(parent, region, parentData, data, first)
     parent:AnchorSubRegion(text, "point", selfPoint, data.text_anchorPoint, self.text_anchorXOffset or 0, self.text_anchorYOffset or 0)
   end
 
-  region:UpdateAnchor()
-
   region.SetXOffset = function(self, xOffset)
     if self.text_anchorXOffset == xOffset then
       return
@@ -350,6 +338,10 @@ local function modify(parent, region, parentData, data, first)
     self.text_anchorYOffset = yOffset
     self:UpdateAnchor()
   end
+
+  region:Color(data.text_color[1], data.text_color[2], data.text_color[3], data.text_color[4]);
+  region:SetVisible(data.text_visible)
+  region:UpdateAnchor()
 end
 
 local function addDefaultsForNewAura(data)

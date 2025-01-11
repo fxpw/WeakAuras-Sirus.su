@@ -3090,7 +3090,7 @@ local function actionGlowStart(actions, frame, id)
       actions.glow_thickness,
       actions.glow_XOffset,
       actions.glow_YOffset,
-      actions.glow_border,
+      actions.glow_border and true or false,
       id
     )
   elseif actions.glow_type == "ACShine" then
@@ -4408,6 +4408,7 @@ local function ValueForSymbol(symbol, region, customFunc, regionState, regionSta
         return tostring(value) or ""
       end
     end
+    return ""
   else
     local value = (useHiddenStates or regionState.show) and ReplaceValuePlaceHolders(symbol, region, customFunc, regionState, formatters[symbol]);
     return value or ""

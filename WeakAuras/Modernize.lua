@@ -1216,9 +1216,10 @@ function Private.Modernize(data)
     data.forceEvents = nil
   end
 
-  if data.internalVersion < 62 then
+  -- version 62 became 64 to fix a broken modernize
+  if data.internalVersion < 64 then
     if data.regionType == "dynamicgroup" then
-      if data.sort == "CUSTOM" and type(data.sortOn) ~= "string" then
+      if data.sort == "custom" and type(data.sortOn) ~= "string" or data.sortOn == "" then
         data.sortOn = "changed"
       end
       if data.grow == "CUSTOM" and type(data.growOn) ~= "string" then
