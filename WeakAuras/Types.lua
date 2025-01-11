@@ -2224,8 +2224,11 @@ Private.sound_types = {
   [" KitID"] = " " .. L["Sound by Kit ID"]
 }
 
+Private.sound_file_types = {}
+
 for name, path in next, LSM:HashTable("sound") do
   Private.sound_types[path] = name
+  Private.sound_file_types[path] = name
 end
 
 LSM.RegisterCallback(WeakAuras, "LibSharedMedia_Registered", function(_, mediatype, key)
@@ -2233,6 +2236,7 @@ LSM.RegisterCallback(WeakAuras, "LibSharedMedia_Registered", function(_, mediaty
     local path = LSM:Fetch(mediatype, key)
     if path then
       Private.sound_types[path] = key
+      Private.sound_file_types[path] = key
     end
   end
 end)
@@ -2576,6 +2580,7 @@ Private.author_option_classes = {
   range = "simple",
   color = "simple",
   select = "simple",
+  media = "simple",
   multiselect = "simple",
   description = "noninteractive",
   space = "noninteractive",
@@ -2593,6 +2598,7 @@ Private.author_option_types = {
   select = L["Dropdown Menu"],
   space = L["Space"],
   multiselect = L["Toggle List"],
+  media = L["Media"],
   header = L["Separator"],
   group = L["Option Group"],
 }
@@ -2643,6 +2649,10 @@ Private.author_option_fields = {
     useHeight = false,
     height = 1,
   },
+  media = {
+    mediaType = "sound",
+    media = "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\AirHorn.ogg"
+  },
   multiselect = {
     default = {true},
     values = {"val1"},
@@ -2664,6 +2674,29 @@ Private.author_option_fields = {
     subOptions = {},
     noMerge = false,
   }
+}
+
+Private.shared_media_types = {
+  sound = L["Sound"],
+  font = L["Font"],
+  border = L["Border"],
+  background = L["Background"],
+  statusbar = L["Status Bar"]
+}
+
+Private.author_option_media_defaults = {
+  sound = "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\AirHorn.ogg",
+  font = "Friz Quadrata TT",
+  border = "1 Pixel",
+  background = "None",
+  statusbar = "Blizzard",
+}
+
+Private.author_option_media_controls = {
+  statusbar = "LSM30_Statusbar",
+  border = "LSM30_Border",
+  background = "LSM30_Background",
+  font = "LSM30_Font"
 }
 
 Private.array_entry_name_types = {
