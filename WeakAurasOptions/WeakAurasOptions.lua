@@ -1006,12 +1006,13 @@ function OptionsPrivate.SortDisplayButtons(filter, overrideReset, id)
           child.frame:Show()
           child:AcquireThumbnail()
           frame.buttonsScroll:AddChild(child)
+        else
+          if not child.frame:IsShown() then
+            child.frame:Show()
+            child:AcquireThumbnail()
+          end
+          tinsert(frame.buttonsScroll.children, child)
         end
-        if not child.frame:IsShown() then
-          child.frame:Show()
-          child:AcquireThumbnail()
-        end
-        tinsert(frame.buttonsScroll.children, child)
       elseif child then
         child.frame:Hide()
         if child.ReleaseThumbnail then
@@ -1061,6 +1062,7 @@ function OptionsPrivate.SortDisplayButtons(filter, overrideReset, id)
                   child.frame:Show()
                   child:AcquireThumbnail()
                   frame.buttonsScroll:AddChild(child)
+                  buttonsShown[slug] = true
                 end
                 if not child.frame:IsShown() then
                   child.frame:Show()
