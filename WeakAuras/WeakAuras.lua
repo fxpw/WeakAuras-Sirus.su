@@ -3977,7 +3977,6 @@ end
 
 local function evaluateTriggerStateTriggers(id)
   local result = false;
-  Private.ActivateAuraEnvironment(id);
 
   if WeakAuras.IsOptionsOpen() then
     -- While the options are open ignore the combination function
@@ -3990,7 +3989,9 @@ local function evaluateTriggerStateTriggers(id)
     result = true;
   else
     if (triggerState[id].disjunctive == "custom" and triggerState[id].triggerLogicFunc) then
+      Private.ActivateAuraEnvironment(id)
       local ok, returnValue = pcall(triggerState[id].triggerLogicFunc, triggerState[id].triggers);
+      Private.ActivateAuraEnvironment()
       if not ok then
         Private.GetErrorHandlerId(id, L["Custom Trigger Combination"])
         result = false
@@ -3999,8 +4000,6 @@ local function evaluateTriggerStateTriggers(id)
       end
     end
   end
-
-  Private.ActivateAuraEnvironment();
 
   return result;
 end
@@ -4989,6 +4988,10 @@ local function GetAnchorFrame(data, region, parent)
     return parent;
   end
 
+  if (anchorFrameType == "UIPARENT") then
+    return UIParent;
+  end
+
   if (anchorFrameType == "MOUSE") then
     ensureMouseFrame();
     mouseFrame:anchorFrame(id, anchorFrameType);
@@ -5080,7 +5083,7 @@ function Private.AnchorFrame(data, region, parent, force)
     local anchorParent = GetAnchorFrame(data, region, parent);
     if not anchorParent then return end
     if (data.anchorFrameParent or data.anchorFrameParent == nil
-        or data.anchorFrameType == "SCREEN" or data.anchorFrameType == "MOUSE") then
+    or data.anchorFrameType == "SCREEN" or data.anchorFrameType == "UIPARENT" or data.anchorFrameType == "MOUSE") then
       local ok, ret = pcall(region.SetParent, region, anchorParent);
       if not ok then
         Private.GetErrorHandlerId(data.id, L["Anchoring"])
@@ -5091,7 +5094,7 @@ function Private.AnchorFrame(data, region, parent, force)
 
     local anchorPoint = data.anchorPoint
     if data.parent then
-      if data.anchorFrameType == "SCREEN" or data.anchorFrameType == "MOUSE" then
+      if data.anchorFrameType == "SCREEN" or data.anchorFrameType == "UIPARENT" or data.anchorFrameType == "MOUSE" then
         anchorPoint = "CENTER"
       end
     else
