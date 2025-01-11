@@ -1216,6 +1216,17 @@ function Private.Modernize(data)
     data.forceEvents = nil
   end
 
+  if data.internalVersion < 62 then
+    if data.regionType == "dynamicgroup" then
+      if data.sort == "CUSTOM" and type(data.sortOn) ~= "string" then
+        data.sortOn = "changed"
+      end
+      if data.grow == "CUSTOM" and type(data.growOn) ~= "string" then
+        data.growOn = "changed"
+      end
+    end
+  end
+
   if data.internalVersion < 67 or data.internalVersion > WeakAuras.InternalVersion() then
     local castMigrationNeeded = data.internalVersion < 67
     data.internalVersion = WeakAuras.InternalVersion()

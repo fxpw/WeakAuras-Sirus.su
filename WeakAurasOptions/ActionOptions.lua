@@ -23,6 +23,9 @@ else
   end
 end
 
+---  a sound from each setter
+local lastPlayedSoundFromSet
+
 function OptionsPrivate.GetActionOptions(data)
   local action = {
     type = "group",
@@ -63,9 +66,15 @@ function OptionsPrivate.GetActionOptions(data)
         data.actions[field][value] = v;
       end
       if(value == "sound" or value == "sound_path") then
-        pcall(PlaySoundFile, v, "Master");
+        if lastPlayedSoundFromSet ~= GetTime() then
+          pcall(PlaySoundFile, v, "Master")
+          lastPlayedSoundFromSet = GetTime()
+        end
       elseif(value == "sound_kit_id") then
-        pcall(PlaySound, v, "Master");
+        if lastPlayedSoundFromSet ~= GetTime() then
+          pcall(PlaySound, v, "Master")
+          lastPlayedSoundFromSet = GetTime()
+        end
       end
       WeakAuras.Add(data);
       if(value == "message") then
