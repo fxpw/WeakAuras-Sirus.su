@@ -754,6 +754,25 @@ function WeakAuras.IsSpellKnownIncludingPet(spell)
   end
 end
 
+function WeakAuras.GetEffectiveAttackPower()
+  local base, pos, neg = UnitAttackPower("player")
+  return base + pos + neg
+end
+
+function WeakAuras.GetEffectiveSpellPower()
+  -- Straight from the PaperDoll
+  local spellPower = 0
+  for i = 2, MAX_SPELL_SCHOOLS or 7 do
+    spellPower = max(spellPower, GetSpellBonusDamage(i))
+  end
+  return spellPower
+end
+
+function WeakAuras.GetEffectiveRangedAttackPower()
+  local base, pos, neg = UnitRangedAttackPower("player")
+  return base + pos + neg
+end
+
 local function valuesForTalentFunction(trigger)
   return function()
     local single_class;
@@ -6381,7 +6400,7 @@ Private.event_prototypes = {
         "PLAYER_TARGET_CHANGED"
       },
       ["unit_events"] = {
-        ["player"] = {"UNIT_STATS"}
+        ["player"] = {"UNIT_STATS", "UNIT_ATTACK_POWER", "UNIT_AURA", "UNIT_RESISTANCES"}
       }
     },
     internal_events = function(trigger, untrigger)
@@ -6470,10 +6489,10 @@ Private.event_prototypes = {
         display = L["Secondary Stats"],
       },
       {
-        name = "meleecriticalrating",
-        display = L["Melee Critical Rating"],
+        name = "attackpower",
+        display = L["Attack Power"],
         type = "number",
-        init = "GetCombatRating(CR_CRIT_MELEE)",
+        init = "WeakAuras.GetEffectiveAttackPower()",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -6482,10 +6501,10 @@ Private.event_prototypes = {
         },
       },
       {
-        name = "rangedcriticalrating",
-        display = L["Ranged Critical Rating"],
+        name = "spellpower",
+        display = L["Spell Power"],
         type = "number",
-        init = "GetCombatRating(CR_CRIT_RANGED)",
+        init = "WeakAuras.GetEffectiveSpellPower()",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -6494,10 +6513,10 @@ Private.event_prototypes = {
         },
       },
       {
-        name = "spellcriticalrating",
-        display = L["Spell Critical Rating"],
+        name = "rangedattackpower",
+        display = L["Ranged Attack Power"],
         type = "number",
-        init = "GetCombatRating(CR_CRIT_SPELL)",
+        init = "WeakAuras.GetEffectiveRangedAttackPower()",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -6506,10 +6525,10 @@ Private.event_prototypes = {
         },
       },
       {
-        name = "meleecriticalpercent",
-        display = L["Mele Critical (%)"],
+        name = "criticalrating",
+        display = L["Critical Rating"],
         type = "number",
-        init = "GetCritChance()",
+        init = "max(GetCombatRating(CR_CRIT_MELEE), GetCombatRating(CR_CRIT_RANGED), GetCombatRating(CR_CRIT_SPELL))",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -6518,10 +6537,10 @@ Private.event_prototypes = {
         },
       },
       {
-        name = "rangedcriticalpercent",
-        display = L["Ranged Critical (%)"],
+        name = "criticalpercent",
+        display = L["Critical (%)"],
         type = "number",
-        init = "GetRangedCritChance()",
+        init = "WeakAuras.GetCritChance()",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -6530,10 +6549,10 @@ Private.event_prototypes = {
         },
       },
       {
-        name = "spellcriticalpercent",
-        display = L["Spell Critical (%)"],
+        name = "hitrating",
+        display = L["Hit Rating"],
         type = "number",
-        init = "WeakAuras.GetSpellCritChance()",
+        init = "max(GetCombatRating(CR_HIT_MELEE), GetCombatRating(CR_HIT_RANGED), GetCombatRating(CR_HIT_SPELL))",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -6542,10 +6561,10 @@ Private.event_prototypes = {
         },
       },
       {
-        name = "meleehasterating",
-        display = L["Melee Haste Rating"],
+        name = "hitpercent",
+        display = L["Hit (%)"],
         type = "number",
-        init = "GetCombatRating(CR_HASTE_MELEE)",
+        init = "WeakAuras.GetHitChance()",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -6554,10 +6573,10 @@ Private.event_prototypes = {
         },
       },
       {
-        name = "rangedhasterating",
-        display = L["Ranged Haste Rating"],
+        name = "hasterating",
+        display = L["Haste Rating"],
         type = "number",
-        init = "GetCombatRating(CR_HASTE_RANGED)",
+        init = "max(GetCombatRating(CR_HASTE_SPELL), GetCombatRating(CR_HASTE_MELEE), GetCombatRating(CR_HASTE_RANGED))",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -6566,10 +6585,10 @@ Private.event_prototypes = {
         },
       },
       {
-        name = "spellhasterating",
-        display = L["Spell Haste Rating"],
+        name = "hastepercent",
+        display = L["Haste (%)"],
         type = "number",
-        init = "GetCombatRating(CR_HASTE_SPELL)",
+        init = "max(GetCombatRatingBonus(CR_HASTE_SPELL), GetCombatRatingBonus(CR_HASTE_MELEE), GetCombatRatingBonus(CR_HASTE_RANGED))",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -6584,6 +6603,10 @@ Private.event_prototypes = {
         init = "GetCombatRating(CR_EXPERTISE)",
         store = true,
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "expertisebonus",
@@ -6592,6 +6615,10 @@ Private.event_prototypes = {
         init = "GetCombatRatingBonus(CR_EXPERTISE)",
         store = true,
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "armorpenrating",
@@ -6600,57 +6627,58 @@ Private.event_prototypes = {
         init = "GetCombatRating(CR_ARMOR_PENETRATION)",
         store = true,
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "armorpenpercent",
-        display = L["Armor Peneration Percent"],
+        display = L["Armor Peneration (%)"],
         type = "number",
         init = "GetArmorPenetration()",
         store = true,
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
+      },
+      {
+        name = "spellpenpercent",
+        display = L["Spell Peneration (%)"],
+        type = "number",
+        init = "GetSpellPenetration()",
+        store = true,
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "resiliencerating",
         display = L["Resilience Rating"],
         type = "number",
-        init = [[
-          local melee = GetCombatRating(CR_CRIT_TAKEN_MELEE);
-          local ranged = GetCombatRating(CR_CRIT_TAKEN_RANGED);
-          local spell = GetCombatRating(CR_CRIT_TAKEN_SPELL);
-          return math.min(melee, ranged, spell);
-        ]],
+        init = "min(GetCombatRating(CR_CRIT_TAKEN_MELEE), GetCombatRating(CR_CRIT_TAKEN_RANGED), GetCombatRating(CR_CRIT_TAKEN_SPELL))",
         store = true,
         conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         name = "resiliencepercent",
-        display = L["Resilience Percent"],
+        display = L["Resilience (%)"],
         type = "number",
-        init = [[
-          local ratings = {
-            melee = {value = GetCombatRating(CR_CRIT_TAKEN_MELEE), ratingType = CR_CRIT_TAKEN_MELEE},
-            ranged = {value = GetCombatRating(CR_CRIT_TAKEN_RANGED), ratingType = CR_CRIT_TAKEN_RANGED},
-            spell = {value = GetCombatRating(CR_CRIT_TAKEN_SPELL), ratingType = CR_CRIT_TAKEN_SPELL},
-          };
-          local lowest = ratings.melee;
-          if ratings.ranged.value < lowest.value then
-            lowest = ratings.ranged;
-          end
-          if ratings.spell.value < lowest.value then
-            lowest = ratings.spell;
-          end
-          return GetCombatRatingBonus(lowest.ratingType);
-        ]],
+        init = "WeakAuras.GetResilienceDamageReduction()",
         store = true,
         conditionType = "number",
-      },
-      {
-        name = "spellpenpercent",
-        display = L["Spell Peneration Percent"],
-        type = "number",
-        init = "GetSpellPenetration()",
-        store = true,
-        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
       },
       {
         type = "header",
@@ -6795,10 +6823,10 @@ Private.event_prototypes = {
         },
       },
       {
-        name = "blockrating",
-        display = L["Block Rating"],
+        name = "blockpercent",
+        display = L["Block (%)"],
         type = "number",
-        init = "GetCombatRating(CR_BLOCK)",
+        init = "GetBlockChance()",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -6807,10 +6835,10 @@ Private.event_prototypes = {
         },
       },
       {
-        name = "blockpercent",
-        display = L["Block (%)"],
+        name = "blockvalue",
+        display = L["Block Value"],
         type = "number",
-        init = "GetBlockChance()",
+        init = "GetShieldBlock()",
         store = true,
         conditionType = "number",
         multiEntry = {

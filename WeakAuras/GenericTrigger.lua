@@ -4316,6 +4316,36 @@ do
   end
 end
 
+WeakAuras.GetCritChance = function()
+  -- Based on what the wow paper doll does
+  local spellCrit = 0
+  for i = 2, MAX_SPELL_SCHOOLS or 7 do -- WORKAROUND: MAX_SPELL_SCHOOLS is nil on classic_era
+    spellCrit = max(spellCrit, GetSpellCritChance(i))
+  end
+  return max(spellCrit, GetRangedCritChance(), GetCritChance())
+end
+
+WeakAuras.GetHitChance = function()
+  local melee = (GetCombatRatingBonus(CR_HIT_MELEE) or 0)
+  local ranged = (GetCombatRatingBonus(CR_HIT_RANGED) or 0)
+  local spell = (GetCombatRatingBonus(CR_HIT_SPELL) or 0)
+  return max(melee, ranged, spell)
+end
+
+WeakAuras.GetResilienceDamageReduction = function()
+  local ratings = {
+    {value = GetCombatRating(CR_CRIT_TAKEN_MELEE), type = CR_CRIT_TAKEN_MELEE},
+    {value = GetCombatRating(CR_CRIT_TAKEN_RANGED), type = CR_CRIT_TAKEN_RANGED},
+    {value = GetCombatRating(CR_CRIT_TAKEN_SPELL), type = CR_CRIT_TAKEN_SPELL},
+  }
+  local lowest = ratings[1]
+  for _, rating in ipairs(ratings) do
+    if rating.value < lowest.value then lowest = rating end
+  end
+  return GetCombatRatingBonus(lowest.type) * 2
+end
+
+
 local types = {}
 tinsert(types, "custom")
 for type in pairs(Private.category_event_prototype) do
