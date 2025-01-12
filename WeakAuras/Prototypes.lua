@@ -4947,9 +4947,19 @@ Private.event_prototypes = {
       trigger.itemName = trigger.itemName or 0;
       local itemName = type(trigger.itemName) == "number" and trigger.itemName or "[["..trigger.itemName.."]]";
       local ret = [[
-        local count = GetItemCount(%s, %s, %s);
+        local itemName = %s
+        local exactSpellMatch = %s
+        if not exactSpellMatch and tonumber(itemName) then
+          itemName = GetItemInfo(itemName)
+        end
+        local count = GetItemCount(itemName, %s, %s);
       ]];
-      return ret:format(itemName, trigger.use_includeBank and "true" or "nil", trigger.use_includeCharges and "true" or "nil");
+      return ret:format(
+        itemName,
+        trigger.use_exact_itemName and "true" or "nil",
+        trigger.use_includeBank and "true" or "nil",
+        trigger.use_includeCharges and "true" or "nil"
+      )
     end,
     args = {
       {
@@ -4957,7 +4967,18 @@ Private.event_prototypes = {
         required = true,
         display = L["Item"],
         type = "item",
+        showExactOption = true,
         test = "true"
+      },
+      {
+        name = "name",
+        display = L["Name"],
+        init = "itemName",
+        type = "string",
+        hidden = true,
+        store = true,
+        test = "true",
+        conditionType = "string"
       },
       {
         name = "includeBank",
@@ -4975,22 +4996,58 @@ Private.event_prototypes = {
         name = "count",
         display = L["Item Count"],
         type = "number"
-      }
+      },
+      {
+        name = "stacks",
+        display = L["Stacks"],
+        init = "count",
+        hidden = true,
+        store = true,
+        test = "true",
+        conditionType = "number"
+      },
+      {
+        name = "value",
+        init = "count",
+        hidden = true,
+        store = true,
+        test = "true",
+        display = L["Progress Value"],
+        conditionType = "number"
+      },
+      {
+        name = "total",
+        init = 0,
+        hidden = true,
+        store = true,
+        test = "true",
+        display = L["Progress Total"],
+        conditionType = "number"
+      },
+      {
+        name = "progressType",
+        init = "'static'",
+        hidden = true,
+        store = true,
+        test = "true",
+        conditionType = "number"
+      },
+      {
+        name = "icon",
+        init = "GetItemIcon(itemName)",
+        hidden = true,
+        store = true,
+        test = "true"
+      },
+      {
+        name = "name",
+        init = "itemName",
+        hidden = true,
+        store = true,
+        test = "true"
+      },
     },
-    durationFunc = function(trigger)
-      local count = GetItemCount(trigger.itemName, trigger.use_includeBank, trigger.use_includeCharges);
-      return count, 0, true;
-    end,
-    stacksFunc = function(trigger)
-      local count = GetItemCount(trigger.itemName, trigger.use_includeBank, trigger.use_includeCharges);
-      return count, 0, true;
-    end,
-    nameFunc = function(trigger)
-      return trigger.itemName;
-    end,
-    iconFunc = function(trigger)
-      return GetItemIcon(trigger.itemName);
-    end,
+    statesParameter = "one",
     hasItemID = true,
     automaticrequired = true
   },

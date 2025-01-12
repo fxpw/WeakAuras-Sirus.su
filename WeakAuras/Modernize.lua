@@ -1245,6 +1245,17 @@ function Private.Modernize(data)
     end
   end
 
+  if data.internalVersion < 65 then
+    for triggerId, triggerData in ipairs(data.triggers) do
+      if triggerData.trigger.type == "item"
+      and triggerData.trigger.event == "Item Count"
+      and type(triggerData.trigger.itemName) == "number"
+      then
+        triggerData.trigger.use_exact_itemName = true
+      end
+    end
+  end
+
   if data.internalVersion < 67 or data.internalVersion > WeakAuras.InternalVersion() then
     local castMigrationNeeded = data.internalVersion < 67
     data.internalVersion = WeakAuras.InternalVersion()
