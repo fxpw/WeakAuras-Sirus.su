@@ -5382,36 +5382,38 @@ Private.event_prototypes = {
       WeakAuras.WatchRuneCooldown(trigger.rune);
       local ret = [[
         local rune = %s;
+        local genericShowOn = %s
+        local includeDeathRunes = %s;
         local startTime, duration = WeakAuras.GetRuneCooldown(rune);
-        local inverse = %s;
-        local death = %s;
-
         local numBloodRunes = 0;
         local numUnholyRunes = 0;
         local numFrostRunes = 0;
         local numDeathRunes = 0;
+        local numRunes = 0;
+        local isDeathRune = GetRuneType(rune) == 4
         for index = 1, 6 do
-          local startTime = select(1, GetRuneCooldown(index));
+          local startTime = GetRuneCooldown(index);
           if startTime == 0 then
-            if GetRuneType(index) == 1 then
-              numBloodRunes = numBloodRunes  + 1;
-            elseif GetRuneType(index) == 2 then
+            numRunes = numRunes + 1;
+            local runeType = GetRuneType(index)
+            if runeType == 1 then
+              numBloodRunes = numBloodRunes + 1;
+            elseif runeType == 2 then
+              numFrostRunes = numFrostRunes + 1;
+            elseif runeType == 3 then
               numUnholyRunes = numUnholyRunes + 1;
-            elseif GetRuneType(index) == 3 then
-              numFrostRunes = numFrostRunes  + 1;
-            elseif GetRuneType(index) == 4 then
-              numDeathRunes = numDeathRunes  + 1;
+            elseif runeType == 4 then
+              numDeathRunes = numDeathRunes + 1;
             end
           end
         end
-
-        if %s then
+        if includeDeathRunes then
           numBloodRunes  = numBloodRunes  + numDeathRunes;
           numUnholyRunes = numUnholyRunes + numDeathRunes;
           numFrostRunes  = numFrostRunes  + numDeathRunes;
         end
       ]];
-      if(trigger.use_remaining and not trigger.use_inverse) then
+      if trigger.use_remaining then
         local ret2 = [[
           local expirationTime = startTime + duration
           local remaining = expirationTime - GetTime();
@@ -5420,105 +5422,140 @@ Private.event_prototypes = {
             Private.ExecEnv.ScheduleScan(expirationTime - remainingCheck);
           end
         ]];
-        ret = ret..ret2:format(tonumber(trigger.remaining) or 0);
+        ret = ret..ret2:format(tonumber(trigger.remaining or 0) or 0);
       end
-      return ret:format(trigger.rune, (trigger.use_inverse and "true" or "false"), (trigger.use_deathRune == true and "true" or trigger.use_deathRune == false and "false" or "nil"), (trigger.use_includeDeath and "true" or "false"));
+      return ret:format(
+        trigger.rune,
+        "[[" .. (trigger.genericShowOn or "") .. "]]",
+        (trigger.use_includeDeathRunes and "true" or "false")
+      );
     end,
+    statesParameter = "one",
     args = {
       {
         name = "rune",
         display = L["Rune"],
         type = "select",
         values = "rune_specific_types",
-        test = [[
-          ((inverse and startTime == 0) or (not inverse and startTime > 0))
-          and
-          ((death == nil) or (death == true and GetRuneType(rune) == 4) or (death == false and GetRuneType(rune) ~= 4))
-        ]],
-        enable = function(trigger) return not trigger.use_bloodRunes and not trigger.use_unholyRunes and not trigger.use_frostRunes end,
+        test = "(genericShowOn == \"showOnReady\" and (startTime == 0)) " ..
+        "or (genericShowOn == \"showOnCooldown\" and startTime > 0) " ..
+        "or (genericShowOn == \"showAlways\")",
         reloadOptions = true
       },
       {
-        name = "deathRune",
-        display = L["Death Rune"],
+        name = "isDeathRune",
+        display = L["Is Death Rune"],
         type = "tristate",
-        test = "true",
-        enable = function(trigger) return trigger.use_rune end
+        init = "isDeathRune",
+        store = true,
+        conditionType = "bool",
+        enable = function(trigger) return trigger.use_rune end,
       },
       {
         name = "remaining",
         display = L["Remaining Time"],
         type = "number",
-        enable = function(trigger) return trigger.use_rune and not(trigger.use_inverse) end
+        enable = function(trigger) return trigger.use_rune and not(trigger.genericShowOn == "showOnReady") end
       },
       {
-        name = "inverse",
-        display = L["Inverse"],
-        type = "toggle",
+        name = "genericShowOn",
+        display =  L["Show"],
+        type = "select",
+        values = "cooldown_progress_behavior_types",
         test = "true",
+        enable = function(trigger) return trigger.use_rune end,
+        required = true
+      },
+      {
+        name = "runesCount",
+        display = L["Rune Count"],
+        type = "number",
+        init = "numRunes",
+        enable = function(trigger) return not trigger.use_rune end
+      },
+      {
+        hidden = true,
+        name = "onCooldown",
+        test = "true",
+        display = L["On Cooldown"],
+        conditionType = "bool",
+        conditionTest = function(state, needle)
+          return state and state.show and (state.expirationTime and state.expirationTime > GetTime()) == (needle == 1)
+        end,
         enable = function(trigger) return trigger.use_rune end
       },
       {
         name = "bloodRunes",
-        display = L["Blood Runes"],
+        display = L["Rune Count - Blood"],
         type = "number",
         init = "numBloodRunes",
-        enable = function(trigger) return not trigger.use_rune end
-      },
-      {
-        name = "unholyRunes",
-        display = L["Unholy Runes"],
-        type = "number",
-        init = "numUnholyRunes",
-        enable = function(trigger) return not trigger.use_rune end
+        store = true,
+        conditionType = "number",
+        enable = function(trigger) return not trigger.use_rune end,
       },
       {
         name = "frostRunes",
-        display = L["Frost Runes"],
+        display = L["Rune Count - Frost"],
         type = "number",
         init = "numFrostRunes",
-        enable = function(trigger) return not trigger.use_rune end
+        store = true,
+        conditionType = "number",
+        enable = function(trigger) return not trigger.use_rune end,
       },
       {
-        name = "includeDeath",
+        name = "unholyRunes",
+        display = L["Rune Count - Unholy"],
+        type = "number",
+        init = "numUnholyRunes",
+        store = true,
+        conditionType = "number",
+        enable = function(trigger) return not trigger.use_rune end,
+      },
+      {
+        name = "includeDeathRunes",
         display = L["Include Death Runes"],
         type = "toggle",
         test = "true",
-        enable = function(trigger) return trigger.use_bloodRunes or trigger.use_unholyRunes or trigger.use_frostRunes end
+        enable = function(trigger) return trigger.use_bloodRunes or trigger.use_unholyRunes or trigger.use_frostRunes end,
       },
     },
     durationFunc = function(trigger)
       if trigger.use_rune then
-        local startTime, duration
-        if not(trigger.use_inverse) then
-          startTime, duration = WeakAuras.GetRuneCooldown(trigger.rune);
-        end
-
-        startTime = startTime or 0;
-        duration = duration or 0;
-
-        return duration, startTime + duration;
+        local startTime, duration = WeakAuras.GetRuneCooldown(trigger.rune)
+        return duration, startTime + duration
       else
-        return 1, 0;
+        local numRunes = 0;
+        for index = 1, 6 do
+          if GetRuneCooldown(index) == 0 then
+            numRunes = numRunes + 1;
+          end
+        end
+        return numRunes, 6, true;
       end
     end,
+    stacksFunc = function(trigger)
+      local numRunes = 0;
+      for index = 1, 6 do
+        if GetRuneCooldown(index) == 0 then
+          numRunes = numRunes  + 1;
+        end
+      end
+      return numRunes;
+    end,
     nameFunc = function(trigger)
-      local runeNames = {
-        [1] = L["Blood"],
-        [2] = L["Unholy"],
-        [3] = L["Frost"],
-        [4] = L["Death"]
-      };
+      local runeNames = { L["Blood"], L["Frost"], L["Unholy"], L["Death"] }
       return runeNames[GetRuneType(trigger.rune)];
     end,
     iconFunc = function(trigger)
-      local runeIcons = {
-        [1] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Blood",
-        [2] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Unholy",
-        [3] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Frost",
-        [4] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Death"
-      };
-      return runeIcons[GetRuneType(trigger.rune)];
+      if trigger.rune then
+        local runeIcons = {
+          "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Blood",
+          "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Frost",
+          "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Unholy",
+          "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Death"
+        };
+        return runeIcons[GetRuneType(trigger.rune)];
+      end
     end,
     automaticrequired = true,
   },

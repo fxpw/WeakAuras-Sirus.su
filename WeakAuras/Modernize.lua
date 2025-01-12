@@ -1206,8 +1206,25 @@ function Private.Modernize(data)
     end
   end
 
+  -- Internal version 55 contained a incorrect Modernize (data.forceEvents = nil) reused to
+  -- migrate deathRune to isDeathRune & migrate use_inverse to use_genericShowOn
   if data.internalVersion < 55 then
-    data.forceEvents = true
+    for _, triggerData in ipairs(data.triggers) do
+        if triggerData.trigger.event == "Death Knight Rune" then
+            -- migrate deathRune to isDeathRune
+            if triggerData.trigger.use_deathRune then
+                triggerData.trigger.use_isDeathRune = triggerData.trigger.use_deathRune
+            end
+            triggerData.trigger.use_deathRune = nil
+            -- migrate use_inverse to use_genericShowOn
+            if not (triggerData.trigger.use_genericShowOn or triggerData.trigger.genericShowOn) then
+                triggerData.trigger.use_genericShowOn = true
+                triggerData.trigger.genericShowOn = triggerData.trigger.use_inverse and "showOnCooldown"
+                                                    or "showAlways"
+            end
+            triggerData.trigger.use_inverse = nil
+        end
+    end
   end
 
   -- Internal version 55 contained a incorrect Modernize

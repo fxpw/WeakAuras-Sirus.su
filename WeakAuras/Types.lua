@@ -1770,7 +1770,7 @@ Private.rune_specific_types = {
   [3] = L["Unholy Rune #1"],
   [4] = L["Unholy Rune #2"],
   [5] = L["Frost Rune #1"],
-  [6] = L["Frost Rune #2"]
+  [6] = L["Frost Rune #2"],
 }
 
 Private.custom_trigger_types = {
