@@ -1324,6 +1324,20 @@ function Private.Modernize(data)
           "rangedhasterating_operator",
           "spellhasterating",
           "spellhasterating_operator",
+          "spellpenpercent",
+          "spellpenpercent_operator",
+          "armorpenpercent",
+          "armorpenpercent_operator",
+          "armorpenrating",
+          "armorpenrating_operator",
+          "resiliencerating",
+          "resiliencerating_operator",
+          "resiliencepercent",
+          "resiliencepercent_operator",
+          "expertisebonus",
+          "expertisebonus_operator",
+          "expertiserating",
+          "expertiserating_operator",
           "resistancefire",
           "resistancefire_operator",
           "resistancenature",
@@ -1371,9 +1385,7 @@ function Private.Modernize(data)
         },
         ["Location"] = {
           "zone",
-          "zone_operator",
           "subzone",
-          "subzone_operator",
         }
       }
       for _, triggerData in ipairs(data.triggers) do

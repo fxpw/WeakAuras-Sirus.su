@@ -6521,6 +6521,81 @@ Private.event_prototypes = {
         },
       },
       {
+        name = "expertiserating",
+        display = L["Expertise Rating"],
+        type = "number",
+        init = "GetCombatRating(CR_EXPERTISE)",
+        store = true,
+        conditionType = "number",
+      },
+      {
+        name = "expertisebonus",
+        display = L["Expertise Bonus"],
+        type = "number",
+        init = "GetCombatRatingBonus(CR_EXPERTISE)",
+        store = true,
+        conditionType = "number",
+      },
+      {
+        name = "armorpenrating",
+        display = L["Armor Peneration Rating"],
+        type = "number",
+        init = "GetCombatRating(CR_ARMOR_PENETRATION)",
+        store = true,
+        conditionType = "number",
+      },
+      {
+        name = "armorpenpercent",
+        display = L["Armor Peneration Percent"],
+        type = "number",
+        init = "GetArmorPenetration()",
+        store = true,
+        conditionType = "number",
+      },
+      {
+        name = "resiliencerating",
+        display = L["Resilience Rating"],
+        type = "number",
+        init = [[
+          local melee = GetCombatRating(CR_CRIT_TAKEN_MELEE);
+          local ranged = GetCombatRating(CR_CRIT_TAKEN_RANGED);
+          local spell = GetCombatRating(CR_CRIT_TAKEN_SPELL);
+          return math.min(melee, ranged, spell);
+        ]],
+        store = true,
+        conditionType = "number",
+      },
+      {
+        name = "resiliencepercent",
+        display = L["Resilience Percent"],
+        type = "number",
+        init = [[
+          local ratings = {
+            melee = {value = GetCombatRating(CR_CRIT_TAKEN_MELEE), ratingType = CR_CRIT_TAKEN_MELEE},
+            ranged = {value = GetCombatRating(CR_CRIT_TAKEN_RANGED), ratingType = CR_CRIT_TAKEN_RANGED},
+            spell = {value = GetCombatRating(CR_CRIT_TAKEN_SPELL), ratingType = CR_CRIT_TAKEN_SPELL},
+          };
+          local lowest = ratings.melee;
+          if ratings.ranged.value < lowest.value then
+            lowest = ratings.ranged;
+          end
+          if ratings.spell.value < lowest.value then
+            lowest = ratings.spell;
+          end
+          return GetCombatRatingBonus(lowest.ratingType);
+        ]],
+        store = true,
+        conditionType = "number",
+      },
+      {
+        name = "spellpenpercent",
+        display = L["Spell Peneration Percent"],
+        type = "number",
+        init = "GetSpellPenetration()",
+        store = true,
+        conditionType = "number",
+      },
+      {
         type = "header",
         name = "resistanceHeader",
         display = L["Resistances"],
