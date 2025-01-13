@@ -3949,6 +3949,13 @@ Private.event_prototypes = {
       WeakAuras.RegisterDBMCallback("kill")
 
       local ret = [=[
+        local triggerCounter = %q
+        local counter
+        if triggerCounter and triggerCounter ~= "" then
+          counter = Private.ExecEnv.CreateTriggerCounter(triggerCounter)
+        else
+          counter = Private.ExecEnv.CreateTriggerCounter()
+        end
         return function (states, event, id)
           local triggerId = %q
           local triggerSpellId = %q
@@ -3958,10 +3965,10 @@ Private.event_prototypes = {
           local extendTimer = %s
           local triggerUseRemaining = %s
           local triggerRemaining = %s
-          local triggerCount = %q
           local triggerDbmType = %s
           local cloneId = useClone and id or ""
           local state = states[cloneId]
+          local counter = counter
 
           function copyOrSchedule(bar, cloneId)
             if triggerUseRemaining then
@@ -3985,7 +3992,7 @@ Private.event_prototypes = {
 
           if useClone then
             if event == "DBM_TimerStart" then
-              if Private.ExecEnv.DBMTimerMatches(id, triggerId, triggerText, triggerTextOperator, triggerSpellId, triggerDbmType, triggerCount) then
+              if Private.ExecEnv.DBMTimerMatches(id, triggerId, triggerText, triggerTextOperator, triggerSpellId, triggerDbmType, counter) then
                 local bar = WeakAuras.GetDBMTimerById(id)
                 if bar then
                   copyOrSchedule(bar, cloneId)
@@ -3999,7 +4006,7 @@ Private.event_prototypes = {
               end
             elseif event == "DBM_TimerUpdate" then
               for id, bar in pairs(WeakAuras.GetAllDBMTimers()) do
-                if Private.ExecEnv.DBMTimerMatches(id, triggerId, triggerText, triggerTextOperator, triggerSpellId, triggerDbmType, triggerCount) then
+                if Private.ExecEnv.DBMTimerMatches(id, triggerId, triggerText, triggerTextOperator, triggerSpellId, triggerDbmType, counter) then
                   copyOrSchedule(bar, id)
                 else
                   local state = states[id]
@@ -4015,7 +4022,7 @@ Private.event_prototypes = {
             elseif event == "DBM_TimerForce" then
               wipe(states)
               for id, bar in pairs(WeakAuras.GetAllDBMTimers()) do
-                if Private.ExecEnv.DBMTimerMatches(id, triggerId, triggerText, triggerTextOperator, triggerSpellId, triggerDbmType, triggerCount) then
+                if Private.ExecEnv.DBMTimerMatches(id, triggerId, triggerText, triggerTextOperator, triggerSpellId, triggerDbmType, counter) then
                   copyOrSchedule(bar, cloneId)
                 end
               end
@@ -4023,13 +4030,13 @@ Private.event_prototypes = {
           else
             if event == "DBM_TimerStart" or event == "DBM_TimerUpdate" then
               if extendTimer ~= 0 then
-                if Private.ExecEnv.DBMTimerMatches(id, triggerId, triggerText, triggerTextOperator, triggerSpellId, triggerDbmType, triggerCount) then
+                if Private.ExecEnv.DBMTimerMatches(id, triggerId, triggerText, triggerTextOperator, triggerSpellId, triggerDbmType, counter) then
                   local bar = WeakAuras.GetDBMTimerById(id)
                   Private.ExecEnv.ScheduleDbmCheck(bar.expirationTime + extendTimer)
                 end
               end
             end
-            local bar = WeakAuras.GetDBMTimer(triggerId, triggerText, triggerTextOperator, triggerSpellId, extendTimer, triggerDbmType, triggerCount)
+            local bar = WeakAuras.GetDBMTimer(triggerId, triggerText, triggerTextOperator, triggerSpellId, extendTimer, triggerDbmType, counter)
             if bar then
               if extendTimer == 0
                 or not (state and state.show)
@@ -4052,6 +4059,7 @@ Private.event_prototypes = {
         ]=]
 
       return ret:format(
+        trigger.use_count and trigger.count or "",
         trigger.use_id and trigger.id or "",
         trigger.use_spellId and tostring(trigger.spellId) or "",
         trigger.use_message and trigger.message or "",
@@ -4060,7 +4068,6 @@ Private.event_prototypes = {
         trigger.use_extend and tonumber(trigger.extend or 0) or 0,
         trigger.use_remaining and "true" or "false",
         trigger.remaining or 0,
-        trigger.use_count and trigger.count or "",
         trigger.use_dbmType and trigger.dbmType or "nil",
         trigger.remaining_operator or "<"
       )
@@ -4191,6 +4198,13 @@ Private.event_prototypes = {
     triggerFunction = function(trigger)
       WeakAuras.RegisterBigWigsTimer()
       local ret = [=[
+        local triggerCounter = %q
+        local counter
+        if triggerCounter and triggerCounter ~= "" then
+          counter = Private.ExecEnv.CreateTriggerCounter(triggerCounter)
+        else
+          counter = Private.ExecEnv.CreateTriggerCounter()
+        end
         return function(states, event, id)
           local triggerSpellId = %q
           local triggerText = %q
@@ -4200,11 +4214,11 @@ Private.event_prototypes = {
           local triggerUseRemaining = %s
           local triggerRemaining = %s
           local triggerEmphasized = %s
-          local triggerCount = %q
           local triggerCast = %s
           local triggerIsCooldown = %s
           local cloneId = useClone and id or ""
           local state = states[cloneId]
+          local counter = counter
 
           function copyOrSchedule(bar, cloneId)
             if triggerUseRemaining then
@@ -4228,7 +4242,7 @@ Private.event_prototypes = {
 
           if useClone then
             if event == "BigWigs_StartBar" then
-              if Private.ExecEnv.BigWigsTimerMatches(id, triggerText, triggerTextOperator, triggerSpellId, triggerEmphasized, triggerCount, triggerCast, triggerIsCooldown) then
+              if Private.ExecEnv.BigWigsTimerMatches(id, triggerText, triggerTextOperator, triggerSpellId, triggerEmphasized, counter, triggerCast, triggerIsCooldown) then
                 local bar = WeakAuras.GetBigWigsTimerById(id)
                 if bar then
                   copyOrSchedule(bar, cloneId)
@@ -4242,14 +4256,14 @@ Private.event_prototypes = {
               end
             elseif event == "BigWigs_Timer_Update" then
               for id, bar in pairs(WeakAuras.GetAllBigWigsTimers()) do
-                if Private.ExecEnv.BigWigsTimerMatches(id, triggerText, triggerTextOperator, triggerSpellId, triggerEmphasized, triggerCount, triggerCast) then
+                if Private.ExecEnv.BigWigsTimerMatches(id, triggerText, triggerTextOperator, triggerSpellId, triggerEmphasized, counter, triggerCast) then
                   copyOrSchedule(bar, id)
                 end
               end
             elseif event == "BigWigs_Timer_Force" then
               wipe(states)
               for id, bar in pairs(WeakAuras.GetAllBigWigsTimers()) do
-                if Private.ExecEnv.BigWigsTimerMatches(id, triggerText, triggerTextOperator, triggerSpellId, triggerEmphasized, triggerCount, triggerCast) then
+                if Private.ExecEnv.BigWigsTimerMatches(id, triggerText, triggerTextOperator, triggerSpellId, triggerEmphasized, counter, triggerCast) then
                   copyOrSchedule(bar, id)
                 end
               end
@@ -4257,13 +4271,13 @@ Private.event_prototypes = {
           else
             if event == "BigWigs_StartBar" then
               if extendTimer ~= 0 then
-                if Private.ExecEnv.BigWigsTimerMatches(id, triggerText, triggerTextOperator, triggerSpellId, triggerEmphasized, triggerCount, triggerCast) then
+                if Private.ExecEnv.BigWigsTimerMatches(id, triggerText, triggerTextOperator, triggerSpellId, triggerEmphasized, counter, triggerCast) then
                   local bar = WeakAuras.GetBigWigsTimerById(id)
                   Private.ExecEnv.ScheduleBigWigsCheck(bar.expirationTime + extendTimer)
                 end
               end
             end
-            local bar = WeakAuras.GetBigWigsTimer(triggerText, triggerTextOperator, triggerSpellId, extendTimer, triggerEmphasized, triggerCount, triggerCast)
+            local bar = WeakAuras.GetBigWigsTimer(triggerText, triggerTextOperator, triggerSpellId, extendTimer, triggerEmphasized, counter, triggerCast)
             if bar then
               if extendTimer == 0
                 or not (state and state.show)
@@ -4285,6 +4299,7 @@ Private.event_prototypes = {
         end
       ]=]
       return ret:format(
+        trigger.use_count and trigger.count or "",
         trigger.use_spellId and tostring(trigger.spellId) or "",
         trigger.use_text and trigger.text or "",
         trigger.use_text and trigger.text_operator or "",
@@ -4293,7 +4308,6 @@ Private.event_prototypes = {
         trigger.use_remaining and "true" or "false",
         trigger.remaining or 0,
         trigger.use_emphasized == nil and "nil" or trigger.use_emphasized and "true" or "false",
-        trigger.use_count and trigger.count or "",
         trigger.use_cast == nil and "nil" or trigger.use_cast and "true" or "false",
         trigger.use_isCooldown == nil and "nil" or trigger.use_isCooldown and "true" or "false",
         trigger.remaining_operator or "<"
@@ -5459,6 +5473,13 @@ Private.event_prototypes = {
         name = "icon",
         hidden = true,
         init = "select(3, GetSpellInfo(spellId))",
+        store = true,
+        test = "true"
+      },
+      {
+        name = "name",
+        hidden = true,
+        init = "GetSpellInfo(spellId)",
         store = true,
         test = "true"
       },
