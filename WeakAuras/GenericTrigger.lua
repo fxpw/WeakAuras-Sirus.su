@@ -73,6 +73,7 @@ local events = {}
 local loaded_events = {}
 local loaded_unit_events = {};
 local watched_trigger_events = Private.watched_trigger_events
+local delayTimerEvents = {}
 local loaded_auras = {}; -- id to bool map
 
 -- Local functions
@@ -672,7 +673,12 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
   if(data.triggerFunc) then
     local untriggerCheck = false;
     if (data.statesParameter == "full") then
-      local ok, returnValue = pcall(data.triggerFunc, allStates, event, arg1, arg2, ...);
+      local ok, returnValue
+      if data.counter then
+        ok, returnValue = pcall(data.triggerFunc, allStates, data.counter, event, arg1, arg2, ...);
+      else
+        ok, returnValue = pcall(data.triggerFunc, allStates, event, arg1, arg2, ...);
+      end
       if not ok then
         errorHandler(returnValue)
       elseif ok and returnValue then
@@ -686,7 +692,12 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
         end
       end
     elseif (data.statesParameter == "all") then
-      local ok, returnValue = pcall(data.triggerFunc, allStates, event, arg1, arg2, ...);
+      local ok, returnValue
+      if data.counter then
+        ok, returnValue = pcall(data.triggerFunc, allStates, data.counter, event, arg1, arg2, ...);
+      else
+        ok, returnValue = pcall(data.triggerFunc, allStates, event, arg1, arg2, ...);
+      end
       if not ok then
         errorHandler(returnValue)
       elseif (ok and returnValue) or optionsEvent then
@@ -722,7 +733,12 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
         end
         allStates[cloneIdForUnitTrigger] = allStates[cloneIdForUnitTrigger] or {};
         local state = allStates[cloneIdForUnitTrigger];
-        local ok, returnValue = pcall(data.triggerFunc, state, event, unitForUnitTrigger, arg1, arg2, ...);
+        local ok, returnValue
+        if data.counter then
+          ok, returnValue = pcall(data.triggerFunc, state, data.counter, event, unitForUnitTrigger, arg1, arg2, ...);
+        else
+          ok, returnValue = pcall(data.triggerFunc, state, event, unitForUnitTrigger, arg1, arg2, ...);
+        end
         if not ok then
           errorHandler(returnValue)
         elseif (ok and returnValue) or optionsEvent then
@@ -736,7 +752,12 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
     elseif (data.statesParameter == "one") then
       allStates[""] = allStates[""] or {};
       local state = allStates[""];
-      local ok, returnValue = pcall(data.triggerFunc, state, event, arg1, arg2, ...);
+      local ok, returnValue
+      if data.counter then
+        ok, returnValue = pcall(data.triggerFunc, state, data.counter, event, arg1, arg2, ...);
+      else
+        ok, returnValue = pcall(data.triggerFunc, state, event, arg1, arg2, ...);
+      end
       if not ok then
         errorHandler(returnValue)
       elseif (ok and returnValue) or optionsEvent then
@@ -747,7 +768,12 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
         untriggerCheck = true;
       end
     else
-      local ok, returnValue = pcall(data.triggerFunc, event, arg1, arg2, ...);
+      local ok, returnValue
+      if data.counter then
+        ok, returnValue = pcall(data.triggerFunc, data.counter, event, arg1, arg2, ...);
+      else
+        ok, returnValue = pcall(data.triggerFunc, event, arg1, arg2, ...);
+      end
       if not ok then
         errorHandler(returnValue)
       elseif (ok and returnValue) or optionsEvent then
@@ -896,8 +922,13 @@ function WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ... )
     local updateTriggerState = false;
     for triggernum, data in pairs(triggers) do
       local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
-      if (RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2, ...)) then
-        updateTriggerState = true;
+      local delay = GenericTrigger.GetDelay(data)
+      if delay == 0 then
+        if (RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2, ...)) then
+          updateTriggerState = true
+        end
+      else
+        Private.RunTriggerFuncWithDelay(delay, id, triggernum, data, event, arg1, arg2, ...)
       end
     end
     if (updateTriggerState) then
@@ -907,6 +938,50 @@ function WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ... )
     Private.ActivateAuraEnvironment(nil);
   end
 end
+
+do
+  local function RunTriggerFuncForDelay(id, triggernum, data, event, ...)
+    Private.StartProfileAura(id)
+    Private.ActivateAuraEnvironment(id)
+    local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum)
+    if (RunTriggerFunc(allStates, data, id, triggernum, event, ...)) then
+      Private.UpdatedTriggerState(id)
+    end
+    Private.StopProfileAura(id)
+    Private.ActivateAuraEnvironment(nil)
+    -- clear expired timers
+    for i, t in ipairs_reverse(delayTimerEvents[id][triggernum]) do
+      if t.ends <= GetTime() then
+        table.remove(delayTimerEvents[id][triggernum], i)
+      end
+    end
+  end
+
+  function Private.RunTriggerFuncWithDelay(delay, id, triggernum, data, event, ...)
+    delayTimerEvents[id] = delayTimerEvents[id] or {}
+    delayTimerEvents[id][triggernum] = delayTimerEvents[id][triggernum] or {}
+    local timerId = timer:ScheduleTimer(RunTriggerFuncForDelay, delay, id, triggernum, data, event, ...)
+    tinsert(delayTimerEvents[id][triggernum], timerId)
+  end
+end
+
+function Private.CancelDelayedTrigger(id)
+  if delayTimerEvents[id] then
+    for triggernum, timers in pairs(delayTimerEvents[id]) do
+      for _, timerId in ipairs(timers) do
+        timer:CancelTimer(timerId)
+      end
+    end
+    delayTimerEvents[id] = nil
+  end
+end
+
+function Private.CancelAllDelayedTriggers()
+  for id in pairs(delayTimerEvents) do
+    Private.CancelDelayedTrigger(id)
+  end
+end
+
 
 function Private.ScanEventsWatchedTrigger(id, watchedTriggernums)
   Private.StartProfileAura(id);
@@ -1066,6 +1141,7 @@ function GenericTrigger.UnloadAll()
   wipe(loaded_auras);
   wipe(loaded_events);
   wipe(loaded_unit_events);
+  Private.CancelAllDelayedTriggers();
   Private.UnregisterAllEveryFrameUpdate();
 end
 
@@ -1086,6 +1162,8 @@ function GenericTrigger.UnloadDisplays(toUnload)
         auras[id] = nil;
       end
     end
+
+    Private.CancelDelayedTrigger(id);
     Private.UnregisterEveryFrameUpdate(id);
   end
 end
@@ -1294,6 +1372,10 @@ function GenericTrigger.LoadDisplays(toLoad, loadEvent, ...)
           end
         end
 
+        if data.counter then
+          data.counter:Reset()
+        end
+
         LoadEvent(id, triggernum, data);
       end
     end
@@ -1343,6 +1425,80 @@ end
 function GenericTrigger.FinishLoadUnload()
 end
 
+do
+  local function ParseCron(pattern)
+    local tests = {}
+    for test in pattern:gmatch("[^ ,]+") do
+      local startString, endString, intervalString = test:match("(%d*)-?(%d*)/?(%d*)")
+      local intervalNumber = tonumber(intervalString)
+      local startNumber = startString == "" and 0 or tonumber(startString) or 0
+      local endNumber = tonumber(endString)
+      if not endNumber then
+        endNumber = intervalNumber and math.huge or startNumber
+      end
+      intervalNumber = intervalNumber or 1
+
+      tinsert(tests, {
+        startNumber = startNumber,
+        endNumber = endNumber,
+        intervalNumber = intervalNumber,
+        Match = function(self, count)
+          return (count >= self.startNumber and count <= self.endNumber and (count - self.startNumber) % self.intervalNumber == 0)
+        end
+      })
+    end
+    return tests
+  end
+
+  function Private.CreateTriggerCounter(pattern)
+    local counter = {
+      count = 0,
+      tests = {
+
+
+      },
+      fastMatches = {
+      },
+      Reset = function(self)
+        self.count = 0
+      end,
+      GetNext = function(self)
+        self.count = self.count + 1
+        return self.count
+      end,
+    }
+    if pattern then
+      counter.tests = ParseCron(pattern)
+      counter.RunTests = function(self, count)
+        for _, test in ipairs(self.tests) do
+          if test:Match(count) then
+            return true
+          end
+        end
+        return false
+      end
+
+      for i = 1, 20 do
+        counter.fastMatches[i] = counter.RunTests(counter, i)
+      end
+
+      counter.Match = function(self)
+        if self.count <= 20 then
+          return counter.fastMatches[self.count]
+        end
+        return self:RunTests(self.count)
+      end
+
+    else
+      counter.Match = function(self)
+        return true
+      end
+    end
+
+    return counter
+  end
+end
+
 --- Adds a display, creating all internal data structures for all triggers.
 -- @param data
 -- @param region
@@ -1371,6 +1527,7 @@ function GenericTrigger.Add(data, region)
         local prototype = nil
         local automaticAutoHide
         local duration
+        local counter
         if(Private.category_event_prototype[triggerType]) then
           if not(trigger.event) then
             error("Improper arguments to WeakAuras.Add - trigger type is \"event\" but event is not defined");
@@ -1430,6 +1587,14 @@ function GenericTrigger.Add(data, region)
               duration = tonumber(trigger.duration or "1")
             else
               WeakAuras.prettyPrint("Invalid Prototype found: " .. prototype.name)
+            end
+
+            if prototype.countEvents then
+              if trigger.use_count and type(trigger.count) == "string" and trigger.count ~= "" then
+                counter = Private.CreateTriggerCounter(trigger.count)
+              else
+                counter = Private.CreateTriggerCounter()
+              end
             end
 
             if(prototype) then
@@ -1616,7 +1781,8 @@ function GenericTrigger.Add(data, region)
           automaticAutoHide = automaticAutoHide,
           tsuConditionVariables = tsuConditionVariables,
           prototype = prototype,
-          ignoreOptionsEventErrors = data.information.ignoreOptionsEventErrors
+          ignoreOptionsEventErrors = data.information.ignoreOptionsEventErrors,
+          counter = counter,
         };
       end
     end
@@ -3746,23 +3912,26 @@ function GenericTrigger.CanHaveDuration(data, triggernum)
   local trigger = data.triggers[triggernum].trigger
 
   if (Private.category_event_prototype[trigger.type]) then
-    if trigger.event and Private.event_prototypes[trigger.event] then
-      if Private.event_prototypes[trigger.event].durationFunc then
-        if(type(Private.event_prototypes[trigger.event].init) == "function") then
-          Private.event_prototypes[trigger.event].init(trigger);
+    if trigger.event then
+      local prototype = Private.event_prototypes[trigger.event]
+      if prototype then
+        if prototype.durationFunc then
+          if(type(prototype.init) == "function") then
+            prototype.init(trigger);
+          end
+          local current, maximum, custom = prototype.durationFunc(trigger);
+          current = type(current) ~= "number" and current or 0
+          maximum = type(maximum) ~= "number" and maximum or 0
+          if(custom) then
+            return {current = current, maximum = maximum};
+          else
+            return "timed";
+          end
+        elseif prototype.canHaveDuration then
+          return prototype.canHaveDuration, prototype.useModRate
+        elseif prototype.timedrequired then
+          return "timed"
         end
-        local current, maximum, custom = Private.event_prototypes[trigger.event].durationFunc(trigger);
-        current = type(current) ~= "number" and current or 0
-        maximum = type(maximum) ~= "number" and maximum or 0
-        if(custom) then
-          return {current = current, maximum = maximum};
-        else
-          return "timed";
-        end
-      elseif Private.event_prototypes[trigger.event].canHaveDuration then
-        return Private.event_prototypes[trigger.event].canHaveDuration
-      elseif Private.event_prototypes[trigger.event].timedrequired then
-        return "timed"
       end
     end
   elseif (trigger.type == "custom") then
@@ -3775,6 +3944,19 @@ function GenericTrigger.CanHaveDuration(data, triggernum)
     end
   end
   return false
+end
+
+function GenericTrigger.GetDelay(data)
+  if data.event then
+    local prototype = Private.event_prototypes[data.event]
+    if prototype and prototype.delayEvents then
+      local trigger = data.trigger
+      if trigger.use_delay and type(trigger.delay) == "number" and trigger.delay > 0 then
+        return trigger.delay
+      end
+    end
+  end
+  return 0
 end
 
 function GenericTrigger.GetTsuConditionVariables(id, triggernum)
@@ -3959,6 +4141,11 @@ function GenericTrigger.GetAdditionalProperties(data, triggernum)
         end
       end
 
+      if Private.event_prototypes[trigger.event].countEvents then
+        found = true;
+        additional = additional .. "|cFFFF0000%".. triggernum .. ".count|r - " .. L["Count"] .. "\n";
+      end
+
       if (found) then
         ret = ret .. additional;
       end
@@ -4104,6 +4291,13 @@ function GenericTrigger.GetTriggerConditions(data, triggernum)
             end
           end
         end
+      end
+
+      if Private.event_prototypes[trigger.event].countEvents then
+        result.count = {
+          display = L["Count"],
+          type = "number"
+        }
       end
 
       return result;

@@ -3015,7 +3015,9 @@ Private.event_prototypes = {
         test = "true"
       },
     },
-    timedrequired = true
+    countEvents = true,
+    delayEvents = true,
+    timedrequired = true,
   },
   ["Cooldown Progress (Spell)"] = {
     type = "spell",
@@ -5400,6 +5402,8 @@ Private.event_prototypes = {
         reloadOptions = true
       },
     },
+    countEvents = true,
+    delayEvents = true,
     timedrequired = true
   },
   ["Ready Check"] = {
@@ -5409,6 +5413,8 @@ Private.event_prototypes = {
     },
     name = L["Ready Check"],
     args = {},
+    statesParameter = "one",
+    delayEvents = true,
     timedrequired = true
   },
   ["Combat Events"] = {
@@ -5430,6 +5436,9 @@ Private.event_prototypes = {
         test = "event == %q"
       }
     },
+    statesParameter = "one",
+    countEvents = true,
+    delayEvents = true,
     timedrequired = true
   },
   ["Death Knight Rune"] = {
