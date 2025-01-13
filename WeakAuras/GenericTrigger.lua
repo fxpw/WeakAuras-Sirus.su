@@ -445,7 +445,7 @@ function ConstructFunction(prototype, trigger)
   return table.concat(ret);
 end
 
-function Private.EndEvent(id, triggernum, force, state)
+function Private.EndEvent(state)
   if state then
     if (state.show ~= false and state.show ~= nil) then
       state.show = false;
@@ -796,7 +796,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
           elseif (ok and returnValue) or optionsEvent then
             for id, state in pairs(allStates) do
               if (state.changed) then
-                if (Private.EndEvent(id, triggernum, nil, state)) then
+                if (Private.EndEvent(state)) then
                   updateTriggerState = true;
                 end
               end
@@ -808,11 +808,11 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
           if arg1 then
             local state = allStates[cloneIdForUnitTrigger]
             if state then
-              local ok, returnValue = pcall(data.untriggerFunc, state, event, unitForUnitTrigger, arg2, ...);
+              local ok, returnValue = pcall(data.untriggerFunc, state, event, unitForUnitTrigger, arg1, arg2, ...);
               if not ok then
                 errorHandler(returnValue)
               elseif ok and returnValue then
-                if (Private.EndEvent(id, triggernum, nil, state)) then
+                if (Private.EndEvent(state)) then
                   updateTriggerState = true;
                 end
               end
@@ -832,7 +832,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
           if not ok then
             errorHandler(returnValue)
           elseif (ok and returnValue) then
-            if (Private.EndEvent(id, triggernum, nil, state)) then
+            if (Private.EndEvent(state)) then
               updateTriggerState = true;
             end
           end
@@ -845,7 +845,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
           elseif (ok and returnValue) then
             allStates[""] = allStates[""] or {};
             local state = allStates[""];
-            if(Private.EndEvent(id, triggernum, nil, state)) then
+            if (Private.EndEvent(state)) then
               updateTriggerState = true;
             end
           end
@@ -1790,8 +1790,7 @@ function GenericTrigger.Add(data, region)
 
   if warnAboutCLEUEvents then
     Private.AuraWarnings.UpdateWarning(data.uid, "spamy_event_warning", "warning",
-                L["COMBAT_LOG_EVENT_UNFILTERED with no filter can trigger frame drops in raid environment. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Deprecated-CLEU"],
-                  true)
+                L["COMBAT_LOG_EVENT_UNFILTERED with no filter can trigger frame drops in raid environment. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Deprecated-CLEU"])
   else
     Private.AuraWarnings.UpdateWarning(data.uid, "spamy_event_warning")
   end

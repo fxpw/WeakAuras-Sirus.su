@@ -4713,7 +4713,7 @@ Private.event_prototypes = {
                 tier = %s
                 column = %s
                 local name, icon, _, _, rank  = GetTalentInfo(tier, column)
-                if rank > 0 then
+                if rank and rank > 0 then
                   active = true;
                   activeName = name;
                   activeIcon = icon;
@@ -5406,6 +5406,67 @@ Private.event_prototypes = {
     delayEvents = true,
     timedrequired = true
   },
+  -- fixing later
+  --[[["Spell Cast Succeeded"] = {
+    type = "event",
+    events = function(trigger)
+      local result = {}
+      local unit = trigger.unit
+      AddUnitEventForEvents(result, unit, "UNIT_SPELLCAST_SUCCEEDED")
+      return result
+    end,
+    name = L["Spell Cast Succeeded"],
+    statesParameter = "unit",
+    args = {
+      {},
+      {
+        name = "unit",
+        init = "arg",
+        display = L["Caster Unit"],
+        type = "unit",
+        test = "true",
+        values = "actual_unit_types_cast",
+        store = true,
+        conditionType = "select",
+        conditionTest = function(state, needle, op)
+          return state and state.show and (UnitIsUnit(needle, state.unit or '') == (op == "=="))
+        end
+      },
+      {
+        name = "spellName",
+        type = "string",
+        init = "arg",
+        test = "true",
+        store = true,
+        hidden = true
+      },
+      {
+        name = "rank",
+        type = "string",
+        init = "arg",
+        test = "true",
+        store = true,
+        hidden = true
+      },
+      {
+        name = "spellId",
+        display = L["Spell Id"],
+        type = "string",
+        store = true,
+        conditionType = "number"
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "select(3, GetSpellInfo(spellId))",
+        store = true,
+        test = "true"
+      },
+    },
+    countEvents = true,
+    delayEvents = true,
+    timedrequired = true
+  },]]
   ["Ready Check"] = {
     type = "event",
     events = {
