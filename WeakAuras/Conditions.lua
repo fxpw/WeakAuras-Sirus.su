@@ -56,6 +56,11 @@ local function formatValueForAssignment(vType, value, pathToCustomFunction, path
       return tostring(value)
     end
     return "nil"
+  elseif (vType == "string") then
+    if type(value) == "string" then
+      return string.format("%s", Private.QuotedString(value))
+    end
+    return "nil"
   elseif(vType == "color") then
     if (value and type(value) == "table") then
       return string.format("{%s, %s, %s, %s}", tostring(value[1]), tostring(value[2]), tostring(value[3]), tostring(value[4]));
@@ -114,7 +119,7 @@ local function formatValueForAssignment(vType, value, pathToCustomFunction, path
 end
 
 local function formatValueForCall(type, property)
-  if (type == "bool" or type == "number" or type == "list" or type == "icon") then
+  if (type == "bool" or type == "number" or type == "list" or type == "icon" or type == "string") then
     return "propertyChanges['" .. property .. "']";
   elseif (type == "color") then
     local pcp = "propertyChanges['" .. property .. "']";

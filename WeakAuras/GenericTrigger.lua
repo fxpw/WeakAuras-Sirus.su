@@ -3080,7 +3080,7 @@ do
       bar.icon = icon
       bar.timerType = timerType
       bar.spellId = tostring(spellId)
-      bar.count = msg:match("%((%d+)%)") or "0"
+      bar.count = msg:match("%((%d+)%)") or msg:match("（(%d+)）") or "0"
       bar.dbmType = dbmType
 
       local barOptions = DBM.ReleaseRevision >= 20220412000000 and DBT.Options or DBM.Bars.options
@@ -3310,7 +3310,7 @@ do
       bar.bwBackgroundColor = BWColorModule:GetColorTable("barBackground", addon, spellId)
       local BWEmphasizedModule = BigWigs:GetPlugin("Super Emphasize")
       bar.emphasized = BWEmphasizedModule:IsSuperEmphasized(addon, spellId) and true or false
-      bar.count = text:match("%((%d+)%)") or "0"
+      bar.count = text:match("%((%d+)%)") or text:match("（(%d+)）") or "0"
       bar.cast = not(text:match("^[^<]") and true)
 
       WeakAuras.ScanEvents("BigWigs_StartBar", text)
