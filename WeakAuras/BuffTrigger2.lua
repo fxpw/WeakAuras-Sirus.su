@@ -1791,8 +1791,11 @@ local function EventHandler(frame, event, arg1, arg2, ...)
   elseif event == "PARTY_MEMBERS_CHANGED" or event == "RAID_ROSTER_UPDATE" then
     for unit in GetAllUnits("group", true, "PlayersAndPets") do
       RecheckActiveForUnitType("group", unit, deactivatedTriggerInfos)
-      if not UnitExistsFixed(unit) then
+      local exists = UnitExistsFixed(unit)
+      if not exists then
         tinsert(unitsToRemove, unit)
+      elseif exists ~= existingUnits[unit] then
+        ScanGroupUnit(time, matchDataChanged, "group", unit)
       end
     end
   elseif event == "UNIT_FLAGS" or event == "UNIT_NAME_UPDATE" or event == "PLAYER_FLAGS_CHANGED" then

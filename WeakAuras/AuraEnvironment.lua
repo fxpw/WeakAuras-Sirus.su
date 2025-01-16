@@ -149,6 +149,9 @@ local blockedFunctions = {
   securecall = true,
   DeleteCursorItem = true,
   ChatEdit_SendText = true,
+  ChatEdit_ActivateChat = true,
+  ChatEdit_ParseText = true,
+  ChatEdit_OnEnterPressed = true,
 }
 
 local blockedTables = {
@@ -156,6 +159,7 @@ local blockedTables = {
   SendMailMailButton = true,
   SendMailMoneyGold = true,
   MailFrameTab2 = true,
+  DEFAULT_CHAT_FRAME = true,
   ChatFrame1 = true,
   --WeakAurasSaved = true,
   WeakAurasOptions = true,

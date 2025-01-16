@@ -94,6 +94,7 @@ local function modify(parent, region, data)
   --region.texture:SetRotation((data.rotation / 180) * math.pi);
 
   local function GetRotatedPoints(degrees)
+    degrees = degrees or 0
     local angle = rad(135 - degrees);
     local vx = math.cos(angle);
     local vy = math.sin(angle);
