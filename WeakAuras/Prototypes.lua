@@ -2828,10 +2828,17 @@ Private.event_prototypes = {
         store = true
       },
       {
+        name = "extraSpellId",
+        display = WeakAuras.newFeatureString .. L["Extra Spell Id"],
+        init = "arg",
         enable = function(trigger)
           return trigger.subeventSuffix and (trigger.subeventSuffix == "_INTERRUPT" or trigger.subeventSuffix == "_DISPEL" or trigger.subeventSuffix == "_DISPEL_FAILED" or trigger.subeventSuffix == "_STOLEN" or trigger.subeventSuffix == "_AURA_BROKEN_SPELL")
-        end
-      }, -- extraSpellId ignored with SPELL_INTERRUPT
+        end,
+        type = "spell",
+        showExactOption = false,
+        store = true,
+        conditionType = "number"
+      },
       {
         name = "extraSpellName",
         display = L["Extra Spell Name"],
