@@ -4070,7 +4070,7 @@ Private.event_prototypes = {
         trigger.use_cloneId and "true" or "false",
         trigger.use_extend and tonumber(trigger.extend or 0) or 0,
         trigger.use_remaining and "true" or "false",
-        trigger.remaining or 0,
+        trigger.remaining and tonumber(trigger.remaining or 0) or 0,
         trigger.use_dbmType and trigger.dbmType or "nil",
         trigger.remaining_operator or "<"
       )
@@ -4310,7 +4310,7 @@ Private.event_prototypes = {
         trigger.use_cloneId and "true" or "false",
         trigger.use_extend and tonumber(trigger.extend or 0) or 0,
         trigger.use_remaining and "true" or "false",
-        type(trigger.remaining) == "number" and trigger.remaining or 0,
+        trigger.remaining and tonumber(trigger.remaining or 0) or 0,
         trigger.use_emphasized == nil and "nil" or trigger.use_emphasized and "true" or "false",
         trigger.use_cast == nil and "nil" or trigger.use_cast and "true" or "false",
         trigger.use_isCooldown == nil and "nil" or trigger.use_isCooldown and "true" or "false",
@@ -4918,7 +4918,7 @@ Private.event_prototypes = {
         trigger.use_totemNamePattern and trigger.totemNamePattern_operator or "",
         trigger.use_clones and "true" or "false",
         trigger.use_inverse and "true" or "false",
-        trigger.use_remaining and trigger.remaining or "nil",
+        trigger.use_remaining and tonumber(trigger.remaining or 0) or "nil",
         trigger.use_remaining and trigger.remaining_operator or "<");
       return ret;
     end,

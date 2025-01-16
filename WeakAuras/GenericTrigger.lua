@@ -1796,10 +1796,10 @@ function GenericTrigger.Add(data, region)
   end
 
   if warnAboutCLEUEvents then
-    Private.AuraWarnings.UpdateWarning(data.uid, "spamy_event_warning", "warning",
+    Private.AuraWarnings.UpdateWarning(data.uid, "spammy_event_warning", "warning",
                 L["COMBAT_LOG_EVENT_UNFILTERED with no filter can trigger frame drops in raid environment. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Deprecated-CLEU"])
   else
-    Private.AuraWarnings.UpdateWarning(data.uid, "spamy_event_warning")
+    Private.AuraWarnings.UpdateWarning(data.uid, "spammy_event_warning")
   end
 end
 
@@ -3183,7 +3183,10 @@ do
   end
 
   function WeakAuras.GetDBMStage()
-    return DBM:GetStage()
+    if DBM then
+      return DBM:GetStage()
+    end
+    return 0, 0
   end
 
   function WeakAuras.GetDBMTimerById(id)

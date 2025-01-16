@@ -747,7 +747,7 @@ local function runDynamicConditionFunctions(funcs)
   end
 end
 
-local function UpdateDynamicConditonsStates(self, event)
+local function UpdateDynamicConditionsStates(self, event)
   if (globalDynamicConditionFuncs[event]) then
     for i, func in ipairs(globalDynamicConditionFuncs[event]) do
       func(globalConditionState);
@@ -757,7 +757,7 @@ end
 
 local function handleDynamicConditions(self, event)
   Private.StartProfileSystem("dynamic conditions")
-  UpdateDynamicConditonsStates(self, event)
+  UpdateDynamicConditionsStates(self, event)
   if (dynamicConditions[event]) then
     runDynamicConditionFunctions(dynamicConditions[event]);
   end
@@ -883,7 +883,7 @@ function Private.RegisterForGlobalConditions(uid)
         UpdateDynamicConditionsPerUnitState(dynamicConditionsFrame, event, unit)
       else
         pcall(dynamicConditionsFrame.RegisterEvent, dynamicConditionsFrame, event);
-        UpdateDynamicConditonsStates(dynamicConditionsFrame, event)
+        UpdateDynamicConditionsStates(dynamicConditionsFrame, event)
       end
     end
   end
