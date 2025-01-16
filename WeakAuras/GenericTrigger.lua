@@ -3786,6 +3786,13 @@ local commonConditions = {
     display = L["Total Duration"],
     type = "number",
   },
+  paused = {
+    display = L["Is Paused"],
+    type = "bool",
+    test = function(state, needle)
+      return (state.paused and 1 or 0) == needle
+    end
+  },
   value = {
     display = L["Progress Value"],
     type = "number",
@@ -3844,6 +3851,7 @@ function GenericTrigger.GetTriggerConditions(data, triggernum)
       if (timedDuration) then
         result.expirationTime = commonConditions.expirationTime;
         result.duration = commonConditions.duration;
+        result.paused = commonConditions.paused
       end
 
       if (valueDuration) then

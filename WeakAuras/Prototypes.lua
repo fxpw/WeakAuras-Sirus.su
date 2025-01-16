@@ -582,6 +582,27 @@ function WeakAuras.CheckNumericIds(loadids, currentId)
   return false;
 end
 
+function WeakAuras.ValidateNumeric(info, val)
+  if val ~= nil and val ~= "" and (not tonumber(val) or tonumber(val) >= 2^31) then
+    return false;
+  end
+  return true
+end
+
+function WeakAuras.ValidateTime(info, val)
+  if val ~= nil and val ~= "" then
+    if not tonumber(val) then
+      if val:sub(1,1) == "-" then
+        val = val:sub(2, #val)
+      end
+      return (val:match("^%d+:%d+:[%d%.]+$") or val:match("^%d+:[%d+%.]+$")) and true or false
+    elseif tonumber(val) >= 2^31 then
+      return false
+    end
+  end
+  return true
+end
+
 function WeakAuras.TimeToSeconds(val)
   if tonumber(val) then
     return tonumber(val)
@@ -624,13 +645,6 @@ Private.tinySecondFormat = function(value)
         return negSign .. ret
      end
   end
-end
-
-function WeakAuras.ValidateNumeric(info, val)
-  if val ~= nil and val ~= "" and (not tonumber(val) or tonumber(val) >= 2^31) then
-    return false;
-  end
-  return true
 end
 
 function WeakAuras.ValidateNumericOrPercent(info, val)
