@@ -3561,7 +3561,6 @@ function WeakAuras.GetAuraTooltipInfo(unit, index, filter)
 
   local tooltipText = tooltipTextLine and tooltipTextLine:GetObjectType() == "FontString" and tooltipTextLine:GetText() or "";
   local debuffType = "none";
-  local found = false;
   local tooltipSize = {};
   if(tooltipText) then
     for t in tooltipText:gmatch("(%d[%d%.,]*)") do
@@ -5013,11 +5012,11 @@ local function GetAnchorFrame(data, region, parent)
     if unit then
       local frame = unit and WeakAuras.GetNamePlateForUnit(unit)
       if frame then return frame end
-    end
-    if WeakAuras.IsOptionsOpen() then
-      Private.ensurePRDFrame()
-      personalRessourceDisplayFrame:anchorFrame(id, anchorFrameType)
-      return personalRessourceDisplayFrame
+      if WeakAuras.IsOptionsOpen() then
+        Private.ensurePRDFrame()
+        personalRessourceDisplayFrame:anchorFrame(id, anchorFrameType)
+        return personalRessourceDisplayFrame
+      end
     end
   end
 

@@ -1012,7 +1012,7 @@ local function create(parent)
 
   -- Create statusbar (inherit prototype)
   local bar = CreateFrame("Frame", nil, region);
-  WeakAuras.Mixin(bar, SmoothStatusBarMixin);
+  WeakAuras.Mixin(bar, Private.SmoothStatusBarMixin);
   local fg = bar:CreateTexture(nil, "BORDER");
   local bg = region:CreateTexture(nil, "BACKGROUND");
   bg:SetAllPoints(bar);
