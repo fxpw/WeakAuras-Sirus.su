@@ -1398,10 +1398,13 @@ function Private.Modernize(data)
           "spellId",
           "spellName",
         },
+        ["Spell Cast Succeeded"] = {
+          "spellId"
+        },
         ["Location"] = {
           "zone",
           "subzone",
-        }
+        },
       }
       for _, triggerData in ipairs(data.triggers) do
         local t = triggerData.trigger

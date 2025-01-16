@@ -365,7 +365,11 @@ local function UpdateMatchData(time, matchDataChanged, unit, index, filter, name
     -- Tell old auras that used this match data
     for id, triggerData in pairs(data.auras) do
       for triggernum in pairs(triggerData) do
-        if matchDataByTrigger[id] and matchDataByTrigger[id][triggernum] and matchDataByTrigger[id][triggernum][unit] and matchDataByTrigger[id][triggernum][unit][index] then
+        if matchDataByTrigger[id]
+            and matchDataByTrigger[id][triggernum]
+            and matchDataByTrigger[id][triggernum][unit]
+            and matchDataByTrigger[id][triggernum][unit][index]
+        then
           matchDataByTrigger[id][triggernum][unit][index] = nil
           matchDataChanged[id] = matchDataChanged[id] or {}
           matchDataChanged[id][triggernum] = true
@@ -1815,6 +1819,17 @@ local function EventHandler(frame, event, arg1, arg2, ...)
         tinsert(unitsToRemove, unit)
       end
     end
+
+    if arg1 then
+      -- Initial login has a bug where the tooltip information is not available,
+      -- so update tooltips 2s after login
+      timer:ScheduleTimer(function()
+        for unit, matchtDataPerUnit in pairs(matchData) do
+          EventHandler(frame, "UNIT_AURA", unit)
+        end
+      end, 2)
+    end
+
   elseif event == "RAID_TARGET_UPDATE" then
     ScanRaidMarkScanFunc(matchDataChanged)
   end
