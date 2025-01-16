@@ -3868,9 +3868,12 @@ Private.event_prototypes = {
     internal_events = {
       "DBM_SetStage"
     },
+    force_events = "DBM_SetStage",
     name = L["DBM Stage"],
     init = function(trigger)
-      WeakAuras.RegisterDBMCallback("DBM_SetStage");
+      WeakAuras.RegisterDBMCallback("DBM_SetStage")
+      WeakAuras.RegisterDBMCallback("DBM_Pull")
+      WeakAuras.RegisterDBMCallback("DBM_Kill")
       return ""
     end,
     args = {
@@ -4150,7 +4153,8 @@ Private.event_prototypes = {
       {
         name = "spellId",
         init = "arg",
-        display = L["Spell Id"],
+        display = L["Key"],
+        desc = L["The 'Key' value can be found in the BigWigs options of a specific spell"],
         type = "longstring"
       },
       {
@@ -4306,7 +4310,7 @@ Private.event_prototypes = {
         trigger.use_cloneId and "true" or "false",
         trigger.use_extend and tonumber(trigger.extend or 0) or 0,
         trigger.use_remaining and "true" or "false",
-        trigger.remaining or 0,
+        type(trigger.remaining) == "number" and trigger.remaining or 0,
         trigger.use_emphasized == nil and "nil" or trigger.use_emphasized and "true" or "false",
         trigger.use_cast == nil and "nil" or trigger.use_cast and "true" or "false",
         trigger.use_isCooldown == nil and "nil" or trigger.use_isCooldown and "true" or "false",
@@ -4317,7 +4321,8 @@ Private.event_prototypes = {
     args = {
       {
         name = "spellId",
-        display = L["Spell Id"],
+        display = L["Key"],
+        desc = L["The 'Key' value can be found in the BigWigs options of a specific spell"],
         type = "string",
         conditionType = "string",
       },
@@ -6420,7 +6425,7 @@ Private.event_prototypes = {
         type = "toggle",
         test = "true",
         enable = function(trigger)
-          return trigger.unit == "player"
+          return trigger.unit == "player" and not trigger.use_inverse
         end,
         reloadOptions = true
       },

@@ -3136,10 +3136,8 @@ do
         end
       end
       WeakAuras.ScanEvents("DBM_TimerUpdate", id)
-    elseif event == "DBM_SetStage" then
-      local mod, modId, stage = ...
-      currentStage = stage
-      WeakAuras.ScanEvents("DBM_SetStage", ...)
+    elseif event == "DBM_SetStage" or event == "DBM_Pull" or event == "DBM_Wipe" or event == "DBM_Kill" then
+      WeakAuras.ScanEvents("DBM_SetStage")
     else -- DBM_Announce
       WeakAuras.ScanEvents(event, ...)
     end
@@ -3185,7 +3183,7 @@ do
   end
 
   function WeakAuras.GetDBMStage()
-    return currentStage
+    return DBM:GetStage()
   end
 
   function WeakAuras.GetDBMTimerById(id)
@@ -3349,6 +3347,18 @@ do
     if BigWigsLoader then
       BigWigsLoader.RegisterMessage(WeakAuras, event, bigWigsEventCallback)
       registeredBigWigsEvents[event] = true
+      if event == "BigWigs_SetStage" then
+        -- on init of BigWigs_SetStage callback, we want to fetch currentStage in case we are already in an encounter when this is run
+        if BigWigs and BigWigs.IterateBossModules then
+          local stage = 0
+          for _, module in BigWigs:IterateBossModules() do
+            if module:IsEngaged() then
+              stage = math.max(stage, module:GetStage() or 1)
+            end
+          end
+          currentStage = stage
+        end
+      end
     end
   end
 

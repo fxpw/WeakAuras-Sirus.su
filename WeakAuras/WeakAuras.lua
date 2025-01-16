@@ -1392,8 +1392,8 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   local inCombat = UnitAffectingCombat("player") -- or UnitAffectingCombat("pet");
   local alive = not UnitIsDeadOrGhost('player')
   local pvp = UnitIsPVPFreeForAll("player") or UnitIsPVP("player")
-  local vehicle = UnitInVehicle("player") or UnitOnTaxi("player")
-  local vehicleUi = UnitHasVehicleUI("player")
+  local vehicle = UnitInVehicle("player") or UnitOnTaxi("player") or false
+  local vehicleUi = UnitHasVehicleUI("player") or false
 
   local raidMemberType = 0
   if UnitIsPartyLeader("player") then
@@ -2691,7 +2691,7 @@ local function pAdd(data, simpleChange)
         end
       end
 
-      -- If the aura has a onHide animation we need to cancel it to ensure it's truely hidden now
+      -- If the aura has a onHide animation we need to cancel it to ensure it's truly hidden now
       if Private.regions[id] then
         Private.CancelAnimation(Private.regions[id].region, true, true, true, true, true, true)
       end
@@ -5012,11 +5012,11 @@ local function GetAnchorFrame(data, region, parent)
     if unit then
       local frame = unit and WeakAuras.GetNamePlateForUnit(unit)
       if frame then return frame end
-      if WeakAuras.IsOptionsOpen() then
-        Private.ensurePRDFrame()
-        personalRessourceDisplayFrame:anchorFrame(id, anchorFrameType)
-        return personalRessourceDisplayFrame
-      end
+    end
+    if WeakAuras.IsOptionsOpen() then
+      Private.ensurePRDFrame()
+      personalRessourceDisplayFrame:anchorFrame(id, anchorFrameType)
+      return personalRessourceDisplayFrame
     end
   end
 

@@ -148,7 +148,7 @@ local blockedFunctions = {
   GuildUninvite = true,
   securecall = true,
   DeleteCursorItem = true,
-  ChatEdit_SendText = true
+  ChatEdit_SendText = true,
 }
 
 local blockedTables = {
@@ -263,7 +263,6 @@ end
 
 function Private.ActivateAuraEnvironment(id, cloneId, state, states, onlyConfig)
   local data = id and WeakAuras.GetData(id)
-  local region = id and Private.EnsureRegion(id, cloneId)
   if not data then
     -- Pop the last aura_env from the stack, and update current_aura_env appropriately.
     tremove(aura_env_stack)
@@ -276,6 +275,7 @@ function Private.ActivateAuraEnvironment(id, cloneId, state, states, onlyConfig)
   else
     -- Existing config is initialized to a high enough value
     if environment_initialized[id] == 2 or (onlyConfig and environment_initialized[id] == 1) then
+      local region = WeakAuras.GetRegion(id, cloneId)
       -- Point the current environment to the correct table
       current_uid = data.uid
       current_aura_env = aura_environments[id]
@@ -296,7 +296,6 @@ function Private.ActivateAuraEnvironment(id, cloneId, state, states, onlyConfig)
       current_aura_env.cloneId = cloneId
       current_aura_env.state = state
       current_aura_env.states = states
-      current_aura_env.region = region
       tinsert(aura_env_stack, {current_aura_env, data.uid})
 
       if not data.controlledChildren then
@@ -304,6 +303,7 @@ function Private.ActivateAuraEnvironment(id, cloneId, state, states, onlyConfig)
       end
     else
       -- Either this aura environment has not yet been initialized, or it was reset via an edit in WeakaurasOptions
+      local region = id and Private.EnsureRegion(id, cloneId)
       environment_initialized[id] = 2
       aura_environments[id] = aura_environments[id] or {}
       getDataCallCounts[id] = getDataCallCounts[id] or 0

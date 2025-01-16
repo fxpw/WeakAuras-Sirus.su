@@ -765,6 +765,7 @@ local function ConstructTextEditor(frame)
 
     editor.editBox:SetScript("OnTextChanged", self.oldOnTextChanged)
     editor:ClearFocus()
+
     frame.window = "default"
     frame:UpdateFrameVisible()
     WeakAuras.FillOptions()
