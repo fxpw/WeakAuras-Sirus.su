@@ -1555,6 +1555,7 @@ function OptionsPrivate.Drop(mainAura, target, action, area)
     frame:SetLoadProgressVisible(false)
     OptionsPrivate.SortDisplayButtons()
     OptionsPrivate.UpdateButtonsScroll()
+    WeakAuras.FillOptions()
   end
 
   local co1 = coroutine.create(func1)

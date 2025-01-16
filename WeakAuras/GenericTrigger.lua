@@ -712,17 +712,6 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
         untriggerCheck = true;
       end
     elseif (data.statesParameter == "unit") then
-      if optionsEvent then
-        if Private.multiUnitUnits[data.trigger.unit] then
-          arg1 = next(Private.multiUnitUnits[data.trigger.unit])
-        elseif data.trigger.unit == "nameplate" then
-          arg1 = next(C_NamePlate.GetNamePlates())
-        else
-          arg1 = data.trigger.unit
-        end
-      elseif event == "FRAME_UPDATE" and (not Private.multiUnitUnits[data.trigger.unit] or data.trigger.unit ~= "nameplate") then
-        arg1 = data.trigger.unit
-      end
       if arg1 then
         if Private.multiUnitUnits[data.trigger.unit] or data.trigger.unit == "nameplate" then
           unitForUnitTrigger = arg1
@@ -1014,7 +1003,12 @@ function Private.ScanEventsWatchedTrigger(id, watchedTriggernums)
   Private.ActivateAuraEnvironment(nil)
 end
 
-local function AddFakeTime(state)
+local function AddFakeInformation(state, eventData)
+  state.autoHide = false
+  local canHaveDuration = eventData.prototype and eventData.prototype.canHaveDuration == "timed"
+  if canHaveDuration and state.expirationTime == nil then
+    state.progressType = "timed"
+  end
   if state.progressType == "timed" then
     if state.expirationTime and state.expirationTime ~= math.huge and state.expirationTime > GetTime() then
       return
@@ -1023,38 +1017,50 @@ local function AddFakeTime(state)
     state.expirationTime = GetTime() + 7
     state.duration = 7
   end
+  if eventData.prototype and eventData.prototype.GetNameAndIcon then
+    local name, icon = Private.event_prototypes[eventData.event].GetNameAndIcon(eventData.trigger)
+    if state.name == nil then
+      state.name = name
+    end
+    if state.icon == nil then
+      state.icon = icon
+    end
+  end
 end
 
 function GenericTrigger.CreateFakeStates(id, triggernum)
   local data = WeakAuras.GetData(id)
+  local eventData = events[id][triggernum]
 
   Private.ActivateAuraEnvironment(id);
   local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
-  RunTriggerFunc(allStates, events[id][triggernum], id, triggernum, "OPTIONS")
 
-  local canHaveDuration = events[id][triggernum].prototype and events[id][triggernum].prototype.canHaveDuration == "timed"
+  local arg1
+  if eventData.statesParameter == "unit" then
+    local unit = eventData.trigger.unit
+    if Private.multiUnitUnits[unit] then
+      arg1 = next(Private.multiUnitUnits[unit])
+    else
+      arg1 = unit
+    end
+  end
+  RunTriggerFunc(allStates, eventData, id, triggernum, "OPTIONS", arg1)
 
   local shown = 0
   for id, state in pairs(allStates) do
     if state.show then
       shown = shown + 1
     end
-    state.autoHide = false
-    if canHaveDuration and state.expirationTime == nil then
-      state.progressType = "timed"
-    end
-    AddFakeTime(state)
+
+    AddFakeInformation(state, eventData)
   end
 
   if shown == 0 then
     local state = {}
     GenericTrigger.CreateFallbackState(data, triggernum, state)
     allStates[""] = state
-    state.autoHide = false
-    if canHaveDuration and state.expirationTime == nil then
-      state.progressType = "timed"
-    end
-    AddFakeTime(state)
+
+    AddFakeInformation(state, eventData)
   end
 
   Private.ActivateAuraEnvironment(nil);
@@ -3558,7 +3564,7 @@ end
 function GenericTrigger.GetDelay(data)
   if data.event then
     local prototype = Private.event_prototypes[data.event]
-    if prototype and prototype.delayEvents then
+    if prototype and prototype.type == data.type and prototype.delayEvents then
       local trigger = data.trigger
       if trigger.use_delay and type(trigger.delay) == "number" and trigger.delay > 0 then
         return trigger.delay
@@ -3649,11 +3655,15 @@ function GenericTrigger.GetNameAndIcon(data, triggernum)
   local icon, name
   if (Private.category_event_prototype[trigger.type]) then
     if(trigger.event and Private.event_prototypes[trigger.event]) then
-      if(Private.event_prototypes[trigger.event].iconFunc) then
-        icon = Private.event_prototypes[trigger.event].iconFunc(trigger);
-      end
-      if(Private.event_prototypes[trigger.event].nameFunc) then
-        name = Private.event_prototypes[trigger.event].nameFunc(trigger);
+      if (Private.event_prototypes[trigger.event].GetNameAndIcon) then
+        return Private.event_prototypes[trigger.event].GetNameAndIcon(trigger)
+      else
+        if(Private.event_prototypes[trigger.event].iconFunc) then
+          icon = Private.event_prototypes[trigger.event].iconFunc(trigger);
+        end
+        if(Private.event_prototypes[trigger.event].nameFunc) then
+          name = Private.event_prototypes[trigger.event].nameFunc(trigger);
+        end
       end
     end
   end
@@ -3983,22 +3993,28 @@ function GenericTrigger.CreateFallbackState(data, triggernum, state)
 
   Private.ActivateAuraEnvironment(data.id, "", state);
   local trigger = data.triggers[triggernum].trigger
-  if (event.nameFunc) then
-    local ok, name = pcall(event.nameFunc, trigger);
+
+  if event.GetNameAndIcon then
+    local ok, name, icon = pcall(event.GetNameAndIcon, trigger);
+    state.name = ok and name or nil;
+    state.icon = ok and icon or nil;
     if not ok then
-      Private.GetErrorHandlerUid(data.uid, L["Name Function (fallback state)"])
-      state.name = nil
-    else
-      state.name = name or nil
+      Private.GetErrorHandlerUid(data.uid, L["GetNameAndIcon Function (fallback state)"])
     end
-  end
-  if (event.iconFunc) then
-    local ok, icon = pcall(event.iconFunc, trigger);
-    if not ok then
-      Private.GetErrorHandlerUid(data.uid, L["Icon Function (fallback state)"])
-      state.icon = nil
-    else
-      state.icon = icon or nil
+  else
+    if (event.nameFunc) then
+      local ok, name = pcall(event.nameFunc, trigger);
+      state.name = ok and name or nil;
+      if not ok then
+        Private.GetErrorHandlerUid(data.uid, L["Name Function (fallback state)"])
+      end
+    end
+    if (event.iconFunc) then
+      local ok, icon = pcall(event.iconFunc, trigger);
+      state.icon = ok and icon or nil;
+      if not ok then
+        Private.GetErrorHandlerUid(data.uid, L["Icon Function (fallback state)"])
+      end
     end
   end
 

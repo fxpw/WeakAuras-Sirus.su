@@ -350,6 +350,7 @@ local Actions = {
   end
 }
 
+
 local function GetAction(target, area)
   if target and area then
     if area == "GROUP" then

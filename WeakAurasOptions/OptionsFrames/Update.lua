@@ -1306,6 +1306,32 @@ local methods = {
     self:ReleaseChildren()
     self:AddBasicInformationWidgets(data, sender)
 
+    --[[
+    do
+      local highestVersion = data.internalVersion or 0
+      if children then
+        for _, child in ipairs(children) do
+          highestVersion = max(highestVersion, child.internalVersion or 0)
+        end
+      end
+
+      if (highestVersion > WeakAuras.InternalVersion()) then
+        local highestVersionWarning = AceGUI:Create("Label")
+        highestVersionWarning:SetFontObject(GameFontHighlight)
+        highestVersionWarning:SetFullWidth(true)
+        highestVersionWarning:SetText(L["This aura was created with a newer version of WeakAuras.\nUpgrade your version of WeakAuras or wait for next release before installing this aura."])
+        highestVersionWarning:SetColor(1, 0, 0)
+        self:AddChild(highestVersionWarning)
+        self.importButton:Hide()
+        self.viewCodeButton:Hide()
+        self:DoLayout()
+        return
+      else
+        self.importButton:Show()
+      end
+    end
+    ]]
+
     local matchInfoResult = AceGUI:Create("Label")
     matchInfoResult:SetFontObject(GameFontHighlight)
     matchInfoResult:SetFullWidth(true)
@@ -1420,6 +1446,7 @@ local methods = {
       self:AddChild(scamCheckText)
     end
 
+    -- Let people install auras that are newer than their version of WeakAuras
     local highestVersion = data.internalVersion or 0
     if children then
       for _, child in ipairs(children) do
