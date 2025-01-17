@@ -1372,4 +1372,4 @@ local function validate(data)
 end
 
 -- Register new region type with WeakAuras
-WeakAuras.RegisterRegionType("aurabar", create, modify, default, GetProperties, validate);
+Private.RegisterRegionType("aurabar", create, modify, default, GetProperties, validate);

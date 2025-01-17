@@ -574,6 +574,10 @@ function WeakAuras.ToggleOptions(msg, Private)
   if not OptionsPrivate.Private then
     OptionsPrivate.Private = Private
     Private.OptionsFrame = OptionsFrame
+    for _, fn in ipairs(OptionsPrivate.registerRegions) do
+      fn()
+    end
+
     OptionsPrivate.Private.callbacks:RegisterCallback("AuraWarningsUpdated", function(event, uid)
       local id = OptionsPrivate.Private.UIDtoID(uid)
       if displayButtons[id] then

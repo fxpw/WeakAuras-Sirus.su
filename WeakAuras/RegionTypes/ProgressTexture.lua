@@ -1036,4 +1036,4 @@ local function validate(data)
   Private.EnforceSubregionExists(data, "subbackground")
 end
 
-WeakAuras.RegisterRegionType("progresstexture", create, modify, default, GetProperties, validate);
+Private.RegisterRegionType("progresstexture", create, modify, default, GetProperties, validate);

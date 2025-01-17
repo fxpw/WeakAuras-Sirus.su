@@ -93,10 +93,10 @@ if not WeakAuras.IsLibsOK() then
 end
 
 -- These function stubs are defined here to reduce the number of errors that occur if WeakAuras.lua fails to compile
-function WeakAuras.RegisterRegionType(_, _, _ ,_)
+function Private.RegisterRegionType(_, _, _ ,_)
 end
 
-function WeakAuras.RegisterRegionOptions(_, _ , _ ,_)
+function Private.RegisterRegionOptions(_, _ , _ ,_)
 end
 
 function Private.StartProfileSystem(_)

@@ -244,4 +244,8 @@ local templates = {
   },
 }
 
-WeakAuras.RegisterRegionOptions("texture", createOptions, createIcon, L["Texture"], createThumbnail, modifyThumbnail, L["Shows a custom texture"], templates);
+OptionsPrivate.registerRegions = OptionsPrivate.registerRegions or {}
+table.insert(OptionsPrivate.registerRegions, function()
+  OptionsPrivate.Private.RegisterRegionOptions("texture", createOptions, createIcon, L["Texture"], createThumbnail, modifyThumbnail,
+                                    L["Shows a custom texture"], templates);
+end)

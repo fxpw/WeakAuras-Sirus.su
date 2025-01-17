@@ -341,7 +341,7 @@ local function validate(data)
   Private.EnforceSubregionExists(data, "subbackground")
 end
 
-WeakAuras.RegisterRegionType("text", create, modify, default, GetProperties, validate);
+Private.RegisterRegionType("text", create, modify, default, GetProperties, validate);
 
 -- Fallback region type
 
@@ -366,4 +366,4 @@ local function fallbackmodify(parent, region, data)
   Private.regionPrototype.modifyFinish(parent, region, data);
 end
 
-WeakAuras.RegisterRegionType("fallback", create, fallbackmodify, default);
+Private.RegisterRegionType("fallback", create, fallbackmodify, default);
