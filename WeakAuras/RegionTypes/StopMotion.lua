@@ -85,7 +85,7 @@ local properties = {
   },
 }
 
-WeakAuras.regionPrototype.AddProperties(properties, default);
+Private.regionPrototype.AddProperties(properties, default);
 
 local function create(parent)
     local frame = CreateFrame("Frame", nil, UIParent);
@@ -102,7 +102,7 @@ local function create(parent)
     frame.foreground = foreground;
     foreground:SetAllPoints(frame);
 
-    WeakAuras.regionPrototype.create(frame);
+    Private.regionPrototype.create(frame);
 
     return frame;
 end
@@ -151,7 +151,7 @@ local function SetFrameViaFrames(self, texture, frame)
 end
 
 local function modify(parent, region, data)
-    WeakAuras.regionPrototype.modify(parent, region, data);
+    Private.regionPrototype.modify(parent, region, data);
     region.foreground = region.foreground or {}
     region.background = region.background or {}
     local pattern = "%.x(%d+)y(%d+)f(%d+)%.[tb][gl][ap]"

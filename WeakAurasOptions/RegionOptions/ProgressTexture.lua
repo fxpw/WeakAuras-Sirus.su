@@ -288,7 +288,7 @@ local function createOptions(id, data)
       name = "",
     },
   };
-  options = WeakAuras.regionPrototype.AddAdjustedDurationOptions(options, data, 57);
+  options = OptionsPrivate.Private.regionPrototype.AddAdjustedDurationOptions(options, data, 57);
 
   local overlayInfo = OptionsPrivate.Private.GetOverlayInfo(data);
   if (overlayInfo and next(overlayInfo)) then

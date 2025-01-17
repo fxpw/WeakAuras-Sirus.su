@@ -113,9 +113,9 @@ local default = {
   slantMode = "INSIDE"
 };
 
-WeakAuras.regionPrototype.AddAlphaToDefault(default);
+Private.regionPrototype.AddAlphaToDefault(default);
 
-WeakAuras.regionPrototype.AddAdjustedDurationToDefault(default);
+Private.regionPrototype.AddAdjustedDurationToDefault(default);
 
 local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
 
@@ -176,7 +176,7 @@ local properties = {
   }
 }
 
-WeakAuras.regionPrototype.AddProperties(properties, default);
+Private.regionPrototype.AddProperties(properties, default);
 
 local function GetProperties(data)
   local overlayInfo = Private.GetOverlayInfo(data);
@@ -462,7 +462,7 @@ local function create(parent)
   region.duration = 0;
   region.expirationTime = math.huge;
 
-  WeakAuras.regionPrototype.create(region);
+  Private.regionPrototype.create(region);
 
   return region;
 end
@@ -474,7 +474,7 @@ local function TimerTick(self)
 end
 
 local function modify(parent, region, data)
-  WeakAuras.regionPrototype.modify(parent, region, data);
+  Private.regionPrototype.modify(parent, region, data);
 
   local background, foreground = region.background, region.foreground;
   local foregroundSpinner, backgroundSpinner = region.foregroundSpinner, region.backgroundSpinner;
@@ -1029,7 +1029,7 @@ local function modify(parent, region, data)
     end
   end
 
-  WeakAuras.regionPrototype.modifyFinish(parent, region, data);
+  Private.regionPrototype.modifyFinish(parent, region, data);
 end
 
 local function validate(data)

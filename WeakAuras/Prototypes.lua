@@ -1383,6 +1383,9 @@ Private.event_prototypes = {
       AddUnitEventForEvents(result, unit, "UNIT_NAME_UPDATE")
       AddUnitEventForEvents(result, unit, "UNIT_FLAGS")
       AddUnitEventForEvents(result, unit, "PLAYER_FLAGS_CHANGED")
+      if trigger.use_inRange then
+        AddUnitEventForEvents(result, unit, "UNIT_IN_RANGE_UPDATE")
+      end
       return result;
     end,
     internal_events = function(trigger)
@@ -1547,6 +1550,16 @@ Private.event_prototypes = {
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
         init = "UnitIsConnected(unit)"
+      },
+      {
+        name = "inRange",
+        display = L["In Range"],
+        type = "toggle",
+        width = WeakAuras.doubleWidth,
+        enable = function(trigger)
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+        end,
+        init = "UnitInRange(unit)"
       },
       {
         name = "hostility",
@@ -1789,6 +1802,9 @@ Private.event_prototypes = {
       AddUnitEventForEvents(result, unit, "UNIT_NAME_UPDATE")
       if trigger.use_ignoreDead or trigger.use_ignoreDisconnected then
         AddUnitEventForEvents(result, unit, "UNIT_FLAGS")
+      end
+      if trigger.use_inRange then
+        AddUnitEventForEvents(result, unit, "UNIT_IN_RANGE_UPDATE")
       end
       return result
     end,
@@ -2050,6 +2066,16 @@ Private.event_prototypes = {
         init = "UnitIsConnected(unit)"
       },
       {
+        name = "inRange",
+        display = L["In Range"],
+        type = "toggle",
+        width = WeakAuras.doubleWidth,
+        enable = function(trigger)
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+        end,
+        init = "UnitInRange(unit)"
+      },
+      {
         name = "nameplateType",
         display = L["Nameplate Type"],
         type = "select",
@@ -2098,6 +2124,9 @@ Private.event_prototypes = {
           result.events = {}
         end
         tinsert(result.events, "FRAME_UPDATE")
+      end
+      if trigger.use_inRange then
+        AddUnitEventForEvents(result, unit, "UNIT_IN_RANGE_UPDATE")
       end
       return result;
     end,
@@ -2388,6 +2417,16 @@ Private.event_prototypes = {
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
         init = "UnitIsConnected(unit)"
+      },
+      {
+        name = "inRange",
+        display = L["In Range"],
+        type = "toggle",
+        width = WeakAuras.doubleWidth,
+        enable = function(trigger)
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+        end,
+        init = "UnitInRange(unit)"
       },
       {
         name = "nameplateType",
@@ -6558,6 +6597,7 @@ Private.event_prototypes = {
 
       if trigger.use_instance_difficulty ~= nil
           or trigger.use_instance_size ~= nil
+          or trigger.use_pvpflagged ~= nil
       then
         tinsert(events, "WA_DELAYED_PLAYER_ENTERING_WORLD")
       end

@@ -35,7 +35,7 @@ local function create(parent)
   local border = CreateFrame("Frame", nil, region);
   region.border = border;
 
-  WeakAuras.regionPrototype.create(region);
+  Private.regionPrototype.create(region);
 
   local oldSetFrameLevel = region.SetFrameLevel
   region.SetFrameLevel = function(self, level)
@@ -90,7 +90,7 @@ local function modify(parent, region, data)
   else
     data.selfPoint = "CENTER";
   end
-  WeakAuras.regionPrototype.modify(parent, region, data);
+  Private.regionPrototype.modify(parent, region, data);
   -- Localize
   local border = region.border;
 
@@ -179,7 +179,7 @@ local function modify(parent, region, data)
     region.border:Hide()
   end
 
-  WeakAuras.regionPrototype.modifyFinish(parent, region, data);
+  Private.regionPrototype.modifyFinish(parent, region, data);
 end
 
 -- Register new region type with WeakAuras

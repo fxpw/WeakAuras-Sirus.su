@@ -56,7 +56,7 @@ local properties = {
   },
 }
 
-WeakAuras.regionPrototype.AddProperties(properties, default);
+Private.regionPrototype.AddProperties(properties, default);
 
 local function GetProperties(data)
   return properties;
@@ -79,13 +79,13 @@ local function create(parent)
   local border = CreateFrame("Frame", nil, region);
   region.border = border;
 
-  WeakAuras.regionPrototype.create(region);
+  Private.regionPrototype.create(region);
 
   for k, v in pairs (regionFunctions) do
     region[k] = v
   end
 
-  region.AnchorSubRegion = WeakAuras.regionPrototype.AnchorSubRegion
+  region.AnchorSubRegion = Private.regionPrototype.AnchorSubRegion
 
   -- Return complete region
   return region;
@@ -175,7 +175,7 @@ end
 
 -- Modify a given region/display
 local function modify(parent, region, data)
-  WeakAuras.regionPrototype.modify(parent, region, data);
+  Private.regionPrototype.modify(parent, region, data);
   -- Localize
   local border = region.border;
 
@@ -273,7 +273,7 @@ local function modify(parent, region, data)
     end
   end
 
-  WeakAuras.regionPrototype.modifyFinish(parent, region, data);
+  Private.regionPrototype.modifyFinish(parent, region, data);
 end
 
 -- Work around for movies and world map hiding all models
