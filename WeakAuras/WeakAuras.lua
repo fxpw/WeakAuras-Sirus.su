@@ -2315,17 +2315,31 @@ local function removeSpellNames(data)
   end
 end
 
-local function removeNameplateUnits(data)
-    for _, triggerData in ipairs(data.triggers) do
-        local trigger = triggerData.trigger
-        if trigger and trigger.type == "unit" then
-            if trigger.unit == "nameplate" then
-                trigger.unit = "target"
-            elseif trigger.threatUnit == "nameplate" then
-                trigger.threatUnit = "target"
-            end
-        end
+local function removeNameplateUnitsAndAnchors(data)
+  -- Dynamic Group Anchor
+  if data.useAnchorPerUnit == true and data.anchorPerUnit == "NAMEPLATE" then
+    data.useAnchorPerUnit = false
+    data.anchorPerUnit = "CUSTOM"
+  end
+  -- Aura Anchor
+  if data.anchorFrameType == "NAMEPLATE" then
+    data.anchorFrameType = "SCREEN"
+  end
+  -- Action Glow Anchor
+  if data.actions and data.actions.start and data.actions.start.glow_frame_type == "NAMEPLATE" then
+    data.actions.start.glow_frame_type = "FRAMESELECTOR"
+  end
+  -- Trigger units
+  for _, triggerData in ipairs(data.triggers) do
+    local trigger = triggerData.trigger
+    if trigger and trigger.type == "unit" then
+      if trigger.unit == "nameplate" then
+        trigger.unit = "target"
+      elseif trigger.threatUnit == "nameplate" then
+        trigger.threatUnit = "target"
+      end
     end
+  end
 end
 
 local oldDataStub = {
@@ -2525,7 +2539,7 @@ function WeakAuras.PreAdd(data)
   validateUserConfig(data, data.authorOptions, data.config)
   removeSpellNames(data)
   if not(WeakAuras.isAwesomeEnabled()) then
-    removeNameplateUnits(data)
+    removeNameplateUnitsAndAnchors(data)
   end
   data.init_started = nil
   data.init_completed = nil
