@@ -1465,5 +1465,9 @@ function Private.Modernize(data)
     end
   end
 
+  if data.internalVersion < 69 then
+    migrateToTable(data.load, "itemequiped")
+  end
+
   data.internalVersion = max(data.internalVersion or 0, WeakAuras.InternalVersion())
 end
