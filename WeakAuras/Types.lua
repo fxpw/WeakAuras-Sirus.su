@@ -32,6 +32,7 @@ if WeakAuras.isAwesomeEnabled() then
 end
 
 Private.circular_group_constant_factor_types = {
+  ANGLE = L["Angle and Radius"],
   RADIUS = L["Radius"],
   SPACING = L["Spacing"]
 }

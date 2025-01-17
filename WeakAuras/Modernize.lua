@@ -1256,15 +1256,16 @@ function Private.Modernize(data)
     end
   end
 
+  local function migrateToTable(tab, field)
+    local value = tab[field]
+    if value ~= nil and type(value) ~= "table" then
+      tab[field] = { value }
+    end
+  end
+
   if data.internalVersion < 67 or data.internalVersion > WeakAuras.InternalVersion() then
     local castMigrationNeeded = data.internalVersion < 67
     data.internalVersion = WeakAuras.InternalVersion()
-    local function migrateToTable(tab, field)
-      local value = tab[field]
-      if value ~= nil and type(value) ~= "table" then
-        tab[field] = { value }
-      end
-    end
 
     do
       local trigger_migration = {
