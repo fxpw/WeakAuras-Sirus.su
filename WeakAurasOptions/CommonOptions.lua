@@ -1115,7 +1115,7 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
       order = 72,
       image = function() return "", 0, 0 end,
       hidden = function()
-        return IsParentDynamicGroup() or not (data.anchorFrameType == "SCREEN" or data.anchorFrameType == "UIPARENT" or data.anchorFrameType == "MOUSE")
+        return IsParentDynamicGroup() or not (data.anchorFrameType == "SCREEN" or data.anchorFrameType == "UIPARENT" or data.anchorFrameType == "MOUSE" or IsGroupByFrame())
       end,
     },
     -- Input field to select frame to anchor on
@@ -1123,9 +1123,9 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
       type = "input",
       width = WeakAuras.normalWidth,
       name = L["Frame"],
-      order = 72.2,
+      order = 73,
       hidden = function()
-        if (IsParentDynamicGroup()) then
+        if (IsParentDynamicGroup() or IsGroupByFrame()) then
           return true;
         end
         return not (data.anchorFrameType == "SELECTFRAME")
@@ -1138,7 +1138,7 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
       name = L["Choose"],
       order = 74,
       hidden = function()
-        if (IsParentDynamicGroup()) then
+        if (IsParentDynamicGroup() or IsGroupByFrame()) then
           return true;
         end
         return not (data.anchorFrameType == "SELECTFRAME")
@@ -1278,7 +1278,7 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
 
   OptionsPrivate.commonOptions.AddCodeOption(positionOptions, data, L["Custom Anchor"], "custom_anchor",
                       "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-anchor-function",
-                      71.5, function() return not(data.anchorFrameType == "CUSTOM" and not IsParentDynamicGroup()) end,
+                      71.5, function() return not(data.anchorFrameType == "CUSTOM" and not IsParentDynamicGroup() and not IsGroupByFrame()) end,
                       {"customAnchor"}, false, { setOnParent = group })
   return positionOptions;
 end

@@ -985,7 +985,7 @@ Private.load_prototype = {
       name = "spellknown",
       display = L["Spell Known"],
       type = "spell",
-      test = "WeakAuras.IsSpellKnownForLoad(%q, %s)",
+      test = "WeakAuras.IsSpellKnownForLoad(%s, %s)",
       events = {"SPELLS_CHANGED", "UNIT_PET"},
       showExactOption = true
     },
@@ -993,7 +993,7 @@ Private.load_prototype = {
       name = "not_spellknown",
       display = WeakAuras.newFeatureString .. L["|cFFFF0000Not|r Spell Known"],
       type = "spell",
-      test = "not WeakAuras.IsSpellKnownForLoad(%q, %s)",
+      test = "not WeakAuras.IsSpellKnownForLoad(%s, %s)",
       events = {"SPELLS_CHANGED", "UNIT_PET"},
       showExactOption = true
     },
