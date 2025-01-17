@@ -2553,9 +2553,9 @@ function BuffTrigger.SetToolTip(trigger, state)
     return false
   end
   if state.filter == "HELPFUL" then
-    GameTooltip:SetUnitBuff(state.unit, state.index)
+    GameTooltip:SetUnitBuff(state.unit, state.index, state.filter)
   elseif state.filter == "HARMFUL" then
-    GameTooltip:SetUnitDebuff(state.unit, state.index)
+    GameTooltip:SetUnitDebuff(state.unit, state.index, state.filter)
   end
   return true
 end

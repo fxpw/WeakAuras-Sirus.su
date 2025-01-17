@@ -3817,7 +3817,7 @@ Private.event_prototypes = {
     nameFunc = function(trigger)
       local item = GetInventoryItemID("player", trigger.itemSlot or 0);
       if (item) then
-        return GetItemInfo(item);
+        return (GetItemInfo(item))
       end
     end,
     stacksFunc = function(trigger)
@@ -6756,7 +6756,7 @@ Private.event_prototypes = {
       }
     },
     nameFunc = function(trigger)
-      return GetSpellInfo(trigger.spellId or 0)
+      return (GetSpellInfo(trigger.spellId or 0))
     end,
     iconFunc = function(trigger)
       local _, _, icon = GetSpellInfo(trigger.spellId or 0);

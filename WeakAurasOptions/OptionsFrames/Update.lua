@@ -300,13 +300,11 @@ local function BuildUidMap(data, children, type)
 
       -- index, total, parentIsDynamicGroup: helpers that transport data between phase 1 and 2
     },
-    type = type -- Either old or new, only used for error checking
-    -- root: uid of the root
-    -- totalCount: count of members
-    -- idToUid maps from id to uid
+    type = type, -- Either old or new, only used for error checking
+    root = data.uid, -- root: uid of the root
+    totalCount = #children + 1, -- totalCount: count of members
+    idToUid = {} -- idToUid maps from id to uid
   }
-  uidMap.root = data.uid
-  uidMap.totalCount = #children + 1
 
   -- Build helper map from id to uid
   local idToUid = {}
