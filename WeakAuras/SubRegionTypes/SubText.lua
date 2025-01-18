@@ -142,7 +142,7 @@ local function modify(parent, region, parentData, data, first)
   if not text:GetFont() and fontPath then -- workaround font not loading correctly
     local objectName = "WeakAuras-Font-" .. data.text_font
     local fontObject = _G[objectName] or CreateFont(objectName)
-    fontObject:SetFont(fontPath, data.text_fontSize < 33 and data.text_fontSize or 33, data.text_fontType)
+    fontObject:SetFont(fontPath, data.text_fontSize < 33 and data.text_fontSize or 33, data.text_fontType == "None" and "" or data.text_fontType)
     text:SetFontObject(fontObject)
   end
   if not text:GetFont() then -- Font invalid, set the font but keep the setting

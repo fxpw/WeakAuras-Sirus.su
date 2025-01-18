@@ -84,7 +84,7 @@ local function modify(parent, region, data)
   if not text:GetFont() and fontPath then -- workaround font not loading correctly
     local objectName = "WeakAuras-Font-" .. data.font
     local fontObject = _G[objectName] or CreateFont(objectName)
-    fontObject:SetFont(fontPath, data.fontSize < 33 and data.fontSize or 33, data.outline)
+    fontObject:SetFont(fontPath, data.fontSize < 33 and data.fontSize or 33, data.outline == "None" and "" or data.outline)
     text:SetFontObject(fontObject)
   end
   text:SetFont(fontPath, data.fontSize < 33 and data.fontSize or 33, data.outline);

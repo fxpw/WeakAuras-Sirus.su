@@ -1139,13 +1139,6 @@ local function modify(parent, region, data)
     region.controlledChildren[childID] = region.controlledChildren[childID] or {}
     region.controlledChildren[childID][cloneID] = controlPoint
     childRegion:SetAnchor(data.selfPoint, controlPoint, data.selfPoint)
-    if(childData.frameStrata == 1) then
-      local frameStrata = region:GetFrameStrata()
-      childRegion:SetFrameStrata(frameStrata ~= "UNKNOWN" and frameStrata or "BACKGROUND");
-    else
-      childRegion:SetFrameStrata(Private.frame_strata_types[childData.frameStrata]);
-    end
-    Private.ApplyFrameLevel(childRegion)
     return regionData
   end
 
@@ -1397,6 +1390,17 @@ local function modify(parent, region, data)
       else
         controlPoint:SetParent(self)
       end
+
+      local childData = controlPoint.regionData.data
+      local childRegion = controlPoint.regionData.region
+      if(childData.frameStrata == 1) then
+        local frameStrata = region:GetFrameStrata()
+        childRegion:SetFrameStrata(frameStrata ~= "UNKNOWN" and frameStrata or "BACKGROUND");
+      else
+        childRegion:SetFrameStrata(Private.frame_strata_types[childData.frameStrata]);
+      end
+      Private.ApplyFrameLevel(childRegion)
+
       if self.anchorPerUnit == "UNITFRAME" then
         Private.dyngroup_unitframe_monitor[regionData] = frame
       end

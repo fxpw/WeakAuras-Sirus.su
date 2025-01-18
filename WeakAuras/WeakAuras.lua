@@ -3661,12 +3661,15 @@ local function SetFrameLevel(id, frameLevel)
 end
 
 function Private.FixGroupChildrenOrderForGroup(data)
-  local frameLevel = 1;
-  if data.parent == nil then
-    for child in Private.TraverseAll(data) do
-      SetFrameLevel(child.id, frameLevel);
-      frameLevel = frameLevel + 4;
-    end
+  local frameLevel, offset
+  if data.regionType == "dynamicgroup" then
+    frameLevel, offset = 5, 0
+  else
+    frameLevel, offset = 1, 4
+  end
+  for child in Private.TraverseLeafs(data) do
+    SetFrameLevel(child.id, frameLevel);
+    frameLevel = frameLevel + offset;
   end
 end
 
