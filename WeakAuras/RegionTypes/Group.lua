@@ -22,6 +22,8 @@ local default = {
   scale = 1,
 };
 
+Private.regionPrototype.AddAlphaToDefault(default);
+
 -- Called when first creating a new region/display
 local function create(parent)
   -- Main region

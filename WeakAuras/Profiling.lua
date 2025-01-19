@@ -311,13 +311,25 @@ local function PrintOneProfile(popup, name, map, total)
   end
   local percent = ""
   if total then
-    percent = ", " .. string.format("%.2f", 100 * map.elapsed / total) .. "%"
+    percent = (", %.2f%%"):format(100 * map.elapsed / total)
   end
+
   local spikeInfo = ""
   if map.spike then
-    spikeInfo = string.format("(%.2fms)", map.spike)
+    local r, g, b
+    if map.spike < 2 then
+      r, g, b = WeakAuras.GetHSVTransition(map.spike / 2, 0, 1, 0, 1, 1, 1, 0, 1)
+    elseif map.spike < 2.5 then
+      r, g, b = WeakAuras.GetHSVTransition((map.spike - 2) * 2, 1, 1, 0, 1, 1, 0.65, 0, 1)
+    elseif map.spike < 3 then
+      r, g, b = WeakAuras.GetHSVTransition((map.spike - 2.5) * 2, 1, 0.65, 0, 1, 1, 0, 0, 1)
+    else
+      r, g, b = 1, 0, 0
+    end
+    spikeInfo = ("|cff%02x%02x%02x(%.2fms)|r"):format(r * 255, g * 255, b * 255, map.spike)
   end
-  popup:AddText(string.format("%s |cff999999%.2fms%s %s|r", name, map.elapsed, percent, spikeInfo))
+
+  popup:AddText(("%s |cff999999%.2fms%s %s|r"):format(name, map.elapsed, percent, spikeInfo))
 end
 
 local function SortProfileMap(map)
@@ -327,6 +339,9 @@ local function SortProfileMap(map)
   end
 
   sort(result, function(a, b)
+    if map[a].spike and map[b].spike then
+      return map[a].spike > map[b].spike
+    end
     return map[a].elapsed > map[b].elapsed
   end)
 

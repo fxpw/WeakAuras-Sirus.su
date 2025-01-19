@@ -1034,6 +1034,9 @@ do -- Archive stuff
           error(string.format(L["Could not load WeakAuras Archive, the addon is %s"], reason))
         end
       end
+      if type(WeakAurasArchive) ~= "table" then
+        WeakAurasArchive = {}
+      end
       Archivist:Initialize(WeakAurasArchive)
     end
     return Archivist
@@ -1164,6 +1167,8 @@ loadedFrame:SetScript("OnEvent", function(self, event, addon)
 
       db.displays = db.displays or {};
       db.registered = db.registered or {};
+      db.migrationCutoff = db.migrationCutoff or 730
+      db.historyCutoff = db.historyCutoff or 730
 
       Private.SyncParentChildRelationships();
       local isFirstUIDValidation = db.dbVersion == nil or db.dbVersion < 26;

@@ -8,11 +8,11 @@ local debugLogs = {}
 local enabled = {}
 
 Private.DebugLog = {
-  -- Print
-  -- Clear
-  -- SetEnabled
-  -- IsEnabled
-  -- GetLogs
+  Print = function(uid, text, ...) end,
+  Clear = function(uid) end,
+  SetEnabled = function(uid, enabled) end,
+  IsEnabled = function(uid) end,
+  GetLogs = function(uid) end
 }
 
 local function serialize(log, input)

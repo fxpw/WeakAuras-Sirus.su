@@ -4,8 +4,7 @@ local AddonName, Private = ...
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
-local SubscribableObject =
-{
+local SubscribableObject ={
   ClearSubscribers = function(self)
     self.events = {}
     self.subscribers = {}
