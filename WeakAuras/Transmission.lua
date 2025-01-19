@@ -146,6 +146,7 @@ local function filterFunc(_, event, msg, player, l, cs, t, flag, channelId, ...)
   local newMsg = "";
   local remaining = msg;
   local done;
+  local anyLinkFound = false
   repeat
     local start, finish, characterName, displayName = remaining:find("%[WeakAuras: ([^%s]+) %- (.*)%]");
     if(characterName and displayName) then
@@ -154,11 +155,13 @@ local function filterFunc(_, event, msg, player, l, cs, t, flag, channelId, ...)
       newMsg = newMsg..remaining:sub(1, start-1);
       newMsg = newMsg.."|HBNplayer::weakauras|h|cFF8800FF["..characterName.." |r|cFF8800FF- "..displayName.."]|h|r";
       remaining = remaining:sub(finish + 1);
+      anyLinkFound = true
     else
+      newMsg = newMsg .. remaining
       done = true;
     end
   until(done)
-  if newMsg ~= "" then
+  if anyLinkFound then
     if event == "CHAT_MSG_WHISPER" and not UnitInRaid(player) and not UnitInParty(player) then -- XXX: Need a guild check
       local _, num = BNGetNumFriends()
       for i=1, num do

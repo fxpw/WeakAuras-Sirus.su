@@ -177,12 +177,25 @@ function TestForLongString(trigger, arg)
   local name = arg.name;
   local test;
   local needle = trigger[name]
+  local caseInsensitive = arg.canBeCaseInsensitive and trigger[name .. "_caseInsensitive"]
   if(trigger[name.."_operator"] == "==") then
-    test = ("(%s == %s)"):format(name, Private.QuotedString(needle))
+    if caseInsensitive then
+      test = ("(%s and (%s):lower() == (%s):lower())"):format(name, name, Private.QuotedString(needle))
+    else
+      test = ("(%s == %s)"):format(name, Private.QuotedString(needle))
+    end
   elseif(trigger[name.."_operator"] == "find('%s')") then
-    test = "(" .. name .. " and " .. name .. string.format(":find(%s, 1, true)", Private.QuotedString(needle)) .. ")"
+    if caseInsensitive then
+      test = ("(%s and %s:lower():find((%s):lower(), 1, true))"):format(name, name, Private.QuotedString(needle))
+    else
+      test = ("(%s and %s:find(%s, 1, true))"):format(name, name, Private.QuotedString(needle))
+    end
   elseif(trigger[name.."_operator"] == "match('%s')") then
-    test = "(" .. name .. " and " .. name .. string.format(":match(%s)", Private.QuotedString(needle)) .. ")"
+    if caseInsensitive then
+      test = ("(%s and %s:lower():match((%s):lower()))"):format(name, name, Private.QuotedString(needle))
+    else
+      test = ("(%s and %s:match(%s))"):format(name, name, Private.QuotedString(needle))
+    end
   end
   return test;
 end
@@ -3765,12 +3778,12 @@ function GenericTrigger.GetAdditionalProperties(data, triggernum)
 
       if (enable and v.store and v.name and v.display) then
         found = true;
-        additional = additional .. "|cFFFF0000%".. triggernum .. "." .. v.name .. "|r - " .. v.display .. "\n";
+        additional = additional .. "|cFFFFCC00%".. triggernum .. "." .. v.name .. "|r - " .. v.display .. "\n";
       end
     end
     if prototype.countEvents then
       found = true;
-      additional = additional .. "|cFFFF0000%".. triggernum .. ".count|r - " .. L["Count"] .. "\n";
+      additional = additional .. "|cFFFFCC00%".. triggernum .. ".count|r - " .. L["Count"] .. "\n";
     end
     if (found) then
       ret = ret .. additional;
@@ -3782,7 +3795,7 @@ function GenericTrigger.GetAdditionalProperties(data, triggernum)
         for var, varData in pairs(variables) do
           if (type(varData) == "table") then
             if varData.display then
-              ret = ret .. "|cFFFF0000%".. triggernum .. "." .. var .. "|r - " .. varData.display .. "\n"
+              ret = ret .. "|cFFFFCC00%".. triggernum .. "." .. var .. "|r - " .. varData.display .. "\n"
             end
           end
         end
