@@ -565,7 +565,7 @@ Private.format_types = {
         if abbreviateFunc then
           return function(guid)
             local ok, _, class, _, _, _, name, realm = pcall(GetPlayerInfoByGUID, guid)
-            if ok then
+            if ok and name then
               local name = abbreviateFunc(nameFunc(name, realm))
               return colorFunc(class, name)
             end
@@ -573,7 +573,7 @@ Private.format_types = {
         else
           return function(guid)
             local ok, _, class, _, _, _, name, realm = pcall(GetPlayerInfoByGUID, guid)
-            if ok then
+            if ok and name then
               return colorFunc(class, nameFunc(name, realm))
             end
           end
@@ -582,14 +582,14 @@ Private.format_types = {
         if abbreviateFunc then
           return function(guid)
             local ok, _, class, _, _, _, name, realm = pcall(GetPlayerInfoByGUID, guid)
-            if ok then
+            if ok and name then
               return abbreviateFunc(nameFunc(name, realm))
             end
           end
         else
           return function(guid)
             local ok, _, class, _, _, _, name, realm = pcall(GetPlayerInfoByGUID, guid)
-            if ok then
+            if ok and name then
               return nameFunc(name, realm)
             end
           end
@@ -1156,6 +1156,94 @@ Private.combatlog_spell_school_types = {
 Private.combatlog_spell_school_types_for_ui = {}
 for id, str in pairs(Private.combatlog_spell_school_types) do
   Private.combatlog_spell_school_types_for_ui[id] = ("%.3d - %s"):format(id, str)
+end
+
+Private.item_quality_types = {
+  [0] = ITEM_QUALITY0_DESC,
+  [1] = ITEM_QUALITY1_DESC,
+  [2] = ITEM_QUALITY2_DESC,
+  [3] = ITEM_QUALITY3_DESC,
+  [4] = ITEM_QUALITY4_DESC,
+  [5] = ITEM_QUALITY5_DESC,
+  [6] = ITEM_QUALITY6_DESC,
+  [7] = ITEM_QUALITY7_DESC,
+  [8] = ITEM_QUALITY8_DESC,
+}
+
+Private.totalcount_currencies = {
+  [45624] = 3018, -- Emblems of Conquest
+  [40753] = 1465, -- Emblems of Valor
+  [29434] = 1462, -- Badges of Justice
+  [40752] = 1464, -- Emblems of Heroism
+  [47241] = 4729, -- Emblems of Triumph
+  [49426] = 4730, -- Emblems of Frost
+}
+
+function Private.GetTotalCountCurrencies(currencyID)
+  local achievementID = Private.totalcount_currencies[currencyID]
+  if achievementID then
+      local totalEarned = GetStatistic(achievementID)
+      return tonumber(totalEarned) or 0
+  end
+  return nil
+end
+
+local function InitializeCurrencies()
+  if Private.discovered_currencies then
+    return
+  end
+  Private.discovered_currencies = {}
+  Private.discovered_currencies_sorted = {}
+  Private.discovered_currencies_headers = {}
+
+  local expanded = {}
+  for index = GetCurrencyListSize(), 1, -1 do
+  local name, isHeader, isExpanded, _, _, _, _, _, _ = GetCurrencyListInfo(index)
+    if isHeader and not isExpanded then
+      ExpandCurrencyList(index, true)
+      expanded[name] = true
+    end
+  end
+
+  for index = 1, GetCurrencyListSize() do
+    local name, isHeader, _, _, _, _, _, iconFileID, itemID = GetCurrencyListInfo(index)
+    local currencyLink = tonumber(itemID) and GetItemInfo(itemID)
+
+    if currencyLink then
+      local icon = iconFileID or "Interface\\Icons\\INV_Misc_QuestionMark" --iconFileID not available on first login
+      Private.discovered_currencies[itemID] = "|T" .. icon .. ":0|t" .. name
+      Private.discovered_currencies_sorted[itemID] = index
+    elseif isHeader then
+      Private.discovered_currencies[name] = name
+      Private.discovered_currencies_sorted[name] = index
+      Private.discovered_currencies_headers[name] = true
+    end
+  end
+
+  for index = GetCurrencyListSize(), 1, -1 do
+    local name, isHeader = GetCurrencyListInfo(index)
+    if isHeader and expanded[name] then
+      ExpandCurrencyList(index, false)
+    end
+  end
+
+  Private.discovered_currencies["member"] = "|Tinterface\\common\\ui-searchbox-icon:0:0:0:-2|t"..L["Specific Currency"];
+  Private.discovered_currencies_sorted["member"] = -1;
+end
+
+Private.GetDiscoveredCurencies = function()
+  InitializeCurrencies()
+  return Private.discovered_currencies
+end
+
+Private.GetDiscoveredCurenciesSorted  = function()
+  InitializeCurrencies()
+  return Private.discovered_currencies_sorted
+end
+
+Private.GetDiscoveredCurenciesHeaders  = function()
+  InitializeCurrencies()
+  return Private.discovered_currencies_headers
 end
 
 Private.combatlog_raid_mark_check_type = {
@@ -2071,7 +2159,8 @@ Private.chat_message_types = {
   CHAT_MSG_SAY = L["Say"],
   CHAT_MSG_WHISPER = L["Whisper"],
   CHAT_MSG_YELL = L["Yell"],
-  CHAT_MSG_SYSTEM = L["System"]
+  CHAT_MSG_SYSTEM = L["System"],
+  CHAT_MSG_LOOT = L["Loot"],
 }
 
 Private.send_chat_message_types = {
@@ -2474,6 +2563,7 @@ Private.update_categories = {
       "url",
       "desc",
       "version",
+      "semver"
     },
     default = true,
     label = L["Meta Data"],

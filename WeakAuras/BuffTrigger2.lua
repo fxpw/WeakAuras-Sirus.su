@@ -2686,8 +2686,20 @@ function BuffTrigger.GetTriggerConditions(data, triggernum)
   }
 
   result["unitCaster"] = {
-    display = L["Caster"],
+    display = L["Caster Unit"],
     type = "string"
+  }
+
+  result["nameCaster"] = {
+    display = L["Casters Name/Realm"],
+    type = "string",
+    preamble = function(input)
+      return Private.ExecEnv.ParseNameCheck(input)
+    end,
+    test = function(state, needle, op, preamble)
+      return state.unitCaster and preamble:Check(WeakAuras.UnitNameWithRealm(state.unitCaster))
+    end,
+    operator_types = "none",
   }
 
   result["expirationTime"] = {

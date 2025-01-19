@@ -647,7 +647,7 @@ local function GetSortedOptionsLists()
       tinsert(to_sort, id);
     end
   end
-  table.sort(to_sort, function(a, b) return a < b end);
+  table.sort(to_sort, function(a, b) return a:lower() < b:lower() end)
   for _, id in ipairs(to_sort) do
     local data = WeakAuras.GetData(id);
     for child in OptionsPrivate.Private.TraverseAll(data) do
@@ -663,7 +663,7 @@ local function GetSortedOptionsLists()
       tinsert(to_sort, id);
     end
   end
-  table.sort(to_sort, function(a, b) return a < b end);
+  table.sort(to_sort, function(a, b) return a:lower() < b:lower() end)
   for _, id in ipairs(to_sort) do
     local data = WeakAuras.GetData(id);
     for child in OptionsPrivate.Private.TraverseAll(data) do
@@ -927,8 +927,8 @@ function OptionsPrivate.OpenDebugLog(text)
   frame.debugLog:Open(text)
 end
 
-function OptionsPrivate.OpenUpdate(data, children, target, sender, callbackFunc)
-  return frame.update:Open(data, children, target, sender, callbackFunc)
+function OptionsPrivate.OpenUpdate(data, children, target, linkedAuras, sender, callbackFunc)
+  return frame.update:Open(data, children, target, linkedAuras, sender, callbackFunc)
 end
 
 function OptionsPrivate.ConvertDisplay(data, newType)
@@ -1196,7 +1196,7 @@ function OptionsPrivate.SortDisplayButtons(filter, overrideReset, id)
 
   wipe(frame.loadedButton.childButtons)
   if frame.loadedButton:GetExpanded() then
-    table.sort(topLevelLoadedAuras)
+    table.sort(topLevelLoadedAuras, function(a, b) return a:lower() < b:lower() end)
     for _, id in ipairs(topLevelLoadedAuras) do
       if aurasMatchingFilter[id] then
         addButton(displayButtons[id], aurasMatchingFilter, visible)
@@ -1214,7 +1214,7 @@ function OptionsPrivate.SortDisplayButtons(filter, overrideReset, id)
 
   wipe(frame.unloadedButton.childButtons)
   if frame.unloadedButton:GetExpanded() then
-    table.sort(topLevelUnloadedAuras)
+    table.sort(topLevelUnloadedAuras, function(a, b) return a:lower() < b:lower() end)
     for _, id in ipairs(topLevelUnloadedAuras) do
       if aurasMatchingFilter[id] then
         addButton(displayButtons[id], aurasMatchingFilter, visible)

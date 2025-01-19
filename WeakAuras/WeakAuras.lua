@@ -329,13 +329,6 @@ Private.ExecEnv.conditionHelpers = {}
 
 local load_prototype = Private.load_prototype;
 
-local levelColors = {
-  [0] = "|cFFFFFFFF",
-  [1] = "|cFF40FF40",
-  [2] = "|cFF6060FF",
-  [3] = "|cFFFF4040"
-};
-
 function Private.validate(input, default)
   for field, defaultValue in pairs(default) do
     if(type(defaultValue) == "table" and type(input[field]) ~= "table") then
@@ -2209,11 +2202,16 @@ function Private.AddMany(tbl, takeSnapshots)
   coroutine.yield()
   local groups = {}
   for _, data in ipairs(order) do
-    WeakAuras.Add(data, takeSnapshots);
-    coroutine.yield()
+    WeakAuras.PreAdd(data)
     if data.regionType == "dynamicgroup" or data.regionType == "group" then
       groups[data] = true
     end
+    coroutine.yield()
+  end
+
+  for _, data in ipairs(order) do
+    WeakAuras.Add(data, takeSnapshots);
+    coroutine.yield()
   end
 
   for id in pairs(anchorTargets) do
@@ -2384,29 +2382,6 @@ local function validateUserConfig(data, options, config)
   for i = #options, 1, -1 do
     if corruptOptions[i] then
       tremove(options, i)
-    end
-  end
-end
-
-local function removeSpellNames(data)
-  local trigger
-  for i = 1, #data.triggers do
-    trigger = data.triggers[i].trigger
-    if trigger and trigger.type == "aura" then
-      if type(trigger.spellName) == "number" then
-        trigger.realSpellName = GetSpellInfo(trigger.spellName) or trigger.realSpellName
-      end
-      if (trigger.spellId) then
-        trigger.name = GetSpellInfo(trigger.spellId) or trigger.name;
-      end
-      if (trigger.spellIds) then
-        for i = 1, 10 do
-          if (trigger.spellIds[i]) then
-            trigger.names = trigger.names or {};
-            trigger.names[i] = GetSpellInfo(trigger.spellIds[i]) or trigger.names[i];
-          end
-        end
-      end
     end
   end
 end
@@ -2618,7 +2593,6 @@ function WeakAuras.PreAdd(data)
     end
   end
   validateUserConfig(data, data.authorOptions, data.config)
-  removeSpellNames(data)
   if not(WeakAuras.isAwesomeEnabled()) then
     removeNameplateUnits(data)
   end
@@ -2811,11 +2785,11 @@ end
 function Private.SetRegion(data, cloneId)
   local regionType = data.regionType;
   if not(regionType) then
-    error("Improper arguments to Private.SetRegion - regionType not defined");
+    error("Improper arguments to Private.SetRegion - regionType not defined in ".. data.id)
   else
     if(not regionTypes[regionType]) then
       regionType = "fallback";
-      print("Improper arguments to WeakAuras.CreateRegion - regionType \""..data.regionType.."\" is not supported");
+      print("Improper arguments to WeakAuras.CreateRegion - regionType \""..data.regionType.."\" is not supported in ".. data.id)
     end
 
     local id = data.id;
@@ -3661,15 +3635,19 @@ local function SetFrameLevel(id, frameLevel)
 end
 
 function Private.FixGroupChildrenOrderForGroup(data)
+  SetFrameLevel(data.id, 0)
   local frameLevel, offset
   if data.regionType == "dynamicgroup" then
     frameLevel, offset = 5, 0
   else
-    frameLevel, offset = 1, 4
+    frameLevel, offset = 2, 4
   end
-  for child in Private.TraverseLeafs(data) do
-    SetFrameLevel(child.id, frameLevel);
-    frameLevel = frameLevel + offset;
+  for _, childId in ipairs(data.controlledChildren) do
+    local data = WeakAuras.GetData(childId)
+    if data.regionType ~= "group" and data.regionType ~= "dynamicgroup" then
+      SetFrameLevel(childId, frameLevel);
+      frameLevel = frameLevel + offset;
+    end
   end
 end
 
@@ -3679,11 +3657,18 @@ end
 
 function Private.ApplyFrameLevel(region, frameLevel)
   frameLevel = frameLevel or GetFrameLevelFor(region.id)
+
+  local setBackgroundFrameLevel = false
   if region.subRegions then
     for index, subRegion in pairs(region.subRegions) do
       if subRegion.type == "subbackground" then
         subRegion:SetFrameLevel(frameLevel + index)
+        setBackgroundFrameLevel = true
       end
+    end
+
+    if not setBackgroundFrameLevel then
+      region:SetFrameLevel(frameLevel)
     end
 
     for index, subRegion in pairs(region.subRegions) do
@@ -3691,6 +3676,8 @@ function Private.ApplyFrameLevel(region, frameLevel)
         subRegion:SetFrameLevel(frameLevel + index)
       end
     end
+  else
+    region:SetFrameLevel(frameLevel)
   end
 end
 

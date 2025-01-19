@@ -21,10 +21,6 @@ function WeakAuras.isAwesomeEnabled()
   return isAwesomeEnabled
 end
 
-function WeakAuras.IsClassic()
-  return false
-end
-
 function WeakAuras.IsCorrectVersion()
   return true
 end

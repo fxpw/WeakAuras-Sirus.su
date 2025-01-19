@@ -1050,6 +1050,7 @@ Private.load_prototype = {
         operator = "and",
         limit = 2
       },
+      optional = true,
     },
     {
       name = "group_leader",
@@ -2191,7 +2192,7 @@ Private.event_prototypes = {
         display = L["Power Type"],
         type = "select",
         values = "power_types",
-        init = "unitPowerType",
+        init = "powerTypeToCheck",
         test = "true",
         store = true,
         conditionType = "select",
@@ -4892,7 +4893,11 @@ Private.event_prototypes = {
   },
   ["Chat Message"] = {
     type = "event",
-    events = {
+    events = function(trigger)
+      if trigger.use_messageType and trigger.messageType and Private.chat_message_types[trigger.messageType] then
+        return { ["events"] = {trigger.messageType} }
+      end
+      return {
       ["events"] = {
         "CHAT_MSG_BATTLEGROUND",
         "CHAT_MSG_BATTLEGROUND_LEADER",
@@ -4920,9 +4925,11 @@ Private.event_prototypes = {
         "CHAT_MSG_WHISPER",
         "CHAT_MSG_YELL",
         "CHAT_MSG_SYSTEM",
-        "CHAT_MSG_TEXT_EMOTE"
+        "CHAT_MSG_TEXT_EMOTE",
+        "CHAT_MSG_LOOT",
       }
-    },
+    }
+    end,
     name = L["Chat Message"],
     init = function(trigger)
       local ret = [[
@@ -7025,6 +7032,138 @@ Private.event_prototypes = {
     },
     automaticrequired = true
   },
+  --[[  Some day i will finish this, soonTM
+  ["Currency"] = {
+    type = "unit",
+    canHaveDuration = false,
+    events = {
+      ["events"] = {
+        "CURRENCY_DISPLAY_UPDATE",
+      }
+    },
+    force_events = "CURRENCY_DISPLAY_UPDATE",
+    name = WeakAuras.newFeatureString..L["Currency"],
+    init = function(trigger)
+      local ret = [=[
+          local currencyInfo = {
+              name = GetItemInfo(%d),
+              quantity = GetItemCount(%d),
+              iconFileID = select(6, GetItemInfo(%d)),
+              totalEarned = Private.GetTotalCountCurrencies(%d),
+              discovered = Private.GetDiscoveredCurencies(%d),
+          }
+          if not currencyInfo.name then
+              currencyInfo = {
+                  name = "Unknown Currency",
+                  quantity = 0,
+                  iconFileID = "Interface\\Icons\\INV_Misc_QuestionMark",
+                  totalEarned = 0,
+                  discovered = false
+              }
+          end
+      ]=]
+      return ret:format(trigger.currencyId or 1, trigger.currencyId or 1, trigger.currencyId or 1, trigger.currencyId or 1, trigger.currencyId or 1)
+    end,
+    statesParameter = "one",
+    args = {
+      {
+        name = "currencyId",
+        type = "currency",
+        itemControl = "Dropdown-Currency",
+        values = Private.GetDiscoveredCurencies,
+        headers = Private.GetDiscoveredCurenciesHeaders,
+        sorted = true,
+        sortOrder = function()
+          local discovered_currencies_sorted = Private.GetDiscoveredCurenciesSorted()
+          local sortOrder = {}
+          for key, value in pairs(Private.GetDiscoveredCurencies()) do
+            tinsert(sortOrder, key)
+          end
+          table.sort(sortOrder, function(aKey, bKey)
+            local aValue = discovered_currencies_sorted[aKey]
+            local bValue = discovered_currencies_sorted[bKey]
+            return aValue < bValue
+          end)
+          return sortOrder
+        end,
+        required = true,
+        display = L["Currency"],
+        store = true,
+        test = "true",
+      },
+      {
+        name = "name",
+        init = "currencyInfo.name",
+        hidden = true,
+        store = true,
+        test = "true",
+      },
+      {
+        name = "value",
+        init = "currencyInfo.quantity",
+        type = "number",
+        display = L["Quantity"],
+        store = true,
+        conditionType = "number",
+      },
+      {
+        name = "total",
+        init = "currencyInfo.maxQuantity",
+        type = "number",
+        hidden = true,
+        store = true,
+        test = "true",
+      },
+      {
+        name = "progressType",
+        init = "'static'",
+        hidden = true,
+        store = true,
+        test = "true",
+      },
+      {
+        name = "icon",
+        init = "currencyInfo.iconFileID",
+        store = true,
+        hidden = true,
+        test = "true",
+      },
+      {
+        name = "totalEarned",
+        init = "currencyInfo.totalEarned",
+        type = "number",
+        display = L["Total Earned in this Season"],
+        store = true,
+        conditionType = "number",
+        enable = function(trigger)
+          -- soonTM
+        end
+      },
+      {
+        name = "description",
+        init = "currencyInfo.description",
+        type = "string",
+        display = L["Description"],
+        store = true,
+        hidden = true,
+        test = "true",
+      },
+      {
+        name = "discovered",
+        init = "currencyInfo.discovered",
+        type = "tristate",
+        display = L["Discovered"],
+        store = true,
+        conditionType = "bool",
+      },
+    },
+    GetNameAndIcon = function(trigger)
+      local currencyInfo = Private.GetCurrencyInfoForTrigger(trigger)
+      return currencyInfo and currencyInfo.name, currencyInfo and currencyInfo.iconFileID
+    end,
+    automaticrequired = true
+  },
+  ]]
   ["Location"] = {
     type = "unit",
     events = {
