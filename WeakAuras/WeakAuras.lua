@@ -2592,7 +2592,14 @@ function WeakAuras.PreAdd(data)
     Private.validate(data, oldDataStub2)
   end
 
-  local default = data.regionType and Private.regionTypes[data.regionType] and Private.regionTypes[data.regionType].default
+  local ok = pcall(Private.Modernize, data)
+  if not ok then
+    Private.GetErrorHandlerId(data.id, L["Modernize"])
+  end
+
+  local default = data.regionType and
+  Private.regionTypes[data.regionType] and
+  Private.regionTypes[data.regionType].default
   if default then
     Private.validate(data, default)
   end
@@ -2602,7 +2609,6 @@ function WeakAuras.PreAdd(data)
     regionValidate(data)
   end
 
-  Private.Modernize(data);
   Private.validate(data, Private.data_stub);
   if data.subRegions then
     for _, subRegionData in ipairs(data.subRegions) do
@@ -2915,40 +2921,19 @@ local function EnsureRegion(id)
     Private.regions[id] = Private.regions[id] or {}
     -- The region doesn't yet exist
     -- But we must also ensure that our parents exists
-    -- and as an additional wrinkle, for dynamic groups, all children must exist!
-    -- and we have to call ReloadControlledChildren at the end
     -- So we go up the list of parents and collect auras that must be created
     -- If we find a parent already exists, we can stop
-    -- And dynamic groups require creating all children, thus we don't need
-    -- to care which path we came to them
 
     local aurasToCreate = {}
-    local dynamicGroups = {}
-    creatingRegions = true
     while(id) do
       local data = WeakAuras.GetData(id)
-      if (data.regionType == "dynamicgroup") then
-        wipe(aurasToCreate)
-        tinsert(aurasToCreate, data.id)
-        tinsert(dynamicGroups, data.id)
-      else
-        tinsert(aurasToCreate, data.id)
-      end
+      tinsert(aurasToCreate, data.id)
       id = data.parent
     end
+
     for _, toCreateId in ipairs_reverse(aurasToCreate) do
       local data = WeakAuras.GetData(toCreateId)
       Private.SetRegion(data)
-      if (data.regionType == "dynamicgroup") then
-        for child in Private.TraverseAllChildren(data) do
-          Private.SetRegion(child)
-        end
-      end
-    end
-    creatingRegions = false
-    for _, dynamicGroupId in ipairs_reverse(dynamicGroups) do
-      local dgRegion = Private.regions[dynamicGroupId].region
-      dgRegion:ReloadControlledChildren()
     end
   end
   return Private.regions[id] and Private.regions[id].region
@@ -4059,6 +4044,10 @@ local function startStopTimers(id, cloneId, triggernum, state)
       stopAutoHideTimer(id, triggernum, cloneId)
       return
     else
+      if state.expirationTime == nil and type(state.duration) == "number" then
+        -- Set the expiration time, because users rely on that, even though it's wrong to do
+        state.expirationTime = GetTime() + state.duration
+      end
       expirationTime = state.expirationTime
     end
   elseif type(state.autoHide) == "number" then

@@ -4655,14 +4655,14 @@ Private.event_prototypes = {
       },
       {
         name = "icon",
-        init = "GetItemIcon(itemName)",
+        init = "GetItemIcon(itemName or '')",
         hidden = true,
         store = true,
         test = "true"
       },
       {
         name = "name",
-        init = "itemName",
+        init = "itemName and itemName ~= '' and GetItemIcon(itemName) or itemName",
         hidden = true,
         store = true,
         test = "true"

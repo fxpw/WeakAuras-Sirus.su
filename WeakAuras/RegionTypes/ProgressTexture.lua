@@ -903,6 +903,11 @@ local function modify(parent, region, data)
     else
       region:SetValueOnTexture(progress);
     end
+
+    if self.FrameTick then
+      self.FrameTick = nil
+      self.subRegionEvents:RemoveSubscriber("FrameTick", region)
+    end
   end
 
   if region.useSmoothProgress then
