@@ -19,6 +19,7 @@ local default = {
   icon = true,
   desaturate = false,
   iconSource = -1,
+  progressSource = {-1, "" },
   inverse = false,
   width = 64,
   height = 64,
@@ -35,6 +36,7 @@ local default = {
   cooldownEdge = false
 };
 
+Private.regionPrototype.AddProgressSourceToDefault(default)
 Private.regionPrototype.AddAlphaToDefault(default);
 
 local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
@@ -95,7 +97,7 @@ local properties = {
     values = {}
   },
   displayIcon = {
-    display = {L["Icon"], L["Fallback"]},
+    display = {L["Icon"], L["Manual"]},
     setter = "SetIcon",
     type = "icon",
   }
@@ -106,12 +108,11 @@ Private.regionPrototype.AddProperties(properties, default);
 local function GetProperties(data)
   local result = CopyTable(properties)
   result.iconSource.values = Private.IconSources(data)
+  result.progressSource.values = Private.GetProgressSourcesForUi(data)
   return result
 end
 
 local function GetTexCoord(region, texWidth, aspectRatio, xOffset, yOffset)
-  xOffset = xOffset or 0
-  yOffset = yOffset or 0
   region.currentCoord = region.currentCoord or {}
   local usesMasque = false
   if region.MSQGroup then
@@ -430,8 +431,8 @@ local function modify(parent, region, data)
   region.scaley = 1;
   region.keepAspectRatio = data.keepAspectRatio;
   region.zoom = data.zoom;
-  region.texXOffset = data.texXOffset
-  region.texYOffset = data.texYOffset
+  region.texXOffset = data.texXOffset or 0
+  region.texYOffset = data.texYOffset or 0
   region:UpdateSize()
 
   icon:SetDesaturated(data.desaturate);
@@ -451,7 +452,27 @@ local function modify(parent, region, data)
     region.tooltipFrame:EnableMouse(false);
   end
 
-  cooldown:SetReverse(not data.inverse);
+  function region:SetInverse(inverse)
+    if region.inverse == inverse then
+      return
+    end
+    region.inverse = inverse
+    region:UpdateEffectiveInverse()
+  end
+  function region:UpdateEffectiveInverse()
+    -- If cooldown.inverse == false then effectiveReverse = not inverse
+    -- If cooldown.inverse == true then effectiveReverse = inverse
+    local effectiveReverse = not region.inverse == not cooldown.inverse
+    cooldown:SetReverse(effectiveReverse)
+    if (cooldown.expirationTime and cooldown.duration and cooldown:IsShown()) then
+      -- WORKAROUND SetReverse not applying until next frame
+      cooldown:SetCooldown(0, 0)
+      cooldown:SetCooldown(cooldown.expirationTime - cooldown.duration,
+                           cooldown.duration,
+                           cooldown.useCooldownModRate and cooldown.modRate or nil)
+    end
+  end
+  region:SetInverse(data.inverse)
 
   function region:Color(r, g, b, a)
     region.color_r = r;
@@ -545,15 +566,6 @@ local function modify(parent, region, data)
     region:UpdateSize();
   end
 
-  function region:SetInverse(inverse)
-    cooldown:SetReverse(not inverse);
-    if (cooldown.expirationTime and cooldown.duration and cooldown:IsShown()) then
-      -- WORKAROUND SetReverse not applying until next frame
-      cooldown:SetCooldown(0, 0);
-      cooldown:SetCooldown(cooldown.expirationTime - cooldown.duration, cooldown.duration);
-    end
-  end
-
   function region:SetCooldownEdge(cooldownEdge)
     region.cooldownEdge = cooldownEdge;
     cooldown:SetDrawEdge(cooldownEdge);
@@ -570,32 +582,40 @@ local function modify(parent, region, data)
   cooldown.duration = nil;
   cooldown:Hide()
   if(data.cooldown) then
-    function region:SetValue(value, total)
-      cooldown.value = value
-      cooldown.total = total
-      if (value >= 0 and value <= total) then
+    function region:UpdateValue()
+      cooldown.value = self.value
+      cooldown.total = self.total
+      if (self.value >= 0 and self.value <= self.total) then
         cooldown:Show()
-        cooldown:SetCooldown(GetTime() - (total - value), total)
+        cooldown:SetCooldown(GetTime() - (self.total - self.value), self.total)
+        cooldown:Pause()
       else
         cooldown:Hide();
       end
     end
 
-    function region:SetTime(duration, expirationTime)
-      if (duration > 0 and expirationTime > GetTime()) then
-        cooldown:Show();
-        cooldown.expirationTime = expirationTime;
-        cooldown.duration = duration;
-        cooldown:SetCooldown(expirationTime - duration, duration);
+    function region:UpdateTime()
+      if self.paused then
+        cooldown:Pause()
       else
-        cooldown.expirationTime = expirationTime;
-        cooldown.duration = duration;
+        cooldown:Resume()
+      end
+      if (self.duration > 0 and self.expirationTime > GetTime() and self.expirationTime ~= math.huge) then
+        cooldown:Show();
+        cooldown.expirationTime = self.expirationTime
+        cooldown.duration = self.duration
+        cooldown.inverse = self.inverse
+        region:UpdateEffectiveInverse()
+        cooldown:SetCooldown(self.expirationTime - self.duration, self.duration)
+      else
+        cooldown.expirationTime = self.expirationTime
+        cooldown.duration = self.duration
         cooldown:Hide();
       end
     end
 
     function region:PreShow()
-      if (cooldown.duration and cooldown.duration > 0.01) then
+      if (cooldown.duration and cooldown.duration > 0.01 and cooldown.duration ~= math.huge and cooldown.expirationTime ~= math.huge) then
         cooldown:Show();
         cooldown:SetCooldown(cooldown.expirationTime - cooldown.duration, cooldown.duration);
         cooldown:Resume()
@@ -603,64 +623,14 @@ local function modify(parent, region, data)
     end
 
     function region:Update()
-      local state = region.state
-      if state.progressType == "timed" then
-        local expirationTime
-        if state.paused == true then
-          if not region.paused then
-            region:Pause()
-          end
-          cooldown:Pause()
-          expirationTime = GetTime() + (state.remaining or 0)
-        else
-          if region.paused then
-            region:Resume()
-          end
-          cooldown:Resume()
-          expirationTime = state.expirationTime and state.expirationTime > 0 and state.expirationTime or math.huge;
-        end
-
-        local duration = state.duration or 0
-        if region.adjustedMinRelPercent then
-          region.adjustedMinRel = region.adjustedMinRelPercent * duration
-        end
-        local adjustMin = region.adjustedMin or region.adjustedMinRel or 0;
-
-        local max
-        if duration == 0 then
-          max = 0
-        elseif region.adjustedMax then
-          max = region.adjustedMax
-        elseif region.adjustedMaxRelPercent then
-          region.adjustedMaxRel = region.adjustedMaxRelPercent * duration
-          max = region.adjustedMaxRel
-        else
-          max = duration
-        end
-
-        region:SetTime(max - adjustMin, expirationTime - adjustMin, state.inverse);
-      elseif state.progressType == "static" then
-        local value = state.value or 0;
-        local total = state.total or 0;
-        if region.adjustedMinRelPercent then
-          region.adjustedMinRel = region.adjustedMinRelPercent * total
-        end
-        local adjustMin = region.adjustedMin or region.adjustedMinRel or 0;
-        local max = region.adjustedMax or region.adjustedMaxRel or total;
-        region:SetValue(value - adjustMin, max - adjustMin);
-        cooldown:Pause()
-      else
-        region:SetTime(0, math.huge)
-      end
-
+      region:UpdateProgress()
       region:UpdateIcon()
     end
   else
-    region.SetValue = nil
-    region.SetTime = nil
+    region.UpdateValue = nil
+    region.UpdateTime = nil
 
     function region:Update()
-      local state = region.state
       region:UpdateIcon()
     end
   end

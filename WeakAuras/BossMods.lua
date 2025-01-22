@@ -150,7 +150,7 @@ Private.ExecEnv.BossMods.DBM = {
       end
     end
     if self.nextExpire then
-      self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, self.nextExpire - now, self)
+      self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, self.nextExpire - now, self)
     end
   end,
 
@@ -214,11 +214,11 @@ Private.ExecEnv.BossMods.DBM = {
         WeakAuras.ScanEvents("BossMod_TimerStart", timerId)
       end
       if self.nextExpire == nil then
-        self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, expirationTime - now, self)
+        self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, expirationTime - now, self)
         self.nextExpire = expirationTime
       elseif expirationTime < self.nextExpire then
         timer:CancelTimer(self.recheckTimer)
-        self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, expirationTime - now, self)
+        self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, expirationTime - now, self)
         self.nextExpire = expirationTime
       end
     elseif event == "DBM_TimerStop" then
@@ -261,11 +261,11 @@ Private.ExecEnv.BossMods.DBM = {
           WeakAuras.ScanEvents("BossMod_TimerResume", timerId)
         end
         if self.nextExpire == nil then
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - GetTime(), self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - GetTime(), self)
           self.nextExpire = bar.expirationTime
         elseif bar.expirationTime < self.nextExpire then
           timer:CancelTimer(self.recheckTimer)
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - GetTime(), self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - GetTime(), self)
           self.nextExpire = bar.expirationTime
         end
       end
@@ -278,11 +278,11 @@ Private.ExecEnv.BossMods.DBM = {
         bar.duration = duration
         bar.expirationTime = expirationTime
         if self.nextExpire == nil then
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - now, self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - now, self)
           self.nextExpire = expirationTime
         elseif self.nextExpire == nil or expirationTime < self.nextExpire then
           timer:CancelTimer(self.recheckTimer)
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - now, self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - now, self)
           self.nextExpire = expirationTime
         end
       end
@@ -338,7 +338,7 @@ Private.ExecEnv.BossMods.DBM = {
 
   ScheduleCheck = function(self, fireTime)
     if not self.scheduled_scans[fireTime] then
-      self.scheduled_scans[fireTime] = timer:ScheduleTimerFixed(self.DoScan, fireTime - GetTime(), self, fireTime)
+      self.scheduled_scans[fireTime] = timer:ScheduleTimer(self.DoScan, fireTime - GetTime(), self, fireTime)
     end
   end
 }
@@ -377,6 +377,7 @@ Private.event_prototypes["DBM Stage"] = {
   },
   automaticrequired = true,
   statesParameter = "one",
+  progressType = "none"
 }
 Private.category_event_prototype.addons["DBM Stage"] = L["DBM Stage"]
 
@@ -433,7 +434,8 @@ Private.event_prototypes["DBM Announce"] = {
       init = "use_cloneId and WeakAuras.GetUniqueCloneId() or ''"
     },
   },
-  timedrequired = true
+  timedrequired = true,
+  progressType = "timed"
 }
 Private.category_event_prototype.addons["DBM Announce"] = L["DBM Announce"]
 
@@ -445,7 +447,7 @@ Private.event_prototypes["DBM Timer"] = {
   },
   force_events = "DBM_TimerForce",
   name = L["DBM Timer"],
-  canHaveDuration = "timed",
+  progressType = "timed",
   triggerFunction = function(trigger)
     Private.ExecEnv.BossMods.DBM:RegisterTimer()
     local ret = [=[
@@ -681,6 +683,7 @@ Private.ExecEnv.BossMods.BigWigs = {
     state.addon = bar.addon
     state.spellId = bar.spellId
     state.text = bar.text
+    state.message = bar.text
     state.name = bar.text
     state.duration = bar.duration + extendTimer
     state.expirationTime = bar.expirationTime + extendTimer
@@ -803,7 +806,7 @@ Private.ExecEnv.BossMods.BigWigs = {
     end
 
     if self.nextExpire then
-      self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, self.nextExpire - now, self)
+      self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, self.nextExpire - now, self)
     end
   end,
 
@@ -843,11 +846,11 @@ Private.ExecEnv.BossMods.BigWigs = {
         WeakAuras.ScanEvents("BossMod_TimerStart", text)
       end
       if self.nextExpire == nil then
-        self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, expirationTime - now, self)
+        self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, expirationTime - now, self)
         self.nextExpire = expirationTime
       elseif expirationTime < self.nextExpire then
         timer:CancelTimer(self.recheckTimer)
-        self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, expirationTime - now, self)
+        self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, expirationTime - now, self)
         self.nextExpire = expirationTime
       end
     elseif event == "BigWigs_StopBar" then
@@ -889,10 +892,10 @@ Private.ExecEnv.BossMods.BigWigs = {
           WeakAuras.ScanEvents("BossMod_TimerResume", text)
         end
         if self.nextExpire == nil then
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - GetTime(), self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - GetTime(), self)
         elseif bar.expirationTime < self.nextExpire then
           timer:CancelTimer(self.recheckTimer)
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - GetTime(), self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - GetTime(), self)
           self.nextExpire = bar.expirationTime
         end
       end
@@ -979,7 +982,7 @@ Private.ExecEnv.BossMods.BigWigs = {
 
   ScheduleCheck = function(self, fireTime)
     if not self.scheduled_scans[fireTime] then
-      self.scheduled_scans[fireTime] = timer:ScheduleTimerFixed(self.DoScan, fireTime - GetTime(), self, fireTime)
+      self.scheduled_scans[fireTime] = timer:ScheduleTimer(self.DoScan, fireTime - GetTime(), self, fireTime)
     end
   end
 }
@@ -1007,6 +1010,7 @@ Private.event_prototypes["BigWigs Stage"] = {
   },
   automaticrequired = true,
   statesParameter = "one",
+  progressType = "none"
 }
 Private.category_event_prototype.addons["BigWigs Stage"] = L["BigWigs Stage"]
 
@@ -1033,8 +1037,8 @@ Private.event_prototypes["BigWigs Message"] = {
     {
       name = "spellId",
       init = "arg",
-      display = L["Key"],
-      desc = L["The 'Key' value can be found in the BigWigs options of a specific spell"],
+      display = L["ID"],
+      desc = L["The 'ID' value can be found in the BigWigs options of a specific spell"],
       type = "spell",
       conditionType = "string",
       noValidation = true,
@@ -1072,7 +1076,8 @@ Private.event_prototypes["BigWigs Message"] = {
       init = "use_cloneId and WeakAuras.GetUniqueCloneId() or ''"
     },
   },
-  timedrequired = true
+  timedrequired = true,
+  progressType = "timed"
 }
 Private.category_event_prototype.addons["BigWigs Message"] = L["BigWigs Message"]
 
@@ -1084,7 +1089,7 @@ Private.event_prototypes["BigWigs Timer"] = {
   },
   force_events = "BigWigs_Timer_Force",
   name = L["BigWigs Timer"],
-  canHaveDuration = "timed",
+  progressType = "timed",
   triggerFunction = function(trigger)
     Private.ExecEnv.BossMods.BigWigs:RegisterTimer()
     local ret = [=[
@@ -1237,8 +1242,8 @@ Private.event_prototypes["BigWigs Timer"] = {
   args = {
     {
       name = "spellId",
-      display = L["Key"],
-      desc = L["The 'Key' value can be found in the BigWigs options of a specific spell"],
+      display = L["ID"],
+      desc = L["The 'ID' value can be found in the BigWigs options of a specific spell"],
       type = "spell",
       conditionType = "string",
       noValidation = true,
@@ -1350,6 +1355,7 @@ Private.event_prototypes["Boss Mod Stage"] = {
   },
   automaticrequired = true,
   statesParameter = "one",
+  progressType = "none"
 }
 Private.category_event_prototype.addons["Boss Mod Stage"] = L["Boss Mod Stage"]
 
@@ -1382,7 +1388,7 @@ Private.event_prototypes["Boss Mod Stage (Event)"] = {
     },
   },
   statesParameter = "one",
-  canHaveDuration = "timed",
+  progressType = "timed",
   delayEvents = true,
   timedrequired = true
 }
@@ -1405,7 +1411,7 @@ Private.event_prototypes["Boss Mod Announce"] = {
     {
       name = "spellId",
       init = "arg",
-      display = L["Key"],
+      display = L["ID"],
       store = true,
       type = "spell",
       conditionType = "string",
@@ -1463,7 +1469,8 @@ Private.event_prototypes["Boss Mod Announce"] = {
       text = ActiveBossModText
     },
   },
-  timedrequired = true
+  timedrequired = true,
+  progressType = "timed"
 }
 Private.category_event_prototype.addons["Boss Mod Announce"] = L["Boss Mod Announce"]
 
@@ -1475,7 +1482,7 @@ Private.event_prototypes["Boss Mod Timer"] = {
   },
   force_events = "BossMod_TimerForce",
   name = L["Boss Mod Timer"],
-  canHaveDuration = "timed",
+  progressType = "timed",
   triggerFunction = function(trigger)
     Private.ExecEnv.BossMods.Generic:RegisterTimer()
     local ret = [=[
@@ -1638,7 +1645,7 @@ Private.event_prototypes["Boss Mod Timer"] = {
   args = {
     {
       name = "spellId",
-      display = L["Key"],
+      display = L["ID"],
       store = true,
       type = "spell",
       conditionType = "string",

@@ -28,14 +28,8 @@ Modernizes all generic triggers in data.
 # Helper functions mainly for the WeakAuras Options #
 #####################################################
 
-CanHaveDuration(data, triggernum)
-Returns whether the trigger can have a duration.
-
 GetOverlayInfo(data, triggernum)
 Returns a table containing the names of all overlays
-
-CanHaveClones(data)
-Returns whether the trigger can have clones.
 
 CanHaveTooltip(data, triggernum)
 Returns the type of tooltip to show for the trigger.
@@ -45,6 +39,9 @@ Returns the name and icon to show in the options.
 
 GetAdditionalProperties(data, triggernum)
 Returns the a tooltip for the additional properties.
+
+GetProgressSources(data, triggernum, outValues)
+Fills outValues with the potential progress sources
 
 GetTriggerConditions(data, triggernum)
 Returns potential conditions that this trigger provides.
@@ -520,18 +517,20 @@ local function RunOverlayFuncs(event, state, id, errorHandler)
   state.changed = changed or state.changed;
 end
 
-local function callFunctionForActivateEvent(func, trigger, fallback, errorHandler)
+local function callFunctionForActivateEvent(func, trigger, state, property, errorHandler)
   if not func then
-    return fallback
+    return
   end
   local ok, value = pcall(func, trigger)
-  if ok and value then
-    return value
+  if ok then
+    if state[property] ~= value then
+      state[property] = value
+      state.changed = true
+    end
   else
     if not ok then
       errorHandler(value)
     end
-    return fallback
   end
 end
 
@@ -638,32 +637,13 @@ function Private.ActivateEvent(id, triggernum, data, state, errorHandler)
     end
   end
 
-  local name = callFunctionForActivateEvent(data.nameFunc, data.trigger, state.name, errorHandler or Private.GetErrorHandlerId(id, L["Name Function"]))
-  local icon = callFunctionForActivateEvent(data.iconFunc, data.trigger, state.icon, errorHandler or Private.GetErrorHandlerId(id, L["Icon Function"]))
-  local texture = callFunctionForActivateEvent(data.textureFunc, data.trigger, state.texture, errorHandler or Private.GetErrorHandlerId(id, L["Texture Function"]))
-  local stacks = callFunctionForActivateEvent(data.stacksFunc, data.trigger, state.stacks, errorHandler or Private.GetErrorHandlerId(id, L["Stacks Function"]))
-
-  if (state.name ~= name) then
-    state.name = name;
-    changed = true;
-  end
-  if (state.icon ~= icon) then
-    state.icon = icon;
-    changed = true;
-  end
-  if (state.texture ~= texture) then
-    state.texture = texture;
-    changed = true;
-  end
-  if (state.stacks ~= stacks) then
-    state.stacks = stacks;
-    changed = true;
-  end
+  callFunctionForActivateEvent(data.nameFunc, data.trigger, state, "name", errorHandler or Private.GetErrorHandlerId(id, L["Name Function"]))
+  callFunctionForActivateEvent(data.iconFunc, data.trigger, state, "icon", errorHandler or Private.GetErrorHandlerId(id, L["Icon Function"]))
+  callFunctionForActivateEvent(data.textureFunc, data.trigger, state, "texture", errorHandler or Private.GetErrorHandlerId(id, L["Texture Function"]))
+  callFunctionForActivateEvent(data.stacksFunc, data.trigger, state, "stacks", errorHandler or Private.GetErrorHandlerId(id, L["Stacks Function"]))
 
   if (data.overlayFuncs) then
     RunOverlayFuncs(data, state, id, errorHandler);
-  else
-    state.additionalProgress = nil;
   end
 
   state.changed = state.changed or changed;
@@ -1016,10 +996,34 @@ function Private.ScanEventsWatchedTrigger(id, watchedTriggernums)
   Private.ActivateAuraEnvironment(nil)
 end
 
-local function AddFakeInformation(state, eventData)
+local function ProgressType(data, triggernum)
+  local trigger = data.triggers[triggernum].trigger
+  local prototype = GenericTrigger.GetPrototype(trigger)
+  if prototype then
+    if prototype.progressType then
+      local progressType = prototype.progressType
+      if type(progressType) == "function" then
+        progressType = progressType(trigger)
+      end
+      return progressType
+    elseif prototype.timedrequired then
+      return "timed"
+    end
+  elseif (trigger.type == "custom") then
+    if trigger.custom_type == "event" and trigger.custom_hide == "timed" and trigger.duration then
+      return "timed";
+    elseif (trigger.customDuration and trigger.customDuration ~= "") then
+      return "timed";
+    elseif (trigger.custom_type == "stateupdate") then
+      return "timed";
+    end
+  end
+  return false
+end
+
+local function AddFakeInformation(data, triggernum, state, eventData)
   state.autoHide = false
-  local canHaveDuration = eventData.prototype and eventData.prototype.canHaveDuration == "timed"
-  if canHaveDuration and state.expirationTime == nil then
+  if ProgressType(data, triggernum) == "timed" and state.expirationTime == nil then
     state.progressType = "timed"
   end
   if state.progressType == "timed" then
@@ -1065,7 +1069,7 @@ function GenericTrigger.CreateFakeStates(id, triggernum)
       shown = shown + 1
     end
 
-    AddFakeInformation(state, eventData)
+    AddFakeInformation(data, triggernum, state, eventData)
   end
 
   if shown == 0 then
@@ -1073,7 +1077,7 @@ function GenericTrigger.CreateFakeStates(id, triggernum)
     GenericTrigger.CreateFallbackState(data, triggernum, state)
     allStates[""] = state
 
-    AddFakeInformation(state, eventData)
+    AddFakeInformation(data, triggernum, state, eventData)
   end
 
   Private.ActivateAuraEnvironment(nil);
@@ -3550,40 +3554,6 @@ function GenericTrigger.GetPrototype(trigger)
   end
 end
 
-function GenericTrigger.CanHaveDuration(data, triggernum)
-  local trigger = data.triggers[triggernum].trigger
-
-  local prototype = GenericTrigger.GetPrototype(trigger)
-  if prototype then
-    if prototype.durationFunc then
-      if(type(prototype.init) == "function") then
-        prototype.init(trigger);
-      end
-      local current, maximum, custom = prototype.durationFunc(trigger);
-      current = type(current) ~= "number" and current or 0
-      maximum = type(maximum) ~= "number" and maximum or 0
-      if(custom) then
-        return {current = current, maximum = maximum};
-      else
-        return "timed";
-      end
-    elseif prototype.canHaveDuration then
-      return prototype.canHaveDuration, prototype.useModRate
-    elseif prototype.timedrequired then
-      return "timed"
-    end
-  elseif (trigger.type == "custom") then
-    if trigger.custom_type == "event" and trigger.custom_hide == "timed" and trigger.duration then
-      return "timed";
-    elseif (trigger.customDuration and trigger.customDuration ~= "") then
-      return "timed";
-    elseif (trigger.custom_type == "stateupdate") then
-      return "timed";
-    end
-  end
-  return false
-end
-
 function GenericTrigger.GetDelay(data)
   if data.event then
     local prototype = GenericTrigger.GetPrototype(data.trigger)
@@ -3668,10 +3638,6 @@ function GenericTrigger.GetOverlayInfo(data, triggernum)
   end
 
   return result;
-end
-
-function GenericTrigger.CanHaveClones(data)
-  return false;
 end
 
 function GenericTrigger.GetNameAndIcon(data, triggernum)
@@ -3806,10 +3772,39 @@ function GenericTrigger.GetAdditionalProperties(data, triggernum)
   return ret;
 end
 
+function GenericTrigger.GetProgressSources(data, triggernum, values)
+  local variables = GenericTrigger.GetTriggerConditions(data, triggernum)
+  if (type(variables) == "table") then
+    for var, varData in pairs(variables) do
+      if (type(varData) == "table") then
+        if (varData.type == "number" or varData.type == "timer" or varData.type == "elapsedTimer")
+           and not varData.noProgressSource
+        then
+
+          tinsert(values, {
+            trigger = triggernum,
+            property = var,
+            type = varData.type,
+            display = varData.display,
+            total = varData.total,
+            inverse = varData.inverse,
+            paused = varData.paused,
+            remaining = varData.remaining
+          })
+        end
+      end
+    end
+  end
+end
+
 local commonConditions = {
   expirationTime = {
     display = L["Remaining Duration"],
     type = "timer",
+    total = "duration",
+    inverse = "inverse",
+    paused = "paused",
+    remaining = "remaining",
   },
   duration = {
     display = L["Total Duration"],
@@ -3820,11 +3815,12 @@ local commonConditions = {
     type = "bool",
     test = function(state, needle)
       return (state.paused and 1 or 0) == needle
-    end
+    end,
   },
   value = {
     display = L["Progress Value"],
     type = "number",
+    total = "total",
   },
   total = {
     display = L["Progress Total"],
@@ -3832,11 +3828,11 @@ local commonConditions = {
   },
   stacks = {
     display = L["Stacks"],
-    type = "number"
+    type = "number",
   },
   name = {
     display = L["Name"],
-    type = "string"
+    type = "string",
   }
 }
 
@@ -3861,6 +3857,31 @@ function Private.ExpandCustomVariables(variables)
   end
 end
 
+function Private.GetTsuConditionVariablesExpanded(id, triggernum)
+  if events[id][triggernum] and events[id][triggernum].tsuConditionVariables then
+    Private.ActivateAuraEnvironment(id, nil, nil, nil, true)
+    local result = GenericTrigger.GetTsuConditionVariables(id, triggernum)
+    Private.ActivateAuraEnvironment(nil)
+    if type(result) ~= "table" then
+      return nil
+    end
+    Private.ExpandCustomVariables(result)
+    -- Clean up, remove non table entries and check for a valid display name
+    for k, v in pairs(result) do
+      if type(v) ~= "table" then
+        result[k] = nil
+      elseif (v.display == nil or type(v.display) ~= "string") then
+        if type(k) == "string" then
+          v.display = k
+        else
+          result[k] = nil
+        end
+      end
+    end
+    return result
+  end
+end
+
 function GenericTrigger.GetTriggerConditions(data, triggernum)
   local trigger = data.triggers[triggernum].trigger
 
@@ -3868,22 +3889,14 @@ function GenericTrigger.GetTriggerConditions(data, triggernum)
   if prototype then
     local result = {};
 
-    local canHaveDuration = GenericTrigger.CanHaveDuration(data, triggernum);
-    local timedDuration = canHaveDuration;
-    local valueDuration = canHaveDuration;
-    if (canHaveDuration == "timed") then
-      valueDuration = false;
-    elseif (type(canHaveDuration) == "table") then
-      timedDuration = false;
-    end
-
-    if (timedDuration) then
+    local progressType = ProgressType(data, triggernum);
+    if progressType == "timed" then
       result.expirationTime = commonConditions.expirationTime;
       result.duration = commonConditions.duration;
       result.paused = commonConditions.paused
     end
 
-    if (valueDuration) then
+    if progressType == "static" then
       result.value = commonConditions.value;
       result.total = commonConditions.total;
     end
@@ -3935,6 +3948,22 @@ function GenericTrigger.GetTriggerConditions(data, triggernum)
           if (v.operator_types) then
             result[v.name].operator_types = v.operator_types;
           end
+          -- for ProgressSource
+          if v.noProgressSource then
+            result[v.name].noProgressSource = true
+          end
+          if v.progressTotal then
+            result[v.name].total = v.progressTotal
+          end
+          if v.progressInverse then
+            result[v.name].inverse = v.progressInverse
+          end
+          if v.progressPaused then
+            result[v.name].paused = v.progressPaused
+          end
+          if v.progressRemaining then
+            result[v.name].remaining = v.progressRemaining
+          end
         end
       end
     end
@@ -3976,28 +4005,7 @@ function GenericTrigger.GetTriggerConditions(data, triggernum)
 
       return result;
     elseif (trigger.custom_type == "stateupdate") then
-      if (events[data.id][triggernum] and events[data.id][triggernum].tsuConditionVariables) then
-        Private.ActivateAuraEnvironment(data.id, nil, nil, nil, true)
-        local result = GenericTrigger.GetTsuConditionVariables(data.id, triggernum)
-        Private.ActivateAuraEnvironment(nil)
-        if (type(result)) ~= "table" then
-          return nil;
-        end
-        Private.ExpandCustomVariables(result)
-        for k, v in pairs(result) do
-          if (type(v) ~= "table") then
-            result[k] = nil;
-          elseif (v.display == nil or type(v.display) ~= "string") then
-            if (type(k) == "string") then
-              v.display = k;
-            else
-              result[k] = nil;
-            end
-          end
-        end
-
-        return result;
-      end
+      return Private.GetTsuConditionVariablesExpanded(data.id, triggernum)
     end
   end
 

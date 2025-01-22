@@ -990,9 +990,6 @@ local methods = {
     else
       OptionsPrivate.Private.GetTriggerDescription(data, -1, namestable)
     end
-    if(OptionsPrivate.Private.CanHaveClones(data)) then
-      tinsert(namestable, {" ", "|cFF00FF00"..L["Auto-cloning enabled"]})
-    end
 
     local hasDescription = data.desc and data.desc ~= "";
     local hasUrl = data.url and data.url ~= "";

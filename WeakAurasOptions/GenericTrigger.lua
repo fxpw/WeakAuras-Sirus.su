@@ -317,6 +317,10 @@ local function GetCustomTriggerOptions(data, triggernum)
     test = "function",
     events = "table",
     values = "table",
+    total = "string",
+    inverse = "string",
+    paused = "string",
+    remaining = "string",
   }
 
   local function validateCustomVariables(variables)

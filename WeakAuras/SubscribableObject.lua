@@ -4,7 +4,12 @@ local AddonName, Private = ...
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
-local SubscribableObject ={
+local SubscribableObject =
+{
+  events = {},
+  subscribers = {},
+  callbacks = {},
+
   ClearSubscribers = function(self)
     self.events = {}
     self.subscribers = {}
@@ -76,12 +81,5 @@ local SubscribableObject ={
 }
 
 function Private.CreateSubscribableObject()
-  local system = {}
-  for f, func in pairs(SubscribableObject) do
-    system[f] = func
-    system.events = {}
-    system.subscribers = {}
-    system.callbacks = {}
-  end
-  return system
+  return CopyTable(SubscribableObject)
 end

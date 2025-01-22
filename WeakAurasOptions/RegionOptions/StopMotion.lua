@@ -288,7 +288,7 @@ local function createOptions(id, data)
             name = L["Animation Start"],
             min = 0,
             max = 1,
-            --bigStep = 0.01,
+            bigStep = 0.01,
             order = 13,
             isPercent = true
         },
@@ -299,7 +299,7 @@ local function createOptions(id, data)
             name = L["Animation End"],
             min = 0,
             max = 1,
-            --bigStep  = 0.01,
+            bigStep  = 0.01,
             order = 14,
             isPercent = true
         },
@@ -534,17 +534,11 @@ local function createOptions(id, data)
       }
     };
 
-    if OptionsPrivate.commonOptions then
-      return {
-        stopmotion = options,
-        position = OptionsPrivate.commonOptions.PositionOptions(id, data, 2),
-      };
-    else
-      return {
-        stopmotion = options,
-        position = WeakAuras.PositionOptions(id, data, 2),
-      };
-    end
+    return {
+      stopmotion = options,
+      progressOptions = OptionsPrivate.commonOptions.ProgressOptions(data),
+      position = OptionsPrivate.commonOptions.PositionOptions(id, data, 2),
+    }
 end
 
 local function createThumbnail()

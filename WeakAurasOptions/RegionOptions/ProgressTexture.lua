@@ -277,18 +277,12 @@ local function createOptions(id, data)
       hidden = function() return not data.slanted or data.orientation == "CLOCKWISE" or data.orientation == "ANTICLOCKWISE" end,
       values = OptionsPrivate.Private.slant_mode
     },
-    spacer = {
-      type = "header",
-      name = "",
-      order = 56
-    },
     endHeader = {
       type = "header",
       order = 100,
       name = "",
     },
   };
-  options = OptionsPrivate.Private.regionPrototype.AddAdjustedDurationOptions(options, data, 57);
 
   local overlayInfo = OptionsPrivate.Private.GetOverlayInfo(data);
   if (overlayInfo and next(overlayInfo)) then
@@ -332,6 +326,7 @@ local function createOptions(id, data)
 
   return {
     progresstexture = options,
+    progressOptions = OptionsPrivate.commonOptions.ProgressOptions(data),
     position = OptionsPrivate.commonOptions.PositionOptions(id, data),
   };
 end

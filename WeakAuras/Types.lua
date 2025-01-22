@@ -226,7 +226,7 @@ Private.format_types = {
         disabled = function() return get(symbol .. "_time_dynamic_threshold") == 0 end
       })
     end,
-    CreateFormatter = function(symbol, get)
+    CreateFormatter = function(symbol, get, wihoutColor, data)
       local format = get(symbol .. "_time_format", 0)
       local threshold = get(symbol .. "_time_dynamic_threshold", 60)
       local precision = get(symbol .. "_time_precision", 1)
@@ -237,7 +237,7 @@ Private.format_types = {
       end
       local formatter
       if threshold == 0 then
-        formatter = function(value, state)
+        formatter = function(value, state, trigger)
           if type(value) ~= 'number' or value == math.huge then
             return ""
           end
@@ -248,7 +248,7 @@ Private.format_types = {
         end
       else
         local formatString = "%." .. precision .. "f"
-        formatter = function(value, state)
+        formatter = function(value, state, trigger)
           if type(value) ~= 'number' or value == math.huge then
             return ""
           end
@@ -269,11 +269,11 @@ Private.format_types = {
         -- Special case %p and %t. Since due to how the formatting
         -- work previously, the time formatter only formats %p and %t
         -- if the progress type is timed!
-        return function(value, state)
+        return function(value, state, trigger)
           if not state or state.progressType ~= "timed" then
             return value
           end
-          return formatter(value, state)
+          return formatter(value, state, trigger)
         end
       else
         return formatter
@@ -1288,6 +1288,11 @@ Private.orientation_with_circle_types = {
   VERTICAL_INVERSE = L["Top to Bottom"],
   CLOCKWISE = L["Clockwise"],
   ANTICLOCKWISE = L["Anticlockwise"]
+}
+
+Private.gradient_orientations = {
+  HORIZONTAL = L["Horizontal"],
+  VERTICAL = L["Vertical"]
 }
 
 Private.talent_types = {}
