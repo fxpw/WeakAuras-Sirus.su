@@ -115,7 +115,12 @@ local function createOptions(id, data)
             name = L["Choose"],
             order = 2,
             func = function()
-                OptionsPrivate.OpenTexturePicker(data, {}, {
+              local path = {}
+              local paths = {}
+              for child in OptionsPrivate.Private.TraverseLeafsOrAura(data) do
+                paths[child.id] = path
+              end
+              OptionsPrivate.OpenTexturePicker(data, paths, {
                   texture = "foregroundTexture",
                   color = "foregroundColor",
                   rotation = "rotation",
@@ -355,13 +360,17 @@ local function createOptions(id, data)
             name = L["Choose"],
             order = 20,
             func = function()
-                OptionsPrivate.OpenTexturePicker(data, {}, {
-                  texture = "backgroundTexture",
-                  color = "backgroundColor",
-                  rotation = "rotation",
-                  mirror = "mirror",
-                  blendMode = "blendMode"
-                }, texture_types, setTextureFunc);
+              local path = {}
+              local paths = {}
+              for child in OptionsPrivate.Private.TraverseLeafsOrAura(data) do
+                paths[child.id] = path
+              end
+              OptionsPrivate.OpenTexturePicker(data, paths, {
+                texture = "backgroundTexture",
+                color = "backgroundColor",
+                mirror = "mirror",
+                blendMode = "blendMode"
+              }, texture_types, setTextureFunc, true);
             end,
             disabled = function() return data.sameTexture or data.hideBackground; end,
             hidden = function() return data.hideBackground end,

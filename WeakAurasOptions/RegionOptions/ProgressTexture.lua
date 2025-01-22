@@ -19,7 +19,12 @@ local function createOptions(id, data)
       width = 0.15,
       order = 2,
       func = function()
-        OptionsPrivate.OpenTexturePicker(data, {}, {
+        local path = {}
+        local paths = {}
+        for child in OptionsPrivate.Private.TraverseLeafsOrAura(data) do
+          paths[child.id] = path
+        end
+        OptionsPrivate.OpenTexturePicker(data, paths, {
           texture = "foregroundTexture",
           color = "foregroundColor",
           rotation = "rotation",
@@ -46,7 +51,12 @@ local function createOptions(id, data)
       width = 0.15,
       order = 6,
       func = function()
-        OptionsPrivate.OpenTexturePicker(data, {}, {
+        local path = {}
+        local paths = {}
+        for child in OptionsPrivate.Private.TraverseLeafsOrAura(data) do
+          paths[child.id] = path
+        end
+        OptionsPrivate.OpenTexturePicker(data, paths, {
           texture = "backgroundTexture",
           color = "backgroundColor",
           rotation = "rotation",
