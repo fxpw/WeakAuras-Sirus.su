@@ -3118,10 +3118,17 @@ Private.event_prototypes = {
   ["Cooldown Progress (Spell)"] = {
     type = "spell",
     events = {},
-    internal_events = function(trigger, untrigger)
+    loadInternalEventFunc = function(trigger, untrigger)
+      trigger.spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0;
+      local spellName;
+      if (trigger.use_exact_spellName) then
+        spellName = trigger.spellName;
+      else
+        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      end
       local events = {
-        "SPELL_COOLDOWN_CHANGED",
-        "COOLDOWN_REMAINING_CHECK",
+        "SPELL_COOLDOWN_CHANGED:" .. spellName,
+        "COOLDOWN_REMAINING_CHECK:" .. spellName,
         "WA_DELAYED_PLAYER_ENTERING_WORLD"
       };
       if (trigger.use_showgcd) then
@@ -3204,11 +3211,12 @@ Private.event_prototypes = {
             remaining = expirationTime - GetTime();
             local remainingCheck = %s;
             if(remaining >= remainingCheck and remaining > 0) then
-              Private.ExecEnv.ScheduleScan(expirationTime - remainingCheck);
+              local event = "COOLDOWN_REMAINING_CHECK:" .. %s
+              Private.ExecEnv.ScheduleScan(expirationTime - remainingCheck, event);
             end
           end
         ]];
-        ret = ret..ret2:format(tonumber(trigger.remaining or 0) or 0);
+        ret = ret..ret2:format(tonumber(trigger.remaining or 0) or 0, spellName);
       end
 
       return ret;
@@ -3397,9 +3405,16 @@ Private.event_prototypes = {
   ["Cooldown Ready (Spell)"] = {
     type = "spell",
     events = {},
-    internal_events = {
-      "SPELL_COOLDOWN_READY",
-    },
+    loadInternalEventFunc = function(trigger, untrigger)
+      trigger.spellName = trigger.spellName or 0;
+      local spellName;
+      if (trigger.use_exact_spellName) then
+        spellName = trigger.spellName;
+      else
+        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      end
+      return { "SPELL_COOLDOWN_READY:" .. spellName }
+    end,
     name = L["Cooldown Ready Event"],
     loadFunc = function(trigger)
       trigger.spellName = trigger.spellName or 0;
@@ -3466,9 +3481,16 @@ Private.event_prototypes = {
   ["Charges Changed"] = {
     type = "spell",
     events = {},
-    internal_events = {
-      "SPELL_CHARGES_CHANGED",
-    },
+    loadInternalEventFunc = function(trigger, untrigger)
+      trigger.spellName = trigger.spellName or 0;
+      local spellName;
+      if (trigger.use_exact_spellName) then
+        spellName = trigger.spellName;
+      else
+        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      end
+      return { "SPELL_CHARGES_CHANGED:" .. spellName }
+    end,
     name = L["Charges Changed Event"],
     loadFunc = function(trigger)
       trigger.spellName = trigger.spellName or 0;
@@ -3552,11 +3574,13 @@ Private.event_prototypes = {
     type = "item",
     events = {},
     internal_events = function(trigger, untrigger)
+      trigger.itemName = trigger.itemName or 0;
+      local itemName = type(trigger.itemName) == "number" and trigger.itemName or "[["..trigger.itemName.."]]";
       local events = {
-        "ITEM_COOLDOWN_READY",
-        "ITEM_COOLDOWN_CHANGED",
-        "ITEM_COOLDOWN_STARTED",
-        "COOLDOWN_REMAINING_CHECK",
+        "ITEM_COOLDOWN_READY:" .. itemName,
+        "ITEM_COOLDOWN_CHANGED:" .. itemName,
+        "ITEM_COOLDOWN_STARTED:" .. itemName,
+        "COOLDOWN_REMAINING_CHECK:" .. itemName,
       }
       if (trigger.use_showgcd) then
         tinsert(events, "GCD_START");
@@ -3569,7 +3593,6 @@ Private.event_prototypes = {
     name = L["Cooldown Progress (Item)"],
     loadFunc = function(trigger)
       trigger.itemName = trigger.itemName or 0;
-      local itemName = type(trigger.itemName) == "number" and trigger.itemName or "[["..trigger.itemName.."]]";
       WeakAuras.WatchItemCooldown(trigger.itemName);
       if (trigger.use_showgcd) then
         WeakAuras.WatchGCD();
@@ -3591,10 +3614,11 @@ Private.event_prototypes = {
           local remaining = expirationTime > 0 and (expirationTime - GetTime()) or 0;
           local remainingCheck = %s;
           if(remaining >= remainingCheck and remaining > 0) then
-            Private.ExecEnv.ScheduleScan(expirationTime - remainingCheck);
+            local event = "COOLDOWN_REMAINING_CHECK:" .. %s
+            Private.ExecEnv.ScheduleScan(expirationTime - remainingCheck, event);
           end
         ]];
-        ret = ret..ret2:format(tonumber(trigger.remaining or 0) or 0);
+        ret = ret..ret2:format(tonumber(trigger.remaining or 0) or 0, itemName);
       end
       return ret:format(itemName,
                         trigger.use_showgcd and "true" or "false",
@@ -3722,12 +3746,13 @@ Private.event_prototypes = {
       }
     },
     internal_events = function(trigger, untrigger)
+      local slot = trigger.itemSlot or 0
       local events = {
-        "ITEM_SLOT_COOLDOWN_STARTED",
-        "ITEM_SLOT_COOLDOWN_CHANGED",
-        "COOLDOWN_REMAINING_CHECK",
-        "ITEM_SLOT_COOLDOWN_ITEM_CHANGED",
-        "ITEM_SLOT_COOLDOWN_READY",
+        "ITEM_SLOT_COOLDOWN_STARTED:" .. slot,
+        "ITEM_SLOT_COOLDOWN_CHANGED:" .. slot,
+        "COOLDOWN_REMAINING_CHECK:" .. slot,
+        "ITEM_SLOT_COOLDOWN_ITEM_CHANGED:" .. slot,
+        "ITEM_SLOT_COOLDOWN_READY:" .. slot,
         "WA_DELAYED_PLAYER_ENTERING_WORLD"
       }
 
@@ -3760,10 +3785,11 @@ Private.event_prototypes = {
           local remaining = expirationTime > 0 and (expirationTime - GetTime()) or 0;
           local remainingCheck = %s;
           if(remaining >= remainingCheck and remaining > 0) then
-            Private.ExecEnv.ScheduleScan(expirationTime - remainingCheck);
+            local event = "COOLDOWN_REMAINING_CHECK:" .. %s
+            Private.ExecEnv.ScheduleScan(expirationTime - remainingCheck, event);
           end
         ]];
-        ret = ret..ret2:format(tonumber(trigger.remaining or 0) or 0);
+        ret = ret..ret2:format(tonumber(trigger.remaining or 0) or 0, trigger.itemSlot or 0);
       end
       return ret:format(trigger.use_showgcd and "true" or "false",
                         trigger.itemSlot or "0",
@@ -3876,9 +3902,10 @@ Private.event_prototypes = {
   ["Cooldown Ready (Item)"] = {
     type = "item",
     events = {},
-    internal_events = {
-      "ITEM_COOLDOWN_READY",
-    },
+    internal_events = function(trigger)
+      trigger.itemName = trigger.itemName or 0
+      return { "ITEM_COOLDOWN_READY:" .. trigger.itemName }
+    end,
     name = L["Cooldown Ready Event (Item)"],
     loadFunc = function(trigger)
       trigger.itemName = trigger.itemName or 0;
@@ -4130,9 +4157,16 @@ Private.event_prototypes = {
         ["player"] = { "UNIT_POWER", "UNIT_ENERGY", "UNIT_MANA", "UNIT_RAGE" }
       }
     },
-    internal_events = {
-      "SPELL_COOLDOWN_CHANGED",
-    },
+    loadInternalEventFunc = function(trigger)
+      trigger.spellName = trigger.spellName or 0;
+      local spellName
+      if (trigger.use_exact_spellName) then
+        spellName = trigger.spellName
+      else
+        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      end
+      return { "SPELL_COOLDOWN_CHANGED:" .. spellName }
+    end,
     force_events = "SPELL_UPDATE_USABLE",
     name = L["Action Usable"],
     statesParameter = "one",
@@ -5343,8 +5377,10 @@ Private.event_prototypes = {
     type = "item",
     events = {
       ["events"] = {
-        "UNIT_INVENTORY_CHANGED",
         "PLAYER_EQUIPMENT_CHANGED",
+      },
+      ["unit_events"] = {
+        ["player"] = {"UNIT_INVENTORY_CHANGED"}
       }
     },
     internal_events = { "WA_DELAYED_PLAYER_ENTERING_WORLD", },

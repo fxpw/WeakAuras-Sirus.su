@@ -842,18 +842,23 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
   return updateTriggerState;
 end
 
+local function getGameEventFromComposedEvent(composedEvent)
+  local separatorPosition = composedEvent:find(":", 1, true)
+  return separatorPosition == nil and composedEvent or composedEvent:sub(1, separatorPosition - 1)
+end
+
 function WeakAuras.ScanEvents(event, arg1, arg2, ...)
-  local orgEvent = event;
-  Private.StartProfileSystem("generictrigger " .. orgEvent )
+  local system = getGameEventFromComposedEvent(event)
+  Private.StartProfileSystem("generictrigger " .. system)
   local event_list = loaded_events[event];
   if (not event_list) then
-    Private.StopProfileSystem("generictrigger " .. orgEvent )
+    Private.StopProfileSystem("generictrigger " .. system)
     return
   end
   if(event == "COMBAT_LOG_EVENT_UNFILTERED") then
     event_list = event_list[arg2];
     if (not event_list) then
-      Private.StopProfileSystem("generictrigger " .. orgEvent )
+      Private.StopProfileSystem("generictrigger " .. system)
       return;
     end
     WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ...);
@@ -867,7 +872,7 @@ function WeakAuras.ScanEvents(event, arg1, arg2, ...)
   else
     WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ...);
   end
-  Private.StopProfileSystem("generictrigger " .. orgEvent )
+  Private.StopProfileSystem("generictrigger " .. system)
 end
 
 function WeakAuras.ScanUnitEvents(event, unit, ...)
@@ -1333,6 +1338,15 @@ function LoadEvent(id, triggernum, data)
       loaded_events[event][id][triggernum] = data;
     end
   end
+  -- this special internal_events function is run when aura load instead of when it is added
+  if data.loadInternalEventFunc then
+    local internal_events = data.loadInternalEventFunc(data.trigger)
+    for index, event in pairs(internal_events) do
+      loaded_events[event] = loaded_events[event] or {};
+      loaded_events[event][id] = loaded_events[event][id] or {};
+      loaded_events[event][id][triggernum] = data;
+    end
+  end
   if data.unit_events then
     local includePets = data.includePets
     for unit, events in pairs(data.unit_events) do
@@ -1552,7 +1566,7 @@ function GenericTrigger.Add(data, region)
         local includePets
         local trigger_subevents = {};
         local force_events = false;
-        local durationFunc, overlayFuncs, nameFunc, iconFunc, textureFunc, stacksFunc, loadFunc;
+        local durationFunc, overlayFuncs, nameFunc, iconFunc, textureFunc, stacksFunc, loadFunc, loadInternalEventFunc;
         local tsuConditionVariables;
         local prototype = nil
         local automaticAutoHide
@@ -1592,6 +1606,7 @@ function GenericTrigger.Add(data, region)
             textureFunc = prototype.textureFunc;
             stacksFunc = prototype.stacksFunc;
             loadFunc = prototype.loadFunc;
+            loadInternalEventFunc = prototype.loadInternalEventFunc;
 
             if (prototype.overlayFuncs) then
               overlayFuncs = {};
@@ -1795,6 +1810,7 @@ function GenericTrigger.Add(data, region)
           event = trigger.event,
           events = trigger_events,
           internal_events = internal_events,
+          loadInternalEventFunc = loadInternalEventFunc,
           force_events = force_events,
           unit_events = trigger_unit_events,
           includePets = includePets,
@@ -1877,26 +1893,6 @@ do
     updating = false;
   end
 end
-
-local combatLogUpgrade = {
-  ["sourceunit"] = "sourceUnit",
-  ["source"] = "sourceName",
-  ["destunit"] = "destUnit",
-  ["dest"] = "destName"
-}
-
-local oldPowerTriggers = {
-  ["Combo Points"] = 4,
-  ["Holy Power"] = 9,
-  ["Insanity"] = 13,
-  ["Chi Power"] = 12,
-  ["Astral Power"] = 8,
-  ["Maelstrom"] =  11,
-  ["Arcane Charges"] = 16,
-  ["Fury"] = 17,
-  ["Pain"] = 18,
-  ["Shards"] = 7,
-}
 
 --#############################
 --# Support code for triggers #
@@ -2365,7 +2361,7 @@ do
             end
           end
         end
-      elseif(event == "UNIT_INVENTORY_CHANGED" or event == "BAG_UPDATE_COOLDOWN" or event == "PLAYER_EQUIPMENT_CHANGED") then
+      elseif(event == "UNIT_INVENTORY_CHANGED" and ... and ... == "player" or event == "BAG_UPDATE_COOLDOWN" or event == "PLAYER_EQUIPMENT_CHANGED") then
         Private.CheckItemSlotCooldowns();
       end
       Private.StopProfileSystem("generictrigger cd tracking");
@@ -2480,14 +2476,14 @@ do
     itemCdDurs[id] = nil;
     itemCdExps[id] = nil;
     itemCdEnabled[id] = 1;
-    WeakAuras.ScanEvents("ITEM_COOLDOWN_READY", id);
+    WeakAuras.ScanEvents("ITEM_COOLDOWN_READY:" .. id, id);
   end
 
   local function ItemSlotCooldownFinished(id)
     itemSlotsCdHandles[id] = nil;
     itemSlotsCdDurs[id] = nil;
     itemSlotsCdExps[id] = nil;
-    WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_READY", id);
+    WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_READY:" .. id, id);
   end
 
   function Private.CheckRuneCooldown()
@@ -2588,7 +2584,7 @@ do
       end
 
       if changed and not WeakAuras.IsPaused() then
-        WeakAuras.ScanEvents("SPELL_COOLDOWN_CHANGED", id)
+        WeakAuras.ScanEvents("SPELL_COOLDOWN_CHANGED:" .. id, id)
       end
     end
   end
@@ -2613,20 +2609,20 @@ do
 
     if not WeakAuras.IsPaused() then
       if nowReady then
-        WeakAuras.ScanEvents("SPELL_COOLDOWN_READY", id);
+        WeakAuras.ScanEvents("SPELL_COOLDOWN_READY:" .. id, id)
       end
 
       if changed or chargesChanged then
-        WeakAuras.ScanEvents("SPELL_COOLDOWN_CHANGED", id);
+        WeakAuras.ScanEvents("SPELL_COOLDOWN_CHANGED:" .. id, id)
       end
 
       if (chargesDifference ~= 0 ) then
-        WeakAuras.ScanEvents("SPELL_CHARGES_CHANGED", id, chargesDifference, spellCount or 0);
+        WeakAuras.ScanEvents("SPELL_CHARGES_CHANGED:" .. id, id, chargesDifference, spellCount or 0);
       end
     end
   end
 
-  function Private.CheckSpellCooldows(runeDuration)
+  function Private.CheckSpellCooldowns(runeDuration)
     for id, _ in pairs(spells) do
       Private.CheckSpellCooldown(id, runeDuration)
     end
@@ -2660,7 +2656,7 @@ do
           itemCdExps[id] = endTime;
           itemCdHandles[id] = timer:ScheduleTimer(ItemCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
-            WeakAuras.ScanEvents("ITEM_COOLDOWN_STARTED", id)
+            WeakAuras.ScanEvents("ITEM_COOLDOWN_STARTED:" .. id, id)
           end
           itemCdEnabledChanged = false;
         elseif(itemCdExps[id] ~= endTime) then
@@ -2672,7 +2668,7 @@ do
           itemCdExps[id] = endTime;
           itemCdHandles[id] = timer:ScheduleTimer(ItemCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
-            WeakAuras.ScanEvents("ITEM_COOLDOWN_CHANGED", id)
+            WeakAuras.ScanEvents("ITEM_COOLDOWN_CHANGED:" .. id, id)
           end
           itemCdEnabledChanged = false;
         end
@@ -2690,7 +2686,7 @@ do
         end
       end
       if (itemCdEnabledChanged and not WeakAuras.IsPaused()) then
-        WeakAuras.ScanEvents("ITEM_COOLDOWN_CHANGED", id);
+        WeakAuras.ScanEvents("ITEM_COOLDOWN_CHANGED:" .. id, id);
       end
     end
   end
@@ -2715,7 +2711,7 @@ do
           itemSlotsCdExps[id] = endTime;
           itemSlotsCdHandles[id] = timer:ScheduleTimer(ItemSlotCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
-            WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_STARTED", id)
+            WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_STARTED:" .. id, id)
           end
         elseif(itemSlotsCdExps[id] ~= endTime) then
           -- Cooldown is now different
@@ -2726,7 +2722,7 @@ do
           itemSlotsCdExps[id] = endTime;
           itemSlotsCdHandles[id] = timer:ScheduleTimer(ItemSlotCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
-            WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_CHANGED", id)
+            WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_CHANGED:" .. id, id)
           end
         end
       elseif(duration > 0) then
@@ -2745,7 +2741,7 @@ do
       local newItemId = GetInventoryItemID("player", id);
       if (itemId ~= newItemId) then
         if not WeakAuras.IsPaused() then
-          WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_ITEM_CHANGED")
+          WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_ITEM_CHANGED:" .. id, id)
         end
         itemSlots[id] = newItemId or 0;
       end
@@ -2755,7 +2751,7 @@ do
   function Private.CheckCooldownReady()
     CheckGCD();
     Private.CheckRuneCooldown();
-    Private.CheckSpellCooldows();
+    Private.CheckSpellCooldowns();
     Private.CheckItemCooldowns();
     Private.CheckItemSlotCooldowns();
   end
@@ -3143,7 +3139,7 @@ do
       end
 
       local function tenchUpdate()
-        Private.StartProfileSystem("generictrigger");
+        Private.StartProfileSystem("generictrigger temporary enchant");
         local _, mh_rem, oh_rem, rw_rem, re_charges
         _, mh_rem, mh_charges, _, oh_rem, oh_charges, _, rw_rem, rw_charges = GetWeaponEnchantInfo();
         local time = GetTime();
@@ -3181,13 +3177,14 @@ do
           rw_icon = GetInventoryItemTexture("player", rw)
         end
         WeakAuras.ScanEvents("TENCH_UPDATE");
-        Private.StopProfileSystem("generictrigger");
+        Private.StopProfileSystem("generictrigger temporary enchant");
       end
 
-      tenchFrame:SetScript("OnEvent", function()
-        Private.StartProfileSystem("generictrigger");
+      tenchFrame:SetScript("OnEvent", function(_, unit, ...)
+        if unit and unit ~= "player" then return end
+        Private.StartProfileSystem("generictrigger temporary enchant");
         timer:ScheduleTimer(tenchUpdate, 0.1);
-        Private.StopProfileSystem("generictrigger");
+        Private.StopProfileSystem("generictrigger temporary enchant");
       end);
 
       tenchUpdate();
@@ -3217,9 +3214,9 @@ do
       petFrame:RegisterEvent("UNIT_PET")
       petFrame:SetScript("OnEvent", function(_, event, unit)
         if unit ~= "player" then return end
-        Private.StartProfileSystem("generictrigger")
+        Private.StartProfileSystem("generictrigger pet update")
         WeakAuras.ScanEvents("PET_UPDATE", "pet")
-        Private.StopProfileSystem("generictrigger")
+        Private.StopProfileSystem("generictrigger pet update")
       end)
     end
   end
@@ -3319,7 +3316,7 @@ do
   local isMounted = IsMounted();
 
   local function checkForMounted(self, elaps)
-    Private.StartProfileSystem("generictrigger");
+    Private.StartProfileSystem("generictrigger mounted");
     elapsed = elapsed + elaps
     if(isMounted ~= IsMounted()) then
       isMounted = IsMounted();
@@ -3329,7 +3326,7 @@ do
     if(elapsed > delay) then
       mountedFrame:SetScript("OnUpdate", nil);
     end
-    Private.StopProfileSystem("generictrigger");
+    Private.StopProfileSystem("generictrigger mounted");
   end
 
   function WeakAuras.WatchForMounts()
@@ -3350,13 +3347,13 @@ do
   local playerMovingFrame = nil
 
   local function PlayerMoveSpeedUpdate()
-    Private.StartProfileSystem("generictrigger");
+    Private.StartProfileSystem("generictrigger player moving");
     local speed = GetUnitSpeed("player")
     if speed ~= playerMovingFrame.speed then
       playerMovingFrame.speed = speed
       WeakAuras.ScanEvents("PLAYER_MOVE_SPEED_UPDATE")
     end
-    Private.StopProfileSystem("generictrigger");
+    Private.StopProfileSystem("generictrigger player moving");
   end
 
   function WeakAuras.WatchPlayerMoveSpeed()
@@ -3460,10 +3457,10 @@ function WeakAuras.RegisterItemCountWatch()
     itemCountWatchFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED");
     itemCountWatchFrame:SetScript("OnEvent", function(_, _, unit)
       if unit ~= "player" then return end
-      Private.StartProfileSystem("generictrigger");
+      Private.StartProfileSystem("generictrigger item count");
       timer:ScheduleTimer(WeakAuras.ScanEvents, 0.2, "ITEM_COUNT_UPDATE");
       timer:ScheduleTimer(WeakAuras.ScanEvents, 0.5, "ITEM_COUNT_UPDATE");
-      Private.StopProfileSystem("generictrigger");
+      Private.StopProfileSystem("generictrigger item count");
     end);
   end
 end
@@ -3505,7 +3502,7 @@ do
     end
     queuedActionFrame:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
     queuedActionFrame:SetScript("OnEvent", function(_, _, slotID)
-      Private.StartProfileSystem("generictrigger");
+      Private.StartProfileSystem("generictrigger queued action");
       local spellID = GetActionSpellID(slotID)
       if spellID then
         buttonIDList[slotID] = spellID
@@ -3514,7 +3511,7 @@ do
         spellIDList[buttonIDList[slotID]] = nil
         buttonIDList[slotID] = nil
       end
-      Private.StopProfileSystem("generictrigger");
+      Private.StopProfileSystem("generictrigger queued action");
     end)
   end
 
