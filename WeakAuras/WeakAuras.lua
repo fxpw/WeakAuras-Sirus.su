@@ -1,6 +1,6 @@
 local AddonName, Private = ...
 
-local internalVersion = 71
+local internalVersion = 73
 
 -- Lua APIs
 local insert = table.insert
@@ -1353,7 +1353,7 @@ local function GetInstanceTypeAndSize()
 end
 
 function WeakAuras.InstanceType()
-  return GetInstanceTypeAndSize(), nil
+  return (GetInstanceTypeAndSize())
 end
 
 function WeakAuras.InstanceDifficulty()
@@ -2143,22 +2143,6 @@ local function loadOrder(tbl, idtable)
     if(data.parent) then
       if(idtable[data.parent]) then
         if depends[data.parent] then
-          -- There was an unfortunate bug in update.lua in 2022 that resulted
-          -- in auras having a circular dependencies
-          -- Fix one of the two known cases here
-          -- We can probably remove this code in 2023 again
-          for d in pairs(depends) do
-            local uid = idtable[d].uid
-            if uid == "fjtz3A6LwBW" then -- Fojji - Deathknight UI, need to fixup a lot
-              local cycleRoot = d
-              idtable[cycleRoot].parent = nil
-              for d in pairs(depends) do
-                tDeleteItem(idtable[d].controlledChildren, cycleRoot)
-              end
-              return loadOrder(tbl, idtable)
-            end
-            coroutine.yield()
-          end
           error("Circular dependency in Private.AddMany between "..table.concat(depends, ", "));
         else
           if not(loaded[data.parent]) then
@@ -2187,6 +2171,7 @@ local function loadOrder(tbl, idtable)
   return order
 end
 
+local pAdd
 function Private.AddMany(tbl, takeSnapshots)
   local idtable = {};
   local anchorTargets = {}
@@ -2222,7 +2207,7 @@ function Private.AddMany(tbl, takeSnapshots)
     else
       local ok = pcall(WeakAuras.PreAdd, data)
       if not ok then
-        geterrorhandler()
+        Private.GetErrorHandlerUid(data.uid, "PreAdd")
         prettyPrint(L["Unable to modernize aura '%s'. This is probably due to corrupt data or a bad migration, please report this to the WeakAuras team."]:format(data.id))
         if data.regionType == "dynamicgroup" or data.regionType == "group" then
           prettyPrint(L["All children of this aura will also not be loaded, to minimize the chance of further corruption."])
@@ -2237,9 +2222,17 @@ function Private.AddMany(tbl, takeSnapshots)
 
   for _, data in ipairs(order) do
     if not bads[data.id] then
-      WeakAuras.Add(data)
-      coroutine.yield()
+      if data.parent and bads[data.parent] then
+        bads[data.id] = true
+      else
+        local ok = pcall(pAdd, data)
+        if not ok then
+          Private.GetErrorHandlerUid(data.uid, "pAdd")
+          bads[data.id] = true
+        end
+      end
     end
+    coroutine.yield()
   end
 
   for id in pairs(anchorTargets) do
@@ -2637,7 +2630,7 @@ function WeakAuras.PreAdd(data)
   data.expanded = nil
 end
 
-local function pAdd(data, simpleChange)
+function pAdd(data, simpleChange)
   local id = data.id;
   if not(id) then
     error("Improper arguments to WeakAuras.Add - id not defined");
@@ -3182,6 +3175,7 @@ function Private.HandleGlowAction(actions, region)
       and region.state.unit
     )
     or (actions.glow_frame_type == "FRAMESELECTOR" and actions.glow_frame)
+    or (actions.glow_frame_type == "PARENTFRAME" and region:GetParent())
   )
   then
     local glow_frame, should_glow_frame
@@ -3205,6 +3199,9 @@ function Private.HandleGlowAction(actions, region)
     elseif actions.glow_frame_type == "NAMEPLATE" and region.state.unit then
       if not(WeakAuras.isAwesomeEnabled()) then return end
       glow_frame = WeakAuras.GetNamePlateForUnit(region.state.unit)
+      should_glow_frame = true
+    elseif actions.glow_frame_type == "PARENTFRAME" then
+      glow_frame = region:GetParent()
       should_glow_frame = true
     end
 

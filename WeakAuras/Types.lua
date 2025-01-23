@@ -25,7 +25,8 @@ Private.glow_action_types = {
 
 Private.glow_frame_types = {
   UNITFRAME = L["Unit Frame"],
-  FRAMESELECTOR = L["Frame Selector"]
+  FRAMESELECTOR = L["Frame Selector"],
+  PARENTFRAME = L["Parent Frame"]
 }
 if WeakAuras.isAwesomeEnabled() then
   Private.glow_frame_types.NAMEPLATE = L["Nameplate"]
@@ -159,7 +160,7 @@ Private.format_types = {
   none = {
     display = L["None"],
     AddOptions = function() end,
-    CreateFormatter = function() end
+    CreateFormatter = function() return nil end
   },
   string = {
     display = L["String"],
@@ -1849,7 +1850,8 @@ Private.string_operator_types = {
 
 Private.weapon_types = {
   ["main"] = MAINHANDSLOT,
-  ["off"] = SECONDARYHANDSLOT
+  ["off"] = SECONDARYHANDSLOT,
+  ["ranged"] = RANGEDSLOT,
 }
 
 Private.swing_types = {

@@ -379,8 +379,10 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
   local pausedProperty = progressSource[6]
   local remainingProperty = progressSource[7]
   if progressType == "number" then
-    local value = state[property] or 0
-    local total = totalProperty and state[totalProperty] or 0
+    local value = state[property]
+    if type(value) ~= "number" then value = 0 end
+    local total = totalProperty and state[totalProperty]
+    if type(total) ~= "number" then total = 0 end
     -- We don't care about inverse or paused
     local adjustMin
     if minMaxConfig.adjustedMin then
@@ -415,9 +417,12 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
     local remaining
     if paused then
       remaining = remainingProperty and state[remainingProperty]
-      expirationTime = GetTime() + (remaining or 0)
+      expirationTime = GetTime() + (type(remaining) == "number" and remaining or 0)
     else
-      expirationTime = state[property] or math.huge
+      expirationTime = state[property]
+      if type(expirationTime) ~= "number" then
+        expirationTime = math.huge
+      end
     end
     local duration = totalProperty and state[totalProperty] or 0
     local adjustMin

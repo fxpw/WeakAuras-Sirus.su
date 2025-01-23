@@ -488,7 +488,6 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
     args["condition" .. i .. "value" .. j] = {
       type = "toggle",
       width = WeakAuras.normalWidth,
-      name = blueIfNoValue(data, conditions[i].changes[j], "value", L["Differences"]),
       desc = descIfNoValue(data, conditions[i].changes[j], "value", propertyType),
       order = order,
       get = function()
@@ -498,6 +497,7 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
     }
     order = order + 1;
     if (propertyType == "number") then
+      args["condition" .. i .. "value" .. j].name = blueIfNoValue(data, conditions[i].changes[j], "value", L["Differences"])
       local properties = allProperties.propertyMap[property];
       if (properties.min or properties.softMin) and (properties.max or properties.softMax) then
         args["condition" .. i .. "value" .. j].type = "range";
@@ -512,6 +512,11 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       else
         args["condition" .. i .. "value" .. j].type = "input";
         args["condition" .. i .. "value" .. j].validate = WeakAuras.ValidateNumeric;
+      end
+    else
+      args["condition" .. i .. "value" .. j].name = function()
+        local value = conditions[i].changes[j].value
+        return blueIfNoValue(data, conditions[i].changes[j], "value", L["Differences"], value and L["ON"] or L["OFF"])
       end
     end
   elseif (propertyType == "string" or propertyType == "texture") then

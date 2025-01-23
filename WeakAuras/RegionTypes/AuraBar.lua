@@ -1125,7 +1125,12 @@ local function modify(parent, region, data)
   end
 
   -- Update texture settings
-  local texturePath = SharedMedia:Fetch("statusbar", data.texture) or "";
+  local texturePath
+  if data.textureSource == "Picker" then
+    texturePath = data.textureInput or ""
+  else
+    texturePath = SharedMedia:Fetch("statusbar", data.texture) or "";
+  end
   bar:SetStatusBarTexture(texturePath);
   bar:SetBackgroundColor(data.backgroundColor[1], data.backgroundColor[2], data.backgroundColor[3], data.backgroundColor[4]);
   -- Update spark settings

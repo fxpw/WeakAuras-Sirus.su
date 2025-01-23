@@ -1015,7 +1015,7 @@ local function ProgressType(data, triggernum)
     elseif (trigger.customDuration and trigger.customDuration ~= "") then
       return "timed";
     elseif (trigger.custom_type == "stateupdate") then
-      return "timed";
+      return false
     end
   end
   return false
@@ -3101,12 +3101,16 @@ end
 do
   local mh = GetInventorySlotInfo("MainHandSlot")
   local oh = GetInventorySlotInfo("SecondaryHandSlot")
+  local rw = GetInventorySlotInfo("RangedSlot")
 
   local mh_name, mh_shortenedName, mh_exp, mh_dur, mh_charges;
   local mh_icon = GetInventoryItemTexture("player", mh);
 
   local oh_name, oh_shortenedName, oh_exp, oh_dur, oh_charges;
   local oh_icon = GetInventoryItemTexture("player", oh);
+
+  local rw_name, rw_shortenedName, rw_exp, rw_dur, rw_charges;
+  local rw_icon = GetInventoryItemTexture("player", rw) or "Interface\\Icons\\INV_Misc_QuestionMark"
 
   local tenchFrame = nil
   Private.frames["Temporary Enchant Handler"] = tenchFrame;
@@ -3140,11 +3144,12 @@ do
 
       local function tenchUpdate()
         Private.StartProfileSystem("generictrigger");
-        local _, mh_rem, oh_rem
-        _, mh_rem, mh_charges, _, oh_rem, oh_charges = GetWeaponEnchantInfo();
+        local _, mh_rem, oh_rem, rw_rem, re_charges
+        _, mh_rem, mh_charges, _, oh_rem, oh_charges, _, rw_rem, rw_charges = GetWeaponEnchantInfo();
         local time = GetTime();
         local mh_exp_new = mh_rem and (time + (mh_rem / 1000));
         local oh_exp_new = oh_rem and (time + (oh_rem / 1000));
+        local rw_exp_new = rw_rem and (time + (rw_rem / 1000));
         if(math.abs((mh_exp or 0) - (mh_exp_new or 0)) > 1) then
           mh_exp = mh_exp_new;
           mh_dur = mh_rem and mh_rem / 1000;
@@ -3164,6 +3169,16 @@ do
             oh_name, oh_shortenedName = "None", "None"
           end
           oh_icon = GetInventoryItemTexture("player", oh)
+        end
+        if(math.abs((rw_exp or 0) - (rw_exp_new or 0)) > 1) then
+          rw_exp = rw_exp_new;
+          rw_dur = rw_rem and rw_rem / 1000;
+          if rw_exp then
+            rw_name, rw_shortenedName = getTenchName(rw)
+          else
+            rw_name, rw_shortenedName = "None", "None"
+          end
+          rw_icon = GetInventoryItemTexture("player", rw)
         end
         WeakAuras.ScanEvents("TENCH_UPDATE");
         Private.StopProfileSystem("generictrigger");
@@ -3185,6 +3200,10 @@ do
 
   function WeakAuras.GetOHTenchInfo()
     return oh_exp, oh_dur, oh_name, oh_shortenedName, oh_icon, oh_charges;
+  end
+
+  function WeakAuras.GetRangeTenchInfo()
+    return rw_exp, rw_dur, rw_name, rw_shortenedName, rw_icon, rw_charges;
   end
 end
 
@@ -3742,7 +3761,7 @@ function GenericTrigger.GetAdditionalProperties(data, triggernum)
         enable = v.enable
       end
 
-      if (enable and v.store and v.name and v.display) then
+      if (enable and v.store and v.name and v.display and v.conditionType ~= "bool") then
         found = true;
         additional = additional .. "|cFFFFCC00%".. triggernum .. "." .. v.name .. "|r - " .. v.display .. "\n";
       end

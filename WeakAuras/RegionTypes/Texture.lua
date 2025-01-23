@@ -181,6 +181,7 @@ local function modify(parent, region, data)
     if region.state.texture then
       region.texture:SetTexture(region.state.texture);
     end
+    region:UpdateProgress()
   end
 
   function region:Color(r, g, b, a)
