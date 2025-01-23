@@ -801,7 +801,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = L["Filter by Nameplate Type"],
       order = 69.1,
       hidden = function() return
-        not (trigger.type == "aura2" and (WeakAuras.isAwesomeEnabled() and trigger.unit == "nameplate"))
+        not (trigger.type == "aura2" and trigger.unit == "nameplate")
       end
     },
     hostility = {
@@ -817,7 +817,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = "",
       order = 69.3,
       width = WeakAuras.normalWidth,
-      hidden = function() return not (trigger.type == "aura2" and (WeakAuras.isAwesomeEnabled() and trigger.unit == "nameplate") and not trigger.useHostility) end
+      hidden = function() return not (trigger.type == "aura2" and trigger.unit == "nameplate" and not trigger.useHostility) end
     },
 
     useNpcId = {
@@ -826,14 +826,14 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = L["Filter by Npc ID"],
       order = 69.31,
       hidden = function() return
-        not (trigger.type == "aura2" and (WeakAuras.isAwesomeEnabled() and trigger.unit == "nameplate"))
+        not (trigger.type == "aura2" and trigger.unit == "nameplate")
       end
     },
     npcId = {
       type = "input",
       width = WeakAuras.normalWidth,
       name = L["Npc ID"],
-      hidden = function() return not (trigger.type == "aura2" and WeakAuras.isAwesomeEnabled() and trigger.unit == "nameplate" and trigger.useNpcId) end,
+      hidden = function() return not (trigger.type == "aura2" and trigger.unit == "nameplate" and trigger.useNpcId) end,
       order = 69.32,
       desc = L["Supports multiple entries, separated by commas"]
     },
@@ -842,7 +842,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = "",
       order = 69.33,
       width = WeakAuras.normalWidth,
-      hidden = function() return not (trigger.type == "aura2" and WeakAuras.isAwesomeEnabled() and trigger.unit == "nameplate" and not trigger.useNpcId) end
+      hidden = function() return not (trigger.type == "aura2" and trigger.unit == "nameplate" and not trigger.useNpcId) end
     },
 
     ignoreSelf = {
@@ -850,7 +850,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = L["Ignore Self"],
       order = 69.35,
       width = WeakAuras.doubleWidth,
-      hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or (WeakAuras.isAwesomeEnabled() and trigger.unit == "nameplate"))) end
+      hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "nameplate")) end
     },
 
     ignoreDead = {

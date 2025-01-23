@@ -706,7 +706,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       end
     elseif (data.statesParameter == "unit") then
       if arg1 then
-        if Private.multiUnitUnits[data.trigger.unit] or data.trigger.unit == "nameplate" then
+        if Private.multiUnitUnits[data.trigger.unit] then
           unitForUnitTrigger = arg1
           cloneIdForUnitTrigger = arg1
         else
@@ -845,6 +845,16 @@ end
 local function getGameEventFromComposedEvent(composedEvent)
   local separatorPosition = composedEvent:find(":", 1, true)
   return separatorPosition == nil and composedEvent or composedEvent:sub(1, separatorPosition - 1)
+end
+
+function Private.ScanEventsByID(event, id, ...)
+  if loaded_events[event] then
+    WeakAuras.ScanEvents(event, id, ...)
+  end
+  local eventWithID = event .. ":" .. id
+  if loaded_events[eventWithID] then
+    WeakAuras.ScanEvents(eventWithID, id, ...)
+  end
 end
 
 function WeakAuras.ScanEvents(event, arg1, arg2, ...)
@@ -1142,8 +1152,8 @@ function HandleEvent(frame, event, arg1, arg2, ...)
   end
   if (event == "PLAYER_ENTERING_WORLD") then
     timer:ScheduleTimer(function()
-      Private.StartProfileSystem("generictrigger WA_DELAYED_PLAYER_ENTERING_WORLD");
       HandleEvent(frame, "WA_DELAYED_PLAYER_ENTERING_WORLD");
+      Private.StartProfileSystem("generictrigger WA_DELAYED_PLAYER_ENTERING_WORLD");
       Private.ScanForLoads(nil, "WA_DELAYED_PLAYER_ENTERING_WORLD")
       Private.CheckCooldownReady();
       Private.StopProfileSystem("generictrigger WA_DELAYED_PLAYER_ENTERING_WORLD");
@@ -1260,7 +1270,7 @@ local function MultiUnitLoop(Func, unit, includePets, ...)
       Func(unit..i, ...)
     end
   elseif unit == "nameplate" then
-    for i = 1, 400 do
+    for i = 1, 100 do
       Func(unit..i, ...)
     end
   elseif unit == "group" then
@@ -1741,6 +1751,8 @@ function GenericTrigger.Add(data, region)
                     tinsert(trigger_subevents, subevent)
                     hasParam = true
                   end
+                elseif Private.InternalEventByIDList[trueEvent] then
+                  tinsert(trigger_events, trueEvent..":"..i)
                 elseif trueEvent:match("^UNIT_") then
                   isUnitEvent = true
 
@@ -2476,14 +2488,14 @@ do
     itemCdDurs[id] = nil;
     itemCdExps[id] = nil;
     itemCdEnabled[id] = 1;
-    WeakAuras.ScanEvents("ITEM_COOLDOWN_READY:" .. id, id);
+    Private.ScanEventsByID("ITEM_COOLDOWN_READY", id);
   end
 
   local function ItemSlotCooldownFinished(id)
     itemSlotsCdHandles[id] = nil;
     itemSlotsCdDurs[id] = nil;
     itemSlotsCdExps[id] = nil;
-    WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_READY:" .. id, id);
+    Private.ScanEventsByID("ITEM_SLOT_COOLDOWN_READY", id);
   end
 
   function Private.CheckRuneCooldown()
@@ -2584,7 +2596,7 @@ do
       end
 
       if changed and not WeakAuras.IsPaused() then
-        WeakAuras.ScanEvents("SPELL_COOLDOWN_CHANGED:" .. id, id)
+        Private.ScanEventsByID("SPELL_COOLDOWN_CHANGED", id)
       end
     end
   end
@@ -2609,15 +2621,15 @@ do
 
     if not WeakAuras.IsPaused() then
       if nowReady then
-        WeakAuras.ScanEvents("SPELL_COOLDOWN_READY:" .. id, id)
+        Private.ScanEventsByID("SPELL_COOLDOWN_READY", id)
       end
 
       if changed or chargesChanged then
-        WeakAuras.ScanEvents("SPELL_COOLDOWN_CHANGED:" .. id, id)
+        Private.ScanEventsByID("SPELL_COOLDOWN_CHANGED", id)
       end
 
       if (chargesDifference ~= 0 ) then
-        WeakAuras.ScanEvents("SPELL_CHARGES_CHANGED:" .. id, id, chargesDifference, spellCount or 0);
+        Private.ScanEventsByID("SPELL_CHARGES_CHANGED", id, chargesDifference, spellCount or 0);
       end
     end
   end
@@ -2656,7 +2668,7 @@ do
           itemCdExps[id] = endTime;
           itemCdHandles[id] = timer:ScheduleTimer(ItemCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
-            WeakAuras.ScanEvents("ITEM_COOLDOWN_STARTED:" .. id, id)
+            Private.ScanEventsByID("ITEM_COOLDOWN_STARTED", id)
           end
           itemCdEnabledChanged = false;
         elseif(itemCdExps[id] ~= endTime) then
@@ -2668,7 +2680,7 @@ do
           itemCdExps[id] = endTime;
           itemCdHandles[id] = timer:ScheduleTimer(ItemCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
-            WeakAuras.ScanEvents("ITEM_COOLDOWN_CHANGED:" .. id, id)
+            Private.ScanEventsByID("ITEM_COOLDOWN_CHANGED", id)
           end
           itemCdEnabledChanged = false;
         end
@@ -2686,7 +2698,7 @@ do
         end
       end
       if (itemCdEnabledChanged and not WeakAuras.IsPaused()) then
-        WeakAuras.ScanEvents("ITEM_COOLDOWN_CHANGED:" .. id, id);
+        Private.ScanEventsByID("ITEM_COOLDOWN_CHANGED", id);
       end
     end
   end
@@ -2711,7 +2723,7 @@ do
           itemSlotsCdExps[id] = endTime;
           itemSlotsCdHandles[id] = timer:ScheduleTimer(ItemSlotCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
-            WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_STARTED:" .. id, id)
+            Private.ScanEventsByID("ITEM_SLOT_COOLDOWN_STARTED", id)
           end
         elseif(itemSlotsCdExps[id] ~= endTime) then
           -- Cooldown is now different
@@ -2722,7 +2734,7 @@ do
           itemSlotsCdExps[id] = endTime;
           itemSlotsCdHandles[id] = timer:ScheduleTimer(ItemSlotCooldownFinished, endTime - time, id);
           if not WeakAuras.IsPaused() then
-            WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_CHANGED:" .. id, id)
+            Private.ScanEventsByID("ITEM_SLOT_COOLDOWN_CHANGED", id)
           end
         end
       elseif(duration > 0) then
@@ -2741,7 +2753,7 @@ do
       local newItemId = GetInventoryItemID("player", id);
       if (itemId ~= newItemId) then
         if not WeakAuras.IsPaused() then
-          WeakAuras.ScanEvents("ITEM_SLOT_COOLDOWN_ITEM_CHANGED:" .. id, id)
+          Private.ScanEventsByID("ITEM_SLOT_COOLDOWN_ITEM_CHANGED", id)
         end
         itemSlots[id] = newItemId or 0;
       end
@@ -2891,12 +2903,15 @@ function WeakAuras.WatchUnitChange(unit)
   unit = string.lower(unit)
   if not watchUnitChange then
     watchUnitChange = CreateFrame("Frame");
-    watchUnitChange.unitChangeGUIDS = {}
+    watchUnitChange.trackedUnits = {}
+    watchUnitChange.unitIdToGUID = {}
+    watchUnitChange.GUIDToUnitIds = {}
     watchUnitChange.unitRoles = {}
     watchUnitChange.unitRaidRole = {}
     watchUnitChange.inRaid = IsInRaid()
     watchUnitChange.nameplateFaction = {}
     watchUnitChange.raidmark = {}
+    watchUnitChange.unitIsUnit = {}
 
     Private.frames["Unit Change Frame"] = watchUnitChange;
     watchUnitChange:RegisterEvent("PLAYER_TARGET_CHANGED")
@@ -2915,115 +2930,200 @@ function WeakAuras.WatchUnitChange(unit)
     watchUnitChange:RegisterEvent("UNIT_PET")
     watchUnitChange:RegisterEvent("RAID_TARGET_UPDATE")
 
+    local function unitUpdate(unitA, eventsToSend)
+      local oldGUID = watchUnitChange.unitIdToGUID[unitA]
+      local newGUID = WeakAuras.UnitExistsFixed(unitA) and UnitGUID(unitA)
+      if oldGUID ~= newGUID then
+        eventsToSend["UNIT_CHANGED_" .. unitA] = unitA
+        if watchUnitChange.GUIDToUnitIds[oldGUID] then
+          for unitB in pairs(watchUnitChange.GUIDToUnitIds[oldGUID]) do
+            eventsToSend["UNIT_IS_UNIT_CHANGED_" .. unitA .. "_" .. unitB] = unitA
+            eventsToSend["UNIT_IS_UNIT_CHANGED_" .. unitB .. "_" .. unitA] = unitB
+          end
+        end
+        if watchUnitChange.GUIDToUnitIds[newGUID] then
+          for unitB in pairs(watchUnitChange.GUIDToUnitIds[newGUID]) do
+            eventsToSend["UNIT_IS_UNIT_CHANGED_" .. unitA .. "_" .. unitB] = unitA
+            eventsToSend["UNIT_IS_UNIT_CHANGED_" .. unitB .. "_" .. unitA] = unitB
+          end
+        end
+      end
+      -- update data
+      if oldGUID and watchUnitChange.GUIDToUnitIds[oldGUID] then
+        watchUnitChange.GUIDToUnitIds[oldGUID][unitA] = nil
+        if next(watchUnitChange.GUIDToUnitIds[oldGUID]) == nil then
+          watchUnitChange.GUIDToUnitIds[oldGUID] = nil
+        end
+      end
+      if newGUID then
+        watchUnitChange.GUIDToUnitIds[newGUID] = watchUnitChange.GUIDToUnitIds[newGUID] or {}
+        watchUnitChange.GUIDToUnitIds[newGUID][unitA] = true
+      end
+      watchUnitChange.unitIdToGUID[unitA] = newGUID
+    end
+
+    local function markerUpdate(unit, eventsToSend)
+      local oldMarker = watchUnitChange.raidmark[unit]
+      local newMarker = GetRaidTargetIndex(unit) or 0
+      if newMarker ~= oldMarker then
+        eventsToSend["UNIT_CHANGED_" .. unit] = unit
+        watchUnitChange.raidmark[unit] = newMarker
+      end
+    end
+
+    local function markerInit(unit)
+      watchUnitChange.raidmark[unit] = GetRaidTargetIndex(unit) or 0
+    end
+
+    local function markerClear(unit)
+      watchUnitChange.raidmark[unit] = nil
+    end
+
+    local function reactionUpdate(unit, eventsToSend)
+      local oldReaction = watchUnitChange.nameplateFaction[unit]
+      local newReaction = WeakAuras.GetPlayerReaction(unit)
+      if oldReaction ~= newReaction then
+        eventsToSend["UNIT_CHANGED_" .. unit] = unit
+        watchUnitChange.nameplateFaction[unit] = newReaction
+      end
+    end
+
+    local function reactionInit(unit)
+      watchUnitChange.nameplateFaction[unit] = WeakAuras.GetPlayerReaction(unit)
+    end
+
+    local function reactionClear(unit)
+      watchUnitChange.nameplateFaction[unit] = nil
+    end
+
+    local function roleUpdate(unit, eventsToSend)
+      local oldRaidRole = watchUnitChange.unitRaidRole[unit]
+      local newRaidRole = WeakAuras.UnitRaidRole(unit)
+      if oldRaidRole ~= newRaidRole then
+        eventsToSend["UNIT_ROLE_CHANGED_" .. unit] = unit
+        watchUnitChange.unitRaidRole[unit] = newRaidRole
+      end
+    end
+
     watchUnitChange:SetScript("OnEvent", function(self, event, unit)
       Private.StartProfileSystem("generictrigger unit change");
-      if event == "UNIT_PET" then
-        local pet = WeakAuras.unitToPetUnit[unit]
-        if pet then
-          WeakAuras.ScanEvents("UNIT_CHANGED_" .. pet, pet)
-        end
-      elseif event == "RAID_TARGET_UPDATE" then
-        for unit, marker in pairs(watchUnitChange.raidmark) do
-          local newMarker = GetRaidTargetIndex(unit) or 0
-          if marker ~= newMarker then
-            watchUnitChange.raidmark[unit] = newMarker
-            if unit:find("^nameplate%d+$") then
-              WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
-            else
-              WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
-            end
-          end
+      local eventsToSend = {}
+      if event == "PLAYER_ENTERING_WORLD" then
+        for unit in pairs(watchUnitChange.unitIdToGUID) do
+          unitUpdate(unit, eventsToSend)
+          markerUpdate(unit, eventsToSend)
+          reactionUpdate(unit, eventsToSend)
         end
       elseif event == "NAME_PLATE_UNIT_ADDED" then
-        local oldGUID = watchUnitChange.unitChangeGUIDS[unit]
-        local newGUID = WeakAuras.UnitExistsFixed(unit) and UnitGUID(unit)
-        if oldGUID ~= newGUID then
-          WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
+        if not watchUnitChange.trackedUnits[unit] then
+          Private.StopProfileSystem("generictrigger unit change");
+          return
         end
-        watchUnitChange.unitChangeGUIDS[unit] = newGUID
-        watchUnitChange.raidmark[unit] = GetRaidTargetIndex(unit) or 0
-        watchUnitChange.nameplateFaction[unit] = WeakAuras.GetPlayerReaction(unit)
-        WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
+        unitUpdate(unit, eventsToSend)
+        markerInit(unit)
+        reactionInit(unit)
       elseif event == "NAME_PLATE_UNIT_REMOVED" then
-        local oldGUID = watchUnitChange.unitChangeGUIDS[unit]
-        local newGUID = WeakAuras.UnitExistsFixed(unit) and UnitGUID(unit)
-        if oldGUID ~= newGUID then
-          WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
+        if not watchUnitChange.trackedUnits[unit] then
+          Private.StopProfileSystem("generictrigger unit change");
+          return
         end
-        watchUnitChange.unitChangeGUIDS[unit] = newGUID
-        watchUnitChange.raidmark[unit] = nil
-        watchUnitChange.nameplateFaction[unit] = nil
-        WeakAuras.ScanEvents(event, unit)
-      elseif event == "UNIT_FACTION" then
-        local oldReaction = watchUnitChange.nameplateFaction[unit]
-        local newReaction = WeakAuras.GetPlayerReaction(unit)
-        if oldReaction ~= newReaction then
-          watchUnitChange.nameplateFaction[unit] = newReaction
-          if unit:find("^nameplate%d+$") then
-            WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
-          else
-            WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+        unitUpdate(unit, eventsToSend)
+        markerClear(unit)
+        reactionClear(unit)
+      elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
+        for i = 1, 5 do
+          local unit = "boss" .. i
+          if watchUnitChange.trackedUnits[unit] then
+            unitUpdate(unit, eventsToSend)
+            markerInit(unit)
+            reactionInit(unit)
           end
+        end
+      elseif event == "PLAYER_TARGET_CHANGED" then
+        if not watchUnitChange.trackedUnits["target"] then
+          Private.StopProfileSystem("generictrigger unit change");
+          return
+        end
+        unitUpdate("target", eventsToSend)
+        markerInit("target")
+        reactionInit("target")
+      elseif event == "PLAYER_FOCUS_CHANGED" then
+        if not watchUnitChange.trackedUnits["focus"] then
+          Private.StopProfileSystem("generictrigger unit change");
+          return
+        end
+        unitUpdate("focus", eventsToSend)
+        markerInit("focus")
+        reactionInit("focus")
+      elseif event == "RAID_TARGET_UPDATE" then
+        for unit in pairs(watchUnitChange.raidmark) do
+          markerUpdate(unit, eventsToSend)
+        end
+      elseif event == "UNIT_FACTION" then
+        if watchUnitChange.trackedUnits[unit] then
+          reactionUpdate(unit, eventsToSend)
+        end
+      elseif event == "UNIT_PET" then
+        local pet = WeakAuras.unitToPetUnit[unit]
+        if pet and watchUnitChange.trackedUnits[pet] then
+          eventsToSend["UNIT_CHANGED_" .. pet] = pet
         end
       elseif event == "PLAYER_ROLES_ASSIGNED" then
         for unit in pairs(Private.multiUnitUnits.group) do
-          local oldRaidRole = watchUnitChange.unitRaidRole[unit]
-          local newRaidRole = WeakAuras.UnitRaidRole(unit)
-          if oldRaidRole ~= newRaidRole then
-            if unit:find("^nameplate%d+$") then
-              WeakAuras.ScanEvents("UNIT_ROLE_CHANGED_nameplate", unit)
-            else
-              WeakAuras.ScanEvents("UNIT_ROLE_CHANGED_" .. unit, unit)
-            end
-            watchUnitChange.unitRaidRole[unit] = newRaidRole
+          if watchUnitChange.trackedUnits[unit] then
+            roleUpdate(unit, eventsToSend)
           end
         end
-      else
+      elseif event == "UNIT_TARGET" then
+        local unitTarget = unit .. "target"
+        if not watchUnitChange.trackedUnits[unitTarget] then
+          Private.StopProfileSystem("generictrigger unit change");
+          return
+        end
+        unitUpdate(unitTarget, eventsToSend)
+        markerInit(unitTarget)
+        reactionInit(unitTarget)
+      elseif event == "PARTY_MEMBERS_CHANGED" or event == "RAID_ROSTER_UPDATE" then
+        for unit in pairs(Private.multiUnitUnits.group) do
+          if watchUnitChange.trackedUnits[unit] then
+            unitUpdate(unit, eventsToSend)
+            markerInit(unit, eventsToSend)
+            reactionInit(unit, eventsToSend)
+          end
+        end
         local inRaid = IsInRaid()
         local inRaidChanged = inRaid ~= watchUnitChange.inRaid
-
-        for unit, guid in pairs(watchUnitChange.unitChangeGUIDS) do
-          local newGuid = WeakAuras.UnitExistsFixed(unit) and UnitGUID(unit) or ""
-          local newMarker = GetRaidTargetIndex(unit) or 0
-          if guid ~= newGuid
-          or newMarker ~= watchUnitChange.raidmark[unit]
-          or event == "PLAYER_ENTERING_WORLD"
-          then
-            if unit:find("^nameplate%d+$") then
-              WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
-            else
-              WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
-            end
-            watchUnitChange.unitChangeGUIDS[unit] = newGuid
-            watchUnitChange.raidmark[unit] = newMarker
-
-            local oldReaction = watchUnitChange.nameplateFaction[unit]
-            local newReaction = WeakAuras.GetPlayerReaction(unit)
-            if oldReaction ~= newReaction then
-              watchUnitChange.nameplateFaction[unit] = newReaction
-              if unit:find("^nameplate%d+$") then
-                WeakAuras.ScanEvents("UNIT_CHANGED_nameplate", unit)
-              else
-                WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
-              end
-            end
-
-          elseif Private.multiUnitUnits.group[unit] then
-            -- If in raid changed we send a UNIT_CHANGED for the group units
-            if inRaidChanged then
-              WeakAuras.ScanEvents("UNIT_CHANGED_" .. unit, unit)
+        if inRaidChanged then
+          for unit in pairs(Private.multiUnitUnits.group) do
+            if watchUnitChange.trackedUnits[unit] and watchUnitChange.unitIdToGUID[unit] then
+              eventsToSend["UNIT_CHANGED_" .. unit] = unit
             end
           end
+          watchUnitChange.inRaid = inRaid
         end
-        watchUnitChange.inRaid = inRaid
       end
+
+      -- send events
+      for event, unit in pairs(eventsToSend) do
+        WeakAuras.ScanEvents(event, unit)
+      end
+
       Private.StopProfileSystem("generictrigger unit change");
     end)
   end
-  watchUnitChange.unitChangeGUIDS = watchUnitChange.unitChangeGUIDS or {}
-  watchUnitChange.unitChangeGUIDS[unit] = UnitGUID(unit) or ""
+  if watchUnitChange.trackedUnits[unit] then
+    return
+  end
+  local guid = UnitGUID(unit)
+  watchUnitChange.trackedUnits[unit] = true
+  watchUnitChange.unitIdToGUID[unit] = guid
+  if guid then
+    watchUnitChange.GUIDToUnitIds[guid] = watchUnitChange.GUIDToUnitIds[guid] or {}
+    watchUnitChange.GUIDToUnitIds[guid][unit] = true
+  end
   watchUnitChange.raidmark = watchUnitChange.raidmark or {}
   watchUnitChange.raidmark[unit] = GetRaidTargetIndex(unit) or 0
+  watchUnitChange.inRaid = IsInRaid()
 end
 
 local equipmentItemIDs, equipmentSetItemIDs = {}, {}
@@ -3264,46 +3364,44 @@ do
 end
 
 -- Nameplate Target
-if WeakAuras.isAwesomeEnabled() then
-  do
-    local nameplateTargetFrame = nil
-    local nameplateTargets = {}
+do
+  local nameplateTargetFrame = nil
+  local nameplateTargets = {}
 
-    local function nameplateTargetOnEvent(self, event, unit)
-      if event == "NAME_PLATE_UNIT_ADDED" then
-        nameplateTargets[unit] = UnitGUID(unit.."-target") or true
-      elseif event == "NAME_PLATE_UNIT_REMOVED" then
-        nameplateTargets[unit] = nil
-      end
+  local function nameplateTargetOnEvent(self, event, unit)
+    if event == "NAME_PLATE_UNIT_ADDED" then
+      nameplateTargets[unit] = UnitGUID(unit.."-target") or true
+    elseif event == "NAME_PLATE_UNIT_REMOVED" then
+      nameplateTargets[unit] = nil
     end
+  end
 
-    local tick_throttle = 0.2
-    local throttle_update = tick_throttle
-    local function nameplateTargetOnUpdate(self, delta)
-      throttle_update = throttle_update - delta
-      if throttle_update < 0 then
-        for unit, targetGUID in pairs(nameplateTargets) do
-          local newTargetGUID = UnitGUID(unit.."-target")
-          if (newTargetGUID == nil and targetGUID ~= true)
-          or (newTargetGUID ~= nil and targetGUID ~= newTargetGUID)
-          then
-            nameplateTargets[unit] = newTargetGUID or true
-            WeakAuras.ScanEvents("WA_UNIT_TARGET_NAME_PLATE", unit)
-          end
+  local tick_throttle = 0.2
+  local throttle_update = tick_throttle
+  local function nameplateTargetOnUpdate(self, delta)
+    throttle_update = throttle_update - delta
+    if throttle_update < 0 then
+      for unit, targetGUID in pairs(nameplateTargets) do
+        local newTargetGUID = UnitGUID(unit.."-target")
+        if (newTargetGUID == nil and targetGUID ~= true)
+        or (newTargetGUID ~= nil and targetGUID ~= newTargetGUID)
+        then
+          nameplateTargets[unit] = newTargetGUID or true
+          WeakAuras.ScanEvents("WA_UNIT_TARGET_NAME_PLATE", unit)
         end
-        throttle_update = tick_throttle
       end
+      throttle_update = tick_throttle
     end
+  end
 
-    Private.frames["Nameplate Target Handler"] = nameplateTargetFrame
-    function WeakAuras.WatchForNameplateTargetChange()
-      if not nameplateTargetFrame then
-        nameplateTargetFrame = CreateFrame("Frame")
-        nameplateTargetFrame:SetScript("OnUpdate", nameplateTargetOnUpdate)
-        nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-        nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
-        nameplateTargetFrame:SetScript("OnEvent", nameplateTargetOnEvent)
-      end
+  Private.frames["Nameplate Target Handler"] = nameplateTargetFrame
+  function WeakAuras.WatchForNameplateTargetChange()
+    if not nameplateTargetFrame then
+      nameplateTargetFrame = CreateFrame("Frame")
+      nameplateTargetFrame:SetScript("OnUpdate", nameplateTargetOnUpdate)
+      nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+      nameplateTargetFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+      nameplateTargetFrame:SetScript("OnEvent", nameplateTargetOnEvent)
     end
   end
 end
@@ -3541,13 +3639,9 @@ do
 
   local function doCastScan(firetime, unit)
     scheduled_scans[unit][firetime] = nil;
-
-    if unit:find("^nameplate%d+$") then
-      WeakAuras.ScanEvents("CAST_REMAINING_CHECK_nameplate", unit);
-    else
-      WeakAuras.ScanEvents("CAST_REMAINING_CHECK_" .. string.lower(unit), unit);
-    end
+    WeakAuras.ScanEvents("CAST_REMAINING_CHECK_" .. string.lower(unit), unit);
   end
+
   function Private.ExecEnv.ScheduleCastCheck(fireTime, unit)
     scheduled_scans[unit] = scheduled_scans[unit] or {}
     if not(scheduled_scans[unit][fireTime]) then

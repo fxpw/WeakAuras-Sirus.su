@@ -1156,7 +1156,7 @@ Private.load_prototype = {
   }
 };
 
-local function AddUnitChangeInternalEvents(triggerUnit, t, includePets)
+local function AddUnitChangeInternalEvents(triggerUnit, t, includePets, unitisunit)
   if (triggerUnit == nil) then
     return
   end
@@ -1164,16 +1164,6 @@ local function AddUnitChangeInternalEvents(triggerUnit, t, includePets)
     -- Handled by normal events"
   elseif triggerUnit == "pet" then
     tinsert(t, "PET_UPDATE")
-  elseif (triggerUnit == "nameplate") then
-    tinsert(t, "UNIT_CHANGED_nameplate")
-    local nameplates = C_NamePlate.GetNamePlates()
-    if nameplates then
-      for i, unitData in pairs(nameplates) do
-        if unitData then
-          WeakAuras.WatchUnitChange("nameplate" .. i)
-        end
-      end
-    end
   else
     if Private.multiUnitUnits[triggerUnit] then
       local isPet
@@ -1181,17 +1171,21 @@ local function AddUnitChangeInternalEvents(triggerUnit, t, includePets)
         isPet = WeakAuras.UnitIsPet(unit)
         if (includePets ~= nil and isPet) or (includePets ~= "PetsOnly" and not isPet) then
           tinsert(t, "UNIT_CHANGED_" .. string.lower(unit))
-          WeakAuras.WatchUnitChange(unit)
+          if unitisunit then
+            tinsert(t, "UNIT_IS_UNIT_CHANGED_" .. string.lower(unit) .. "_" .. string.lower(unitisunit))
+          end
         end
       end
     else
       tinsert(t, "UNIT_CHANGED_" .. string.lower(triggerUnit))
-      WeakAuras.WatchUnitChange(triggerUnit)
+      if unitisunit then
+        tinsert(t, "UNIT_IS_UNIT_CHANGED_" .. string.lower(triggerUnit) .. "_" .. string.lower(unitisunit))
+      end
     end
   end
 end
 
-local function AddWatchedUnits(triggerUnit, includePets)
+local function AddWatchedUnits(triggerUnit, includePets, unitisunit)
   if (triggerUnit == nil) then
     return
   end
@@ -1199,25 +1193,22 @@ local function AddWatchedUnits(triggerUnit, includePets)
     -- Handled by normal events"
   elseif triggerUnit == "pet" then
     WeakAuras.WatchForPetDeath();
-  elseif (triggerUnit == "nameplate") then
-    local nameplates = C_NamePlate.GetNamePlates()
-    if nameplates then
-      for i, unitData in pairs(nameplates) do
-        if unitData then
-          WeakAuras.WatchUnitChange("nameplate" .. i)
-        end
-      end
-    end
   else
     if Private.multiUnitUnits[triggerUnit] then
       local isPet
       for unit in pairs(Private.multiUnitUnits[triggerUnit]) do
         isPet = WeakAuras.UnitIsPet(unit)
         if (includePets ~= nil and isPet) or (includePets ~= "PetsOnly" and not isPet) then
+          if unitisunit then
+            WeakAuras.WatchUnitChange(unitisunit)
+          end
           WeakAuras.WatchUnitChange(unit)
         end
       end
     else
+      if unitisunit then
+        WeakAuras.WatchUnitChange(unitisunit)
+      end
       WeakAuras.WatchUnitChange(triggerUnit)
     end
   end
@@ -1284,8 +1275,6 @@ local unitHelperFunctions = {
           tinsert(events, {"UNIT_CHANGED_" .. unit, unit})
         end
       end
-    elseif trigger.unit == "nameplate" then
-      tinsert(events, {"UNIT_CHANGED_" .. trigger.unit})
     else
       if trigger.unit then
         tinsert(events, {"UNIT_CHANGED_" .. trigger.unit, trigger.unit})
@@ -1302,8 +1291,6 @@ local unitHelperFunctions = {
           tinsert(events, {"UNIT_CHANGED_" .. unit, unit})
         end
       end
-    elseif trigger.unit == "nameplate" then
-      tinsert(events, {"UNIT_CHANGED_" .. trigger.unit})
     else
       if trigger.unit then
         tinsert(events, {"UNIT_CHANGED_" .. trigger.unit, trigger.unit})
@@ -1403,15 +1390,12 @@ Private.event_prototypes = {
     internal_events = function(trigger)
       local unit = trigger.unit
       local result = {}
-      AddUnitChangeInternalEvents(unit, result)
+      AddUnitChangeInternalEvents(unit, result, nil, trigger.use_unitisunit and trigger.unitisunit or nil)
       AddUnitRoleChangeInternalEvents(unit, result)
-      if trigger.unitisunit then
-        AddUnitChangeInternalEvents(trigger.unitisunit, result)
-      end
       return result
     end,
     loadFunc = function(trigger)
-      AddWatchedUnits(trigger.unit, nil)
+      AddWatchedUnits(trigger.unit, nil, trigger.use_unitisunit and trigger.unitisunit or nil)
     end,
     force_events = unitHelperFunctions.UnitChangedForceEvents,
     name = L["Unit Characteristics"],
@@ -1439,19 +1423,23 @@ Private.event_prototypes = {
         values = "actual_unit_types_cast",
         desc = Private.actual_unit_types_cast_tooltip,
         test = "true",
-        store = true
+        store = true,
+        reloadOptions = true,
       },
       {
         name = "unitisunit",
         display = L["Unit is Unit"],
         type = "unit",
         init = "UnitIsUnit(unit, extraUnit) == 1 and true or false",
-        values = "actual_unit_types_with_specific",
+        values = function(trigger)
+          if Private.multiUnitUnits[trigger.unit] then
+            return Private.actual_unit_types
+          else
+            return Private.actual_unit_types_with_specific
+          end
+        end,
         test = "unitisunit",
-        store = true,
-        conditionType = "bool",
         desc = function() return L["Can be used for e.g. checking if \"boss1target\" is the same as \"player\"."] end,
-        enable = function(trigger) return not Private.multiUnitUnits[trigger.unit] end
       },
       {
         name = "name",
@@ -5519,7 +5507,7 @@ Private.event_prototypes = {
       return result
     end,
     loadFunc = function(trigger)
-      local unit = trigger.threatUnit
+      local unit = trigger.unit
       if unit and unit ~= "none" then
         AddWatchedUnits(unit)
       end
@@ -7507,3 +7495,17 @@ Private.dynamic_texts = {
     end
   }
 };
+
+Private.InternalEventByIDList = {
+  ITEM_COOLDOWN_STARTED = true,
+  ITEM_COOLDOWN_CHANGED = true,
+  ITEM_COOLDOWN_READY = true,
+  ITEM_SLOT_COOLDOWN_STARTED = true,
+  ITEM_SLOT_COOLDOWN_CHANGED = true,
+  ITEM_SLOT_COOLDOWN_READY = true,
+  ITEM_SLOT_COOLDOWN_ITEM_CHANGED = true,
+  SPELL_COOLDOWN_CHANGED = true,
+  SPELL_COOLDOWN_READY = true,
+  SPELL_CHARGES_CHANGED = true,
+  WA_UPDATE_OVERLAY_GLOW = true,
+}

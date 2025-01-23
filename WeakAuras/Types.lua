@@ -789,12 +789,18 @@ if WeakAuras.isAwesomeEnabled() then
   Private.unit_types_bufftrigger_2.nameplate = L["Nameplate"]
 end
 
+Private.actual_unit_types = {
+  player = L["Player"],
+  pet = L["Pet"],
+  target = L["Target"],
+}
+
 Private.actual_unit_types_with_specific = {
   player = L["Player"],
   target = L["Target"],
   focus = L["Focus"],
   pet = L["Pet"],
-  member = L["Specific Unit"]
+  member = L["Specific Unit"],
 }
 
 Private.actual_unit_types_cast = {
@@ -2870,9 +2876,9 @@ Private.multiUnitId = {
   ["partypetsonly"] = true,
   ["raid"] = true,
 }
---if WeakAuras.isAwesomeEnabled() then
---  Private.multiUnitId["nameplate"] = true
---end
+if WeakAuras.isAwesomeEnabled() then
+  Private.multiUnitId["nameplate"] = true
+end
 
 Private.multiUnitUnits = {
   ["boss"] = {},
@@ -2913,12 +2919,15 @@ end
 for i = 1, 40 do
   Private.baseUnitId["raid"..i] = true
   Private.baseUnitId["raidpet"..i] = true
-  -- Private.baseUnitId["nameplate"..i] = true -- no need to restrict it, blizzard only allows 40 nameplates, we can get all.
-  -- Private.multiUnitUnits.nameplate["nameplate"..i] = true -- no need to restrict it, blizzard only allows 40 nameplates, we can get all.
   Private.multiUnitUnits.group["raid"..i] = true
   Private.multiUnitUnits.raid["raid"..i] = true
   Private.multiUnitUnits.group["raidpet"..i] = true
   Private.multiUnitUnits.raid["raidpet"..i] = true
+end
+
+for i = 1, 100 do
+  Private.baseUnitId["nameplate"..i] = true
+  Private.multiUnitUnits.nameplate["nameplate"..i] = true
 end
 
 Private.dbm_types = {

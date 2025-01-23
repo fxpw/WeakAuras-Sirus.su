@@ -3171,7 +3171,8 @@ function Private.HandleGlowAction(actions, region)
   if actions.glow_action
   and (
     (
-      (actions.glow_frame_type == "UNITFRAME" or (actions.glow_frame_type == "NAMEPLATE" and WeakAuras.isAwesomeEnabled()))
+      (actions.glow_frame_type == "UNITFRAME" or
+      actions.glow_frame_type == "NAMEPLATE")
       and region.state.unit
     )
     or (actions.glow_frame_type == "FRAMESELECTOR" and actions.glow_frame)
@@ -5405,7 +5406,7 @@ do
   end
 
   function WeakAuras.UntrackableUnit(unit)
-    return not (trackableUnits[unit] or unit:find("^nameplate%d+$"))
+    return not trackableUnits[unit]
   end
 end
 

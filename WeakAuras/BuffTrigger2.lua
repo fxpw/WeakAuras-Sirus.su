@@ -997,7 +997,7 @@ local function GetAllUnits(unit, allUnits, includePets)
     elseif unit == "arena" then
       max = 5
     elseif unit == "nameplate" then
-      max = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates() or 40
+      max = 100
     else
       return function() end
     end

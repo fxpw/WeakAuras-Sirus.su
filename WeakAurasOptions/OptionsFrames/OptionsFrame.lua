@@ -439,7 +439,7 @@ function OptionsPrivate.CreateFrame()
   local awesomeWotlkButton
   if not WeakAuras.isAwesomeEnabled() then
     awesomeWotlkButton = addFooter("Awesome WotLK", [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/FrostAtom/awesome_wotlk",
-              L["Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"])
+              L["Unlock Nameplate anchoring and units in WeakAuras with awesome_wotlk client patch!"])
     awesomeWotlkButton:SetParent(tipFrame)
     awesomeWotlkButton:SetPoint("LEFT", documentationButton, "RIGHT", 10, 0)
   end
@@ -1386,10 +1386,8 @@ function OptionsPrivate.CreateFrame()
 
     for _, id in ipairs(batchSelection) do
       if not alreadySelected[id] then
-        if displayButtons[id].frame:IsVisible() then
-          displayButtons[id]:Pick()
-          tinsert(tempGroup.controlledChildren, id)
-        end
+        displayButtons[id]:Pick()
+        tinsert(tempGroup.controlledChildren, id)
       end
     end
     frame:ClearOptions(tempGroup.id)
