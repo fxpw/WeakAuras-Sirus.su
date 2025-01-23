@@ -27,6 +27,11 @@ Private.regionPrototype.AddAlphaToDefault(default);
 local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
 
 local properties = {
+  texture = {
+    display = L["Texture"],
+    setter = "SetTexture",
+    type = "texture",
+  },
   color = {
     display = L["Color"],
     setter = "Color",
@@ -82,7 +87,6 @@ end
 
 local function modify(parent, region, data)
   Private.regionPrototype.modify(parent, region, data);
-  region.texture:SetTexture(data.texture);
   region.texture:SetDesaturated(data.desaturate)
   region:SetWidth(data.width);
   region:SetHeight(data.height);
@@ -178,11 +182,21 @@ local function modify(parent, region, data)
   end
 
   function region:Update()
-    if region.state.texture then
-      region.texture:SetTexture(region.state.texture);
+    if self.state.texture then
+      self:SetTexture(self.state.texture)
     end
-    region:UpdateProgress()
+    self:UpdateProgress()
   end
+
+  function region:SetTexture(texture)
+    if self.textureName == texture then
+      return
+    end
+    self.textureName = texture
+    self.texture:SetTexture(self.textureName);
+    DoTexCoord()
+  end
+  region:SetTexture(data.texture)
 
   function region:Color(r, g, b, a)
     region.color_r = r;

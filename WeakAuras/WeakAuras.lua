@@ -3460,7 +3460,7 @@ end
 -- The constants table has weak keys
 do
   local function CompareProgressValueTables(a, b)
-    -- For auto/manual progreess, only compare a[] with b[1]
+    -- For auto/manual progress, only compare a[] with b[1]
     if a[1] == -1 or a[1] == 0 then
       return a[1] == b[1]
     end

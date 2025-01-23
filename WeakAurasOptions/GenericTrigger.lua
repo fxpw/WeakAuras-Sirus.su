@@ -454,7 +454,7 @@ local function GetGenericTriggerOptions(data, triggernum)
   {
     subeventPrefix = {
       type = "select",
-      name = L["Message Prefix"],
+      name = L["Subevent"],
       width = WeakAuras.normalWidth,
       order = 8,
       values = OptionsPrivate.Private.subevent_prefix_types,
@@ -471,7 +471,7 @@ local function GetGenericTriggerOptions(data, triggernum)
     subeventSuffix = {
       type = "select",
       width = WeakAuras.normalWidth,
-      name = L["Message Suffix"],
+      name = L["Subevent Suffix"],
       order = 9,
       values = OptionsPrivate.Private.subevent_suffix_types,
       sorting = OptionsPrivate.Private.SortOrderForValues(OptionsPrivate.Private.subevent_suffix_types),

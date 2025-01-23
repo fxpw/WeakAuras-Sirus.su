@@ -2170,6 +2170,12 @@ Private.chat_message_types = {
   CHAT_MSG_LOOT = L["Loot"],
 }
 
+Private.chat_message_leader_event = {
+  CHAT_MSG_BATTLEGROUND = "CHAT_MSG_BATTLEGROUND_LEADER",
+  CHAT_MSG_PARTY = "CHAT_MSG_PARTY_LEADER",
+  CHAT_MSG_RAID = "CHAT_MSG_RAID_LEADER"
+}
+
 Private.send_chat_message_types = {
   WHISPER = L["Whisper"],
   CHANNEL = L["Channel"],
