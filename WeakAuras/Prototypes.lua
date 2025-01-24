@@ -2152,19 +2152,19 @@ Private.event_prototypes = {
     name = L["Power"],
     init = function(trigger)
       trigger.unit = trigger.unit or "player";
-      local ret = [=[
+      local ret = {}
+      table.insert(ret, ([=[
         unit = string.lower(unit)
         local name, realm = WeakAuras.UnitNameWithRealm(unit)
         local smart = %s
         local powerType = %s;
         local unitPowerType = UnitPowerType(unit);
         local powerTypeToCheck = powerType or unitPowerType;
-      ]=];
-      ret = ret:format(trigger.unit == "group" and "true" or "false", trigger.use_powertype and trigger.powertype or "nil");
+      ]=]):format(trigger.unit == "group" and "true" or "false", trigger.use_powertype and trigger.powertype or "nil"))
 
-      ret = ret .. unitHelperFunctions.SpecificUnitCheck(trigger)
+      table.insert(ret, unitHelperFunctions.SpecificUnitCheck(trigger))
 
-      return ret
+      return table.concat(ret)
     end,
     statesParameter = "unit",
     args = {
@@ -3149,7 +3149,24 @@ Private.event_prototypes = {
       else
         spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
       end
-      local ret = [=[
+      local ret = {}
+      local showOnCheck = "false";
+      if (trigger.genericShowOn == "showOnReady") then
+        showOnCheck = "startTime and startTime == 0 or gcdCooldown";
+      elseif (trigger.genericShowOn == "showOnCooldown") then
+        showOnCheck = "startTime and startTime > 0 and not gcdCooldown";
+      elseif (trigger.genericShowOn == "showAlways") then
+        showOnCheck = "startTime ~= nil";
+      end
+      local trackSpecificCharge = trigger.use_trackcharge and trigger.trackcharge and trigger.trackcharge ~= ""
+      local track = trigger.track or "auto"
+      if track == "auto" and trackSpecificCharge then
+        track = "charges"
+      end
+      if (type(spellName) == "string") then
+        spellName = string.format("%q", spellName)
+      end
+      table.insert(ret, ([=[
         local spellname = %s
         local ignoreRuneCD = %s
         local showgcd = %s;
@@ -3160,54 +3177,57 @@ Private.event_prototypes = {
         local genericShowOn = %s
         local expirationTime = startTime and duration and startTime + duration
         state.spellname = spellname;
-      ]=];
-
-      local showOnCheck = "false";
-      if (trigger.genericShowOn == "showOnReady") then
-        showOnCheck = "startTime and startTime == 0 or gcdCooldown";
-      elseif (trigger.genericShowOn == "showOnCooldown") then
-        showOnCheck = "startTime and startTime > 0 and not gcdCooldown";
-      elseif (trigger.genericShowOn == "showAlways") then
-        showOnCheck = "startTime ~= nil";
-      end
-
-      if (type(spellName) == "string") then
-        spellName = "[[" .. spellName .. "]]";
-      end
-      ret = ret:format(spellName,
+      ]=]):format(
+        spellName,
         (trigger.use_matchedRune and "true" or "false"),
         (trigger.use_showgcd and "true" or "false"),
         showOnCheck
-      );
+      ))
 
-      ret = ret .. [=[
-        if (state.expirationTime ~= expirationTime) then
-          state.expirationTime = expirationTime;
-          state.changed = true;
-        end
-        if (state.duration ~= duration) then
-          state.duration = duration;
-          state.changed = true;
-        end
-        state.progressType = 'timed';
-      ]=];
-
-      if(trigger.use_remaining and trigger.genericShowOn ~= "showOnReady") then
-        local ret2 = [[
-          local remaining = 0;
-          if (expirationTime and expirationTime > 0) then
-            remaining = expirationTime - GetTime();
-            local remainingCheck = %s;
-            if(remaining >= remainingCheck and remaining > 0) then
-              local event = "COOLDOWN_REMAINING_CHECK:" .. %s
-              Private.ExecEnv.ScheduleScan(expirationTime - remainingCheck, event);
+      table.insert(ret, [=[
+          if paused then
+            if not state.paused then
+              state.paused = true
+              state.expirationTime = nil
+              state.changed = true
+            end
+            if state.remaining ~= startTime then
+              state.remaining = startTime
+              state.changed = true
+            end
+          else
+            if (state.expirationTime ~= expirationTime) then
+              state.expirationTime = expirationTime;
+              state.changed = true;
+            end
+            if state.paused then
+              state.paused = false
+              state.remaining = nil
+              state.changed = true
             end
           end
-        ]];
-        ret = ret..ret2:format(tonumber(trigger.remaining or 0) or 0, spellName);
-      end
+          if (state.duration ~= duration) then
+            state.duration = duration;
+            state.changed = true;
+          end
+          state.progressType = 'timed';
+        ]=])
 
-      return ret;
+        if(trigger.use_remaining and trigger.genericShowOn ~= "showOnReady") then
+          table.insert(ret, ([[
+            local remaining = 0;
+            if (not paused and expirationTime and expirationTime > 0) then
+              remaining = expirationTime - GetTime();
+              local remainingCheck = %s;
+              if(remaining >= remainingCheck and remaining > 0) then
+                local event = "COOLDOWN_REMAINING_CHECK:" .. %s
+                Private.ExecEnv.ScheduleScan(expirationTime - remainingCheck, event);
+              end
+            end
+          ]]):format(tonumber(trigger.remaining or 0) or 0, spellName))
+        end
+
+        return table.concat(ret)
     end,
     GetNameAndIcon = function(trigger)
       local spellName
@@ -4898,44 +4918,41 @@ Private.event_prototypes = {
     name = L["Stance/Form/Aura"],
     init = function(trigger)
       local inverse = trigger.use_inverse;
-      local ret = [[
+      local ret = {[[
         local form = GetShapeshiftForm()
         local active = false
-      ]]
+      ]]}
       if trigger.use_form and trigger.form and trigger.form.single then
         -- Single selection
-        ret = ret .. [[
+        table.insert(ret, ([[
           local trigger_form = %d
           active = form == trigger_form
-        ]]
+        ]]):format(trigger.form.single))
         if inverse then
-          ret = ret .. [[
+          table.insert(ret, [[
             active = not active
-          ]]
+          ]])
         end
-        return ret:format(trigger.form.single)
       elseif trigger.use_form == false and trigger.form and trigger.form.multi then
         for index in pairs(trigger.form.multi) do
-          local ret2 = [[
+          table.insert(ret, ([[
             if not active then
               local index = %d
               active = form == index
             end
-          ]]
-          ret = ret .. ret2:format(index)
+          ]]):format(index))
         end
         if inverse then
-          ret = ret .. [[
+          table.insert(ret, [[
             active = not active
-          ]]
+          ]])
         end
-        return ret
       elseif trigger.use_form == nil then
-        ret = ret .. [[
+        table.insert(ret, [[
           active = true
-        ]]
-        return ret
+        ]])
       end
+      return table.concat(ret)
     end,
     statesParameter = "one",
     args = {
@@ -7107,38 +7124,27 @@ Private.event_prototypes = {
     statesParameter = "one",
     init = function(trigger)
       local spellName;
-      local ret;
-      if (trigger.use_exact_spellName) then
-        spellName = tonumber(trigger.spellName) or "nil";
-        if spellName == 0 then
-          spellName = "nil"
-        end
-        ret = [[
-          local spellName = %s;
-          local name, _, icon = GetSpellInfo(spellName)
-        ]]
-        ret = ret:format(spellName)
-      else
-        local name = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName or "";
-        ret = [[
-          local spellName _, icon = GetSpellInfo(%q)
-          local name = spellName
-        ]]
-        ret = ret:format(name)
-      end
-      local ret2
+      local ret = {};
+
+      spellName = type(trigger.spellName) == "number" and trigger.spellName or 0;
+      table.insert(ret, ([[
+        local spellName = %s;
+        local name, _, icon = GetSpellInfo(spellName)
+      ]]):format(spellName))
+
+      local spellCheck = spellName ~= 0 and "true" or "false"
       if (trigger.use_inverse) then
-        ret2 = [[
+        table.insert(ret, ([[
           local usePet = %s;
-          local active = not spellName or not IsSpellKnown(spellName, usePet)
-        ]]
+          local active = %s and IsSpellKnown(spellName, usePet) or false
+        ]]):format(trigger.use_petspell and "true" or "false", spellCheck))
       else
-        ret2 = [[
+        table.insert(ret, ([[
           local usePet = %s;
-          local active = spellName and IsSpellKnown(spellName, usePet)
-        ]]
+          local active = %s and IsSpellKnown(spellName, usePet)
+        ]]):format(trigger.use_petspell and "true" or "false", spellCheck))
       end
-      return ret .. ret2:format(trigger.use_petspell and "true" or "false")
+      return table.concat(ret)
     end,
     GetNameAndIcon = function(trigger)
       local name, _, icon = GetSpellInfo(trigger.spellName or 0)
@@ -7151,7 +7157,6 @@ Private.event_prototypes = {
         display = L["Spell"],
         type = "spell",
         test = "true",
-        showExactOption = true,
       },
       {
         name = "petspell",
