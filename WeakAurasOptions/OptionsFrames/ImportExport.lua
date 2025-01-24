@@ -50,7 +50,7 @@ local function ConstructImportExport(frame)
         if(mode == "export") then
           displayStr = OptionsPrivate.Private.DisplayToString(id, true);
         elseif(mode == "table") then
-          displayStr = OptionsPrivate.Private.DataToString(id);
+          displayStr = OptionsPrivate.Private.DataToString(id, true);
         end
         input.editBox:SetMaxBytes(nil);
         input.editBox:SetScript("OnEscapePressed", function() group:Close(); end);
