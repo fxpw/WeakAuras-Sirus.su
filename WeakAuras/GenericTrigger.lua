@@ -4280,6 +4280,17 @@ do
   end
 end
 
+WeakAuras.CheckForItemEquipped = function(itemName, specificSlot)
+  if not specificSlot then
+    return IsEquippedItem(itemName)
+  end
+  local equippedItemID = GetInventoryItemID("player", specificSlot)
+  return itemName and equippedItemID and (
+    (type(itemName) == "number" and itemName == equippedItemID)
+    or itemName == GetItemInfo(equippedItemID)
+  )
+end
+
 WeakAuras.GetCritChance = function()
   -- Based on what the wow paper doll does
   local spellCrit = 0

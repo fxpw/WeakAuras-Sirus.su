@@ -3149,11 +3149,11 @@ Private.event_prototypes = {
       else
         spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
       end
-      trigger.realSpellName = spellName; -- Cache
       local ret = [=[
         local spellname = %s
         local ignoreRuneCD = %s
         local showgcd = %s;
+        local name, _, icon = GetSpellInfo(spellname)
         local startTime, duration, gcdCooldown = WeakAuras.GetSpellCooldown(spellname, ignoreRuneCD, showgcd);
         local spellCount = WeakAuras.GetSpellCharges(spellname);
         local stacks = (spellCount and spellCount > 0 and spellCount) or nil;
@@ -3208,6 +3208,18 @@ Private.event_prototypes = {
       end
 
       return ret;
+    end,
+    GetNameAndIcon = function(trigger)
+      local spellName
+      if (trigger.use_exact_spellName) then
+        spellName = tonumber(trigger.spellName)
+      else
+        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName
+      end
+      if spellName then
+        local name, _, icon = GetSpellInfo(spellName)
+        return name, icon
+      end
     end,
     statesParameter = "one",
     progressType = "timed",
@@ -3288,7 +3300,7 @@ Private.event_prototypes = {
         store = true
       },
       {
-        hidden  = true,
+        hidden = true,
         name = "maxCharges",
         store = true,
         display = L["Max Charges"],
@@ -3367,26 +3379,22 @@ Private.event_prototypes = {
       {
         hidden = true,
         test = "genericShowOn"
-      }
+      },
+      {
+        name = "name",
+        hidden = true,
+        init = "name",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
     },
-    nameFunc = function(trigger)
-      local name = GetSpellInfo(trigger.realSpellName or 0);
-      if(name) then
-        return name;
-      end
-      name = GetSpellInfo(trigger.spellName or 0);
-      if (name) then
-        return name;
-      end
-      return "Invalid";
-    end,
-    iconFunc = function(trigger)
-      local _, _, icon = GetSpellInfo(trigger.realSpellName or 0);
-      if (not icon) then
-        icon = select(3, GetSpellInfo(trigger.spellName or 0));
-      end
-      return icon;
-    end,
     hasSpellID = true,
     automaticrequired = true,
   },
@@ -3412,7 +3420,6 @@ Private.event_prototypes = {
       else
         spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
       end
-      trigger.realSpellName = spellName; -- Cache
       WeakAuras.WatchSpellCooldown(spellName);
     end,
     init = function(trigger)
@@ -3430,9 +3437,23 @@ Private.event_prototypes = {
 
       local ret = [=[
         local spellname = %s
+        local name, _, icon = GetSpellInfo(spellname)
       ]=]
       return ret:format(spellName);
     end,
+    GetNameAndIcon = function(trigger)
+      local spellName
+      if (trigger.use_exact_spellName) then
+        spellName = tonumber(trigger.spellName)
+      else
+        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName
+      end
+      if spellName then
+        local name, _, icon = GetSpellInfo(spellName)
+        return name, icon
+      end
+    end,
+    statesParameter = "one",
     args = {
       {
         name = "spellName",
@@ -3442,26 +3463,22 @@ Private.event_prototypes = {
         init = "arg",
         showExactOption = true,
         test = "spellname == spellName"
-      }
+      },
+      {
+        name = "name",
+        hidden = true,
+        init = "name",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
     },
-    nameFunc = function(trigger)
-      local name = GetSpellInfo(trigger.realSpellName or 0);
-      if(name) then
-        return name;
-      end
-      name = GetSpellInfo(trigger.spellName or 0);
-      if (name) then
-        return name;
-      end
-      return "Invalid";
-    end,
-    iconFunc = function(trigger)
-      local _, _, icon = GetSpellInfo(trigger.realSpellName or 0);
-      if (not icon) then
-        icon = select(3, GetSpellInfo(trigger.spellName or 0));
-      end
-      return icon;
-    end,
     hasSpellID = true,
     timedrequired = true,
     progressType = "timed"
@@ -3488,7 +3505,6 @@ Private.event_prototypes = {
       else
         spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
       end
-      trigger.realSpellName = spellName; -- Cache
       WeakAuras.WatchSpellCooldown(spellName);
     end,
     init = function(trigger)
@@ -3496,12 +3512,31 @@ Private.event_prototypes = {
       if (trigger.use_exact_spellName) then
         spellName = trigger.spellName;
       else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName
+        spellName = spellName or ""
       end
-      spellName = string.format("%q", spellName or "");
-      return string.format("local spell = %s;\n", spellName);
+      if (type(spellName) == "string") then
+        spellName = string.format("%q", spellName)
+      end
+      local ret = [=[
+        local spellname = %s
+        local name, _, icon = GetSpellInfo(spellname)
+      ]=]
+      return ret:format(spellName)
     end,
     statesParameter = "one",
+    GetNameAndIcon = function(trigger)
+      local spellName
+      if (trigger.use_exact_spellName) then
+        spellName = tonumber(trigger.spellName)
+      else
+        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName
+      end
+      if spellName then
+        local name, _, icon = GetSpellInfo(spellName)
+        return name, icon
+      end
+    end,
     args = {
       {
         name = "spellName",
@@ -3534,26 +3569,22 @@ Private.event_prototypes = {
         init = "arg",
         store = true,
         conditionType = "number"
-      }
+      },
+      {
+        name = "name",
+        hidden = true,
+        init = "name",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
     },
-    nameFunc = function(trigger)
-      local name = GetSpellInfo(trigger.realSpellName or 0);
-      if(name) then
-        return name;
-      end
-      name = GetSpellInfo(trigger.spellName or 0);
-      if (name) then
-        return name;
-      end
-      return "Invalid";
-    end,
-    iconFunc = function(trigger)
-      local _, _, icon = GetSpellInfo(trigger.realSpellName or 0);
-      if (not icon) then
-        icon = select(3, GetSpellInfo(trigger.spellName or 0));
-      end
-      return icon;
-    end,
     hasSpellID = true,
     timedrequired = true,
     progressType = "timed"
@@ -3562,8 +3593,7 @@ Private.event_prototypes = {
     type = "item",
     events = {},
     internal_events = function(trigger, untrigger)
-      trigger.itemName = trigger.itemName or 0;
-      local itemName = type(trigger.itemName) == "number" and trigger.itemName or "[["..trigger.itemName.."]]";
+      local itemName = type(trigger.itemName) == "number" and trigger.itemName or string.format("%q", trigger.itemName or "0")
       local events = {
         "ITEM_COOLDOWN_READY:" .. itemName,
         "ITEM_COOLDOWN_CHANGED:" .. itemName,
@@ -3580,25 +3610,32 @@ Private.event_prototypes = {
     force_events = "ITEM_COOLDOWN_FORCE",
     name = L["Cooldown Progress (Item)"],
     loadFunc = function(trigger)
-      trigger.itemName = trigger.itemName or 0;
-      WeakAuras.WatchItemCooldown(trigger.itemName);
+      WeakAuras.WatchItemCooldown(trigger.itemName or 0)
       if (trigger.use_showgcd) then
         WeakAuras.WatchGCD();
       end
     end,
     init = function(trigger)
-      trigger.itemName = trigger.itemName or 0;
-      local itemName = type(trigger.itemName) == "number" and trigger.itemName or "[["..trigger.itemName.."]]";
+      local itemName = type(trigger.itemName) == "number" and trigger.itemName or string.format("%q", trigger.itemName or "0")
       local ret = [=[
         local itemname = %s;
+        print("Debug: itemname =", itemname)
+        local name = GetItemInfo(itemname or 0) or "Invalid"
+        print("Debug: name =", name)
+        local icon = GetItemIcon(itemname or 0)
+        print("Debug: icon =", icon)
         local showgcd = %s
+        print("Debug: showgcd =", showgcd)
         local startTime, duration, enabled, gcdCooldown = WeakAuras.GetItemCooldown(itemname, showgcd);
+        print("Debug: startTime =", startTime, "duration =", duration, "enabled =", enabled, "gcdCooldown =", gcdCooldown)
+        local expirationTime = startTime + duration
+        print("Debug: expirationTime =", expirationTime)
         local genericShowOn = %s
+        print("Debug: genericShowOn =", genericShowOn)
         state.itemname = itemname;
       ]=];
       if(trigger.use_remaining and trigger.genericShowOn ~= "showOnReady") then
         local ret2 = [[
-          local expirationTime = startTime + duration
           local remaining = expirationTime > 0 and (expirationTime - GetTime()) or 0;
           local remainingCheck = %s;
           if(remaining >= remainingCheck and remaining > 0) then
@@ -3611,6 +3648,11 @@ Private.event_prototypes = {
       return ret:format(itemName,
                         trigger.use_showgcd and "true" or "false",
                         "[[" .. (trigger.genericShowOn or "") .. "]]");
+    end,
+    GetNameAndIcon = function(trigger)
+      local name = GetItemInfo(trigger.itemName or 0)
+      local icon = GetItemIcon(trigger.itemName or 0)
+      return name, icon
     end,
     statesParameter = "one",
     args = {
@@ -3698,30 +3740,47 @@ Private.event_prototypes = {
         test = "true"
       },
       {
+        name = "name",
+        hidden = true,
+        init = "name",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
+      {
+        name = "progressType",
+        hidden = true,
+        init = "'timed'",
+        store = true,
+        test = "true"
+      },
+      {
+        name = "duration",
+        hidden = true,
+        init = "duration",
+        test = "true",
+        store = true
+      },
+      {
+        name = "expirationTime",
+        init = "expirationTime",
+        hidden = true,
+        test = "true",
+        store = true
+      },
+      {
         hidden = true,
         test = "(genericShowOn == \"showOnReady\" and (startTime == 0 and enabled == 1 or gcdCooldown))" ..
         "or (genericShowOn == \"showOnCooldown\" and (startTime > 0 or enabled == 0) and not gcdCooldown) " ..
         "or (genericShowOn == \"showAlways\")"
       }
     },
-    durationFunc = function(trigger)
-      local startTime, duration = WeakAuras.GetItemCooldown(type(trigger.itemName) == "number" and trigger.itemName or 0, trigger.use_showgcd);
-      startTime = startTime or 0;
-      duration = duration or 0;
-      return duration, startTime + duration;
-    end,
-    nameFunc = function(trigger)
-      local name = GetItemInfo(trigger.itemName or 0);
-      if(name) then
-        return name;
-      else
-        return "Invalid";
-      end
-    end,
-    iconFunc = function(trigger)
-      local _, _, _, _, _, _, _, _, _, icon = GetItemInfo(trigger.itemName or 0);
-      return icon;
-    end,
     hasItemID = true,
     automaticrequired = true,
     progressType = "timed"
@@ -3763,13 +3822,25 @@ Private.event_prototypes = {
     init = function(trigger)
       local ret = [[
         local showgcd = %s
-        local startTime, duration, enable, gcdCooldown = WeakAuras.GetItemSlotCooldown(%s, showgcd);
+        local itemSlot = %s
+        local startTime, duration, enable, gcdCooldown = WeakAuras.GetItemSlotCooldown(itemSlot, showgcd)
+        local expirationTime = startTime + duration
         local genericShowOn = %s
         local remaining = startTime + duration - GetTime();
+
+        local name = ""
+        local item = GetInventoryItemID("player", itemSlot or 0)
+        if item then
+          name = GetItemInfo(item)
+        end
+        local icon = GetInventoryItemTexture("player", itemSlot or 0)
+        local stacks = GetInventoryItemCount("player", itemSlot or 0)
+        if ((stacks == 1) and (not GetInventoryItemTexture("player", itemSlot or 0))) then
+          stacks = 0
+        end
       ]];
       if(trigger.use_remaining and trigger.genericShowOn ~= "showOnReady") then
         local ret2 = [[
-          local expirationTime = startTime + duration
           local remaining = expirationTime > 0 and (expirationTime - GetTime()) or 0;
           local remainingCheck = %s;
           if(remaining >= remainingCheck and remaining > 0) then
@@ -3782,6 +3853,15 @@ Private.event_prototypes = {
       return ret:format(trigger.use_showgcd and "true" or "false",
                         trigger.itemSlot or "0",
                         "[[" .. (trigger.genericShowOn or "") .. "]]");
+    end,
+    GetNameAndIcon = function(trigger)
+      local item = GetInventoryItemID("player", trigger.itemSlot or 0);
+      local name
+      if (item) then
+        name = GetItemInfo(item)
+      end
+      local icon = GetInventoryItemTexture("player", trigger.itemSlot or 0)
+      return name, icon
     end,
     statesParameter = "one",
     args = {
@@ -3840,6 +3920,48 @@ Private.event_prototypes = {
         default = "showOnCooldown"
       },
       {
+        name = "progressType",
+        hidden = true,
+        init = "'timed'",
+        store = true,
+        test = "true"
+      },
+      {
+        name = "duration",
+        hidden = true,
+        init = "duration",
+        test = "true",
+        store = true
+      },
+      {
+        name = "expirationTime",
+        init = "expirationTime",
+        hidden = true,
+        test = "true",
+        store = true
+      },
+      {
+        name = "name",
+        hidden = true,
+        init = "name",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
+      {
+        name = "stacks",
+        init = "stacks",
+        hidden = true,
+        test = "true",
+        store = true
+      },
+      {
         hidden = true,
         name = "onCooldown",
         test = "true",
@@ -3862,28 +3984,6 @@ Private.event_prototypes = {
         "or (genericShowOn == \"showAlways\")"
       }
     },
-    durationFunc = function(trigger)
-      local startTime, duration = WeakAuras.GetItemSlotCooldown(trigger.itemSlot or 0, trigger.use_showgcd);
-      startTime = startTime or 0;
-      duration = duration or 0;
-      return duration, startTime + duration;
-    end,
-    nameFunc = function(trigger)
-      local item = GetInventoryItemID("player", trigger.itemSlot or 0);
-      if (item) then
-        return (GetItemInfo(item))
-      end
-    end,
-    stacksFunc = function(trigger)
-      local count = GetInventoryItemCount("player", trigger.itemSlot or 0)
-      if ((count == 1) and (not GetInventoryItemTexture("player", trigger.itemSlot or 0))) then
-        count = 0
-      end
-      return count
-    end,
-    iconFunc = function(trigger)
-      return GetInventoryItemTexture("player", trigger.itemSlot or 0) or "Interface\\Icons\\INV_Misc_QuestionMark";
-    end,
     automaticrequired = true,
     progressType = "timed"
   },
@@ -3891,17 +3991,25 @@ Private.event_prototypes = {
     type = "item",
     events = {},
     internal_events = function(trigger)
-      trigger.itemName = trigger.itemName or 0
-      return { "ITEM_COOLDOWN_READY:" .. trigger.itemName }
+      return { "ITEM_COOLDOWN_READY:" .. (trigger.itemName or 0) }
     end,
     name = L["Cooldown Ready Event (Item)"],
     loadFunc = function(trigger)
-      trigger.itemName = trigger.itemName or 0;
-      WeakAuras.WatchItemCooldown(trigger.itemName);
+      WeakAuras.WatchItemCooldown(trigger.itemName or 0)
     end,
     init = function(trigger)
-      trigger.itemName = trigger.itemName or 0;
+      local ret = [[
+        local itemName = %s
+        local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(itemName) or "Invalid"
+      ]]
+      local itemName = type(trigger.itemName) == "number" and trigger.itemName or string.format("%q", trigger.itemName or "0")
+      return ret:format(itemName)
     end,
+    GetNameAndIcon = function(trigger)
+      local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(trigger.itemName or 0)
+      return name, icon
+    end,
+    statesParameter = "one",
     args = {
       {
         name = "itemName",
@@ -3909,20 +4017,22 @@ Private.event_prototypes = {
         display = L["Item"],
         type = "item",
         init = "arg"
-      }
+      },
+      {
+        name = "name",
+        hidden = true,
+        init = "name",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
     },
-    nameFunc = function(trigger)
-      local name = GetItemInfo(trigger.itemName or 0);
-      if(name) then
-        return name;
-      else
-        return "Invalid";
-      end
-    end,
-    iconFunc = function(trigger)
-      local _, _, _, _, _, _, _, _, _, icon = GetItemInfo(trigger.itemName or 0);
-      return icon;
-    end,
     hasItemID = true,
     timedrequired = true,
     progressType = "timed"
@@ -3938,7 +4048,24 @@ Private.event_prototypes = {
       WeakAuras.WatchItemSlotCooldown(trigger.itemSlot);
     end,
     init = function(trigger)
+      local ret = [[
+        local itemSlot = %s
+        local item = GetInventoryItemID("player", itemSlot)
+        local name = ""
+        if (item) then
+          name = GetItemInfo(item)
+        end
+        local icon = GetInventoryItemTexture("player", itemSlot)
+      ]]
+      return ret:format(trigger.itemSlot or 0)
     end,
+    GetNameAndIcon = function(trigger)
+      local item = GetInventoryItemID("player", trigger.itemSlot or 0)
+      local name = item and GetItemInfo(item) or nil
+      local icon = GetInventoryItemTexture("player", trigger.itemSlot or 0)
+      return name, icon
+    end,
+    statesParameter = "one",
     args = {
       {
         name = "itemSlot",
@@ -3947,14 +4074,22 @@ Private.event_prototypes = {
         type = "select",
         values = "item_slot_types",
         init = "arg"
-      }
+      },
+      {
+        name = "name",
+        hidden = true,
+        init = "name",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
     },
-    nameFunc = function(trigger)
-      return "";
-    end,
-    iconFunc = function(trigger)
-      return GetInventoryItemTexture("player", trigger.itemSlot or 0) or "Interface\\Icons\\INV_Misc_QuestionMark";
-    end,
     hasItemID = true,
     timedrequired = true,
     progressType = "timed"
@@ -3998,11 +4133,12 @@ Private.event_prototypes = {
     init = function(trigger)
       local ret = [[
         local inverse = %s;
-        local onGCD = WeakAuras.GetGCDInfo();
+        local duration, expirationTime, name, icon = WeakAuras.GetGCDInfo()
         local hasSpellName = WeakAuras.GcdSpellName();
       ]];
       return ret:format(trigger.use_inverse and "true" or "false");
     end,
+    statesParameter = "one",
     args = {
       {
         name = "inverse",
@@ -4011,22 +4147,45 @@ Private.event_prototypes = {
         test = "true"
       },
       {
+        name = "name",
         hidden = true,
-        test = "(inverse and onGCD == 0) or (not inverse and onGCD > 0 and hasSpellName)"
+        init = "name",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
+      {
+        name = "duration",
+        hidden = true,
+        init = "duration",
+        test = "true",
+        store = true
+      },
+      {
+        name = "expirationTime",
+        init = "expirationTime",
+        hidden = true,
+        test = "true",
+        store = true
+      },
+      {
+        name = "progressType",
+        hidden = true,
+        init = "'timed'",
+        test = "true",
+        store = true
+      },
+      {
+        hidden = true,
+        test = "(inverse and duration == 0) or (not inverse and duration > 0 and hasSpellName)"
       }
     },
-    durationFunc = function(trigger)
-      local duration, expirationTime = WeakAuras.GetGCDInfo();
-      return duration, expirationTime;
-    end,
-    nameFunc = function(trigger)
-      local _, _, name = WeakAuras.GetGCDInfo();
-      return name;
-    end,
-    iconFunc = function(trigger)
-      local _, _, _, icon = WeakAuras.GetGCDInfo();
-      return icon;
-    end,
     hasSpellID = true,
     automaticrequired = true,
     progressType = "timed"
@@ -4098,7 +4257,7 @@ Private.event_prototypes = {
       {
         name = "name",
         hidden = true,
-        init = "spell",
+        init = "name",
         test = "true",
         store = true
       },
@@ -4142,7 +4301,12 @@ Private.event_prototypes = {
         "RUNE_TYPE_UPDATE",
       },
       ["unit_events"] = {
-        ["player"] = { "UNIT_POWER", "UNIT_ENERGY", "UNIT_MANA", "UNIT_RAGE" }
+          ["player"] = {
+          "UNIT_POWER",
+          "UNIT_ENERGY",
+          "UNIT_MANA",
+          "UNIT_RAGE"
+        }
       }
     },
     loadInternalEventFunc = function(trigger)
@@ -4166,7 +4330,6 @@ Private.event_prototypes = {
       else
         spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
       end
-      trigger.realSpellName = spellName; -- Cache
       WeakAuras.WatchSpellCooldown(spellName);
     end,
     init = function(trigger)
@@ -4177,13 +4340,15 @@ Private.event_prototypes = {
       else
         spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
       end
-      trigger.realSpellName = spellName; -- Cache
       local ret = [=[
         local spellName = %s
-        local startTime, duration = WeakAuras.GetSpellCooldown(spellName);
-        startTime = startTime or 0
-        duration = duration or 0
-        local ready = startTime == 0
+        local name, _, icon = GetSpellInfo(spellName)
+        local startTime, duration, gcdCooldown, readyTime = WeakAuras.GetSpellCooldown(spellName)
+        local charges = WeakAuras.GetSpellCharges(spellName)
+        if (charges == nil) then
+          charges = (duration == 0 or gcdCooldown) and 1 or 0;
+        end
+        local ready = startTime == 0 or charges > 0
         local active = IsUsableSpell(spellName) and ready
       ]=]
       if(trigger.use_targetRequired) then
@@ -4194,10 +4359,22 @@ Private.event_prototypes = {
       end
 
       if (type(spellName) == "string") then
-        spellName = "[[" .. spellName .. "]]";
+        spellName = string.format("%q", spellName)
       end
 
       return ret:format(spellName)
+    end,
+    GetNameAndIcon = function(trigger)
+      local spellName
+      if (trigger.use_exact_spellName) then
+        spellName = tonumber(trigger.spellName)
+      else
+        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName
+      end
+      if spellName then
+        local name, _, icon = GetSpellInfo(spellName)
+        return name, icon
+      end
     end,
     args = {
       {
@@ -4206,8 +4383,8 @@ Private.event_prototypes = {
         required = true,
         type = "spell",
         test = "true",
-        store = true,
-        conditionType = "string"
+        showExactOption = true,
+        store = true
       },
       -- This parameter uses the IsSpellInRange API function, but it does not check spell range at all
       -- IsSpellInRange returns nil for invalid targets, 0 for out of range, 1 for in range (0 and 1 are both "positive" values)
@@ -4234,6 +4411,30 @@ Private.event_prototypes = {
         conditionType = "number",
       },
       {
+        hidden = true,
+        name = "readyTime",
+        display = L["Since Ready"],
+        conditionType = "elapsedTimer",
+        store = true,
+        test = "true"
+      },
+      {
+        hidden = true,
+        name = "chargeGainTime",
+        display = L["Since Charge Gain"],
+        conditionType = "elapsedTimer",
+        store = true,
+        test = "true"
+      },
+      {
+        hidden = true,
+        name = "chargeLostTime",
+        display = L["Since Charge Lost"],
+        conditionType = "elapsedTimer",
+        store = true,
+        test = "true"
+      },
+      {
         name = "inverse",
         display = L["Inverse"],
         type = "toggle",
@@ -4255,34 +4456,31 @@ Private.event_prototypes = {
         }
       },
       {
+        name = "name",
+        hidden = true,
+        init = "name",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
+      {
+        name = "stacks",
+        hidden = true,
+        init = "stacks",
+        test = "true",
+        store = true
+      },
+      {
         hidden = true,
         test = "active"
       }
     },
-    nameFunc = function(trigger)
-      local name = GetSpellInfo(trigger.realSpellName or 0);
-      if(name) then
-        return name;
-      end
-      name = GetSpellInfo(trigger.spellName or 0);
-      if (name) then
-        return name;
-      end
-      return "Invalid";
-    end,
-    iconFunc = function(trigger)
-      local _, _, icon = GetSpellInfo(trigger.realSpellName or 0);
-      if (not icon) then
-        icon = select(3, GetSpellInfo(trigger.spellName or 0));
-      end
-      return icon;
-    end,
-    stacksFunc = function(trigger)
-      local spellCount = WeakAuras.GetSpellCharges(trigger.realSpellName);
-      if spellCount and spellCount > 0 then
-        return spellCount
-      end
-    end,
     hasSpellID = true,
     automaticrequired = true,
     progressType = "none"
@@ -4588,15 +4786,14 @@ Private.event_prototypes = {
       end
     end,
     init = function(trigger)
-      trigger.itemName = trigger.itemName or 0;
-      local itemName = type(trigger.itemName) == "number" and trigger.itemName or "[["..trigger.itemName.."]]";
+      local itemName = type(trigger.itemName) == "number" and trigger.itemName or string.format("%q", trigger.itemName or "0")
       local ret = [[
         local itemName = %s
         local exactSpellMatch = %s
         if not exactSpellMatch and tonumber(itemName) then
           itemName = GetItemInfo(itemName)
         end
-        local count = GetItemCount(itemName, %s, %s);
+        local count = GetItemCount(itemName or "", %s, %s);
       ]];
       return ret:format(
         itemName,
@@ -4684,7 +4881,7 @@ Private.event_prototypes = {
       },
       {
         name = "name",
-        init = "itemName and itemName ~= '' and GetItemIcon(itemName) or itemName",
+        init = "itemName and itemName ~= '' and GetItemInfo(itemName) or itemName",
         hidden = true,
         store = true,
         test = "true"
@@ -5375,16 +5572,23 @@ Private.event_prototypes = {
     force_events = "UNIT_INVENTORY_CHANGED",
     name = L["Item Equipped"],
     init = function(trigger)
-      trigger.itemName = trigger.itemName or 0;
-      local itemName = type(trigger.itemName) == "number" and trigger.itemName or "[[" .. trigger.itemName .. "]]";
+      local itemName = type(trigger.itemName) == "number" and trigger.itemName or string.format("%q", trigger.itemName or "0")
 
       local ret = [[
         local inverse = %s;
-        local equipped = IsEquippedItem(GetItemInfo(%s));
+        local triggerItemName = %s
+        local itemName, _, _, _, _, _, _, _, _, icon = GetItemInfo(triggerItemName)
+        local itemSlot = %s;
+        local equipped = WeakAuras.CheckForItemEquipped(itemName, itemSlot);
       ]];
 
-      return ret:format(trigger.use_inverse and "true" or "false", itemName);
+      return ret:format(trigger.use_inverse and "true" or "false", itemName, trigger.use_itemSlot and trigger.itemSlot or "nil");
     end,
+    GetNameAndIcon = function(trigger)
+      local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(trigger.itemName or 0)
+      return name, icon
+    end,
+    statesParameter = "one",
     args = {
       {
         name = "itemName",
@@ -5394,24 +5598,37 @@ Private.event_prototypes = {
         test = "true"
       },
       {
+        name = "itemSlot",
+        display = WeakAuras.newFeatureString .. L["Item Slot"],
+        type = "select",
+        values = "item_slot_types",
+        test = "true",
+      },
+      {
         name = "inverse",
         display = L["Inverse"],
         type = "toggle",
         test = "true"
       },
       {
+        name = "name",
+        hidden = true,
+        init = "itemName",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
+      {
         hidden = true,
         test = "(inverse and not equipped) or (equipped and not inverse)"
       }
     },
-    nameFunc = function(trigger)
-      local name = GetItemInfo(trigger.itemName);
-      return name;
-    end,
-    iconFunc = function(trigger)
-      local icon = select(10, GetItemInfo(trigger.itemName or 0));
-      return icon;
-    end,
     hasItemID = true,
     automaticrequired = true,
     progressType = "none"
@@ -5438,10 +5655,14 @@ Private.event_prototypes = {
         local triggerItemSetName = %s;
         local inverse = %s;
         local partial = %s;
-
+        local itemSetName, icon, numEquipped, numItems = WeakAuras.GetEquipmentSetInfo(useItemSetName and triggerItemSetName or nil, partial);
       ]];
 
       return ret:format(trigger.use_itemSetName and "true" or "false", itemSetName, trigger.use_inverse and "true" or "false", trigger.use_partial and "true" or "false");
+    end,
+    GetNameAndIcon = function(trigger)
+      local name, icon = WeakAuras.GetEquipmentSetInfo(trigger.use_itemSetName and trigger.itemSetName or nil, true)
+      return name, icon
     end,
     statesParameter = "one",
     args = {
@@ -5452,7 +5673,7 @@ Private.event_prototypes = {
         test = "true",
         store = true,
         conditionType = "string",
-        init = "WeakAuras.GetEquipmentSetInfo(useItemSetName and triggerItemSetName or nil, partial)"
+        init = "itemSetName"
       },
       {
         name = "partial",
@@ -5467,21 +5688,45 @@ Private.event_prototypes = {
         test = "true"
       },
       {
+        name = "name",
+        hidden = true,
+        init = "name",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
+      {
+        name = "value",
+        init = "numEquipped",
+        hidden = true,
+        store = true,
+        test = "true",
+      },
+      {
+        name = "total",
+        init = "numItems",
+        hidden = true,
+        store = true,
+        test = "true",
+      },
+      {
+        name = "progressType",
+        init = "'static'",
+        hidden = true,
+        store = true,
+        test = "true",
+      },
+      {
         hidden = true,
         test = "(inverse and itemSetName == nil) or (not inverse and itemSetName)"
-      }
+      },
     },
-    nameFunc = function(trigger)
-      return WeakAuras.GetEquipmentSetInfo(trigger.use_itemSetName and trigger.itemSetName or nil, trigger.use_partial);
-    end,
-    iconFunc = function(trigger)
-      local _, icon = WeakAuras.GetEquipmentSetInfo(trigger.use_itemSetName and trigger.itemSetName or nil, trigger.use_partial);
-      return icon;
-    end,
-    durationFunc = function(trigger)
-      local _, _, numEquipped, numItems = WeakAuras.GetEquipmentSetInfo(trigger.use_itemSetName and trigger.itemSetName or nil, trigger.use_partial);
-      return numEquipped, numItems, true;
-    end,
     hasItemID = true,
     automaticrequired = true,
     progressType = "static"
@@ -6866,23 +7111,54 @@ Private.event_prototypes = {
     },
     force_events = "SPELLS_CHANGED",
     name = L["Spell Known"],
+    statesParameter = "one",
     init = function(trigger)
-      local spellId = trigger.spellId or "";
-      local ret = [[
-        local spellId = tonumber(%q);
-        local usePet = %s;
-      ]]
-      return ret:format(spellId, trigger.use_petspell and "true" or "false");
+      local spellName;
+      local ret;
+      if (trigger.use_exact_spellName) then
+        spellName = tonumber(trigger.spellName) or "nil";
+        if spellName == 0 then
+          spellName = "nil"
+        end
+        ret = [[
+          local spellName = %s;
+          local name, _, icon = GetSpellInfo(spellName)
+        ]]
+        ret = ret:format(spellName)
+      else
+        local name = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName or "";
+        ret = [[
+          local spellName _, icon = GetSpellInfo(%q)
+          local name = spellName
+        ]]
+        ret = ret:format(name)
+      end
+      local ret2
+      if (trigger.use_inverse) then
+        ret2 = [[
+          local usePet = %s;
+          local active = not spellName or not IsSpellKnown(spellName, usePet)
+        ]]
+      else
+        ret2 = [[
+          local usePet = %s;
+          local active = spellName and IsSpellKnown(spellName, usePet)
+        ]]
+      end
+      return ret .. ret2:format(trigger.use_petspell and "true" or "false")
+    end,
+    GetNameAndIcon = function(trigger)
+      local name, _, icon = GetSpellInfo(trigger.spellName or 0)
+      return name, icon
     end,
     args = {
       {
-        name = "spellId",
+        name = "spellName",
         required = true,
-        display = L["Spell Id"],
+        display = L["Spell"],
         type = "spell",
         test = "true",
-        conditionType = "number",
-        forceExactOption = true
+        showExactOption = true,
       },
       {
         name = "petspell",
@@ -6891,17 +7167,30 @@ Private.event_prototypes = {
         test = "true"
       },
       {
+        name = "inverse",
+        display = WeakAuras.newFeatureString .. L["Inverse"],
+        type = "toggle",
+        test = "true",
+      },
+      {
+        name = "name",
         hidden = true,
-        test = "spellId and WeakAuras.IsSpellKnown(spellId, usePet)";
+        init = "name",
+        test = "true",
+        store = true
+      },
+      {
+        name = "icon",
+        hidden = true,
+        init = "icon or 'Interface\\AddOns\\WeakAuras\\Media\\Textures\\icon'",
+        test = "true",
+        store = true
+      },
+      {
+        hidden = true,
+        test = "active"
       }
     },
-    nameFunc = function(trigger)
-      return (GetSpellInfo(trigger.spellId or 0))
-    end,
-    iconFunc = function(trigger)
-      local _, _, icon = GetSpellInfo(trigger.spellId or 0);
-      return icon;
-    end,
     automaticrequired = true,
     progressType = "none"
   },
