@@ -3619,19 +3619,12 @@ Private.event_prototypes = {
       local itemName = type(trigger.itemName) == "number" and trigger.itemName or string.format("%q", trigger.itemName or "0")
       local ret = [=[
         local itemname = %s;
-        print("Debug: itemname =", itemname)
         local name = GetItemInfo(itemname or 0) or "Invalid"
-        print("Debug: name =", name)
         local icon = GetItemIcon(itemname or 0)
-        print("Debug: icon =", icon)
         local showgcd = %s
-        print("Debug: showgcd =", showgcd)
         local startTime, duration, enabled, gcdCooldown = WeakAuras.GetItemCooldown(itemname, showgcd);
-        print("Debug: startTime =", startTime, "duration =", duration, "enabled =", enabled, "gcdCooldown =", gcdCooldown)
         local expirationTime = startTime + duration
-        print("Debug: expirationTime =", expirationTime)
         local genericShowOn = %s
-        print("Debug: genericShowOn =", genericShowOn)
         state.itemname = itemname;
       ]=];
       if(trigger.use_remaining and trigger.genericShowOn ~= "showOnReady") then
