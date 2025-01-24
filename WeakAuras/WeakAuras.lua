@@ -3104,7 +3104,7 @@ do
 
     if type(glow_frame_monitor) == "table" then
       for region, data in pairs(glow_frame_monitor) do
-        if region.state and region.state.unit == unit
+        if region.state and UnitIsUnit(region.state.unit, unit)
         and (data.frame ~= frame) == update_frame
         then
           if not new_frame then
@@ -3879,6 +3879,15 @@ do
       end
     end
   end);
+  dynFrame.frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+  dynFrame.frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+  dynFrame.frame:SetScript("OnEvent", function(self, event)
+    if event == "PLAYER_REGEN_ENABLED" and self:IsShown() then
+      self:Hide()
+    elseif event == "PLAYER_REGEN_DISABLED" and not self:IsShown() and dynFrame.size > 0 then
+      self:Show()
+    end
+  end)
 end
 
 Private.dynFrame = dynFrame;
