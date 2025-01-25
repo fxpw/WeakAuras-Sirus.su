@@ -209,14 +209,12 @@ function OptionsPrivate.CreateFrame()
     if self.minimized then
       WeakAurasOptionsTitleText:Hide()
       self.buttonsContainer.frame:Hide()
-      self.texturePicker.frame:Hide()
-      self.iconPicker.frame:Hide()
-      self.modelPicker.frame:Hide()
-      self.importexport.frame:Hide()
-      self.update.frame:Hide()
-      self.texteditor.frame:Hide()
-      self.codereview.frame:Hide()
-      self.debugLog.frame:Hide()
+      for _, fn in ipairs({"TexturePicker", "IconPicker", "ModelPicker", "ImportExport", "TextEditor", "CodeReview", "UpdateFrame", "DebugLog"}) do
+        local obj = OptionsPrivate[fn](self, true)
+        if obj then
+          obj.frame:Hide()
+        end
+      end
       if self.newView then
         self.newView.frame:Hide()
       end

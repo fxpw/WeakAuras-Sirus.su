@@ -53,6 +53,19 @@ local LDBIcon = LibStub("LibDBIcon-1.0")
 local LCG = LibStub("LibCustomGlow-1.0")
 local LGF = LibStub("LibGetFrame-1.0")
 
+local CustomNames = IsAddOnLoaded("CustomNames") and LibStub("CustomNames") -- optional addon
+if CustomNames then
+  WeakAuras.GetName = CustomNames.Get
+  WeakAuras.UnitName = CustomNames.UnitName
+  WeakAuras.GetUnitName = CustomNames.GetUnitName
+  WeakAuras.UnitFullName = CustomNames.UnitFullName
+else
+  WeakAuras.GetName = function(name) return name end
+  WeakAuras.UnitName = UnitName
+  WeakAuras.GetUnitName = UnitName
+  WeakAuras.UnitFullName = UnitName
+end
+
 local timer = WeakAurasTimers
 WeakAuras.timer = timer
 
@@ -5422,6 +5435,11 @@ do
   local ownRealm = GetRealmName()
   function WeakAuras.UnitNameWithRealm(unit)
     local name, realm = UnitName(unit)
+    return name or "", realm or ownRealm or ""
+  end
+
+  function WeakAuras.UnitNameWithRealmCustomName(unit)
+    local name, realm =  WeakAuras.UnitFullName(unit)
     return name or "", realm or ownRealm or ""
   end
 end
