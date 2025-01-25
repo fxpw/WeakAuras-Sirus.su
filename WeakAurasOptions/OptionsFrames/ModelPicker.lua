@@ -368,7 +368,7 @@ local function ConstructModelPicker(frame)
   return group
 end
 
-function OptionsPrivate.ModelPicker(frame)
-  modelPicker = modelPicker or ConstructModelPicker(frame)
+function OptionsPrivate.ModelPicker(frame, noConstruct)
+  modelPicker = modelPicker or (not noConstruct and ConstructModelPicker(frame))
   return modelPicker
 end
