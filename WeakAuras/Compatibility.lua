@@ -53,6 +53,12 @@ function TableHasAnyEntries(tbl)
     return false
 end
 
+function tAppendAll(table, addedArray)
+	for i, element in ipairs(addedArray) do
+		tinsert(table, element);
+	end
+end
+
 function IsInGroup()
 	return GetNumPartyMembers() > 0 or GetNumRaidMembers() > 0
 end

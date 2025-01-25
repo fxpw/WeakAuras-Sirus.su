@@ -136,7 +136,6 @@ function OptionsPrivate.CreateFrame()
 
     OptionsPrivate.Private.ClearFakeStates()
 
-
     for id, data in pairs(OptionsPrivate.Private.regions) do
       if data.region then
         data.region:Collapse()
@@ -159,6 +158,10 @@ function OptionsPrivate.CreateFrame()
 
     if OptionsPrivate.Private.personalRessourceDisplayFrame then
       OptionsPrivate.Private.personalRessourceDisplayFrame:OptionsClosed()
+    end
+
+    if frame.dynamicTextCodesFrame  then
+      frame.dynamicTextCodesFrame:Hide()
     end
   end)
 
@@ -225,6 +228,7 @@ function OptionsPrivate.CreateFrame()
       self.tipFrame:Hide()
       self:HideTip()
       self.bottomRightResizer:Hide()
+      self.dynamicTextCodesFrame:Hide()
     else
       WeakAurasOptionsTitleText:Show()
       self.bottomRightResizer:Show()
@@ -236,6 +240,7 @@ function OptionsPrivate.CreateFrame()
       else
         self.buttonsContainer.frame:Hide()
         self.container.frame:Hide()
+        self.dynamicTextCodesFrame:Hide()
         self:HideTip()
       end
 
@@ -887,6 +892,93 @@ function OptionsPrivate.CreateFrame()
   unloadedButton.childButtons = {}
   frame.unloadedButton = unloadedButton
 
+    -- Sidebar used for Dynamic Text Replacements
+    local sidegroup = AceGUI:Create("WeakAurasInlineGroup")
+    sidegroup.frame:SetParent(frame)
+    sidegroup.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
+    sidegroup.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
+    sidegroup.frame:Show()
+    sidegroup:SetLayout("flow")
+
+    local dynamicTextCodesFrame = CreateFrame("Frame", "WeakAurasTextReplacements", sidegroup.frame, "WA_PortraitFrameTemplate")
+    dynamicTextCodesFrame:HidePortrait()
+    dynamicTextCodesFrame:SetPoint("TOPLEFT", sidegroup.frame, "TOPRIGHT", 20, 0)
+    dynamicTextCodesFrame:SetPoint("BOTTOMLEFT", sidegroup.frame, "BOTTOMRIGHT", 20, 0)
+    dynamicTextCodesFrame:SetWidth(250)
+    dynamicTextCodesFrame:SetScript("OnHide", function()
+      OptionsPrivate.currentDynamicTextInput = nil
+    end)
+    frame.dynamicTextCodesFrame = dynamicTextCodesFrame
+
+    local dynamicTextCodesFrameTitle
+    if dynamicTextCodesFrame.TitleContainer and dynamicTextCodesFrame.TitleContainer.TitleText then
+      dynamicTextCodesFrameTitle = dynamicTextCodesFrame.TitleContainer.TitleText
+    elseif dynamicTextCodesFrame.TitleText then
+      dynamicTextCodesFrameTitle = dynamicTextCodesFrame.TitleText
+    end
+    if dynamicTextCodesFrameTitle then
+      dynamicTextCodesFrameTitle:SetText("Dynamic Text Replacements")
+      dynamicTextCodesFrameTitle:SetJustifyH("CENTER")
+      dynamicTextCodesFrameTitle:SetPoint("LEFT", dynamicTextCodesFrame, "TOPLEFT")
+      dynamicTextCodesFrameTitle:SetPoint("RIGHT", dynamicTextCodesFrame, "TOPRIGHT", -10, 0)
+    end
+
+    local dynamicTextCodesLabel = AceGUI:Create("Label")
+    dynamicTextCodesLabel:SetText(L["Insert text replacement codes to make text dynamic."])
+    dynamicTextCodesLabel:SetFontObject(GameFontNormal)
+    dynamicTextCodesLabel:SetPoint("TOP", dynamicTextCodesFrame, "TOP", 0, -35)
+    dynamicTextCodesLabel:SetFontObject(GameFontNormalSmall)
+    dynamicTextCodesLabel.frame:SetParent(dynamicTextCodesFrame)
+    dynamicTextCodesLabel.frame:Show()
+
+    local dynamicTextCodesScrollContainer = AceGUI:Create("SimpleGroup")
+    dynamicTextCodesScrollContainer.frame:SetParent(dynamicTextCodesFrame)
+    dynamicTextCodesScrollContainer.frame:SetPoint("TOP", dynamicTextCodesLabel.frame, "BOTTOM", 0, -15)
+    dynamicTextCodesScrollContainer.frame:SetPoint("LEFT", dynamicTextCodesFrame, "LEFT", 15, 0)
+    dynamicTextCodesScrollContainer.frame:SetPoint("BOTTOMRIGHT", dynamicTextCodesFrame, "BOTTOMRIGHT", -15, 5)
+    dynamicTextCodesScrollContainer:SetFullWidth(true)
+    dynamicTextCodesScrollContainer:SetFullHeight(true)
+    dynamicTextCodesScrollContainer:SetLayout("Fill")
+
+
+    local dynamicTextCodesScrollList = AceGUI:Create("ScrollFrame")
+    dynamicTextCodesScrollList:SetLayout("List")
+    dynamicTextCodesScrollList:SetPoint("TOPLEFT", dynamicTextCodesScrollContainer.frame, "TOPLEFT")
+    dynamicTextCodesScrollList:SetPoint("BOTTOMRIGHT", dynamicTextCodesScrollContainer.frame, "BOTTOMRIGHT")
+    dynamicTextCodesScrollList.frame:SetParent(dynamicTextCodesFrame)
+    dynamicTextCodesScrollList:FixScroll()
+    dynamicTextCodesScrollList.scrollframe:SetScript(
+      "OnScrollRangeChanged",
+      function(frame)
+        frame.obj:DoLayout()
+      end
+    )
+
+    dynamicTextCodesScrollList.scrollframe:SetScript(
+      "OnSizeChanged",
+      function(frame)
+        if frame.obj.scrollBarShown then
+          frame.obj.content.width = frame.obj.content.original_width - 10
+          frame.obj.scrollframe:SetPoint("BOTTOMRIGHT", -10, 0)
+        end
+      end
+    )
+
+    dynamicTextCodesFrame.scrollList = dynamicTextCodesScrollList
+    dynamicTextCodesFrame.label = dynamicTextCodesLabel
+    dynamicTextCodesFrame:Hide()
+
+    function OptionsPrivate.ToggleTextReplacements(data, show, widget)
+      if show or not dynamicTextCodesFrame:IsShown() then
+        dynamicTextCodesFrame:Show()
+        if OptionsPrivate.currentDynamicTextInput ~= widget then
+          OptionsPrivate.UpdateTextReplacements(dynamicTextCodesFrame, data)
+        end
+        OptionsPrivate.currentDynamicTextInput = widget
+      else
+        dynamicTextCodesFrame:Hide()
+      end
+    end
 
   frame.ClearOptions = function(self, id)
     aceOptions[id] = nil
@@ -1037,6 +1129,10 @@ function OptionsPrivate.CreateFrame()
     if data.controlledChildren and #data.controlledChildren == 0 then
       WeakAurasOptions:NewAura()
     end
+
+    if frame.dynamicTextCodesFrame then
+      frame.dynamicTextCodesFrame:Hide()
+    end
   end
 
   frame.ClearPick = function(self, id)
@@ -1136,6 +1232,7 @@ function OptionsPrivate.CreateFrame()
         targetIsDynamicGroup = parentData and parentData.regionType == "dynamicgroup"
       end
     end
+    self.dynamicTextCodesFrame:Hide()
     self.moversizer:Hide()
     self.pickedOption = "New"
 
