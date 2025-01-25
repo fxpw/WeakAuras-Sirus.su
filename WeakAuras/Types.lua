@@ -876,14 +876,18 @@ Private.faction_group = {
 
 Private.form_types = {};
 local function update_forms()
-  wipe(Private.form_types);
-  Private.form_types[0] = "0 - "..L["Humanoid"]
+  local oldForms = Private.form_types
+  Private.form_types = {}
+  Private.form_types[0] = "0 - " .. L["Humanoid"]
   for i = 1, GetNumShapeshiftForms() do
     local _, name = GetShapeshiftFormInfo(i);
     if(name) then
       Private.form_types[i] = i.." - "..name
     end
   end
+end
+if Private.OptionsFrame and not tCompare(oldForms, Private.form_types) then
+  Private.OptionsFrame():ReloadOptions()
 end
 local form_frame = CreateFrame("Frame");
 form_frame:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")

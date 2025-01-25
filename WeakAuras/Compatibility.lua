@@ -70,6 +70,24 @@ function MergeTable(t1, t2)
     return merged
 end
 
+function tCompare(t1, t2)
+    for k, v in pairs(t1) do
+        if type(v) == "table" and type(t2[k]) == "table" then
+            if not tCompare(v, t2[k]) then
+                return false
+            end
+        elseif t2[k] ~= v then
+            return false
+        end
+    end
+    for k in pairs(t2) do
+        if t1[k] == nil then
+            return false
+        end
+    end
+    return true
+end
+
 function IsInGroup()
 	return GetNumPartyMembers() > 0 or GetNumRaidMembers() > 0
 end

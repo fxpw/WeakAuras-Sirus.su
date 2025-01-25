@@ -798,10 +798,14 @@ local function GetBuffTriggerOptions(data, triggernum)
     useHostility = {
       type = "toggle",
       width = WeakAuras.normalWidth,
-      name = L["Filter by Nameplate Type"],
+      name = L["Filter by Hostility"],
       order = 69.1,
-      hidden = function() return
-        not (trigger.type == "aura2" and trigger.unit == "nameplate")
+      hidden = function()
+        return not (trigger.type == "aura2"
+                    and (trigger.unit == "group"
+                         or trigger.unit == "raid"
+                         or trigger.unit == "party"
+                         or trigger.unit == "nameplate"))
       end
     },
     hostility = {
@@ -809,7 +813,14 @@ local function GetBuffTriggerOptions(data, triggernum)
       width = WeakAuras.normalWidth,
       name = L["Hostility"],
       values = OptionsPrivate.Private.hostility_types,
-      hidden = function() return not (trigger.type == "aura2" and trigger.useHostility) end,
+      hidden = function()
+        return not (trigger.type == "aura2"
+                    and trigger.useHostility
+                    and (trigger.unit == "group"
+                         or trigger.unit == "raid"
+                         or trigger.unit == "party"
+                         or trigger.unit == "nameplate"))
+      end,
       order = 69.2
     },
     hostilitySpace = {
@@ -817,7 +828,14 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = "",
       order = 69.3,
       width = WeakAuras.normalWidth,
-      hidden = function() return not (trigger.type == "aura2" and trigger.unit == "nameplate" and not trigger.useHostility) end
+      hidden = function()
+        return not (trigger.type == "aura2"
+                    and not trigger.useHostility
+                    and (trigger.unit == "group"
+                         or trigger.unit == "raid"
+                         or trigger.unit == "party"
+                         or trigger.unit == "nameplate"))
+      end
     },
 
     useNpcId = {

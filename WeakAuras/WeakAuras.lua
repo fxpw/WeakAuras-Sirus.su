@@ -81,7 +81,7 @@ do
   local currentErrorHandlerUid
   local currentErrorHandlerContext
   local function waErrorHandler(errorMessage)
-    local prefix = ""
+    local juicedMessage = {}
     local data
     if currentErrorHandlerId then
       data = WeakAuras.GetData(currentErrorHandlerId)
@@ -91,23 +91,27 @@ do
     if data then
       Private.AuraWarnings.UpdateWarning(data.uid, "LuaError", "error",
         L["This aura has caused a Lua error."] .. "\n" .. L["Install the addons BugSack and BugGrabber for detailed error logs."], true)
-      prefix = L["Lua error in aura '%s': %s"]:format(data.id, currentErrorHandlerContext or L["unknown location"]) .. "\n"
+      table.insert(juicedMessage, L["Lua error in aura '%s': %s"]:format(data.id, currentErrorHandlerContext or L["unknown location"]))
     else
-      prefix = L["Lua error"] .. "\n"
+      table.insert(juicedMessage, L["Lua error"])
     end
-    prefix = prefix .. L["WeakAuras Version: %s"]:format(WeakAuras.versionString) .. "\n"
+    table.insert(juicedMessage, L["WeakAuras Version: %s"]:format(WeakAuras.versionString))
     local version = data and (data.semver or data.version)
     if version then
-      prefix = prefix .. L["Aura Version: %s"]:format(version) .. "\n"
+      table.insert(juicedMessage, L["Aura Version: %s"]:format(version))
     end
-    geterrorhandler()(prefix .. errorMessage)
+    table.insert(juicedMessage, L["Stack trace:"])
+    table.insert(juicedMessage, errorMessage)
+    geterrorhandler()(table.concat(juicedMessage, "\n"))
   end
+
   function Private.GetErrorHandlerId(id, context)
     currentErrorHandlerUid = nil
     currentErrorHandlerId = id
     currentErrorHandlerContext = context
     return waErrorHandler
   end
+
   function Private.GetErrorHandlerUid(uid, context)
     currentErrorHandlerUid = uid
     currentErrorHandlerId = nil
@@ -5335,22 +5339,22 @@ function WeakAuras.SafeToNumber(input)
 end
 
 local textSymbols = {
-  ["{rt1}"]      = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_1:0|t",
-  ["{rt2}"]      = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_2:0|t",
-  ["{rt3}"]      = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_3:0|t",
-  ["{rt4}"]      = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_4:0|t",
-  ["{rt5}"]      = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_5:0|t",
-  ["{rt6}"]      = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_6:0|t",
-  ["{rt7}"]      = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_7:0|t",
-  ["{rt8}"]      = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_8:0|t",
-  ["{rt9}"]      = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:0:16:32:48|t",
-  ["{rt10}"]     = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:16:32:32:48|t",
-  ["{rt11}"]     = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:32:48:32:48|t",
-  ["{rt12}"]     = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:48:64:32:48|t",
-  ["{rt13}"]     = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:0:16:48:64|t",
-  ["{rt14}"]     = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:16:32:48:64|t",
-  ["{rt15}"]     = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:32:48:48:64|t",
-  ["{rt16}"]     = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:48:64:48:64|t"
+  ["{rt1}"]  = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_1:0|t",
+  ["{rt2}"]  = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_2:0|t",
+  ["{rt3}"]  = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_3:0|t",
+  ["{rt4}"]  = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_4:0|t",
+  ["{rt5}"]  = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_5:0|t",
+  ["{rt6}"]  = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_6:0|t",
+  ["{rt7}"]  = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_7:0|t",
+  ["{rt8}"]  = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_8:0|t",
+  ["{rt9}"]  = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:0:16:32:48|t",
+  ["{rt10}"] = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:16:32:32:48|t",
+  ["{rt11}"] = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:32:48:32:48|t",
+  ["{rt12}"] = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:48:64:32:48|t",
+  ["{rt13}"] = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:0:16:48:64|t",
+  ["{rt14}"] = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:16:32:48:64|t",
+  ["{rt15}"] = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:32:48:48:64|t",
+  ["{rt16}"] = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcons.blp:0:0:0:0:64:64:48:64:48:64|t",
 }
 
 function WeakAuras.ReplaceRaidMarkerSymbols(txt)
@@ -5545,40 +5549,6 @@ function Private.ExecEnv.ParseZoneCheck(input)
   for id in string.gmatch(input, "%d+") do
     matcher:AddId(tonumber(id))
   end
-
-  return matcher
-end
-
-function Private.ExecEnv.ParseStringCheck(input)
-  if not input then return end
-  local matcher = {
-    zones = {},
-    Check = function(self, zone)
-      return self.zones[zone]
-    end,
-    Add = function(self, z)
-      self.zones[z] = true
-    end
-  }
-
-  local start = 1
-  local escaped = false
-  local partial = ""
-  for i = 1, #input do
-    local c = input:sub(i, i)
-    if escaped then
-      escaped = false
-    elseif c == '\\' then
-      partial = partial .. input:sub(start, i - 1)
-      start = i + 1
-      escaped = true
-    elseif c == "," then
-      matcher:Add(partial .. input:sub(start, i - 1):trim())
-      start = i + 1
-      partial = ""
-    end
-  end
-  matcher:Add(partial .. input:sub(start, #input):trim())
 
   return matcher
 end

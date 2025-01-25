@@ -647,6 +647,68 @@ Private.tinySecondFormat = function(value)
   end
 end
 
+function Private.ExecEnv.ParseStringCheck(input)
+  if not input then return end
+  local matcher = {
+    entries = {},
+    negativeEntries = {},
+    Check = function(self, e)
+      return false
+    end,
+    CheckBoth = function(self, e)
+      return self.entries[e] and not self.negativeEntries[e]
+    end,
+    CheckPositive = function(self, e)
+      return self.entries[e]
+    end,
+    CheckNegative = function(self, e)
+      return not self.negativeEntries[e]
+    end,
+    Add = function(self, e, negate)
+      if negate then
+        self.negativeEntries[e] = true
+      else
+        self.entries[e] = true
+      end
+    end
+  }
+
+  local start = 1
+  local escaped = false
+  local partial = ""
+  local negate = false
+  for i = 1, #input do
+    local c = input:sub(i, i)
+    if escaped then
+      escaped = false
+    elseif c == '\\' then
+      partial = partial .. input:sub(start, i - 1)
+      start = i + 1
+      escaped = true
+    elseif c == "," then
+      matcher:Add(partial .. input:sub(start, i - 1):trim(), negate)
+      start = i + 1
+      partial = ""
+      negate = false
+    elseif c == "-" and partial:trim() == "" and input:sub(start, i - 1):trim() == "" then
+      start = i + 1
+      negate = true
+    end
+  end
+  matcher:Add(partial .. input:sub(start, #input):trim(), negate)
+
+  -- Update check function
+  if next(matcher.entries) and next(matcher.negativeEntries) then
+    matcher.Check = matcher.CheckBoth
+  elseif next(matcher.entries) then
+    matcher.Check = matcher.CheckPositive
+  elseif next(matcher.negativeEntries) then
+    matcher.Check = matcher.CheckNegative
+  end
+
+  return matcher
+end
+
 function WeakAuras.ValidateNumericOrPercent(info, val)
   if val ~= nil and val ~= "" then
     local percent = string.match(val, "(%d+)%%")
@@ -1077,7 +1139,7 @@ Private.load_prototype = {
       test = "zoneChecker:Check(zone)",
       events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), L["Supports multiple entries, separated by commas"])
+        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."])
       end,
       optional = true,
     },
@@ -1090,7 +1152,7 @@ Private.load_prototype = {
       test = "WeakAuras.CheckNumericIds(%q, zoneId)",
       events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-	    return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas"])
+	    return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."])
 	    end,
       optional = true,
     },
@@ -1104,7 +1166,7 @@ Private.load_prototype = {
       test = "subzoneChecker:Check(subzone)",
       events = { "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetMinimapZoneText(), L["Supports multiple entries, separated by commas"])
+        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetMinimapZoneText(), L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."])
       end,
       optional = true,
     },
@@ -1608,7 +1670,7 @@ Private.event_prototypes = {
             return preamble:Check(state.npcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas"],
+        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
         enable = function(trigger)
             return not trigger.use_inverse
         end,
@@ -1977,7 +2039,7 @@ Private.event_prototypes = {
             return preamble:Check(state.npcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas"],
+        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
         enable = function(trigger)
             return not trigger.use_inverse
         end,
@@ -2332,7 +2394,7 @@ Private.event_prototypes = {
             return preamble:Check(state.npcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas"],
+        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
         enable = function(trigger)
             return not trigger.use_inverse
         end,
@@ -2504,7 +2566,7 @@ Private.event_prototypes = {
         conditionType = "string",
         preamble = "local sourceNameChecker = Private.ExecEnv.ParseStringCheck(%q)",
         test = "sourceNameChecker:Check(sourceName)",
-        desc = L["Supports multiple entries, separated by commas"],
+        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
       },
       {
         name = "sourceNpcId",
@@ -2523,7 +2585,7 @@ Private.event_prototypes = {
             return preamble:Check(state.sourceNpcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas"],
+        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
         enable = function(trigger)
           return not (trigger.subeventPrefix == "ENVIRONMENTAL")
         end,
@@ -2641,7 +2703,7 @@ Private.event_prototypes = {
         conditionType = "string",
         preamble = "local destNameChecker = Private.ExecEnv.ParseStringCheck(%q)",
         test = "destNameChecker:Check(destName)",
-        desc = L["Supports multiple entries, separated by commas"],
+        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
         enable = function(trigger)
           return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
         end,
@@ -2663,7 +2725,7 @@ Private.event_prototypes = {
             return preamble:Check(state.destNpcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas"],
+        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
         enable = function(trigger)
           return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
         end,
@@ -5098,9 +5160,19 @@ Private.event_prototypes = {
       {
         name = "enchant",
         display = L["Weapon Enchant"],
-        desc = L["Enchant Name"],
+        desc = L["Enchant Name or ID"],
         type = "string",
         test = "true"
+      },
+      {
+        name = "enchantID",
+        hidden = true,
+        test = "true",
+        display = L["Enchant ID"],
+        store = true,
+        conditionType = "number",
+        operator_types = "only_equal",
+        noProgressSource = true
       },
       {
         name = "stacks",
@@ -5144,6 +5216,18 @@ Private.event_prototypes = {
         init = "icon",
         test = "true",
         store = true
+      },
+      {
+        name = "enchanted",
+        display = L["Enchanted"],
+        hidden = true,
+        init = "found == true",
+        test = "true",
+        store = true,
+        conditionType = "bool",
+        conditionTest = function(state, needle)
+          return state and state.show and state.enchanted == (needle == 1)
+        end,
       },
       {
         name = "remaining",
@@ -5903,7 +5987,7 @@ Private.event_prototypes = {
           return preamble:Check(state.name)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas"]
+        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."]
       },
       {
         name = "npcId",
@@ -5922,7 +6006,7 @@ Private.event_prototypes = {
           return preamble:Check(state.npcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas"]
+        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."]
       },
       {
         name = "value",
@@ -6218,7 +6302,7 @@ Private.event_prototypes = {
             return preamble:Check(state.npcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas"],
+        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
         enable = function(trigger)
             return not trigger.use_inverse
         end,
@@ -7585,7 +7669,7 @@ Private.event_prototypes = {
         name = "zoneIds",
         display = L["Player Location ID(s)"],
         desc = function()
-          return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas"])
+          return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."])
         end,
         type = "string",
         multiline = true,
