@@ -501,13 +501,73 @@ local function ConstructTextEditor(frame)
       end
   )
 
-  -- CTRL + S saves and closes
+  editor.editBox.timeMachine = {}
+  editor.editBox.timeMachinePos = 1
+  local TimeMachineMaximumRollback = 10
+
   editor.editBox:HookScript(
     "OnKeyDown",
-    function(_, key)
+    function(self, key)
+      -- CTRL + S saves and closes
+      print(IsControlKeyDown(), key)
       if IsControlKeyDown() and key == "S" then
         group:Close()
+      elseif IsControlKeyDown() and key == "Z" then
+        self.ignoreNextKeyPress = true
+        if self.timeMachine[self.timeMachinePos + 1] then
+          self.timeMachinePos = self.timeMachinePos + 1
+          self.skipOnTextChanged = true
+          self:SetText(self.timeMachine[self.timeMachinePos][1])
+          self:SetCursorPosition(self.timeMachine[self.timeMachinePos][2])
+        end
+      elseif IsControlKeyDown() and key == "Y" then
+        self.ignoreNextKeyPress = true
+        if self.timeMachine[self.timeMachinePos - 1] then
+          self.timeMachinePos = self.timeMachinePos - 1
+          self.skipOnTextChanged = true
+          self:SetText(self.timeMachine[self.timeMachinePos][1])
+          self:SetCursorPosition(self.timeMachine[self.timeMachinePos][2])
+        end
       end
+    end
+  )
+
+  editor.editBox:HookScript(
+    "OnKeyUp",
+    function(self, key)
+      if self.ignoreNextKeyPress then
+        self.ignoreNextKeyPress = false -- Reset
+      end
+    end
+  )
+
+  editor.editBox:HookScript(
+    "OnTextChanged",
+    function(self, userInput)
+      if not userInput then return end
+      if self.skipOnTextChanged then
+        self.skipOnTextChanged = false
+        return
+      end
+      local cursorPosition = self:GetCursorPosition()
+      local text = originalGetText(self)
+      if IndentationLib then
+        text, cursorPosition = IndentationLib.stripWowColorsWithPos(text, cursorPosition)
+      end
+      if self.timeMachine[1] and text == self.timeMachine[1][1] then
+        return
+      end
+      -- if cursor is not at position 1, remove elements before cursor
+      for i = 2, self.timeMachinePos do
+        table.remove(self.timeMachine, 1)
+      end
+      -- insert current text
+      table.insert(self.timeMachine, 1, {text, cursorPosition - 1})
+      -- timeMachine is limited to a number of TimeMachineMaximumRollback elements
+      for i = #self.timeMachine, TimeMachineMaximumRollback + 1, -1 do
+        table.remove(self.timeMachine, i)
+      end
+      self.timeMachinePos = 1
     end
   )
 
@@ -627,6 +687,8 @@ local function ConstructTextEditor(frame)
       end
     end
     editor:SetLabel(title)
+    editor.editBox.timeMachine = {}
+    editor.editBox.timeMachinePos = 1
     editor.editBox:SetScript(
       "OnEscapePressed",
       function()
