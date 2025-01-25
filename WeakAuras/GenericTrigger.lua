@@ -52,11 +52,7 @@ local AddonName, Private = ...
 -- Lua APIs
 local tinsert, tconcat, wipe = table.insert, table.concat, wipe
 local tonumber, tostring, pairs, type = tonumber, tostring, pairs, type
-local error, setmetatable = error, setmetatable
-
-WeakAurasAceEvents = setmetatable({}, {__tostring=function() return "WeakAuras" end});
-LibStub("AceEvent-3.0"):Embed(WeakAurasAceEvents);
-local aceEvents = WeakAurasAceEvents
+local error = error
 
 local WeakAuras = WeakAuras;
 local L = WeakAuras.L;
@@ -2658,7 +2654,7 @@ do
 
       -- We check against 1.5 and gcdDuration, as apparently the durations might not match exactly.
       -- But there shouldn't be any trinket with a actual cd of less than 1.5 anyway
-      if(duration > 0 and duration > 1.5 and duration ~= WeakAuras.gcdDuration()) then
+      if(duration and duration > 0 and duration > 1.5 and duration ~= WeakAuras.gcdDuration()) then
         -- On non-GCD cooldown
         local endTime = startTime + duration;
 
@@ -2916,6 +2912,7 @@ function WeakAuras.WatchUnitChange(unit)
     Private.frames["Unit Change Frame"] = watchUnitChange;
     watchUnitChange:RegisterEvent("PLAYER_TARGET_CHANGED")
     watchUnitChange:RegisterEvent("PLAYER_FOCUS_CHANGED");
+    watchUnitChange:RegisterEvent("ARENA_OPPONENT_UPDATE")
     watchUnitChange:RegisterEvent("PLAYER_ROLES_ASSIGNED");
     watchUnitChange:RegisterEvent("UNIT_TARGET");
     watchUnitChange:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT");
@@ -3019,46 +3016,59 @@ function WeakAuras.WatchUnitChange(unit)
       end
     end
 
-    watchUnitChange:SetScript("OnEvent", function(self, event, unit)
-      Private.StartProfileSystem("generictrigger unit change");
-      local eventsToSend = {}
-      if event == "PLAYER_ENTERING_WORLD" then
+    local handleEvent = {
+      PLAYER_ENTERING_WORLD = function(_, eventsToSend)
         for unit in pairs(watchUnitChange.unitIdToGUID) do
           handleUnit(unit, eventsToSend, unitUpdate, markerUpdate, reactionUpdate)
         end
-      elseif event == "NAME_PLATE_UNIT_ADDED" then
+      end,
+      NAME_PLATE_UNIT_ADDED = function(unit, eventsToSend)
         handleUnit(unit, eventsToSend, unitUpdate, markerInit, reactionInit)
-      elseif event == "NAME_PLATE_UNIT_REMOVED" then
+      end,
+      NAME_PLATE_UNIT_REMOVED = function(unit, eventsToSend)
         handleUnit(unit, eventsToSend, unitUpdate, markerClear, reactionClear)
-      elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
+      end,
+      INSTANCE_ENCOUNTER_ENGAGE_UNIT = function(_, eventsToSend)
         for i = 1, 5 do
           handleUnit("boss" .. i, eventsToSend, unitUpdate, markerInit, reactionInit)
           handleUnit("boss" .. i .. "target", eventsToSend, unitUpdate, markerInit, reactionInit)
         end
-      elseif event == "PLAYER_TARGET_CHANGED" then
+      end,
+      ARENA_OPPONENT_UPDATE = function(unit, eventsToSend)
+        handleUnit(unit, eventsToSend, unitUpdate, markerInit, reactionInit)
+        handleUnit(unit .. "target", eventsToSend, unitUpdate, markerInit, reactionInit)
+      end,
+      PLAYER_TARGET_CHANGED = function(_, eventsToSend)
         handleUnit("target", eventsToSend, unitUpdate, markerInit, reactionInit)
         handleUnit("targettarget", eventsToSend, unitUpdate, markerInit, reactionInit)
-      elseif event == "PLAYER_FOCUS_CHANGED" then
+      end,
+      PLAYER_FOCUS_CHANGED = function(_, eventsToSend)
         handleUnit("focus", eventsToSend, unitUpdate, markerInit, reactionInit)
         handleUnit("focustarget", eventsToSend, unitUpdate, markerInit, reactionInit)
-      elseif event == "RAID_TARGET_UPDATE" then
+      end,
+      RAID_TARGET_UPDATE = function(_, eventsToSend)
         for unit in pairs(watchUnitChange.raidmark) do
           handleUnit(unit, eventsToSend, markerUpdate)
         end
-      elseif event == "UNIT_FACTION" then
+      end,
+      UNIT_FACTION = function(unit, eventsToSend)
         handleUnit(unit, eventsToSend, reactionUpdate)
-      elseif event == "UNIT_PET" then
+      end,
+      UNIT_PET = function(unit, eventsToSend)
         local pet = WeakAuras.unitToPetUnit[unit]
         if pet and watchUnitChange.trackedUnits[pet] then
           eventsToSend["UNIT_CHANGED_" .. pet] = pet
         end
-      elseif event == "PLAYER_ROLES_ASSIGNED" then
+      end,
+      PLAYER_ROLES_ASSIGNED = function(_, eventsToSend)
         for unit in pairs(Private.multiUnitUnits.group) do
           handleUnit(unit, eventsToSend, roleUpdate)
         end
-      elseif event == "UNIT_TARGET" then
+      end,
+      UNIT_TARGET = function(unit, eventsToSend)
         handleUnit(unit .. "target", eventsToSend, unitUpdate, markerInit, reactionInit)
-      elseif event == "PARTY_MEMBERS_CHANGED" or event == "RAID_ROSTER_UPDATE" then
+      end,
+      GROUP_ROSTER_UPDATE = function(_, eventsToSend)
         for unit in pairs(Private.multiUnitUnits.group) do
           handleUnit(unit, eventsToSend, unitUpdate, markerInit, reactionInit)
         end
@@ -3073,7 +3083,13 @@ function WeakAuras.WatchUnitChange(unit)
           watchUnitChange.inRaid = inRaid
         end
       end
+    }
+    handleEvent["RAID_ROSTER_UPDATE"] = handleEvent["GROUP_ROSTER_UPDATE"]
 
+    watchUnitChange:SetScript("OnEvent", function(self, event, unit)
+      Private.StartProfileSystem("generictrigger unit change");
+      local eventsToSend = {}
+      handleEvent[event](unit, eventsToSend)
       -- send events
       for event, unit in pairs(eventsToSend) do
         WeakAuras.ScanEvents(event, unit)
