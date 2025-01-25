@@ -935,7 +935,13 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       callbacks = {
         OnEditFocusGained = function(self)
           local widget = dynamicTextInputs["condition" .. i .. "value" .. j .. "message dest"]
-          OptionsPrivate.ToggleTextReplacements(data, true, widget)
+          OptionsPrivate.ToggleTextReplacements(data, widget, "OnEditFocusGained")
+        end,
+        OnEditFocusLost = function(self)
+          OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEditFocusLost")
+        end,
+        OnEnterPressed = function(self)
+          OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEnterPressed")
         end,
         OnShow = function(self)
           dynamicTextInputs["condition" .. i .. "value" .. j .. "message dest"] = self
@@ -955,7 +961,7 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       end,
       func = function()
         local widget = dynamicTextInputs["condition" .. i .. "value" .. j .. "message dest"]
-        OptionsPrivate.ToggleTextReplacements(data, nil, widget)
+        OptionsPrivate.ToggleTextReplacements(data, widget, "ToggleButton")
       end,
       imageWidth = 24,
       imageHeight = 24,
@@ -995,7 +1001,13 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       callbacks = {
         OnEditFocusGained = function(self)
           local widget = dynamicTextInputs["condition" .. i .. "value" .. j .. "message"]
-          OptionsPrivate.ToggleTextReplacements(data, true, widget)
+          OptionsPrivate.ToggleTextReplacements(data, widget, "OnEditFocusGained")
+        end,
+        OnEditFocusLost = function(self)
+          OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEditFocusLost")
+        end,
+        OnEnterPressed = function(self)
+          OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEnterPressed")
         end,
         OnShow = function(self)
           dynamicTextInputs["condition" .. i .. "value" .. j .. "message"] = self
@@ -1012,7 +1024,7 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       order = order,
       func = function()
         local widget = dynamicTextInputs["condition" .. i .. "value" .. j .. "message"]
-        OptionsPrivate.ToggleTextReplacements(data, nil, widget)
+        OptionsPrivate.ToggleTextReplacements(data, widget, "ToggleButton")
       end,
       imageWidth = 24,
       imageHeight = 24,

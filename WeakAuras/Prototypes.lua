@@ -3359,7 +3359,7 @@ Private.event_prototypes = {
         test = "true",
         conditionType = "bool",
         conditionTest = function(state, needle)
-          return state and state.show and ((IsUsableSpell(state.spellname) == 1 and true or false) == (needle == 1))
+          return state and state.show and (IsUsableSpell(state.spellname or "") == (needle == 1))
         end,
         conditionEvents = {
           "SPELL_UPDATE_USABLE",
@@ -3374,7 +3374,7 @@ Private.event_prototypes = {
         test = "true",
         conditionType = "bool",
         conditionTest = function(state, needle)
-          return state and state.show and ((select(2, IsUsableSpell(state.spellname)) == 1 and true or false) == (needle == 1));
+          return state and state.show and (select(2, IsUsableSpell(state.spellname or "")) == (needle == 1));
         end,
         conditionEvents = {
           "SPELL_UPDATE_USABLE",
@@ -4382,7 +4382,7 @@ Private.event_prototypes = {
           charges = (duration == 0 or gcdCooldown) and 1 or 0;
         end
         local ready = startTime == 0 or charges > 0
-        local active = IsUsableSpell(spellName) and ready
+        local active = IsUsableSpell(spellName or "") and ready
       ]=]
       if(trigger.use_targetRequired) then
         ret = ret.."active = active and WeakAuras.IsSpellInRange(spellName or '', 'target')\n";
