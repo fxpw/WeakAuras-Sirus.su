@@ -2443,7 +2443,7 @@ function BuffTrigger.Add(data)
       local effectiveIgnoreDead = groupTrigger and trigger.ignoreDead
       local effectiveIgnoreDisconnected = groupTrigger and trigger.ignoreDisconnected
       local effectiveIgnoreInvisible = groupTrigger and trigger.ignoreInvisible
-      local effectiveHostility = trigger.unit == "nameplate" and trigger.useHostility and trigger.hostility
+      local effectiveHostility = (groupTrigger or trigger.unit == "nameplate") and trigger.useHostility and trigger.hostility
       local effectiveNameCheck = groupTrigger and trigger.useUnitName and trigger.unitName
       local effectiveNpcId = trigger.unit == "nameplate" and trigger.useNpcId and Private.ExecEnv.ParseStringCheck(trigger.npcId)
 
@@ -3465,7 +3465,8 @@ function BuffTrigger.InitMultiAura()
 end
 
 function BuffTrigger.HandleMultiEvent(frame, event, ...)
-  Private.StartProfileSystem("bufftrigger2 - multi")
+  local system = "bufftrigger2 - multi - " .. event
+  Private.StartProfileSystem(system)
   if event == "COMBAT_LOG_EVENT_UNFILTERED" then
     CombatLog(...)
   elseif event == "UNIT_TARGET" then
@@ -3498,7 +3499,7 @@ function BuffTrigger.HandleMultiEvent(frame, event, ...)
     end
     wipe(matchDataMulti)
   end
-  Private.StopProfileSystem("bufftrigger2 - multi")
+  Private.StopProfileSystem(system)
 end
 
 function BuffTrigger.GetTriggerDescription(data, triggernum, namestable)

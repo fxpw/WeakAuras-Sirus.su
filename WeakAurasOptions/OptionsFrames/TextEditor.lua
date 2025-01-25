@@ -3,7 +3,6 @@ local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
 local pairs, type, ipairs = pairs, type, ipairs
-local loadstring = loadstring
 local gsub = gsub
 
 -- WoW APIs
@@ -182,6 +181,7 @@ local function ConstructTextEditor(frame)
   -- The indention lib overrides GetText, but for the line number
   -- display we ned the original, so save it here.
   local originalGetText = editor.editBox.GetText
+  local originalSetText = editor.editBox.SetText
   set_scheme()
   IndentationLib.enable(editor.editBox, color_scheme, WeakAurasSaved.editor_tab_spaces)
 
@@ -517,7 +517,7 @@ local function ConstructTextEditor(frame)
         if self.timeMachine[self.timeMachinePos + 1] then
           self.timeMachinePos = self.timeMachinePos + 1
           self.skipOnTextChanged = true
-          self:SetText(self.timeMachine[self.timeMachinePos][1])
+          originalSetText(self, self.timeMachine[self.timeMachinePos][1])
           self:SetCursorPosition(self.timeMachine[self.timeMachinePos][2])
         end
       elseif IsControlKeyDown() and key == "Y" then
@@ -525,7 +525,7 @@ local function ConstructTextEditor(frame)
         if self.timeMachine[self.timeMachinePos - 1] then
           self.timeMachinePos = self.timeMachinePos - 1
           self.skipOnTextChanged = true
-          self:SetText(self.timeMachine[self.timeMachinePos][1])
+          originalSetText(self, self.timeMachine[self.timeMachinePos][1])
           self:SetCursorPosition(self.timeMachine[self.timeMachinePos][2])
         end
       end
@@ -705,15 +705,12 @@ local function ConstructTextEditor(frame)
         else
           local func, errorString
           if (enclose) then
-            func, errorString = loadstring("return function() " .. str .. "\n end")
+            func, errorString = OptionsPrivate.Private.LoadFunction("return function() " .. str .. "\n end", true)
           else
-            func, errorString = loadstring("return " .. str)
+            func, errorString = OptionsPrivate.Private.LoadFunction("return " .. str, true)
           end
           if not errorString and validator then
-            local ok, validate = xpcall(func, function(err) errorString = err end)
-            if ok then
-              errorString = validator(validate)
-            end
+            errorString = validator(func)
           end
           if errorString then
             if self.url then

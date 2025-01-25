@@ -567,45 +567,46 @@ local function OptionsFrame()
   end
 end
 
-function WeakAuras.ToggleOptions(msg, Private)
-  if not Private then
-    return
-  end
-  if not OptionsPrivate.Private then
-    OptionsPrivate.Private = Private
-    Private.OptionsFrame = OptionsFrame
-    for _, fn in ipairs(OptionsPrivate.registerRegions) do
-      fn()
+if not WeakAuras.ToggleOptions then
+  function WeakAuras.ToggleOptions(msg, Private)
+    if not Private then
+      return
+    end
+    if not OptionsPrivate.Private then
+      OptionsPrivate.Private = Private
+      Private.OptionsFrame = OptionsFrame
+      for _, fn in ipairs(OptionsPrivate.registerRegions) do
+        fn()
+      end
+      OptionsPrivate.Private.callbacks:RegisterCallback("AuraWarningsUpdated", function(event, uid)
+        local id = OptionsPrivate.Private.UIDtoID(uid)
+        if displayButtons[id] then
+          -- The button does not yet exists if a new aura is created
+          displayButtons[id]:UpdateWarning()
+        end
+        local data = Private.GetDataByUID(uid)
+        if data and data.parent then
+          local button = OptionsPrivate.GetDisplayButton(data.parent);
+          if button then
+            button:UpdateParentWarning()
+          end
+        end
+      end)
+
+      OptionsPrivate.Private.callbacks:RegisterCallback("ScanForLoads", AfterScanForLoads)
+      OptionsPrivate.Private.callbacks:RegisterCallback("AboutToDelete", OnAboutToDelete)
+      OptionsPrivate.Private.callbacks:RegisterCallback("Rename", OnRename)
+      OptionsPrivate.Private.OpenUpdate = OptionsPrivate.OpenUpdate
     end
 
-    OptionsPrivate.Private.callbacks:RegisterCallback("AuraWarningsUpdated", function(event, uid)
-      local id = OptionsPrivate.Private.UIDtoID(uid)
-      if displayButtons[id] then
-        -- The button does not yet exists if a new aura is created
-        displayButtons[id]:UpdateWarning()
-      end
-      local data = Private.GetDataByUID(uid)
-      if data and data.parent then
-        local button = OptionsPrivate.GetDisplayButton(data.parent);
-        if button then
-          button:UpdateParentWarning()
-        end
-      end
-    end)
-
-    OptionsPrivate.Private.callbacks:RegisterCallback("ScanForLoads", AfterScanForLoads)
-    OptionsPrivate.Private.callbacks:RegisterCallback("AboutToDelete", OnAboutToDelete)
-    OptionsPrivate.Private.callbacks:RegisterCallback("Rename", OnRename)
-    OptionsPrivate.Private.OpenUpdate = OptionsPrivate.OpenUpdate
-  end
-
-  if(frame and frame:IsVisible()) then
-    WeakAuras.HideOptions();
-  elseif (InCombatLockdown()) then
-    WeakAuras.prettyPrint(L["Options will open after combat ends."])
-    reopenAfterCombat = true;
-  else
-    WeakAuras.ShowOptions(msg);
+    if(frame and frame:IsVisible()) then
+      WeakAuras.HideOptions();
+    elseif (InCombatLockdown()) then
+      WeakAuras.prettyPrint(L["Options will open after combat ends."])
+      reopenAfterCombat = true;
+    else
+      WeakAuras.ShowOptions(msg);
+    end
   end
 end
 
@@ -722,9 +723,11 @@ local function LayoutDisplayButtons(msg)
       for id, button in pairs(displayButtons) do
         if OptionsPrivate.Private.loaded[id] then
           button:PriorityShow(1);
+          coroutine.yield()
         end
       end
       OptionsPrivate.Private.OptionsFrame().loadedButton:RecheckVisibility()
+      coroutine.yield()
     end
     OptionsPrivate.Private.ResumeAllDynamicGroups(suspended)
 
@@ -757,11 +760,11 @@ local function LayoutDisplayButtons(msg)
     end
 
     local co2 = coroutine.create(func2);
-    OptionsPrivate.Private.dynFrame:AddAction("LayoutDisplayButtons2", co2);
+    OptionsPrivate.Private.Threads:Add("LayoutDisplayButtons2", co2);
   end
 
   local co1 = coroutine.create(func1);
-  OptionsPrivate.Private.dynFrame:AddAction("LayoutDisplayButtons1", co1);
+  OptionsPrivate.Private.Threads:Add("LayoutDisplayButtons1", co1);
 end
 
 function OptionsPrivate.DeleteAuras(auras, parents)
@@ -809,7 +812,7 @@ function OptionsPrivate.DeleteAuras(auras, parents)
   end
 
   local co1 = coroutine.create(func1)
-  OptionsPrivate.Private.dynFrame:AddAction("Deleting Auras", co1)
+  OptionsPrivate.Private.Threads:Add("Deleting Auras", co1)
 end
 
 function WeakAuras.ShowOptions(msg)
@@ -1566,7 +1569,7 @@ function OptionsPrivate.Drop(mainAura, target, action, area)
   end
 
   local co1 = coroutine.create(func1)
-  OptionsPrivate.Private.dynFrame:AddAction("Dropping Auras", co1)
+  OptionsPrivate.Private.Threads:Add("Dropping Auras", co1)
 end
 
 function OptionsPrivate.StartDrag(mainAura)

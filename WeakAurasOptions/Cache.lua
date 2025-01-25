@@ -29,6 +29,7 @@ function spellCache.Build()
 
   wipe(cache)
   local co = coroutine.create(function()
+    metaData.rebuilding = true
     local id = 0
     local misses = 0
 
@@ -47,7 +48,7 @@ function spellCache.Build()
         misses = misses + 1
       end
 
-      coroutine.yield()
+      coroutine.yield(0.01, "spells")
     end
 
     for _, category in pairs(GetCategoryList()) do
@@ -59,8 +60,9 @@ function spellCache.Build()
           cache[name].achievements = cache[name].achievements or {}
           cache[name].achievements[id] = iconID
         end
+        coroutine.yield(0.1, "achievements")
       end
-      coroutine.yield()
+      coroutine.yield(0.1, "categories")
     end
 
     -- Updates the icon cache with whatever icons WeakAuras core has actually used.
@@ -74,8 +76,9 @@ function spellCache.Build()
     end
 
     metaData.needsRebuild = false
+    metaData.rebuilding = false
   end)
-  OptionsPrivate.Private.dynFrame:AddAction("spellCache", co)
+  OptionsPrivate.Private.Threads:Add("spellCache", co, 'background')
 end
 
 function spellCache.GetIcon(name)
@@ -97,6 +100,8 @@ function spellCache.GetIcon(name)
           end
         end
       end
+    elseif metaData.rebuilding then
+      OptionsPrivate.Private.Threads:SetPriority('spellCache', 'normal')
     end
 
     bestIcon[name] = bestMatch and icons.spells[bestMatch];
@@ -121,6 +126,8 @@ function spellCache.AddIcon(name, id, icon)
         cache[name].spells[id] = icon
       end
     end
+  elseif metaData.rebuilding then
+    OptionsPrivate.Private.Threads:SetPriority('spellCache', 'normal')
   else
     error("spellCache has not been loaded. Call WeakAuras.spellCache.Load(...) first.")
   end

@@ -703,6 +703,9 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
     elseif (data.statesParameter == "unit") then
       if arg1 then
         if Private.multiUnitUnits[data.trigger.unit] then
+          if data.trigger.unit == "group" and IsInRaid() and Private.multiUnitUnits.party[arg1] then
+            return
+          end
           unitForUnitTrigger = arg1
           cloneIdForUnitTrigger = arg1
         else
@@ -1149,8 +1152,8 @@ function HandleEvent(frame, event, arg1, arg2, ...)
   if (event == "PLAYER_ENTERING_WORLD") then
     timer:ScheduleTimer(function()
       HandleEvent(frame, "WA_DELAYED_PLAYER_ENTERING_WORLD");
-      Private.StartProfileSystem("generictrigger WA_DELAYED_PLAYER_ENTERING_WORLD");
       Private.ScanForLoads(nil, "WA_DELAYED_PLAYER_ENTERING_WORLD")
+      Private.StartProfileSystem("generictrigger WA_DELAYED_PLAYER_ENTERING_WORLD");
       Private.CheckCooldownReady();
       Private.StopProfileSystem("generictrigger WA_DELAYED_PLAYER_ENTERING_WORLD");
       Private.PreShowModels()
@@ -1843,7 +1846,7 @@ function GenericTrigger.Add(data, region)
   end
 
   if warnAboutCLEUEvents then
-    Private.AuraWarnings.UpdateWarning(data.uid, "spammy_event_warning", "warning",
+    Private.AuraWarnings.UpdateWarning(data.uid, "spammy_event_warning", "error",
                 L["COMBAT_LOG_EVENT_UNFILTERED with no filter can trigger frame drops in raid environment. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Deprecated-CLEU"])
   else
     Private.AuraWarnings.UpdateWarning(data.uid, "spammy_event_warning")
@@ -2199,19 +2202,21 @@ do
     end,
     Schedule = function(self, expirationTime, id)
       if (not self.expirationTime[id] or expirationTime < self.expirationTime[id]) and expirationTime > 0 then
-        if self.handles[id] then
-          timer:CancelTimer(self.handles[id])
-          self.handles[id] = nil
-          self.expirationTime[id] = nil
-        end
-
+        self:Cancel(id)
         local duration = expirationTime - GetTime()
         if duration > 0 then
           self.handles[id] = timer:ScheduleTimer(self.Recheck, duration, self, id)
           self.expirationTime[id] = expirationTime
         end
       end
-    end
+    end,
+    Cancel = function(self, id)
+      if self.handles[id] then
+        timer:CancelTimer(self.handles[id])
+        self.handles[id] = nil
+        self.expirationTime[id] = nil
+      end
+    end,
   }
 
   local function FetchSpellCooldown(self, id)
@@ -2226,6 +2231,7 @@ do
     local nowReady = false
     local time = GetTime()
     if self.expirationTime[id] and self.expirationTime[id] <= time and self.expirationTime[id] ~= 0 then
+      self.readyTime[id] = self.expirationTime[id]
       self.duration[id] = 0
       self.expirationTime[id] = 0
       changed = true

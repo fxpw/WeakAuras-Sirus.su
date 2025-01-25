@@ -17,14 +17,9 @@ local ValidateNumeric = WeakAuras.ValidateNumeric;
 local spellCache = WeakAuras.spellCache;
 
 local function CorrectSpellName(input)
-  local inputId = tonumber(input);
+  local inputId = tonumber(input)
   if(inputId) then
-    local name = GetSpellInfo(inputId);
-    if(name) then
-      return inputId;
-    else
-      return nil;
-    end
+    return inputId
   elseif(input) then
     local link;
     if(input:sub(1,1) == "\124") then
@@ -35,6 +30,16 @@ local function CorrectSpellName(input)
     if(link) and link ~= "" then
       local itemId = link:match("spell:(%d+)");
       return tonumber(itemId);
+    else
+      local spells = spellCache.GetSpellsMatching(input)
+      if type(spells) == "table" then
+        for id in pairs(spells) do
+          if id and tonumber(id) and id > 0 and IsSpellKnown(tonumber(id)) then
+            return id
+          end
+        end
+        return next(spells)
+      end
     end
   end
 end
@@ -48,8 +53,6 @@ local function CorrectItemName(input)
     if(link) then
       local itemId = link:match("item:(%d+)");
       return tonumber(itemId);
-    else
-      return nil;
     end
   end
 end
@@ -694,6 +697,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
                     if spellName then
                       return ("%s (%s)"):format(spellID, spellName) .. "\0" .. value
                     end
+                    return ("%s (%s)"):format(spellID, L["Unknown Spell"]) .. "\0" .. value
                   elseif not useExactSpellId and not arg.noValidation then
                     local spellName = GetSpellInfo(value)
                     if spellName then
@@ -946,6 +950,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
                 v = arg.multiConvertKey(trigger, v)
               end
               if v then
+                trigger[realname] = trigger[realname] or {}
                 trigger[realname].multi = trigger[realname].multi or {};
                 if (calledFromSetAll or arg.multiTristate) then
                   trigger[realname].multi[v] = calledFromSetAll;

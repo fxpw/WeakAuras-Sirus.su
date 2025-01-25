@@ -1,6 +1,6 @@
 local AddonName, Private = ...
 
-local internalVersion = 75
+local internalVersion = 78
 
 -- Lua APIs
 local insert = table.insert
@@ -183,6 +183,8 @@ function SlashCmdList.WEAKAURAS(input)
     WeakAuras.PrintProfile();
   elseif msg == "pcancel" then
     WeakAuras.CancelScheduledProfile()
+  elseif msg == "pshow" or msg == "profiling" then
+    WeakAuras.RealTimeProfilingWindow:Toggle()
   elseif msg == "minimap" then
     Private.ToggleMinimap();
   elseif msg == "help" then
@@ -1075,21 +1077,20 @@ function Private.LoginMessage()
   return loginMessage
 end
 
-function Private.Login(initialTime, takeNewSnapshots)
+function Private.Login(takeNewSnapshots)
   local loginThread = coroutine.create(function()
     Private.Pause();
-
+    coroutine.yield(100)
     if db.history then
       local histRepo = WeakAuras.LoadFromArchive("Repository", "history")
       local migrationRepo = WeakAuras.LoadFromArchive("Repository", "migration")
       for uid, hist in pairs(db.history) do
         local histStore = histRepo:Set(uid, hist.data)
         local migrationStore = migrationRepo:Set(uid, hist.migration)
-        coroutine.yield()
+        coroutine.yield(1000, "login move old history")
       end
       -- history is now in archive so we can shrink WeakAurasSaved
       db.history = nil
-      coroutine.yield();
     end
 
     local toAdd = {};
@@ -1103,14 +1104,15 @@ function Private.Login(initialTime, takeNewSnapshots)
 
       tinsert(toAdd, data);
     end
-    coroutine.yield();
+    coroutine.yield(8000);
 
     Private.AddMany(toAdd, takeNewSnapshots);
-    coroutine.yield();
+    coroutine.yield(1000);
 
     Private.RegisterLoadEvents();
+    coroutine.yield(10000);
     Private.Resume();
-    coroutine.yield();
+    coroutine.yield(100);
 
     local nextCallback = loginQueue[1];
     while nextCallback do
@@ -1120,7 +1122,7 @@ function Private.Login(initialTime, takeNewSnapshots)
       else
         nextCallback()
       end
-      coroutine.yield();
+      coroutine.yield(1000, "login post login callbacks");
       nextCallback = loginQueue[1];
     end
 
@@ -1129,31 +1131,12 @@ function Private.Login(initialTime, takeNewSnapshots)
     for _, region in pairs(Private.regions) do
       if (region.region and region.region.RunDelayedActions) then
         region.region:RunDelayedActions();
-        coroutine.yield()
+        coroutine.yield(500, "login delayed region actions");
       end
     end
   end)
 
-  if initialTime then
-    local startTime = debugprofilestop()
-    local finishTime = debugprofilestop()
-    local ok, msg
-    -- hard limit seems to be 19 seconds. We'll do 15 for now.
-    while coroutine.status(loginThread) ~= 'dead' and finishTime - startTime < 15000 do
-      ok, msg = coroutine.resume(loginThread)
-      finishTime = debugprofilestop()
-    end
-    if coroutine.status(loginThread) ~= 'dead' then
-      Private.dynFrame:AddAction('login', loginThread)
-    end
-    if not ok then
-      loginMessage = L["WeakAuras has encountered an error during the login process. Please report this issue at https://github.com/WeakAuras/Weakauras2/issues/new."]
-        .. "\nMessage:" .. msg
-        geterrorhandler()(msg .. '\n' .. debugstack(loginThread))
-    end
-  else
-    Private.dynFrame:AddAction('login', loginThread)
-  end
+  Private.Threads:Immediate('login', loginThread, 15000, 1000)
 end
 
 local WeakAurasFrame = CreateFrame("Frame", "WeakAurasFrame", UIParent);
@@ -1194,7 +1177,8 @@ loadedFrame:SetScript("OnEvent", function(self, event, addon)
 
       if db.lastArchiveClear == nil then
         db.lastArchiveClear = time();
-      elseif db.lastArchiveClear < time() - 86400 then
+      elseif db.lastArchiveClear < time() - 2505600 --[[29 days]] then
+        db.lastArchiveClear = time();
         Private.CleanArchive(db.historyCutoff, db.migrationCutoff);
       end
       db.minimap = db.minimap or { hide = false };
@@ -1216,8 +1200,7 @@ loadedFrame:SetScript("OnEvent", function(self, event, addon)
       dbIsValid = true
     end
     if dbIsValid then
-      -- run login thread for up to 15 seconds, then defer to dynFrame
-      Private.Login(15000, takeNewSnapshots)
+      Private.Login(takeNewSnapshots)
     else
       -- db isn't valid. Request permission to run repair tool before logging in
       StaticPopup_Show("WEAKAURAS_CONFIRM_REPAIR", nil, nil, {reason = "downgrade"})
@@ -1412,12 +1395,15 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   local vehicleUi = UnitHasVehicleUI("player") or false
 
   local raidMemberType = 0
+
   if UnitIsPartyLeader("player") then
     raidMemberType = raidMemberType + 1
+
   elseif UnitIsRaidOfficer("player") then
     raidMemberType = raidMemberType + 2
   end
 
+  local mounted = IsMounted()
   local size, difficulty, instanceType = GetInstanceTypeAndSize()
   local group = Private.ExecEnv.GroupType()
   local groupSize = GetNumGroupMembers()
@@ -1433,8 +1419,8 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
     if (data and not data.controlledChildren) then
       local loadFunc = loadFuncs[id];
       local loadOpt = loadFuncsForOptions[id];
-      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, player, realm, class, race, faction, playerLevel, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
-      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, player, realm, class, race, faction, playerLevel, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, mounted, player, realm, class, race, faction, playerLevel, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, mounted, player, realm, class, race, faction, playerLevel, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
 
       if(shouldBeLoaded and not loaded[id]) then
         changed = changed + 1;
@@ -1983,20 +1969,20 @@ function Private.NeedToRepairDatabase()
   return db.dbVersion and db.dbVersion > WeakAuras.InternalVersion()
 end
 
-local function RepairDatabase(loginAfter)
+local function RepairDatabase()
   local coro = coroutine.create(function()
     Private.SetImporting(true)
     -- set db version to current code version
     db.dbVersion = WeakAuras.InternalVersion()
     -- reinstall snapshots from history
     local newDB = WeakAuras.Mixin({}, db.displays)
-    coroutine.yield()
+    coroutine.yield(1000)
     for id, data in pairs(db.displays) do
       local snapshot = Private.GetMigrationSnapshot(data.uid)
       if snapshot then
         newDB[id] = nil
         newDB[snapshot.id] = snapshot
-        coroutine.yield()
+        coroutine.yield(1000, "repair get snapshot")
       end
     end
     db.displays = newDB
@@ -2004,7 +1990,7 @@ local function RepairDatabase(loginAfter)
     -- finally, login
     Private.Login()
   end)
-  Private.dynFrame:AddAction("repair", coro)
+  Private.Threads:Add("repair", coro, 'urgent')
 end
 
 StaticPopupDialogs["WEAKAURAS_CONFIRM_REPAIR"] = {
@@ -2165,9 +2151,9 @@ local function loadOrder(tbl, idtable)
           if not(loaded[data.parent]) then
             local dependsOut = CopyTable(depends)
             dependsOut[data.parent] = true
-            coroutine.yield()
+            coroutine.yield(100, "sort deps")
             load(data.parent, dependsOut)
-            coroutine.yield()
+            coroutine.yield(100, "sort deps")
           end
         end
       else
@@ -2175,15 +2161,15 @@ local function loadOrder(tbl, idtable)
       end
     end
     if not(loaded[id]) then
-      coroutine.yield();
+      coroutine.yield(100, "sort deps");
       loaded[id] = true;
       tinsert(order, idtable[id])
     end
   end
 
-  for id, data in pairs(idtable) do
+  for id in pairs(idtable) do
     load(id, {});
-    coroutine.yield()
+    coroutine.yield(100, "sort deps")
   end
   return order
 end
@@ -2207,17 +2193,26 @@ function Private.AddMany(tbl, takeSnapshots)
   end
 
   local order = loadOrder(tbl, idtable)
-  coroutine.yield()
+  coroutine.yield(5000)
 
   local oldSnapshots = {}
+  local copies = {}
   if takeSnapshots then
     for _, data in ipairs(order) do
       if Private.ModernizeNeedsOldSnapshot(data) then
         oldSnapshots[data.uid] = Private.GetMigrationSnapshot(data.uid)
       end
-      Private.SetMigrationSnapshot(data.uid, data)
-      coroutine.yield()
+      copies[data.uid] = CopyTable(data)
+      coroutine.yield(200, "addmany prepare snapshot")
     end
+    Private.Threads:Add("snapshot", coroutine.create(function()
+      prettyPrint(L["WeakAuras is creating a rollback snapshot of your auras. This snapshot will allow you to revert to the current state of your auras if something goes wrong. This process may cause your framerate to drop until it is complete."])
+      for uid, data in pairs(copies) do
+        Private.SetMigrationSnapshot(uid, data)
+        coroutine.yield(200, "snapshot")
+      end
+      prettyPrint(L["Rollback snapshot is complete. Thank you for your patience!"])
+    end), 'normal')
   end
 
   local groups = {}
@@ -2238,7 +2233,7 @@ function Private.AddMany(tbl, takeSnapshots)
       elseif data.regionType == "dynamicgroup" or data.regionType == "group" then
         groups[data] = true
       end
-      coroutine.yield()
+      coroutine.yield(1000, "addmany modernize")
     end
   end
 
@@ -2254,13 +2249,14 @@ function Private.AddMany(tbl, takeSnapshots)
         end
       end
     end
-    coroutine.yield()
+    coroutine.yield(2000, "addmany add")
   end
 
   for id in pairs(anchorTargets) do
     local data = idtable[id]
     if data and not bads[data.id] and (data.parent == nil or idtable[data.parent].regionType ~= "dynamicgroup") then
       Private.EnsureRegion(id)
+      coroutine.yield(100, "addmany ensure anchor")
     end
   end
 
@@ -2274,7 +2270,7 @@ function Private.AddMany(tbl, takeSnapshots)
         WeakAuras.Add(data)
       end
     end
-    coroutine.yield();
+    coroutine.yield(1000, "addmany reload dynamic group");
   end
 end
 
@@ -3839,78 +3835,128 @@ function WeakAuras.EnsureString(input)
 end
 
 -- Handle coroutines
-local dynFrame = {};
+local threads = {
+  frame = CreateFrame("Frame"),
+  size = 0,
+  ---@type table<string, threadPriority>
+  prios = {},
+  pools = {
+    urgent = {},
+    normal = {},
+    background = {},
+    instant = {},
+  },
+};
 do
-  -- Internal data
-  dynFrame.frame = CreateFrame("Frame");
-  dynFrame.update = {};
-  dynFrame.size = 0;
+  local validPriorities = {
+    urgent = true,
+    normal = true,
+    background = true,
+    instant = true,
+  }
 
   -- Add an action to be resumed via OnUpdate
-  function dynFrame.AddAction(self, name, func)
-    if not name then
-      name = string.format("NIL", dynFrame.size+1);
+  function threads:Add(name, thread, prio)
+    if not prio or not validPriorities[prio] then
+      prio = "normal"
     end
+    if type(thread) == "function" then
+      thread = coroutine.create(thread)
+    end
+    if not self.prios[name] then
+      self.prios[name] = prio
+      self.pools[prio][name] = {
+        thread = thread,
+        sequence = {}
+      }
+      self.size = self.size + 1
+      self.frame:Show()
+    end
+  end
 
-    if not dynFrame.update[name] then
-      dynFrame.update[name] = func;
-      dynFrame.size = dynFrame.size + 1
-      dynFrame.frame:Show();
+  function threads:SetPriority(name, prio)
+    local oldPrio = self.prios[name]
+    if oldPrio and oldPrio ~= prio then
+      self.pools[prio][name] = self.pools[oldPrio][name]
+      self.pools[oldPrio][name] = nil
+      self.prios[name] = prio
     end
   end
 
   -- Remove an action from OnUpdate
-  function dynFrame.RemoveAction(self, name)
-    if dynFrame.update[name] then
-      dynFrame.update[name] = nil;
-      dynFrame.size = dynFrame.size - 1
-      if dynFrame.size == 0 then
-        dynFrame.frame:Hide();
+  function threads:Remove(name)
+    local prio = self.prios[name]
+    if prio then
+      local pool = self.pools[prio]
+      pool[name] = nil
+      self.prios[name] = nil
+      self.size = self.size - 1
+      if self.size == 0 then
+        self.frame:Hide()
       end
     end
   end
 
-  -- Setup frame
-  dynFrame.frame:Hide();
-  dynFrame.frame:SetScript("OnUpdate", function(self, elapsed)
-    -- Start timing
-    local start = debugprofilestop();
-    local hasData = true;
-
-    -- Resume as often as possible (Limit to 16ms per frame -> 60 FPS)
-    while (debugprofilestop() - start < 16 and hasData) do
-      -- Stop loop without data
-      hasData = false;
-
-      -- Resume all coroutines
-      for name, func in pairs(dynFrame.update) do
-        -- Loop has data
-        hasData = true;
-
-        -- Resume or remove
-        if coroutine.status(func) ~= "dead" then
-          local ok, msg = coroutine.resume(func)
-          if not ok then
-            geterrorhandler()(msg .. '\n' .. debugstack(func))
-          end
+  local function runThreadPool(pool, finish, defaultEstimate)
+    local start = debugprofilestop()
+    if finish <= start then return end
+    local estimates = {}
+    local ok, val1, val2
+    local continue = false
+    repeat
+      continue = false
+      for name, threadData in pairs(pool) do
+        local estimate = estimates[name] or defaultEstimate
+        if debugprofilestop() + estimate > finish then
+          break
         else
-          dynFrame:RemoveAction(name);
+          continue = true
+          ok, val1, val2 = coroutine.resume(threadData.thread)
+          if not ok then
+            geterrorhandler()(val1 .. '\n' .. debugstack(threadData.thread))
+          end
+          if coroutine.status(threadData.thread) ~= "dead" then
+            estimates[name] = type(val1) == "number" and val1 or defaultEstimate
+            local sequence = val2 or ""
+            threadData.sequence[sequence] = (threadData.sequence[sequence] or 0) + 1
+          else
+            threads:Remove(name)
+          end
         end
       end
+    until not continue
+  end
+
+  function threads:Immediate(name, func, limit, defaultEstimate)
+    self:Add(name, func, "instant")
+    runThreadPool(self.pools.instant, debugprofilestop() + limit, defaultEstimate or 1000)
+    if coroutine.status(func) ~= "dead" then
+      self:SetPriority(name, "urgent")
+    else
+      self:Remove(name)
     end
+  end
+
+  -- Setup frame
+  threads.frame:Hide();
+  threads.frame:SetScript("OnUpdate", function()
+    local start = debugprofilestop();
+    runThreadPool(threads.pools.urgent, start + 15000, 1000)
+    runThreadPool(threads.pools.normal, start + 20, 1)
+    runThreadPool(threads.pools.background, start + 2, 0.5)
   end);
-  dynFrame.frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-  dynFrame.frame:RegisterEvent("PLAYER_REGEN_DISABLED")
-  dynFrame.frame:SetScript("OnEvent", function(self, event)
+  threads.frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+  threads.frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+  threads.frame:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_REGEN_ENABLED" and self:IsShown() then
       self:Hide()
-    elseif event == "PLAYER_REGEN_DISABLED" and not self:IsShown() and dynFrame.size > 0 then
+    elseif event == "PLAYER_REGEN_DISABLED" and not self:IsShown() and threads.size > 0 then
       self:Show()
     end
   end)
 end
 
-Private.dynFrame = dynFrame;
+Private.Threads = threads;
 
 function WeakAuras.RegisterTriggerSystem(types, triggerSystem)
   for _, v in ipairs(types) do

@@ -711,8 +711,8 @@ end
 
 function WeakAuras.ValidateNumericOrPercent(info, val)
   if val ~= nil and val ~= "" then
-    local percent = string.match(val, "(%d+)%%")
-    local number = percent and tonumber(percent) or tonumber(val)
+    local index = val:find("%% *$")
+    local number = index and tonumber(val:sub(1, index-1)) or tonumber(val)
     if(not number or number >= 2^31) then
       return false;
     end
@@ -964,6 +964,15 @@ Private.load_prototype = {
       width = WeakAuras.normalWidth,
       optional = true,
       events = {"VEHICLE_UPDATE", "UNIT_ENTERED_VEHICLE", "UNIT_EXITED_VEHICLE"}
+    },
+    { -- broken, fix later COMPANION_UPDATE fires too early for an check, needs some custom stuff
+      name = "mounted",
+      display = L["Mounted"],
+      type = "tristate",
+      init = "arg",
+      width = WeakAuras.normalWidth,
+      optional = true,
+      --events = {"PLAYER_MOUNT_DISPLAY_CHANGED"}
     },
     {
       name ="playerTitle",
@@ -3810,7 +3819,13 @@ Private.event_prototypes = {
         test = "true",
         conditionType = "bool",
         conditionTest = function(state, needle)
-          return state and state.show and (UnitExists('target') and IsItemInRange(state.itemname, 'target')) == (needle == 1)
+          if not state or not state.show or not UnitExists('target') then
+            return false
+          end
+          if InCombatLockdown() and not UnitCanAttack('player', 'target') then
+            return false
+          end
+          return IsItemInRange(state.itemname, 'target') == (needle == 1)
         end,
         conditionEvents = {
           "PLAYER_TARGET_CHANGED",
@@ -4419,7 +4434,7 @@ Private.event_prototypes = {
       return { "SPELL_COOLDOWN_CHANGED:" .. spellName }
     end,
     force_events = "SPELL_UPDATE_USABLE",
-    name = L["Action Usable"],
+    name = L["Spell Usable"],
     statesParameter = "one",
     loadFunc = function(trigger)
       trigger.spellName = trigger.spellName or 0;
