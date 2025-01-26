@@ -3111,7 +3111,22 @@ function WeakAuras.WatchUnitChange(unit)
       UNIT_TARGET = function(unit, eventsToSend)
         handleUnit(unit .. "target", eventsToSend, unitUpdate, markerInit, reactionInit)
       end,
-      GROUP_ROSTER_UPDATE = function(_, eventsToSend)
+      PARTY_MEMBERS_CHANGED = function(_, eventsToSend)
+        for unit in pairs(Private.multiUnitUnits.group) do
+          handleUnit(unit, eventsToSend, unitUpdate, markerInit, reactionInit)
+        end
+        local inRaid = IsInRaid()
+        local inRaidChanged = inRaid ~= watchUnitChange.inRaid
+        if inRaidChanged then
+          for unit in pairs(Private.multiUnitUnits.group) do
+            if watchUnitChange.trackedUnits[unit] and watchUnitChange.unitIdToGUID[unit] then
+              eventsToSend["UNIT_CHANGED_" .. unit] = unit
+            end
+          end
+          watchUnitChange.inRaid = inRaid
+        end
+      end,
+      RAID_ROSTER_UPDATE = function(_, eventsToSend)
         for unit in pairs(Private.multiUnitUnits.group) do
           handleUnit(unit, eventsToSend, unitUpdate, markerInit, reactionInit)
         end
@@ -3127,8 +3142,6 @@ function WeakAuras.WatchUnitChange(unit)
         end
       end
     }
-    handleEvent["RAID_ROSTER_UPDATE"] = handleEvent["GROUP_ROSTER_UPDATE"]
-
     watchUnitChange:SetScript("OnEvent", function(self, event, unit)
       Private.StartProfileSystem("generictrigger unit change");
       local eventsToSend = {}
