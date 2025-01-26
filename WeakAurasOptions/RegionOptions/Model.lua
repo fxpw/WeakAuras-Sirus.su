@@ -14,9 +14,19 @@ local function createOptions(id, data)
       order = 0.5,
       hidden = function() return data.modelDisplayInfo and WeakAuras.BuildInfo > 80100 end
     },
-    -- Option for modelIsDisplayInfo added below
-
-    -- Option for path/id added below
+    modelDisplayInfo = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Use Display Info Id"],
+      order = 0.6,
+      hidden = function() return data.modelIsUnit end
+    },
+    model_model_path = {
+      type = "input",
+      width = WeakAuras.doubleWidth - 0.15,
+      name = L["Model"],
+      order = 1
+    },
     chooseModel = {
       type = "execute",
       width = 0.15,
@@ -100,23 +110,6 @@ local function createOptions(id, data)
     },
   };
 
-  if WeakAuras.BuildInfo > 80100 then
-    options.modelDisplayInfo = {
-      type = "toggle",
-      width = WeakAuras.normalWidth,
-      name = L["Use Display Info Id"],
-      order = 0.6,
-      hidden = function() return data.modelIsUnit end
-    }
-  else
-    options.model_path = {
-      type = "input",
-      width = WeakAuras.doubleWidth - 0.15,
-      name = L["Model"],
-      order = 1
-    }
-  end
-
   for k, v in pairs(OptionsPrivate.commonOptions.BorderOptions(id, data, nil, nil, 70)) do
     options[k] = v
   end
@@ -199,103 +192,104 @@ local templates = {
     title = L["Default"],
     data = {
     };
-  },
-  {
-    title = L["Fire Orb"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      model_path = "spells/6fx_smallfire.m2",
-      model_x = 0,
-      model_y = -0.5,
-      model_z = -1.5
-    },
-  },
-  {
-    title = L["Blue Sparkle Orb"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_druid_halfmoon_missile.m2",
-      model_x = 0,
-      model_y = 0.7,
-      model_z = 1.5
-    },
-  },
-  {
-    title = L["Arcane Orb"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/proc_arcane_impact_low.m2",
-      model_x = 0,
-      model_y = 0.8,
-      model_z = 2
-    },
-  },
-  {
-    title = L["Orange Rune"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_godking_orangerune_state.m2",
-    },
-  },
-  {
-    title = L["Blue Rune"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_godking_bluerune_state.m2",
-    }
-  },
-  {
-    title = L["Yellow Rune"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_godking_yellowrune_state.m2",
-    }
-  },
-  {
-    title = L["Purple Rune"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_godking_purplerune_state.m2",
-    }
-  },
-  {
-    title = L["Green Rune"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_godking_greenrune_state.m2",
-    }
-  },
+  }
 }
+
+tinsert(templates, {
+  title = L["Fire Orb"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    model_path = "spells/6fx_smallfire.m2",
+    model_x = 0,
+    model_y = -0.5,
+    model_z = -1.5
+  },
+})
+tinsert(templates, {
+  title = L["Blue Sparkle Orb"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_druid_halfmoon_missile.m2",
+    model_x = 0,
+    model_y = 0.7,
+    model_z = 1.5
+  },
+})
+tinsert(templates, {
+  title = L["Arcane Orb"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/proc_arcane_impact_low.m2",
+    model_x = 0,
+    model_y = 0.8,
+    model_z = 2
+  },
+})
+tinsert(templates, {
+  title = L["Orange Rune"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_godking_orangerune_state.m2",
+  },
+})
+tinsert(templates, {
+  title = L["Blue Rune"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_godking_bluerune_state.m2",
+  }
+})
+tinsert(templates, {
+  title = L["Yellow Rune"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_godking_yellowrune_state.m2",
+  }
+})
+tinsert(templates, {
+  title = L["Purple Rune"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_godking_purplerune_state.m2",
+  }
+})
+tinsert(templates, {
+  title = L["Green Rune"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_godking_greenrune_state.m2",
+  }
+})
 
 OptionsPrivate.registerRegions = OptionsPrivate.registerRegions or {}
 table.insert(OptionsPrivate.registerRegions, function()

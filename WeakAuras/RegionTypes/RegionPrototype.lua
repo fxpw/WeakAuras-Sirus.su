@@ -93,6 +93,7 @@ function Private.regionPrototype.AddProperties(properties, defaultsForRegion)
       isPercent = true
     }
   end
+
   if defaultsForRegion and defaultsForRegion.progressSource then
     properties["progressSource"] = {
       display = L["Progress Source"],
@@ -343,6 +344,7 @@ local function SetProgressSource(self, progressSource)
   self.progressSource = progressSource
   self:UpdateProgress()
 end
+
 local function SetAdjustedMin(self, adjustedMin)
   local index = adjustedMin:find("%% *$")
   if index then
@@ -355,6 +357,7 @@ local function SetAdjustedMin(self, adjustedMin)
   end
   self:UpdateProgress()
 end
+
 local function SetAdjustedMax(self, adjustedMax)
   local index = adjustedMax:find("%% *$")
   if index then
@@ -373,6 +376,7 @@ end
 local function GetMinMaxProgress(self)
   return self.minProgress or 0, self.maxProgress or 0
 end
+
 local function UpdateProgressFromState(self, minMaxConfig, state, progressSource)
   local progressType = progressSource[2]
   local property = progressSource[3]
@@ -467,6 +471,7 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
     else
       adjustMin = 0
     end
+
     local max
     if minMaxConfig.adjustedMax then
       max = minMaxConfig.adjustedMax
@@ -879,7 +884,7 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       if region:IsProtected() then
         if InCombatLockdown() then
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame_error", "error",
-            L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
+          L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
             true)
         else
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame", "warning",
@@ -910,7 +915,7 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       if region:IsProtected() then
         if InCombatLockdown() then
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame_error", "error",
-            L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
+          L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
             true)
         else
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame", "warning",

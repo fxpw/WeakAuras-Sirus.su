@@ -200,9 +200,9 @@ local function modify(parent, region, data)
       bgFile = SharedMedia:Fetch("background", data.borderBackdrop),
       insets = {
         left     = data.borderInset,
-        right     = data.borderInset,
-        top     = data.borderInset,
-        bottom     = data.borderInset,
+        right    = data.borderInset,
+        top      = data.borderInset,
+        bottom   = data.borderInset,
       },
     });
     border:SetBackdropBorderColor(data.borderColor[1], data.borderColor[2], data.borderColor[3], data.borderColor[4]);
@@ -244,18 +244,28 @@ local function modify(parent, region, data)
   end
 
   -- Rotate model
-  function region:Rotate(degrees)
-    region.rotation = degrees;
+  function region:SetAnimRotation(degrees)
+    region.animRotation = degrees
+    region:UpdateEffectiveRotation()
+  end
+
+  function region:SetRotation(degrees)
+    region.rotation = degrees
+    region:UpdateEffectiveRotation()
+  end
+
+  function region:UpdateEffectiveRotation()
+    region.effectiveRotation = region.animRotation or region.rotation
     if region.model then
-      region.model:SetFacing(rad(region.rotation));
+      region.model:SetFacing(rad(region.effectiveRotation))
     end
   end
 
-  region:Rotate(data.rotation);
+  region:SetRotation(data.rotation)
 
   -- Get model rotation
-  function region:GetRotation()
-    return region.rotation;
+  function region:GetBaseRotation()
+    return region.rotation
   end
 
   function region:PreShow()

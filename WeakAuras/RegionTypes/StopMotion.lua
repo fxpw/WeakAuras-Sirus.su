@@ -18,10 +18,7 @@ local default = {
     foregroundColor = {1, 1, 1, 1},
     backgroundColor = {0.5, 0.5, 0.5, 0.5},
     blendMode = "BLEND",
-    rotation = 0,
-    discrete_rotation = 0,
     mirror = false,
-    rotate = true,
     selfPoint = "CENTER",
     anchorPoint = "CENTER",
     anchorFrameType = "SCREEN",
@@ -181,8 +178,7 @@ local function SetProgress(self, progress)
 
   if (frame > endFrame) then
     frame = endFrame
-  end
-
+     end
   if (frame < startFrame) then
     frame = startFrame
   end
@@ -251,8 +247,7 @@ local FrameTickFunctions = {
 
     if (frame > endFrame) then
       frame = endFrame
-    end
-
+      end
     if (frame < startFrame) then
       frame = startFrame
     end
@@ -411,7 +406,8 @@ local function modify(parent, region, data)
     region.background:SetBaseTexture(backgroundTexture);
     region.background:SetFrame(backgroundTexture, region.backgroundFrame or 1);
     region.background:SetDesaturated(data.desaturateBackground)
-    region.background:SetVertexColor(data.backgroundColor[1], data.backgroundColor[2], data.backgroundColor[3], data.backgroundColor[4]);
+    region.background:SetVertexColor(data.backgroundColor[1], data.backgroundColor[2],
+                                     data.backgroundColor[3], data.backgroundColor[4])
     region.background:SetBlendMode(data.blendMode);
 
     if (data.hideBackground) then
@@ -495,7 +491,6 @@ local function modify(parent, region, data)
       function region:Update()
         region:UpdateProgress()
       end
-
     elseif data.animationType == "progress" then
       function region:Update()
         region:UpdateProgress()
@@ -525,6 +520,7 @@ local function modify(parent, region, data)
             self.FrameTick = FrameTickFunctions.progressTimer
             self.subRegionEvents:AddSubscriber("FrameTick", self)
           end
+
           self:FrameTick()
         end
 
