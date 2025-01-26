@@ -636,7 +636,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
             hidden = disabled or hidden,
             image = function()
               local value = getValue(trigger, "use_"..realname, realname, multiEntry, entryNumber)
-              if value then
+              if type(value) == "number" or type(value) == "string" then
                 if(arg.type == "aura") then
                   local icon = spellCache.GetIcon(value);
                   return icon and tostring(icon) or "", 18, 18;
@@ -653,6 +653,9 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
             end,
             disabled = function()
               local value = getValue(trigger, nil, realname, multiEntry, entryNumber)
+              if type(value) ~= "number" and type(value) ~= "string" then
+                return true
+              end
               return not ((arg.type == "aura" and value and spellCache.GetIcon(value)) or (arg.type == "spell" and value and GetSpellInfo(value)) or (arg.type == "item" and value and GetItemIcon(value)))
             end
           };
@@ -690,7 +693,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
                 end
               elseif(arg.type == "spell") then
                 local useExactSpellId = (arg.showExactOption and getValue(trigger, nil, "use_exact_"..realname, multiEntry, entryNumber))
-                if value and value ~= "" then
+                if value and value ~= "" and (type(value) == "number" or type(value) == "string") then
                   local spellID = WeakAuras.SafeToNumber(value)
                   if spellID then
                     local spellName = GetSpellInfo(WeakAuras.SafeToNumber(value))
@@ -878,7 +881,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
               values = WeakAuras[arg.values];
             end
           end
-          local sortOrder = arg.sorted and OptionsPrivate.Private.SortOrderForValues(values) or nil
+          local sortOrder = arg.sorted and (arg.sortOrder or OptionsPrivate.Private.SortOrderForValues(values)) or nil
           options[name..suffix] = {
             type = "select",
             width = WeakAuras.normalWidth,

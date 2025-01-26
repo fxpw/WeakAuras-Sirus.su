@@ -1593,6 +1593,15 @@ Private.event_prototypes = {
         init = "raidMarkIndex > 0 and '{rt'..raidMarkIndex..'}' or ''"
       },
       {
+        name = "dead",
+        display = L["Dead"],
+        type = "tristate",
+        width = WeakAuras.doubleWidth,
+        init = "UnitIsDeadOrGhost(unit)",
+        store = true,
+        conditionType = "bool",
+      },
+      {
         name = "ignoreSelf",
         display = L["Ignore Self"],
         type = "toggle",
@@ -1601,16 +1610,6 @@ Private.event_prototypes = {
           return trigger.unit == "nameplate" or trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
         init = "not UnitIsUnit(\"player\", unit)"
-      },
-      {
-        name = "ignoreDead",
-        display = L["Ignore Dead"],
-        type = "toggle",
-        width = WeakAuras.doubleWidth,
-        enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
-        end,
-        init = "not UnitIsDeadOrGhost(unit)"
       },
       {
         name = "ignoreDisconnected",
@@ -2895,7 +2894,6 @@ Private.event_prototypes = {
           preambleAdd = "spellChecker:AddExact(%q)"
         },
         test = "spellChecker:Check(spellId)",
-        testGroup = "spell",
         conditionType = "number",
         type = "spell",
         showExactOption = false,
@@ -2918,7 +2916,6 @@ Private.event_prototypes = {
           preambleAdd = "spellChecker:AddName(%q)"
         },
         test = "spellChecker:Check(spellId)",
-        testGroup = "spell",
         conditionType = "string"
       },
       {
@@ -5380,7 +5377,8 @@ Private.event_prototypes = {
     progressType = "timed"
   },
   -- fixing later
-  --[[["Spell Cast Succeeded"] = {
+  --[[
+    ["Spell Cast Succeeded"] = {
     type = "event",
     events = function(trigger)
       local result = {}
@@ -5391,7 +5389,6 @@ Private.event_prototypes = {
     name = L["Spell Cast Succeeded"],
     statesParameter = "unit",
     args = {
-      {},
       {
         name = "unit",
         init = "arg",
@@ -5406,39 +5403,49 @@ Private.event_prototypes = {
         end
       },
       {
-        name = "spellName",
-        type = "string",
-        init = "arg",
-        test = "true",
-        store = true,
-        hidden = true
+      },
+      { -- castGUID
       },
       {
-        name = "rank",
-        type = "string",
-        init = "arg",
-        test = "true",
-        store = true,
-        hidden = true
+        name = "spellNames",
+        display = L["Name(s)"],
+        type = "spell",
+        multiEntry = {
+          operator = "preamble",
+          preambleAdd = "spellChecker:AddName(%q)"
+        },
+        preamble = "local spellChecker = Private.ExecEnv.CreateSpellChecker()",
+        preambleGroup = "spell",
+        test = "spellChecker:Check(spellId)",
+        noValidation = true,
       },
       {
         name = "spellId",
-        display = L["Spell Id"],
-        type = "string",
+        display = L["Exact Spell ID(s)"],
+        type = "spell",
+        init = "arg",
         store = true,
-        conditionType = "number"
+        multiEntry = {
+          operator = "preamble",
+          preambleAdd = "spellChecker:AddExact(%q)"
+        },
+        preamble = "local spellChecker = Private.ExecEnv.CreateSpellChecker()",
+        preambleGroup = "spell",
+        test = "spellChecker:Check(spellId)",
+        conditionType = "number",
+        noProgressSource = true
       },
       {
         name = "icon",
         hidden = true,
-        init = "select(3, GetSpellInfo(spellId))",
+        init = "GetSpellIcon(spellId or 0)",
         store = true,
         test = "true"
       },
       {
         name = "name",
         hidden = true,
-        init = "GetSpellInfo(spellId)",
+        init = "GetSpellInfo(spellId or 0)",
         store = true,
         test = "true"
       },
@@ -5447,7 +5454,8 @@ Private.event_prototypes = {
     delayEvents = true,
     timedrequired = true,
     progressType = "timed"
-  },]]
+  },
+  ]]
   ["Ready Check"] = {
     type = "event",
     events = {
@@ -6188,7 +6196,6 @@ Private.event_prototypes = {
           operator = "preamble",
           preambleAdd = "spellChecker:AddName(%q)"
         },
-        testGroup = "spell",
         test = "spellChecker:CheckName(spell)",
         noValidation = true,
       },

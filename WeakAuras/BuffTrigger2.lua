@@ -408,9 +408,13 @@ local function FindBestMatchData(time, id, triggernum, triggerInfo, matchedUnits
     for index, auraData in pairs(unitData) do
       local remCheck = true
       if triggerInfo.remainingFunc and auraData.expirationTime then
-        local remaining = auraData.expirationTime - time
-        remCheck = triggerInfo.remainingFunc(remaining)
-        nextCheck = calculateNextCheck(triggerInfo.remainingCheck, remaining, auraData.expirationTime, nextCheck)
+        if auraData.duration == 0 then
+          remCheck = false
+        else
+          local remaining = auraData.expirationTime - time
+          remCheck = triggerInfo.remainingFunc(remaining)
+          nextCheck = calculateNextCheck(triggerInfo.remainingCheck, remaining, auraData.expirationTime, nextCheck)
+        end
       end
 
       if remCheck then
@@ -444,9 +448,13 @@ local function FindBestMatchDataForUnit(time, id, triggernum, triggerInfo, unit)
   for index, auraData in pairs(matchDataByTrigger[id][triggernum][unit]) do
     local remCheck = true
     if triggerInfo.remainingFunc and auraData.expirationTime then
-      local remaining = auraData.expirationTime - time
-      remCheck = triggerInfo.remainingFunc(remaining)
-      nextCheck = calculateNextCheck(triggerInfo.remainingCheck, remaining, auraData.expirationTime, nextCheck)
+      if auraData.expirationTime == 0 then
+        remCheck = false
+      else
+        local remaining = auraData.expirationTime - time
+        remCheck = triggerInfo.remainingFunc(remaining)
+        nextCheck = calculateNextCheck(triggerInfo.remainingCheck, remaining, auraData.expirationTime, nextCheck)
+      end
     end
 
     if remCheck then
@@ -1224,9 +1232,13 @@ local function UpdateTriggerState(time, id, triggernum)
         for index, auraData in pairs(unitData) do
           local remCheck = true
           if triggerInfo.remainingFunc and auraData.expirationTime then
-            local remaining = auraData.expirationTime - time
-            remCheck = triggerInfo.remainingFunc(remaining)
-            nextCheck = calculateNextCheck(triggerInfo.remainingCheck, remaining, auraData.expirationTime, nextCheck)
+            if auraData.expirationTime == 0 then
+              remCheck = false
+            else
+              local remaining = auraData.expirationTime - time
+              remCheck = triggerInfo.remainingFunc(remaining)
+              nextCheck = calculateNextCheck(triggerInfo.remainingCheck, remaining, auraData.expirationTime, nextCheck)
+            end
           end
 
           if remCheck then
@@ -2445,7 +2457,7 @@ function BuffTrigger.Add(data)
       local effectiveIgnoreInvisible = groupTrigger and trigger.ignoreInvisible
       local effectiveHostility = (groupTrigger or trigger.unit == "nameplate") and trigger.useHostility and trigger.hostility
       local effectiveNameCheck = groupTrigger and trigger.useUnitName and trigger.unitName
-      local effectiveNpcId = trigger.unit == "nameplate" and trigger.useNpcId and Private.ExecEnv.ParseStringCheck(trigger.npcId)
+      local effectiveNpcId = (trigger.unit == "nameplate" or trigger.unit == "boss") and trigger.useNpcId and Private.ExecEnv.ParseStringCheck(trigger.npcId)
 
       if trigger.unit == "multi" then
         BuffTrigger.InitMultiAura()

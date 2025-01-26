@@ -201,7 +201,7 @@ end
 function Private.ExecEnv.CallCustomConditionTest(uid, testFunctionNumber, ...)
   local ok, result = pcall(Private.ExecEnv.conditionHelpers[uid].customTestFunctions[testFunctionNumber], ...)
   if not ok then
-    Private.GetErrorHandlerUid(uid, L["Condition Custom Text"])
+    Private.GetErrorHandlerUid(uid, L["Condition Custom Test"])
   elseif (ok) then
     return result
   end
@@ -311,9 +311,9 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
         remainingTime = "((" .. pausedString .. " and " .. remainingString .. ") or " ..  remainingTime .. ")"
       end
       if (op == "==") then
-        check = stateCheck .. stateVariableCheck .. "abs((" .. remainingTime .. "-" .. value .. ")" .. ") < 0.05"
+        check = stateCheck .. stateVariableCheck .. varString .. "~= 0 and " .. "abs((" .. remainingTime .. "-" .. value .. ")" .. ") < 0.05"
       else
-        check = stateCheck .. stateVariableCheck .. remainingTime .. op .. value
+        check = stateCheck .. stateVariableCheck .. varString .. "~= 0 and " .. remainingTime .. op .. value
       end
     elseif (cType == "elapsedTimer" and value and op) then
       if (op == "==") then
@@ -805,7 +805,10 @@ end
 function Private.RunConditions(region, uid, hideRegion)
   if (checkConditions[uid]) then
     Private.ActivateAuraEnvironmentForRegion(region)
-    checkConditions[uid](region, hideRegion);
+    local ok = pcall(checkConditions[uid], region, hideRegion);
+    if not ok then
+      Private.GetErrorHandlerUid(uid, L["Execute Conditions"])
+    end
     Private.ActivateAuraEnvironment()
   end
 end

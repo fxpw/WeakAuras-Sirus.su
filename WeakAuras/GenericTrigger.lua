@@ -262,7 +262,7 @@ local function singleTest(arg, trigger, name, value, operator, use_exact)
   end
 end
 
-function ConstructTest(trigger, arg, testGroups, preambleGroups)
+function ConstructTest(trigger, arg, preambleGroups)
   local test
   local preamble
   local name = arg.name;
@@ -321,7 +321,7 @@ function ConstructTest(trigger, arg, testGroups, preambleGroups)
     end
   end
 
-  if not test or test == "(true)" or arg.testGroup and testGroups[arg.testGroup] then
+  if not test or test == "(true)" then
     return nil, preamble
   end
 
@@ -356,7 +356,6 @@ function ConstructFunction(prototype, trigger)
   local preambles = "\n"
   local orConjunctionGroups = {}
   local preambleGroups = {}
-  local testGroups = {}
   if(prototype.init) then
     init = prototype.init(trigger);
   else
@@ -382,7 +381,7 @@ function ConstructFunction(prototype, trigger)
         if (arg.store) then
           tinsert(store, name);
         end
-        local test, preamble = ConstructTest(trigger, arg, testGroups, preambleGroups);
+        local test, preamble = ConstructTest(trigger, arg, preambleGroups);
         if (test) then
           if(arg.required) then
             tinsert(required, test);
@@ -846,17 +845,43 @@ local function getGameEventFromComposedEvent(composedEvent)
   return separatorPosition == nil and composedEvent or composedEvent:sub(1, separatorPosition - 1)
 end
 
+local scannerFrame = CreateFrame("Frame")
+scannerFrame.queue = {}
+scannerFrame:Hide()
+scannerFrame:SetScript("OnUpdate", function(self)
+  local todo = self.queue
+  self.queue = {}
+  for _, event in ipairs(todo) do
+    event.func(unpack(event.args))
+  end
+  -- there's a chance that a joker dispatched an event in in trigger code,
+  -- so the queue might already be populated
+  -- in that case, we'll process next frame by declining to hide
+  if #self.queue == 0 then
+    self:Hide()
+  end
+end)
+
+function scannerFrame:Queue(func, ...)
+  tinsert(self.queue, {func = func, args = {...}})
+  self:Show()
+end
+
 function Private.ScanEventsByID(event, id, ...)
   if loaded_events[event] then
-    WeakAuras.ScanEvents(event, id, ...)
+    Private.ScanEvents(event, id, ...)
   end
   local eventWithID = event .. ":" .. id
   if loaded_events[eventWithID] then
-    WeakAuras.ScanEvents(eventWithID, id, ...)
+    Private.ScanEvents(eventWithID, id, ...)
   end
 end
 
-function WeakAuras.ScanEvents(event, arg1, arg2, ...)
+function WeakAuras.ScanEventsByID(event, id, ...)
+  scannerFrame:Queue(Private.ScanEventsByID, event, id, ...)
+end
+
+function Private.ScanEvents(event, arg1, arg2, ...)
   local system = getGameEventFromComposedEvent(event)
   Private.StartProfileSystem("generictrigger " .. system)
   local event_list = loaded_events[event];
@@ -870,21 +895,25 @@ function WeakAuras.ScanEvents(event, arg1, arg2, ...)
       Private.StopProfileSystem("generictrigger " .. system)
       return;
     end
-    WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ...);
+    Private.ScanEventsInternal(event_list, event, arg1, arg2, ...);
 
   elseif (event == "COMBAT_LOG_EVENT_UNFILTERED_CUSTOM") then
     -- This reverts the COMBAT_LOG_EVENT_UNFILTERED_CUSTOM workaround so that custom triggers that check the event argument will work as expected
     if(event == "COMBAT_LOG_EVENT_UNFILTERED_CUSTOM") then
       event = "COMBAT_LOG_EVENT_UNFILTERED";
     end
-    WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ...);
+    Private.ScanEventsInternal(event_list, event, arg1, arg2, ...);
   else
-    WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ...);
+    Private.ScanEventsInternal(event_list, event, arg1, arg2, ...);
   end
   Private.StopProfileSystem("generictrigger " .. system)
 end
 
-function WeakAuras.ScanUnitEvents(event, unit, ...)
+function WeakAuras.ScanEvents(event, arg1, arg2, ...)
+  scannerFrame:Queue(Private.ScanEvents, event, arg1, arg2, ...)
+end
+
+function Private.ScanUnitEvents(event, unit, ...)
   Private.StartProfileSystem("generictrigger " .. event .. " " .. unit)
   local unit_list = loaded_unit_events[unit]
   if unit_list then
@@ -916,7 +945,11 @@ function WeakAuras.ScanUnitEvents(event, unit, ...)
   Private.StopProfileSystem("generictrigger " .. event .. " " .. unit)
 end
 
-function WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ... )
+function WeakAuras.ScanUnitEvents(event, unit, ...)
+  scannerFrame:Queue(Private.ScanUnitEvents, event, unit, ...)
+end
+
+function Private.ScanEventsInternal(event_list, event, arg1, arg2, ... )
   for id, triggers in pairs(event_list) do
     Private.StartProfileAura(id);
     Private.ActivateAuraEnvironment(id);
@@ -938,6 +971,10 @@ function WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ... )
     Private.StopProfileAura(id);
     Private.ActivateAuraEnvironment(nil);
   end
+end
+
+function WeakAuras.ScanEventsInternal(event_list, event, arg1, arg2, ... )
+  scannerFrame:Queue(Private.ScanEventsInternal, event_list, event, arg1, arg2, ...)
 end
 
 do
@@ -1141,12 +1178,12 @@ function HandleEvent(frame, event, arg1, arg2, ...)
 
   if not(WeakAuras.IsPaused()) then
     if(event == "COMBAT_LOG_EVENT_UNFILTERED") then
-      WeakAuras.ScanEvents(event, arg1, arg2, ...);
+      Private.ScanEvents(event, arg1, arg2, ...);
       -- This triggers the scanning of "hacked" COMBAT_LOG_EVENT_UNFILTERED events that were renamed in order to circumvent
       -- the "proper" COMBAT_LOG_EVENT_UNFILTERED checks
-      WeakAuras.ScanEvents("COMBAT_LOG_EVENT_UNFILTERED_CUSTOM", arg1, arg2, ...);
+      Private.ScanEvents("COMBAT_LOG_EVENT_UNFILTERED_CUSTOM", arg1, arg2, ...);
     else
-      WeakAuras.ScanEvents(event, arg1, arg2, ...);
+      Private.ScanEvents(event, arg1, arg2, ...);
     end
   end
   if (event == "PLAYER_ENTERING_WORLD") then
@@ -1173,7 +1210,7 @@ function HandleUnitEvent(frame, event, unit, ...)
   Private.StartProfileSystem("generictrigger " .. event .. " " .. unit);
   if not(WeakAuras.IsPaused()) then
     if (UnitIsUnit(unit, frame.unit)) then
-      WeakAuras.ScanUnitEvents(event, frame.unit, ...);
+      Private.ScanUnitEvents(event, frame.unit, ...);
     end
   end
   Private.StopProfileSystem("generictrigger " .. event .. " " .. unit);
@@ -1462,11 +1499,11 @@ function GenericTrigger.LoadDisplays(toLoad, loadEvent, ...)
 
   -- Replay events that lead to loading, if we weren't already registered for them
   if (eventsToRegister[loadEvent]) then
-    WeakAuras.ScanEvents(loadEvent, ...);
+    Private.ScanEvents(loadEvent, ...);
   end
   local loadUnit = ...
   if loadUnit and unitEventsToRegister[loadUnit] and unitEventsToRegister[loadUnit][loadEvent] then
-    WeakAuras.ScanUnitEvents(loadEvent, ...);
+    Private.ScanUnitEvents(loadEvent, ...);
   end
 
   wipe(eventsToRegister);
@@ -1871,7 +1908,7 @@ do
     if not(updating) then
       update_frame:SetScript("OnUpdate", function(self, elapsed)
         if not(WeakAuras.IsPaused()) then
-          WeakAuras.ScanEvents("FRAME_UPDATE", elapsed);
+          Private.ScanEvents("FRAME_UPDATE", elapsed);
         end
       end);
       updating = true;
@@ -1961,7 +1998,7 @@ do
     elseif(hand == "ranged") then
       lastSwingRange, swingDurationRange = nil, nil;
     end
-    WeakAuras.ScanEvents("SWING_TIMER_END");
+    Private.ScanEvents("SWING_TIMER_END");
   end
 
   local function swingTimerCLEUCheck(ts, event, sourceGUID, _, _, destGUID, _, _, ...)
@@ -2005,7 +2042,7 @@ do
             offTimer = timer:ScheduleTimer(swingEnd, offSpeed, "off");
           end
         end
-        WeakAuras.ScanEvents(event);
+        Private.ScanEvents(event);
       end
     elseif (destGUID == selfGUID and (select(1, ...) == "PARRY" or select(4, ...) == "PARRY")) then
       if (lastSwingMain) then
@@ -2014,12 +2051,12 @@ do
           timer:CancelTimer(mainTimer);
           mainTimer = timer:ScheduleTimer(swingEnd, timeLeft - 0.4 * swingDurationMain, "main");
           mainSwingOffset = 0.4 * swingDurationMain
-          WeakAuras.ScanEvents("SWING_TIMER_CHANGE");
+          Private.ScanEvents("SWING_TIMER_CHANGE");
         elseif (timeLeft > 0.2 * swingDurationMain) then
           timer:CancelTimer(mainTimer);
           mainTimer = timer:ScheduleTimer(swingEnd, timeLeft - 0.2 * swingDurationMain, "main");
           mainSwingOffset = 0.2 * swingDurationMain
-          WeakAuras.ScanEvents("SWING_TIMER_CHANGE");
+          Private.ScanEvents("SWING_TIMER_CHANGE");
         end
       end
     end
@@ -2039,7 +2076,7 @@ do
           local timeLeft = (lastSwingMain + swingDurationMain - GetTime()) * multiplier
           swingDurationMain = mainSpeedNew
           mainTimer = timer:ScheduleTimer(swingEnd, timeLeft, "main")
-          WeakAuras.ScanEvents("SWING_TIMER_CHANGE")
+          Private.ScanEvents("SWING_TIMER_CHANGE")
         end
       end
       if lastSwingOff then
@@ -2049,7 +2086,7 @@ do
           local timeLeft = (lastSwingOff + swingDurationOff - GetTime()) * multiplier
           swingDurationOff = offSpeedNew
           offTimer = timer:ScheduleTimer(swingEnd, timeLeft, "off")
-          WeakAuras.ScanEvents("SWING_TIMER_CHANGE")
+          Private.ScanEvents("SWING_TIMER_CHANGE")
         end
       end
       mainSpeed, offSpeed = mainSpeedNew, offSpeedNew
@@ -2072,7 +2109,7 @@ do
           event = "SWING_TIMER_START";
         end
         mainTimer = timer:ScheduleTimer(swingEnd, mainSpeed, "main");
-        WeakAuras.ScanEvents(event);
+        Private.ScanEvents(event);
       elseif Private.reset_ranged_swing_spells[spell] then
         local event;
         local currentTime = GetTime();
@@ -2086,14 +2123,14 @@ do
         lastSwingRange = currentTime;
         swingDurationRange = speed;
         rangeTimer = timer:ScheduleTimer(swingEnd, speed, "ranged");
-        WeakAuras.ScanEvents(event);
+        Private.ScanEvents(event);
       end
     elseif event == "UNIT_SPELLCAST_START" then
       -- pause swing timer
       casting = true
       lastSwingMain, swingDurationMain, mainSwingOffset = nil, nil, nil
       lastSwingOff, swingDurationOff = nil, nil
-      WeakAuras.ScanEvents("SWING_TIMER_END")
+      Private.ScanEvents("SWING_TIMER_END")
     end
     Private.StopProfileSystem("generictrigger swing");
   end
@@ -2187,7 +2224,7 @@ do
       gcdEndCheck = 0;
     end
     if(event and not WeakAuras.IsPaused()) then
-      WeakAuras.ScanEvents(event);
+      Private.ScanEvents(event);
     end
   end
 
@@ -2371,7 +2408,7 @@ do
             gcdSpellName = name;
             gcdSpellIcon = icon;
             if not WeakAuras.IsPaused() then
-              WeakAuras.ScanEvents("GCD_UPDATE")
+              Private.ScanEvents("GCD_UPDATE")
             end
           end
         end
@@ -2482,7 +2519,7 @@ do
     runeCdHandles[id] = nil;
     runeCdDurs[id] = nil;
     runeCdExps[id] = nil;
-    WeakAuras.ScanEvents("RUNE_COOLDOWN_READY", id);
+    Private.ScanEvents("RUNE_COOLDOWN_READY", id);
   end
 
   local function ItemCooldownFinished(id)
@@ -2521,7 +2558,7 @@ do
           runeCdDurs[id] = duration;
           runeCdExps[id] = endTime;
           runeCdHandles[id] = timer:ScheduleTimer(RuneCooldownFinished, endTime - time, id);
-          WeakAuras.ScanEvents("RUNE_COOLDOWN_STARTED", id);
+          Private.ScanEvents("RUNE_COOLDOWN_STARTED", id);
         elseif(runeCdExps[id] ~= endTime) then
           -- Cooldown is now different
           if(runeCdHandles[id]) then
@@ -2530,7 +2567,7 @@ do
           runeCdDurs[id] = duration;
           runeCdExps[id] = endTime;
           runeCdHandles[id] = timer:ScheduleTimer(RuneCooldownFinished, endTime - time, id);
-          WeakAuras.ScanEvents("RUNE_COOLDOWN_CHANGED", id);
+          Private.ScanEvents("RUNE_COOLDOWN_CHANGED", id);
         end
       elseif(startTime > 0 and duration > 0) then
       -- GCD, do nothing
@@ -3098,7 +3135,7 @@ function WeakAuras.WatchUnitChange(unit)
       handleEvent[event](unit, eventsToSend)
       -- send events
       for event, unit in pairs(eventsToSend) do
-        WeakAuras.ScanEvents(event, unit)
+        Private.ScanEvents(event, unit)
       end
 
       Private.StopProfileSystem("generictrigger unit change");
@@ -3269,14 +3306,14 @@ do
           end
           rw_icon = GetInventoryItemTexture("player", rw)
         end
-        WeakAuras.ScanEvents("TENCH_UPDATE");
+        Private.ScanEvents("TENCH_UPDATE");
         Private.StopProfileSystem("generictrigger temporary enchant");
       end
 
       tenchFrame:SetScript("OnEvent", function(_, unit, ...)
         if unit and unit ~= "player" then return end
         Private.StartProfileSystem("generictrigger temporary enchant");
-        timer:ScheduleTimer(tenchUpdate, 0.1);
+        timer:ScheduleTimer(tenchUpdate, 0.1)
         Private.StopProfileSystem("generictrigger temporary enchant");
       end);
 
@@ -3308,7 +3345,7 @@ do
       petFrame:SetScript("OnEvent", function(_, event, unit)
         if unit ~= "player" then return end
         Private.StartProfileSystem("generictrigger pet update")
-        WeakAuras.ScanEvents("PET_UPDATE", "pet")
+        Private.ScanEvents("PET_UPDATE", "pet")
         Private.StopProfileSystem("generictrigger pet update")
       end)
     end
@@ -3380,7 +3417,7 @@ do
         or (newTargetGUID ~= nil and targetGUID ~= newTargetGUID)
         then
           nameplateTargets[unit] = newTargetGUID or true
-          WeakAuras.ScanEvents("WA_UNIT_TARGET_NAME_PLATE", unit)
+          Private.ScanEvents("WA_UNIT_TARGET_NAME_PLATE", unit)
         end
       end
       throttle_update = tick_throttle
@@ -3411,7 +3448,7 @@ do
     elapsed = elapsed + elaps
     if(isMounted ~= IsMounted()) then
       isMounted = IsMounted();
-      WeakAuras.ScanEvents("MOUNTED_UPDATE");
+      Private.ScanEvents("MOUNTED_UPDATE");
       mountedFrame:SetScript("OnUpdate", nil);
     end
     if(elapsed > delay) then
@@ -3442,7 +3479,7 @@ do
     local speed = GetUnitSpeed("player")
     if speed ~= playerMovingFrame.speed then
       playerMovingFrame.speed = speed
-      WeakAuras.ScanEvents("PLAYER_MOVE_SPEED_UPDATE")
+      Private.ScanEvents("PLAYER_MOVE_SPEED_UPDATE")
     end
     Private.StopProfileSystem("generictrigger player moving");
   end
@@ -3480,14 +3517,14 @@ do
     Private.StartProfileSystem("nameplatetrigger")
     local name = gsub(self.nameText:GetText() or "", FSPAT, "")
     visibleNameplates[self] = name
-    WeakAuras.ScanEvents("NP_SHOW", self, name)
+    Private.ScanEvents("NP_SHOW", self, name)
 	Private.StopProfileSystem("nameplatetrigger")
   end
 
   local function nameplateHide(self)
     Private.StartProfileSystem("nameplatetrigger")
     visibleNameplates[self] = nil
-    WeakAuras.ScanEvents("NP_HIDE", self, gsub(self.nameText:GetText() or "", FSPAT, ""))
+    Private.ScanEvents("NP_HIDE", self, gsub(self.nameText:GetText() or "", FSPAT, ""))
     Private.StopProfileSystem("nameplatetrigger")
   end
 
@@ -3549,8 +3586,8 @@ function WeakAuras.RegisterItemCountWatch()
     itemCountWatchFrame:SetScript("OnEvent", function(_, _, unit)
       if unit ~= "player" then return end
       Private.StartProfileSystem("generictrigger item count");
-      timer:ScheduleTimer(WeakAuras.ScanEvents, 0.2, "ITEM_COUNT_UPDATE");
-      timer:ScheduleTimer(WeakAuras.ScanEvents, 0.5, "ITEM_COUNT_UPDATE");
+      timer:ScheduleTimer(Private.ScanEvents, 0.2, "ITEM_COUNT_UPDATE");
+      timer:ScheduleTimer(Private.ScanEvents, 0.5, "ITEM_COUNT_UPDATE");
       Private.StopProfileSystem("generictrigger item count");
     end);
   end
@@ -3616,7 +3653,7 @@ do
 
   local function doScan(fireTime, event)
     scheduled_scans[event][fireTime] = nil;
-    WeakAuras.ScanEvents(event);
+    Private.ScanEvents(event);
   end
   function Private.ExecEnv.ScheduleScan(fireTime, event)
     event = event or "COOLDOWN_REMAINING_CHECK"
@@ -3632,7 +3669,7 @@ do
 
   local function doCastScan(firetime, unit)
     scheduled_scans[unit][firetime] = nil;
-    WeakAuras.ScanEvents("CAST_REMAINING_CHECK_" .. string.lower(unit), unit);
+    Private.ScanEvents("CAST_REMAINING_CHECK_" .. string.lower(unit), unit);
   end
 
   function Private.ExecEnv.ScheduleCastCheck(fireTime, unit)
@@ -3820,10 +3857,10 @@ function GenericTrigger.SetToolTip(trigger, state)
   local prototype = GenericTrigger.GetPrototype(trigger)
   if prototype then
     if prototype.hasSpellID then
-      GameTooltip:SetSpellByID(trigger.spellName);
+      GameTooltip:SetSpellByID(trigger.spellName or 0);
       return true
     elseif prototype.hasItemID then
-      GameTooltip:SetHyperlink("item:"..trigger.itemName..":0:0:0:0:0:0:0")
+      GameTooltip:SetHyperlink("item:"..(trigger.itemName or 0)..":0:0:0:0:0:0:0")
       return true
     end
   end

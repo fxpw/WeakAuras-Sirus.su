@@ -545,7 +545,7 @@ local function OnRename(event, uid, oldid, newid)
   end
 
   OptionsPrivate.StopGrouping()
-  OptionsPrivate.SortDisplayButtons()
+  OptionsPrivate.SortDisplayButtons(nil, true)
 
   frame:OnRename(uid, oldid, newid)
 
