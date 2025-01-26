@@ -935,15 +935,13 @@ for k, v in pairs(Private.point_types) do
 end
 
 Private.default_types_for_anchor["ALL"] = {
-  display = L["Whole Area"],
+  display = L["Full Region"],
   type = "area"
 }
 
-Private.aurabar_anchor_areas = {
-  icon = L["Icon"],
-  fg = L["Foreground"],
-  bg = L["Background"],
-  bar = L["Full Bar"],
+Private.anchor_mode = {
+  area = L["Fill Area"],
+  point = L["Attach to Point"]
 }
 
 Private.inverse_point_types = {
