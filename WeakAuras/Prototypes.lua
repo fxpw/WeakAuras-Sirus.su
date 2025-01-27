@@ -13,6 +13,7 @@ local UnitClass = UnitClass
 local GetSpellInfo, GetItemInfo, GetItemCount, GetItemIcon = GetSpellInfo, GetItemInfo, GetItemCount, GetItemIcon
 local GetShapeshiftFormInfo, GetShapeshiftForm = GetShapeshiftFormInfo, GetShapeshiftForm
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation
+local MONEY = MONEY
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
@@ -5363,6 +5364,32 @@ Private.event_prototypes = {
         conditionType = "string",
       },
       {
+        -- flags
+      },
+      {
+        -- zone Channel id
+      },
+      {
+        -- channel index
+      },
+      {
+        -- channel base name
+      },
+      {
+        -- language id
+      },
+      {
+        -- line id
+      },
+      {
+        name = "sourceGUID",
+        display = L["Source GUID"],
+        init = "arg",
+        store = true,
+        hidden = true,
+        test = "true",
+      },
+      {
         name = "cloneId",
         display = L["Clone per Event"],
         type = "toggle",
@@ -7529,6 +7556,75 @@ Private.event_prototypes = {
     },
     automaticrequired = true,
     progressType = "none"
+  },
+  ["Money"] = {
+    type = "unit",
+    statesParameter = "one",
+    progressType = "none",
+    automaticrequired = true,
+    events = {
+      ["events"] = {"PLAYER_MONEY"}
+    },
+    internal_events = {"WA_DELAYED_PLAYER_ENTERING_WORLD"},
+    force_events = "WA_DELAYED_PLAYER_ENTERING_WORLD",
+    name = WeakAuras.newFeatureString..L["Player Money"],
+    init = function()
+      return [=[
+        local money = GetMoney()
+        local gold = floor(money / 1e4)
+        local silver = floor(money / 100 % 100)
+        local copper = money % 100
+
+        local icon = "interface/moneyframe/ui-goldicon"
+      ]=]
+    end,
+    args = {
+      {
+        name = "money",
+        init = "money",
+        type = "number",
+        display = L["Money"],
+        store = true,
+        hidden = true,
+        test = "true",
+      },
+      {
+        name = "gold",
+        init = "gold",
+        type = "number",
+        display = Private.coin_icons.gold .. L["Gold"],
+        store = true,
+        conditionType = "number",
+      },
+      {
+        name = "silver",
+        init = "silver",
+        type = "number",
+        display = Private.coin_icons.silver .. L["Silver"],
+        store = true,
+        hidden = true,
+        test = "true",
+      },
+      {
+        name = "copper",
+        init = "copper",
+        type = "number",
+        display = Private.coin_icons.copper .. L["Copper"],
+        store = true,
+        hidden = true,
+        test = "true",
+      },
+      {
+        name = "icon",
+        init = "icon",
+        store = true,
+        hidden = true,
+        test = "true",
+      },
+    },
+    GetNameAndIcon = function(trigger)
+      return MONEY, "interface/moneyframe/ui-goldicon"
+    end,
   },
   --[[  Some day i will finish this, soonTM
   ["Currency"] = {

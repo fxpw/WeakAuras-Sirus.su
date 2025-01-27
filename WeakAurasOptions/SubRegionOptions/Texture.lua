@@ -12,7 +12,6 @@ local function createOptions(parentData, data, index, subIndex)
     WeakAuras.Mixin(areaAnchors, OptionsPrivate.Private.GetAnchorsForData(child, "area"))
   end
 
-  -- TODO verfiy order being ordered
   local options = {
     __title = L["Texture %s"]:format(subIndex),
     __order = 1,

@@ -384,7 +384,8 @@ local supportedRegion = {
   icon = true,
   aurabar = true,
   texture = true,
-  progresstexture = true
+  progresstexture = true,
+  empty = true,
 }
 local function supports(regionType)
   return supportedRegion[regionType]

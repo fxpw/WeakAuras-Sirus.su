@@ -112,7 +112,6 @@ function Private.TextureBase.create(frame)
     return base
 end
 
--- TODO better type for options
 function Private.TextureBase.modify(base, options)
   base.canRotate = options.canRotate
   base.mirror = options.mirror

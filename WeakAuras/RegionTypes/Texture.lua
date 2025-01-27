@@ -150,6 +150,10 @@ local function modify(parent, region, data)
     self:UpdateProgress()
   end
 
+  function region:SetTexture(texture)
+    self.texture:SetTexture(texture)
+  end
+
   region.texture:SetTexture(data.texture)
 
   function region:Color(r, g, b, a)

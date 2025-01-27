@@ -1751,6 +1751,42 @@ function Private.Modernize(data, oldSnapshot)
     end
   end
 
+  if data.internalVersion < 81 then
+    -- Rename 'progressSources' to 'progressSource' for Linear/CircularProgressTexture/StopMotion sub elements
+    local conversions = {
+      sublineartexture = {
+        progressSources = "progressSource",
+      },
+      subcirculartexture = {
+        progressSources = "progressSource",
+      },
+      substopmotion = {
+        progressSources = "progressSource",
+      }
+    }
+    if data.subRegions then
+      for index, subRegionData in ipairs(data.subRegions) do
+        if conversions[subRegionData.type] then
+          for oldKey, newKey in pairs(conversions[subRegionData.type]) do
+            subRegionData[newKey] = subRegionData[oldKey]
+            subRegionData[oldKey] = nil
+          end
+        end
+      end
+    end
+  end
+
+  if data.internalVersion < 82 then
+    -- noMerge for separator custom option doesn't make sense,
+    -- and groups achieve the desired effect better,
+    -- so drop the feature
+    for _, optionData in ipairs(data.authorOptions) do
+      if optionData.type == "header" then
+        optionData.noMerge = nil
+      end
+    end
+  end
+
   data.internalVersion = max(data.internalVersion or 0, WeakAuras.InternalVersion())
 end
 

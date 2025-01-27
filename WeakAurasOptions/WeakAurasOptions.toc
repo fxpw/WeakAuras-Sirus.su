@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: WeakAuras Options
 ## Author: The WeakAuras Team
-## Version: 5.13.2
+## Version: 5.19.0
 ## Notes: Options for WeakAuras
 ## Notes-esES: Opciones para WeakAuras
 ## Notes-deDE: Optionen für WeakAuras
@@ -20,6 +20,7 @@ locales.xml
 VersionCheck.lua
 ForAllIndentsAndPurposes.lua
 
+RegionOptions\Empty.lua
 RegionOptions\AuraBar.lua
 RegionOptions\Texture.lua
 RegionOptions\Icon.lua
@@ -57,6 +58,8 @@ GenericTrigger.lua
 WeakAurasOptions.lua
 ConditionOptions.lua
 AuthorOptions.lua
+
+Changelog.lua
 
 OptionsFrames\OptionsFrame.lua
 

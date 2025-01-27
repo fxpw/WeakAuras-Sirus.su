@@ -83,9 +83,10 @@ end
 
 local function supports(regionType)
   return regionType == "texture"
-         or regionType == "progresstexture"
-         or regionType == "icon"
-         or regionType == "aurabar"
+          or regionType == "progresstexture"
+          or regionType == "icon"
+          or regionType == "aurabar"
+          or regionType == "empty"
 end
 
 WeakAuras.RegisterSubRegionType("subborder", L["Border"], supports, create, modify, onAcquire, onRelease, default, nil, properties);
