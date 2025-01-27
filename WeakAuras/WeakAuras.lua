@@ -2438,14 +2438,27 @@ local function validateUserConfig(data, options, config)
   end
 end
 
-local function removeNameplateUnits(data)
-    for _, triggerData in ipairs(data.triggers) do
-        local trigger = triggerData.trigger
-        if trigger and trigger.type == "unit" then
-            if trigger.unit == "nameplate" then
-                trigger.unit = "target"
-            end
-        end
+local function removeNameplateUnitsAndAnchors(data)
+  -- Dynamic Group Anchor
+  if data.useAnchorPerUnit == true and data.anchorPerUnit == "NAMEPLATE" then
+    data.useAnchorPerUnit = false
+    data.anchorPerUnit = "CUSTOM"
+  end
+  -- Aura Anchor
+  if data.anchorFrameType == "NAMEPLATE" then
+    data.anchorFrameType = "SCREEN"
+  end
+  -- Action Glow Anchor
+  if data.actions and data.actions.start and data.actions.start.glow_frame_type == "NAMEPLATE" then
+    data.actions.start.glow_frame_type = "FRAMESELECTOR"
+  end
+  -- Trigger units
+  for _, triggerData in ipairs(data.triggers) do
+    local trigger = triggerData.trigger
+    if trigger and trigger.type == "unit" then
+      if trigger.unit == "nameplate" then
+        trigger.unit = "target"
+      end
     end
   end
 end
