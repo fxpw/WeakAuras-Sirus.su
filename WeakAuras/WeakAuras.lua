@@ -2447,6 +2447,7 @@ local function removeNameplateUnits(data)
             end
         end
     end
+  end
 end
 
 local oldDataStub = {
@@ -2652,7 +2653,7 @@ function WeakAuras.PreAdd(data, snapshot)
   end
   validateUserConfig(data, data.authorOptions, data.config)
   if not(WeakAuras.isAwesomeEnabled()) then
-    removeNameplateUnits(data)
+    removeNameplateUnitsAndAnchors(data)
   end
   data.init_started = nil
   data.init_completed = nil
