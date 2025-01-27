@@ -2291,7 +2291,7 @@ local function createScanFunc(trigger)
     local names = {}
     for index, spellName in ipairs(trigger.ignoreAuraNames) do
       local spellId = WeakAuras.SafeToNumber(spellName)
-      local name = spellId and GetSpellInfo(spellId or 0) or spellName
+      local name = spellId and GetSpellInfo(spellId) or spellName
       tinsert(names, name)
     end
 
@@ -2411,7 +2411,7 @@ function BuffTrigger.Add(data)
         names = {}
         for index, spellName in ipairs(trigger.auranames) do
           local spellId = WeakAuras.SafeToNumber(spellName)
-          names[index] = spellId and GetSpellInfo(spellId or 0) or spellName
+          names[index] = spellId and GetSpellInfo(spellId) or spellName
         end
       end
 
