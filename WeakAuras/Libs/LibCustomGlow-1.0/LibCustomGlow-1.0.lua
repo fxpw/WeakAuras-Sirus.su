@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibCustomGlow-1.0"
-local MINOR_VERSION = 15
+local MINOR_VERSION = 16
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -219,6 +219,7 @@ function lib.PixelGlow_Start(r, color, N, frequency, length, th, xOffset, yOffse
 
 	pSizeChanged(f)
 	f:SetScript("OnSizeChanged", pSizeChanged)
+	pUpdate(f, 0)
 	f:SetScript("OnUpdate", pUpdate)
 end
 
@@ -246,6 +247,7 @@ local function acSizeChanged(self, width, height)
 	end
 
 	if width ~= self.info.width or height ~= self.info.height then
+		if width*height == 0 then return end
 		self.info.width = width
 		self.info.height = height
 		self.info.perimeter = 2 * (width + height)
@@ -303,6 +305,7 @@ function lib.AutoCastGlow_Start(r, color, N, frequency, scale, xOffset, yOffset,
 	acSizeChanged(f)
 	f:SetScript("OnSizeChanged", acSizeChanged)
 	f:SetScript("OnUpdate", acUpdate)
+	acUpdate(f, 0)
 end
 
 function lib.AutoCastGlow_Stop(r, key)
@@ -715,6 +718,14 @@ end
 
 local ButtonGlowTextures = {["spark"] = true, ["innerGlow"] = true, ["innerGlowOver"] = true, ["outerGlow"] = true, ["outerGlowOver"] = true, ["ants"] = true}
 
+local function noZero(num)
+    if num == 0 then
+        return 0.001
+    else
+        return num
+    end
+end
+
 function lib.ButtonGlow_Start(r, color, frequency, frameLevel)
 	if not r then return end
 	frameLevel = frameLevel or 8;
@@ -738,14 +749,16 @@ function lib.ButtonGlow_Start(r, color, frequency, frameLevel)
 		if not color then
 			for texture in pairs(ButtonGlowTextures) do
 				f[texture]:SetVertexColor(1, 1, 1)
-				f[texture]:SetAlpha(f[texture]:GetAlpha() / (f.color and f.color[4] or 1))
+				local alpha = math.min(f[texture]:GetAlpha()/noZero(f.color and f.color[4] or 1), 1)
+                f[texture]:SetAlpha(alpha)
 				updateAlphaAnim(f, 1)
 			end
 			f.color = false
 		else
 			for texture in pairs(ButtonGlowTextures) do
 				f[texture]:SetVertexColor(color[1], color[2], color[3])
-				f[texture]:SetAlpha(f[texture]:GetAlpha() / (f.color and f.color[4] or 1) * color[4])
+                local alpha = math.min(f[texture]:GetAlpha()/noZero(f.color and f.color[4] or 1)*color[4], 1)
+                f[texture]:SetAlpha(alpha)
 				updateAlphaAnim(f,color and color[4] or 1)
 			end
 			f.color = color
