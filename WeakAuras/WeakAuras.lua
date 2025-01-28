@@ -4618,6 +4618,8 @@ function Private.ContainsAnyPlaceHolders(textStr)
   return ContainsPlaceHolders(textStr, function(symbol) return true end, true)
 end
 
+Private.ContainsPlaceHoldersPredicate = ContainsPlaceHolders
+
 local function ValueForSymbol(symbol, region, customFunc, regionState, regionStates, useHiddenStates, formatters)
   local triggerNum, sym = string.match(symbol, "(.+)%.(.+)")
   triggerNum = triggerNum and tonumber(triggerNum)
@@ -4790,6 +4792,7 @@ end
 function Private.CreateFormatters(input, getter, withoutColor, data)
   local seenSymbols = {}
   local formatters = {}
+  local everyFrameFormatters = {}
 
   local parseFn = function(symbol)
     if not seenSymbols[symbol] then
@@ -4801,7 +4804,7 @@ function Private.CreateFormatters(input, getter, withoutColor, data)
         local default = (sym == "p" or sym == "t") and "timed" or "none"
         local selectedFormat = getter(symbol ..  "_format", default)
         if (Private.format_types[selectedFormat]) then
-          formatters[symbol] = Private.format_types[selectedFormat].CreateFormatter(symbol, getter, withoutColor, data)
+          formatters[symbol], everyFrameFormatters[symbol] = Private.format_types[selectedFormat].CreateFormatter(symbol, getter, withoutColor, data)
         end
       end
     end
@@ -4816,7 +4819,18 @@ function Private.CreateFormatters(input, getter, withoutColor, data)
     end
   end
 
-  return formatters
+  return formatters, everyFrameFormatters
+end
+
+function Private.AnyEveryFrameFormatters(textStr, everyFrameFormatters)
+  if next(everyFrameFormatters) then
+    local function predicate(symbol)
+      if everyFrameFormatters[symbol] then
+        return true
+      end
+    end
+    return Private.ContainsPlaceHoldersPredicate(textStr, predicate)
+  end
 end
 
 function Private.IsAuraActive(uid)
