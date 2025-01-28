@@ -122,8 +122,6 @@ Private.unit_realm_name_types = {
   always = L["Always include realm"]
 }
 
-local timeFormatter = {}
-
 local simpleFormatters = {
 --[[
   AbbreviateNumbers = function(value, state)
@@ -155,6 +153,15 @@ local simpleFormatters = {
       local fmt, time = SecondsToTimeAbbrev(value)
       -- Remove the space between the value and unit
       return fmt:gsub(" ", ""):format(time)
+    end,
+    -- Fixed built-in formatter
+    [99] = function(value)
+      value = ceil(value)
+      if value > 60 then
+        return string.format("%i:", math.floor(value / 60)) .. string.format("%02i", value % 60)
+      else
+        return string.format("%d", value)
+      end
     end,
   },
 }
@@ -229,16 +236,30 @@ Private.format_types = {
         hidden = hidden,
         disabled = function() return get(symbol .. "_time_dynamic_threshold") == 0 end
       })
+
+      addOption(symbol .. "_time_legacy_floor", {
+        type = "toggle",
+        name = L["Use Legacy floor rounding"],
+        desc = L["Enables (incorrect) round down of seconds, which was the previous default behaviour."],
+        width = WeakAuras.normalWidth,
+        hidden = hidden,
+        disabled = function() return get(symbol .. "_time_format", 0) ~= 0 end
+      })
     end,
     CreateFormatter = function(symbol, get, wihoutColor, data)
       local format = get(symbol .. "_time_format", 0)
       local threshold = get(symbol .. "_time_dynamic_threshold", 60)
       local precision = get(symbol .. "_time_precision", 1)
+      local legacyRoundingMode = get(symbol .. "_time_legacy_floor", false)
 
-      local mainFormater = simpleFormatters.time[format]
-      if not mainFormater then
-        mainFormater = simpleFormatters.time[0]
+      if format == 0 and not legacyRoundingMode then
+        format = 99
       end
+      if not simpleFormatters.time[format] then
+        format = 99
+      end
+      local mainFormater = simpleFormatters.time[format]
+
       local formatter
       if threshold == 0 then
         formatter = function(value, state, trigger)
