@@ -449,7 +449,11 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
         expirationTime = math.huge
       end
     end
+
     local duration = totalProperty and state[totalProperty] or 0
+    if type(duration) ~= "number" then
+      duration = 0
+    end
     local adjustMin
     if minMaxConfig.adjustedMin then
       adjustMin = minMaxConfig.adjustedMin
@@ -469,6 +473,7 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
     else
       max = duration
     end
+
     self.minProgress, self.maxProgress = adjustMin, max
     self.progressType = "timed"
     self.duration = max - adjustMin
