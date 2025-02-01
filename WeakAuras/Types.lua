@@ -3252,6 +3252,50 @@ WeakAuras.StopMotion.animation_types = {
   progress = L["Progress"]
 }
 
+Private.spec_types_all = {
+  -- Death Knight
+  L["Blood"],
+  L["Frost"],
+  L["Unholy"],
+  -- Druid
+  L["Balance"],
+  L["Feral Combat"],
+  L["Guardian"],
+  L["Restoration"],
+  -- Hunter
+  L["Beast Mastery"],
+  L["Marksmanship"],
+  L["Survival"],
+  -- Mage
+  L["Arcane"],
+  L["Fire"],
+  L["Frost"],
+  -- Paladin
+  L["Holy"],
+  L["Protection"],
+  L["Retribution"],
+  -- Priest
+  L["Discipline"],
+  L["Holy"],
+  L["Shadow"],
+  -- Rogue
+  L["Assassination"],
+  L["Combat"],
+  L["Subtlety"],
+  -- Shaman
+  L["Elemental"],
+  L["Enhancement"],
+  L["Restoration"],
+  -- Warlock
+  L["Affliction"],
+  L["Demonology"],
+  L["Destruction"],
+  -- Warrior
+  L["Arms"],
+  L["Fury"],
+  L["Protection"],
+}
+
 Private.talent_types_specific = {}
 Private.talents_ids = {
   DEATHKNIGHT = {{48979,48997,49182,48978,49004,55107,48982,48987,49467,48985,49145,49015,48977,49006,49005,48988,53137,49027,49016,50365,62905,49018,55233,49189,55050,49023,61154,49028}, {49175,49455,49042,55061,49140,49226,50880,49039,51468,51123,49149,49137,49186,49471,49796,55610,49024,49188,50040,49203,50384,65661,54639,51271,49200,49143,50187,49202,49184}, {51745,48962,55129,49036,48963,49588,48965,49013,51459,49158,49146,49219,55620,49194,49220,49223,55666,49224,49208,52143,66799,51052,50391,63560,49032,49222,49217,51099,55090,50117,49206}},

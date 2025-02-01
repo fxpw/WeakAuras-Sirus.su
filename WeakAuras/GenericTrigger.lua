@@ -3636,6 +3636,13 @@ do
   end
 end
 
+-- LibSpecWrapper
+-- We always register, because it's probably not that often called, and ScanEvents checks
+-- early if anyone wants the event
+Private.LibGroupTalentsWrapper.Register(function(unit)
+  WeakAuras.ScanEvents("UNIT_SPEC_CHANGED_" .. unit, unit)
+end)
+
 do
   local scheduled_scans = {};
 

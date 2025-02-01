@@ -1072,6 +1072,13 @@ local function TriggerInfoApplies(triggerInfo, unit)
     return false
   end
 
+  if triggerInfo.specId then
+    local spec = Private.LibGroupTalentsWrapper.SpecForUnit(controllingUnit)
+    if not triggerInfo.specId[spec] then
+      return false
+    end
+  end
+
   if triggerInfo.unit == "group" then
     local isPet = WeakAuras.UnitIsPet(unit)
     if triggerInfo.includePets == "PetsOnly" and not isPet then
@@ -1862,6 +1869,16 @@ local function EventHandler(frame, event, arg1, arg2, ...)
   Private.StopProfileSystem("bufftrigger2")
 end
 
+
+Private.LibGroupTalentsWrapper.Register(function(unit)
+  Private.StartProfileSystem("bufftrigger2")
+  local deactivatedTriggerInfos = {}
+  RecheckActiveForUnitType("group", unit, deactivatedTriggerInfos)
+  RecheckActiveForUnitType("group", unit .. "pet", deactivatedTriggerInfos)
+  DeactivateScanFuncs(deactivatedTriggerInfos)
+  Private.StopProfileSystem("bufftrigger2")
+end)
+
 Buff2Frame:RegisterEvent("UNIT_AURA")
 Buff2Frame:RegisterEvent("UNIT_FACTION")
 Buff2Frame:RegisterEvent("UNIT_NAME_UPDATE")
@@ -2465,6 +2482,7 @@ function BuffTrigger.Add(data)
       local effectiveIgnoreSelf = (groupTrigger or trigger.unit == "nameplate") and trigger.ignoreSelf
       local effectiveRaidRole = groupTrigger and trigger.useRaidRole and trigger.raid_role or nil
       local effectiveClass = groupTrigger and trigger.useClass and trigger.class
+      local effectiveSpecId = groupTrigger and trigger.useActualSpec and trigger.actualSpec
       local effectiveIgnoreDead = groupTrigger and trigger.ignoreDead
       local effectiveIgnoreDisconnected = groupTrigger and trigger.ignoreDisconnected
       local effectiveIgnoreInvisible = groupTrigger and trigger.ignoreInvisible
@@ -2526,6 +2544,7 @@ function BuffTrigger.Add(data)
         ignoreDisconnected = effectiveIgnoreDisconnected,
         ignoreInvisible = effectiveIgnoreInvisible,
         raidRole = effectiveRaidRole,
+        specId = effectiveSpecId,
         groupSubType = groupSubType,
         groupCountFunc = groupCountFunc,
         class = effectiveClass,

@@ -29,6 +29,7 @@ if LibGroupTalents then
   frame:RegisterEvent("PARTY_MEMBERS_CHANGED")
 
   local function ProcessEvent()
+    eventLock = false
     local ownName = UnitName("player")
 
     nameToUnitMap = {}
@@ -56,19 +57,17 @@ if LibGroupTalents then
         nameToGlyphs[name] = nil
       end
     end
-
-    eventLock = false
   end
 
   frame:SetScript("OnEvent", function()
     if not eventLock then
       eventLock = true
-      timer:ScheduleTimer(ProcessEvent, 1)
+      timer:ScheduleTimer(ProcessEvent, 1.5)
     end
   end)
 
   --- LibGroupTalents callback for talents and glyphs
-  local function LibGroupTalentsCallback(guid, unit)
+  function Private.LibGroupTalentsWrapper:LibGroupTalentsCallback(_, _, unit)
     local unitName = UnitName(unit)
 
     -- Update specialization data
@@ -88,69 +87,58 @@ if LibGroupTalents then
 
     -- Notify subscribers
     for _, f in ipairs(subscribers) do
+      print(f)
       f(nameToUnitMap[unitName])
     end
   end
 
-  LibGroupTalents:RegisterCallback("LibGroupTalents_Update", LibGroupTalentsCallback)
+  LibGroupTalents.RegisterCallback(Private.LibGroupTalentsWrapper, "LibGroupTalents_Update", "LibGroupTalentsCallback")
 
   function Private.LibGroupTalentsWrapper.Register(f)
     table.insert(subscribers, f)
   end
 
   function Private.LibGroupTalentsWrapper.SpecForUnit(unit)
+    local unitName = UnitName(unit)
+    if nameToSpecMap[unitName] and nameToSpecMap[unitName][1] then
+      return nameToSpecMap[unitName] and nameToSpecMap[unitName][1]
+    end
+
     if UnitIsUnit(unit, "player") then
       return LibGroupTalents:GetUnitTalentSpec(unit)
     end
-
-    local unitName = UnitName(unit)
-    return nameToSpecMap[unitName] and nameToSpecMap[unitName][1] or nil
   end
 
   function Private.LibGroupTalentsWrapper.SpecRolePositionForUnit(unit)
-    if UnitIsUnit(unit, "player") then
-      return LibGroupTalents:GetUnitTalentSpec(unit)
-    end
-
     local data = nameToSpecMap[UnitName(unit)]
     if data then
       return unpack(data)
-    else
-      return nil
+    end
+
+    if UnitIsUnit(unit, "player") then
+      return LibGroupTalents:GetUnitTalentSpec(unit)
     end
   end
 
   function Private.LibGroupTalentsWrapper.CheckTalentForUnit(unit, talentId)
-    if UnitIsUnit(unit, "player") then
-      return select(4, WeakAuras.GetTalentById(talentId))
-    end
-
-    local unitName = UnitName(unit)
-    if not nameToSpecMap[unitName] then
-      return nil
-    end
-
-    return LibGroupTalents:UnitHasTalent(unit, talentId) and true or false
+    return UnitIsUnit(unit, "player") and LibGroupTalents:UnitHasTalent(unit, talentId) and true or false
   end
 
   function Private.LibGroupTalentsWrapper.CheckGlyphForUnit(unit, glyphId)
+    local unitName = UnitName(unit)
+    if nameToGlyphs[unitName] and nameToGlyphs[unitName][glyphId] then
+        return true
+    end
+
     if UnitIsUnit(unit, "player") then
       local glyphs = { LibGroupTalents:GetUnitGlyphs(unit) }
-      for _, id in ipairs(glyphs) do
-        if id == glyphId then
-          return true
+        for _, id in ipairs(glyphs) do
+            if id == glyphId then
+                return true
+            end
         end
-      end
-      return false
     end
-
-    local unitName = UnitName(unit)
-    if nameToGlyphs[unitName] then
-      return nameToGlyphs[unitName][glyphId] or false
-    end
-
-    return false
-  end
+end
 else
   function Private.LibGroupTalentsWrapper.Register(f) end
   function Private.LibGroupTalentsWrapper.SpecForUnit(unit) return nil end
