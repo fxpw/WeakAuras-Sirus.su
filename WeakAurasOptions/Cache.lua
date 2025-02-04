@@ -27,6 +27,26 @@ function spellCache.Build()
     return
   end
 
+  local holes
+  --[[
+  if WeakAuras.IsClassicEra() then
+    holes = {}
+    holes[63707] = 81743
+    holes[81748] = 219002
+    holes[219004] = 285223
+    holes[285224] = 301088
+    holes[301101] = 324269
+    holes[474742] = 1213143
+  elseif WeakAuras.IsCataClassic() then
+    holes = {}
+    holes[121820] = 158262
+    holes[158263] = 186402
+    holes[186403] = 219002
+    holes[219004] = 243805
+    holes[243806] = 261127
+    holes[262591] = 281624
+    holes[301101] = 324269
+  end]]
   wipe(cache)
   local co = coroutine.create(function()
     metaData.rebuilding = true
@@ -39,15 +59,21 @@ function spellCache.Build()
 
       if(icon == 136243) then -- 136243 is the a gear icon, we can ignore those spells
         misses = 0;
-      elseif name and name ~= "" then
+      elseif name and name ~= "" and icon then
         cache[name] = cache[name] or {}
-        cache[name].spells = cache[name].spells or {}
-        cache[name].spells[id] = icon
+
+        if not cache[name].spells or cache[name].spells == "" then
+          cache[name].spells = id .. "=" .. icon
+        else
+          cache[name].spells = cache[name].spells .. "," .. id .. "=" .. icon
+        end
         misses = 0
+        if holes and holes[id] then
+          id = holes[id]
+        end
       else
         misses = misses + 1
       end
-
       coroutine.yield(0.01, "spells")
     end
 
@@ -57,22 +83,15 @@ function spellCache.Build()
         local id,name,_,_,_,_,_,_,_,iconID = GetAchievementInfo(category, i)
         if name and iconID then
           cache[name] = cache[name] or {}
-          cache[name].achievements = cache[name].achievements or {}
-          cache[name].achievements[id] = iconID
+          if not cache[name].achievements or cache[name].achievements == "" then
+            cache[name].achievements = id .. "=" .. iconID
+          else
+            cache[name].achievements = cache[name].achievements .. "," .. id .. "=" .. iconID
+          end
         end
         coroutine.yield(0.1, "achievements")
       end
       coroutine.yield(0.1, "categories")
-    end
-
-    -- Updates the icon cache with whatever icons WeakAuras core has actually used.
-    -- This helps keep name<->icon matches relevant.
-    for name, icons in pairs(WeakAurasSaved.dynamicIconCache) do
-      if WeakAurasSaved.dynamicIconCache[name] then
-        for spellId, icon in pairs(WeakAurasSaved.dynamicIconCache[name]) do
-          spellCache.AddIcon(name, spellId, icon)
-        end
-      end
     end
 
     metaData.needsRebuild = false
@@ -80,6 +99,31 @@ function spellCache.Build()
   end)
   OptionsPrivate.Private.Threads:Add("spellCache", co, 'background')
 end
+
+--[[ function to help find big holes in spellIds to help speedup Build()
+
+local id = 0
+local misses = 0
+local lastId
+print("####")
+while misses < 4000000 do
+   id = id + 1
+   local name = GetSpellInfo(id)
+   local icon = GetSpellTexture(id)
+   if icon == 136243 then -- 136243 is the a gear icon, we can ignore those spells
+      misses = 0
+   elseif name and name ~= "" and icon then
+      if misses > 10000 then
+         print(("holes[%s] = %s"):format(lastId, id - 1))
+      end
+      lastId = id
+      misses = 0
+   else
+      misses = misses + 1
+   end
+end
+print("lastId", lastId)
+]]
 
 function spellCache.GetIcon(name)
   if (name == nil) then
@@ -94,9 +138,11 @@ function spellCache.GetIcon(name)
     local bestMatch = nil
     if (icons) then
       if (icons.spells) then
-        for spellId, icon in pairs(icons.spells) do
-          if not bestMatch or (type(spellId) == "number" and spellId ~= 0 and IsSpellKnown(spellId)) then
-            bestMatch = spellId
+        for spell, icon in icons.spells:gmatch("(%d+)=(%d+)") do
+          local spellId = tonumber(spell)
+
+          if not bestMatch or (spellId and spellId ~= 0 and IsSpellKnown(spellId)) then
+            bestMatch = tonumber(icon)
           end
         end
       end
@@ -104,8 +150,8 @@ function spellCache.GetIcon(name)
       OptionsPrivate.Private.Threads:SetPriority('spellCache', 'normal')
     end
 
-    bestIcon[name] = bestMatch and icons.spells[bestMatch];
-    return bestIcon[name];
+    bestIcon[name] = bestMatch
+    return bestIcon[name]
   else
     error("spellCache has not been loaded. Call WeakAuras.spellCache.Load(...) first.")
   end
@@ -113,23 +159,33 @@ end
 
 function spellCache.GetSpellsMatching(name)
   if cache[name] then
-    return cache[name].spells
+    if cache[name].spells then
+      local result = {}
+      for spell, icon in cache[name].spells:gmatch("(%d+)=(%d+)") do
+        local spellId = tonumber(spell)
+        local iconId = tonumber(icon)
+        result[spellId] = icon
+      end
+      return result
+    end
+  elseif metaData.rebuilding then
+    OptionsPrivate.Private.Threads:SetPriority('spellCache', 'normal')
   end
 end
 
 function spellCache.AddIcon(name, id, icon)
-  if cache then
-    if name then
-      cache[name] = cache[name] or {}
-      cache[name].spells = cache[name].spells or {}
-      if id and icon then
-        cache[name].spells[id] = icon
-      end
-    end
-  elseif metaData.rebuilding then
-    OptionsPrivate.Private.Threads:SetPriority('spellCache', 'normal')
-  else
+  if not cache then
     error("spellCache has not been loaded. Call WeakAuras.spellCache.Load(...) first.")
+    return
+  end
+
+  if name and id and icon then
+    cache[name] = cache[name] or {}
+    if not cache[name].spells or cache[name].spells == "" then
+      cache[name].spells = id .. "=" .. icon
+    else
+      cache[name].spells = cache[name].spells .. "," .. id .. "=" .. icon
+    end
   end
 end
 
@@ -154,11 +210,14 @@ function spellCache.Load(data)
     num = num + 1;
   end
 
-  if(num < 39000 or metaData.locale ~= locale or metaData.build ~= build or metaData.version ~= version or not metaData.spellCacheAchivements) then
+  if(num < 39000 or metaData.locale ~= locale or metaData.build ~= build
+     or metaData.version ~= version or not metaData.spellCacheStrings)
+  then
     metaData.build = build;
     metaData.locale = locale;
     metaData.version = version;
-    metaData.spellCacheAchivements = true
+    metaData.spellCacheAchievements = true
+    metaData.spellCacheStrings = true
     metaData.needsRebuild = true
     wipe(cache)
   end

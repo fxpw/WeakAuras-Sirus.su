@@ -31,6 +31,7 @@ local function ConstructIconPicker(frame)
 
   local function iconPickerFill(subname, doSort)
     scroll:ReleaseChildren();
+
     local usedIcons = {};
     local AddButton = function(name, icon)
       local button = AceGUI:Create("WeakAurasIconButton");
@@ -55,21 +56,20 @@ local function ConstructIconPicker(frame)
         return;
       end
     end
+
     if subname then
       subname = subname:lower();
     end
-
-
-
 
     local num = 0;
     if(subname and subname ~= "") then
       for name, icons in pairs(spellCache.Get()) do
         if(name:lower():find(subname, 1, true)) then
           if icons.spells then
-            for spellId, icon in pairs(icons.spells) do
-              if (not usedIcons[icon]) then
-                AddButton(name, icon)
+            for spell, icon in icons.spells:gmatch("(%d+)=([%w_\\-]+),?") do
+              local iconId = icon
+              if (not usedIcons[iconId]) then
+                AddButton(name, iconId)
                 num = num + 1;
                 if(num >= 500) then
                   break;
@@ -77,9 +77,10 @@ local function ConstructIconPicker(frame)
               end
             end
           elseif icons.achievements then
-            for _, icon in pairs(icons.achievements) do
-              if (not usedIcons[icon]) then
-                AddButton(name, icon)
+            for spell, icon in icons.achievements:gmatch("(%d+)=([%w_\\-]+),?") do
+              local iconId = icon
+              if (not usedIcons[iconId]) then
+                AddButton(name, iconId)
                 num = num + 1;
                 if(num >= 500) then
                   break;

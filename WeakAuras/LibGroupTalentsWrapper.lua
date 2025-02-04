@@ -87,7 +87,6 @@ if LibGroupTalents then
 
     -- Notify subscribers
     for _, f in ipairs(subscribers) do
-      print(f)
       f(nameToUnitMap[unitName])
     end
   end
