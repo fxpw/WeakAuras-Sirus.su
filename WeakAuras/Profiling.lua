@@ -4,7 +4,7 @@ local AddonName, Private = ...
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 local prettyPrint = WeakAuras.prettyPrint
---local LGF = LibStub("LibGetFrame-1.0")
+local LGF = LibStub("LibGetFrame-1.0")
 
 local profileData = {}
 profileData.systems = {}
@@ -245,7 +245,7 @@ function WeakAuras.StartProfile(startType)
   Private.StopProfileSystem = StopProfileSystem
   Private.StopProfileAura = StopProfileAura
   Private.StopProfileUID = StopProfileUID
-  --LGF.StartProfile()
+  LGF.StartProfile()
 end
 
 local function doNothing()
@@ -268,7 +268,7 @@ function WeakAuras.StopProfile()
   Private.StopProfileSystem = doNothing
   Private.StopProfileAura = doNothing
   Private.StopProfileUID = doNothing
-  --LGF.StopProfile()
+  LGF.StopProfile()
 
   currentProfileState = nil
   RealTimeProfilingWindow:UnregisterAllEvents()
@@ -442,11 +442,11 @@ function WeakAuras.PrintProfile()
     end
   end
 
-  --popup:AddText("")
-  --popup:AddText("|cff9900ffLibGetFrame:|r")
-  --for id, map in pairs(LGF.GetProfileData()) do
-  --  PrintOneProfile(popup, id, map)
-  --end
+  popup:AddText("")
+  popup:AddText("|cff9900ffLibGetFrame:|r")
+  for id, map in pairs(LGF.GetProfileData()) do
+    PrintOneProfile(popup, id, map)
+  end
 
   popup:Show()
 end
