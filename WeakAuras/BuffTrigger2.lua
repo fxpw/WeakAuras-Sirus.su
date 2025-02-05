@@ -1038,6 +1038,10 @@ local function TriggerInfoApplies(triggerInfo, unit)
     return false
   end
 
+  if triggerInfo.hostility and WeakAuras.GetPlayerReaction(unit) ~= triggerInfo.hostility then
+    return false
+  end
+
   if triggerInfo.unit == "group" then
     local isPet = WeakAuras.UnitIsPet(unit)
     if triggerInfo.includePets == "PetsOnly" and not isPet then
