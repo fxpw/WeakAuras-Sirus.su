@@ -583,7 +583,7 @@ local function modifyThumbnail(parent, region, data, fullModify, size)
       frame = floor(region.startFrame + (region.endFrame - region.startFrame) * 0.75);
     end
 
-    local texture = data.foregroundTexture or "Interface\\AddOns\\WeakAuras\\Media\\Textures\\StopMotion";
+    local texture = data.foregroundTexture or "Interface\\AddOns\\WeakAuras\\Media\\Textures\\stopmotion";
 
     if (region.foreground.rows and region.foreground.columns) then
       region.texture:SetTexture(texture);
@@ -634,7 +634,7 @@ local function createIcon()
     local data = {
         height = 30,
         width = 30,
-        foregroundTexture = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\StopMotion",
+        foregroundTexture = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\stopmotion",
         foregroundColor = {1, 1, 1, 1},
         blendMode = "ADD",
         rotate = false,

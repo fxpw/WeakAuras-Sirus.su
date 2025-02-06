@@ -9,7 +9,7 @@ local default = function(parentType)
     stopmotionVisible = true,
     barModelClip = true,
 
-    stopmotionTexture = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\StopMotion",
+    stopmotionTexture = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\stopmotion",
     stopmotionDesaturate = false,
     stopmotionColor = {1, 1, 1, 1},
     stopmotionBlendMode = "BLEND",

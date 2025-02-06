@@ -1,0 +1,9 @@
+## Interface: 33000
+## Title: WeakAuras Stop Motion Textures
+## Author: Infus
+## Notes: Textures for Stop Motion
+## X-Category: Interface Enhancements
+## DefaultState: Enabled
+## Dependencies: WeakAuras, WeakAurasOptions
+
+StopMotionTextures.lua
