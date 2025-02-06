@@ -52,6 +52,7 @@ do
     "LibDBIcon-1.0",
     "LibGetFrame-1.0",
     "LibSerialize",
+    "LibGroupTalents-1.0",
   }
   for _, lib in ipairs(StandAloneLibs) do
     if not lib then

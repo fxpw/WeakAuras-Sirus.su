@@ -2,8 +2,11 @@ if not WeakAuras.IsLibsOK() then return end
 
 local AddonName, Private = ...
 
-local timer = WeakAuras.timer;
-local eventLock = false
+-- Lua APIs
+local unpack = unpack
+
+-- WoW APIs
+local UnitName, UnitIsUnit, UnitClass, GetNumGroupMembers = UnitName, UnitIsUnit, UnitClass, GetNumGroupMembers
 
 local nameToGlyphs = {}
 local nameToSpecMap = {}
@@ -23,60 +26,47 @@ Private.LibGroupTalentsWrapper = {
 
 local LibGroupTalents = LibStub("LibGroupTalents-1.0")
 if LibGroupTalents then
-  local frame = CreateFrame("Frame")
-  frame:RegisterEvent("PLAYER_LOGIN")
-  frame:RegisterEvent("RAID_ROSTER_UPDATE")
-  frame:RegisterEvent("PARTY_MEMBERS_CHANGED")
+  --- LibGroupTalents callback for talents and glyphs
+  function Private.LibGroupTalentsWrapper:LibGroupTalentsCallback(_, _, unit)
+    if not unit then
+      return
+    end
 
-  local function ProcessEvent()
-    eventLock = false
+    local unitName = UnitName(unit)
     local ownName = UnitName("player")
 
-    nameToUnitMap = {}
-    nameToUnitMap[ownName] = "player"
-
-    local numMembers
+    local numMembers = GetNumGroupMembers()
     local units
     if IsInRaid() then
-      numMembers = GetNumGroupMembers()
       units = WeakAuras.raidUnits
     else
-      numMembers = GetNumPartyMembers()
       units = WeakAuras.partyUnits
     end
 
     for i = 1, numMembers do
-      local unit = units[i]
-      local name = UnitName(unit)
-      nameToUnitMap[name] = unit
-    end
-
-    for name in pairs(nameToSpecMap) do
-      if not nameToUnitMap[name] then
-        nameToSpecMap[name] = nil
-        nameToGlyphs[name] = nil
+      local groupUnit = units[i]
+      if groupUnit then
+        local groupUnitName = UnitName(groupUnit)
+        if groupUnitName then
+          nameToUnitMap[groupUnitName] = groupUnit
+        end
       end
     end
-  end
+    nameToUnitMap[ownName] = "player"
 
-  frame:SetScript("OnEvent", function()
-    if not eventLock then
-      eventLock = true
-      timer:ScheduleTimer(ProcessEvent, 1.5)
+    for storedName in pairs(nameToSpecMap) do
+      if not nameToUnitMap[storedName] then
+        nameToSpecMap[storedName] = nil
+        nameToGlyphs[storedName] = nil
+      end
     end
-  end)
 
-  --- LibGroupTalents callback for talents and glyphs
-  function Private.LibGroupTalentsWrapper:LibGroupTalentsCallback(_, _, unit)
-    local unitName = UnitName(unit)
-
-    -- Update specialization data
     local specInfo = { LibGroupTalents:GetUnitTalentSpec(unit) }
-    if specInfo and #specInfo > 0 then
-      nameToSpecMap[unitName] = specInfo
+    local class = select(2, UnitClass(unit))
+    if specInfo and #specInfo > 0 and class then
+      nameToSpecMap[unitName] = class .. specInfo[1]
     end
 
-    -- Update glyphs
     local glyphs = { LibGroupTalents:GetUnitGlyphs(unit) }
     if glyphs and #glyphs > 0 then
       nameToGlyphs[unitName] = {}
@@ -85,9 +75,10 @@ if LibGroupTalents then
       end
     end
 
-    -- Notify subscribers
-    for _, f in ipairs(subscribers) do
-      f(nameToUnitMap[unitName])
+    if nameToUnitMap[unitName] then
+      for _, f in ipairs(subscribers) do
+        f(nameToUnitMap[unitName])
+      end
     end
   end
 
@@ -99,12 +90,17 @@ if LibGroupTalents then
 
   function Private.LibGroupTalentsWrapper.SpecForUnit(unit)
     local unitName = UnitName(unit)
-    if nameToSpecMap[unitName] and nameToSpecMap[unitName][1] then
-      return nameToSpecMap[unitName] and nameToSpecMap[unitName][1]
+    local class = select(2, UnitClass(unit))
+
+    if nameToSpecMap[unitName] then
+      return nameToSpecMap[unitName]
     end
 
-    if UnitIsUnit(unit, "player") then
-      return LibGroupTalents:GetUnitTalentSpec(unit)
+    if UnitIsUnit(unit, "player") and class then
+      local specInfo = LibGroupTalents:GetUnitTalentSpec(unit)
+      if specInfo and #specInfo > 0 then
+        return class .. specInfo[1]
+      end
     end
   end
 
@@ -126,14 +122,14 @@ if LibGroupTalents then
   function Private.LibGroupTalentsWrapper.CheckGlyphForUnit(unit, glyphId)
     local unitName = UnitName(unit)
     if nameToGlyphs[unitName] and nameToGlyphs[unitName][glyphId] then
-        return true
+      return true
     end
 
     if UnitIsUnit(unit, "player") then
       local glyphs = { LibGroupTalents:GetUnitGlyphs(unit) }
         for _, id in ipairs(glyphs) do
             if id == glyphId then
-                return true
+              return true
             end
         end
     end

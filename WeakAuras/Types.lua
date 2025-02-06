@@ -3252,49 +3252,39 @@ WeakAuras.StopMotion.animation_types = {
   progress = L["Progress"]
 }
 
-Private.spec_types_all = {
-  -- Death Knight
-  L["Blood"],
-  L["Frost"],
-  L["Unholy"],
-  -- Druid
-  L["Balance"],
-  L["Feral Combat"],
-  L["Guardian"],
-  L["Restoration"],
-  -- Hunter
-  L["Beast Mastery"],
-  L["Marksmanship"],
-  L["Survival"],
-  -- Mage
-  L["Arcane"],
-  L["Fire"],
-  L["Frost"],
-  -- Paladin
-  L["Holy"],
-  L["Protection"],
-  L["Retribution"],
-  -- Priest
-  L["Discipline"],
-  L["Holy"],
-  L["Shadow"],
-  -- Rogue
-  L["Assassination"],
-  L["Combat"],
-  L["Subtlety"],
-  -- Shaman
-  L["Elemental"],
-  L["Enhancement"],
-  L["Restoration"],
-  -- Warlock
-  L["Affliction"],
-  L["Demonology"],
-  L["Destruction"],
-  -- Warrior
-  L["Arms"],
-  L["Fury"],
-  L["Protection"],
+local classIcons = {
+  DRUID = "Interface\\Icons\\Ability_Druid_Maul",
+  HUNTER = "Interface\\Icons\\INV_Weapon_Bow_07",
+  MAGE = "Interface\\Icons\\INV_Staff_13",
+  PALADIN = "Interface\\Icons\\INV_Hammer_01",
+  PRIEST = "Interface\\Icons\\INV_Staff_30",
+  ROGUE = "Interface\\Icons\\INV_ThrowingKnife_04",
+  SHAMAN = "Interface\\Icons\\Spell_Nature_BloodLust",
+  WARLOCK = "Interface\\Icons\\Spell_Nature_FaerieFire",
+  WARRIOR = "Interface\\Icons\\INV_Sword_27",
+  DEATHKNIGHT = "Interface\\Icons\\Spell_Deathknight_ClassIcon",
 }
+
+local specs = {
+  DEATHKNIGHT = { L["Blood"], L["Frost"], L["Unholy"] },
+  DRUID = { L["Balance"], L["Feral Combat"], L["Guardian"], L["Restoration"] },
+  HUNTER = { L["Beast Mastery"], L["Marksmanship"], L["Survival"] },
+  MAGE = { L["Arcane"], L["Fire"], L["Frost"] },
+  PALADIN = { L["Holy"], L["Protection"], L["Retribution"] },
+  PRIEST = { L["Discipline"], L["Holy"], L["Shadow"] },
+  ROGUE = { L["Assassination"], L["Combat"], L["Subtlety"] },
+  SHAMAN = { L["Elemental"], L["Enhancement"], L["Restoration"] },
+  WARLOCK = { L["Affliction"], L["Demonology"], L["Destruction"] },
+  WARRIOR = { L["Arms"], L["Fury"], L["Protection"] }
+}
+
+Private.spec_types_all = {}
+for class, specList in pairs(specs) do
+  for _, specName in ipairs(specList) do
+    Private.spec_types_all[class .. specName] = "|T" .. classIcons[class] .. ":0|t |c" ..
+                                      WA_GetClassColor(class) .. specName .. "|r"
+  end
+end
 
 Private.talent_types_specific = {}
 Private.talents_ids = {

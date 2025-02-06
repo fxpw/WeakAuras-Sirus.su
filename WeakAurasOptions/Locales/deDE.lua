@@ -858,8 +858,6 @@ Falls die Zahl als Dezimalzahl (z.B. 0.5), Bruch (z.B. 1/2) oder Prozentsatz (z.
 	L["LibSerialize: Sanjo"] = "LibSerialize: Sanjo"
 	--[[Translation missing --]]
 	L["LibSharedMedia"] = "LibSharedMedia"
-	--[[Translation missing --]]
-	L["LibSpecialization: Funkeh"] = "LibSpecialization: Funkeh"
 	L["Limit"] = "Limit"
 	--[[Translation missing --]]
 	L["Line"] = "Line"
@@ -1126,9 +1124,9 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Require unit from trigger"] = "Require unit from trigger"
 	L["Required for Activation"] = "Benötigt zur Aktivierung"
 	--[[Translation missing --]]
-	L["Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"] = "Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"
+	L["Requires LibGroupTalents, that is e.g. a up-to date WeakAuras version"] = "Requires LibGroupTalents, that is e.g. a up-to date WeakAuras version"
 	--[[Translation missing --]]
-	L["Requires syncing the specialization via LibSpecialization."] = "Requires syncing the specialization via LibSpecialization."
+	L["Requires syncing the specialization via LibGroupTalents."] = "Requires syncing the specialization via LibGroupTalents."
 	--[[Translation missing --]]
 	L["Reset all options to their default values."] = "Reset all options to their default values."
 	L["Reset Entry"] = "Eintrag zurücksetzen"
@@ -1582,31 +1580,5 @@ WeakAuras will always run custom grow code if you include 'changed' in this list
 	L["Zoom"] = "Zoom"
 	L["Zoom In"] = "Einzoomen"
 	L["Zoom Out"] = "Auszoomen"
-	L["Affliction"] = "Gebrechen"
-	L["Arcane"] = "Arkan"
-	L["Arms"] = "Waffen"
-	L["Assassination"] = "Meucheln"
-	L["Balance"] = "Gleichgewicht"
-	L["Beast Mastery"] = "Tierherrschaft"
-	L["Blood"] = "Blut"
-	L["Combat"] = "Kampf"
-	L["Demonology"] = "Dämonologie"
-	L["Destruction"] = "Zerstörung"
-	L["Discipline"] = "Disziplin"
-	L["Elemental"] = "Elementar"
-	L["Enhancement"] = "Verstärkung"
-	L["Feral Combat"] = "Wilder Kampf"
-	L["Fire"] = "Feuer"
-	L["Frost"] = "Frost"
-	L["Fury"] = "Furor"
-	L["Holy"] = "Heilig"
-	L["Hybrid"] = "Hybride"
-	L["Marksmanship"] = "Treffsicherheit"
-	L["Protection"] = "Schutz"
-	L["Restoration"] = "Wiederherstellung"
-	L["Retribution"] = "Vergeltung"
-	L["Shadow"] = "Schatten"
-	L["Subtlety"] = "Täuschung"
-	L["Survival"] = "Überleben"
-	L["Unholy"] = "Unheilig"
+
 

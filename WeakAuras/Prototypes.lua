@@ -1576,7 +1576,7 @@ Private.event_prototypes = {
         values = "spec_types_all",
         store = true,
         conditionType = "select",
-        desc = L["Requires syncing the specialization via LibSpecialization."],
+        desc = L["Requires syncing the specialization via LibGroupTalents."],
       },
       {
         name = "classification",
@@ -2099,7 +2099,7 @@ Private.event_prototypes = {
         enable = function(trigger)
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
-        desc = L["Requires syncing the specialization via LibSpecialization."],
+        desc = L["Requires syncing the specialization via LibGroupTalents."],
       },
       {
         name = "raid_role",
@@ -2470,7 +2470,7 @@ Private.event_prototypes = {
         enable = function(trigger)
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
-        desc = L["Requires syncing the specialization via LibSpecialization."],
+        desc = L["Requires syncing the specialization via LibGroupTalents."],
       },
       {
         name = "raid_role",

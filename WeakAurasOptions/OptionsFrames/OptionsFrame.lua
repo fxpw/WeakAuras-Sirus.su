@@ -458,7 +458,6 @@ function OptionsPrivate.CreateFrame()
                      .. "• " .. L["LibDeflate: Yoursafety"] .. "\n"
                      .. "• " .. L["LibDispel: Simpy"] .. "\n"
                      .. "• " .. L["LibSerialize: Sanjo"] .. "\n"
-                     .. "• " .. L["LibSpecialization: Funkeh"] .. "\n"
                      .. "• " .. L["Our translators (too many to name)"] .. "\n"
                      .. "• " .. L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] .. "\n"
 

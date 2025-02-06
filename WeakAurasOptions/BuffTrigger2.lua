@@ -715,7 +715,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       type = "toggle",
       width = WeakAuras.normalWidth,
       name = L["Filter by Specialization"],
-      desc = L["Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"],
+      desc = L["Requires LibGroupTalents, that is e.g. a up-to date WeakAuras version"],
       order = 66.3,
       hidden = function() return
         not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"))
@@ -725,7 +725,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       type = "multiselect",
       width = WeakAuras.normalWidth,
       name = L["Actual Spec"],
-      desc = L["Requires syncing the specialization via LibSpecialization."],
+      desc = L["Requires syncing the specialization via LibGroupTalents."],
       values = OptionsPrivate.Private.spec_types_all,
       hidden = function()
         return not (trigger.type == "aura2"

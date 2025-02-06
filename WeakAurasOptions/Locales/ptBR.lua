@@ -927,8 +927,6 @@ Bleed classification via LibDispel]=]
 	--[[Translation missing --]]
 	L["LibSharedMedia"] = "LibSharedMedia"
 	--[[Translation missing --]]
-	L["LibSpecialization: Funkeh"] = "LibSpecialization: Funkeh"
-	--[[Translation missing --]]
 	L["Limit"] = "Limit"
 	--[[Translation missing --]]
 	L["Line"] = "Line"
@@ -1218,9 +1216,9 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Require unit from trigger"] = "Require unit from trigger"
 	L["Required for Activation"] = "Requerido para Ativar"
 	--[[Translation missing --]]
-	L["Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"] = "Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"
+	L["Requires LibGroupTalents, that is e.g. a up-to date WeakAuras version"] = "Requires LibGroupTalents, that is e.g. a up-to date WeakAuras version"
 	--[[Translation missing --]]
-	L["Requires syncing the specialization via LibSpecialization."] = "Requires syncing the specialization via LibSpecialization."
+	L["Requires syncing the specialization via LibGroupTalents."] = "Requires syncing the specialization via LibGroupTalents."
 	--[[Translation missing --]]
 	L["Reset all options to their default values."] = "Reset all options to their default values."
 	--[[Translation missing --]]
@@ -1737,30 +1735,4 @@ WeakAuras will always run custom grow code if you include 'changed' in this list
 	L["Zoom In"] = "Zoom In"
 	--[[Translation missing --]]
 	L["Zoom Out"] = "Zoom Out"
-	L["Affliction"] = "Affliction"
-	L["Arcane"] = "Arcane"
-	L["Arms"] = "Arms"
-	L["Assassination"] = "Assassination"
-	L["Balance"] = "Balance"
-	L["Beast Mastery"] = "Beast Mastery"
-	L["Blood"] = "Blood"
-	L["Combat"] = "Combat"
-	L["Demonology"] = "Demonology"
-	L["Destruction"] = "Destruction"
-	L["Discipline"] = "Discipline"
-	L["Elemental"] = "Elemental"
-	L["Enhancement"] = "Enhancement"
-	L["Feral Combat"] = "Feral Combat"
-	L["Fire"] = "Fire"
-	L["Frost"] = "Frost"
-	L["Fury"] = "Fury"
-	L["Holy"] = "Holy"
-	L["Hybrid"] = "Hybrid"
-	L["Marksmanship"] = "Marksmanship"
-	L["Protection"] = "Protection"
-	L["Restoration"] = "Restoration"
-	L["Retribution"] = "Retribution"
-	L["Shadow"] = "Shadow"
-	L["Subtlety"] = "Subtlety"
-	L["Survival"] = "Survival"
-	L["Unholy"] = "Unholy"
+
