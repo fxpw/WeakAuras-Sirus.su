@@ -2382,7 +2382,7 @@ do
         local unit, name, _ = ...;
         if(unit == "player") then
           if(gcdSpellName ~= name) then
-            local icon = GetSpellTexture(name);
+            local _,_,icon = GetSpellInfo(name or 0);
             gcdSpellName = name;
             gcdSpellIcon = icon;
             if not WeakAuras.IsPaused() then
@@ -2390,7 +2390,7 @@ do
             end
           end
         end
-      elseif(event == "UNIT_INVENTORY_CHANGED" and ... and ... == "player" or event == "BAG_UPDATE_COOLDOWN" or event == "PLAYER_EQUIPMENT_CHANGED") then
+      elseif(event == "UNIT_INVENTORY_CHANGED" and ... == "player" or event == "BAG_UPDATE_COOLDOWN" or event == "PLAYER_EQUIPMENT_CHANGED") then
         Private.CheckItemSlotCooldowns();
       end
       Private.StopProfileSystem("generictrigger cd tracking");

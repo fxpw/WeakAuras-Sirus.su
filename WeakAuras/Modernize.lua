@@ -1686,7 +1686,7 @@ function Private.Modernize(data, oldSnapshot)
     end
   end
 
-  --[[if data.internalVersion < 77 then
+  if data.internalVersion < 77 then
     -- fix data broken by wago export
     local triggerFix = {
       talent = {
@@ -1748,7 +1748,7 @@ function Private.Modernize(data, oldSnapshot)
       fixData(triggerData.trigger, triggerFix)
     end
     fixData(data.load, loadFix)
-  end]]
+  end
 
   if data.internalVersion < 79 then
     if data.triggers then
