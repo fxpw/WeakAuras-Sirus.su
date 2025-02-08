@@ -3748,7 +3748,8 @@ Private.event_prototypes = {
                         "[[" .. (trigger.genericShowOn or "") .. "]]");
     end,
     GetNameAndIcon = function(trigger)
-      local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(trigger.itemName or 0)
+      local name = GetItemInfo(trigger.itemName or 0)
+      local icon = GetItemIcon(trigger.itemName or 0)
       return name, icon
     end,
     statesParameter = "one",
@@ -4109,13 +4110,15 @@ Private.event_prototypes = {
     init = function(trigger)
       local ret = [[
         local itemName = %s
-        local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(itemName) or "Invalid"
+        local name = GetItemInfo(itemName) or "Invalid"
+        local icon = GetItemIcon(itemName) or ""
       ]]
       local itemName = type(trigger.itemName) == "number" and trigger.itemName or string.format("%q", trigger.itemName or "0")
       return ret:format(itemName)
     end,
     GetNameAndIcon = function(trigger)
-      local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(trigger.itemName or 0)
+      local name = GetItemInfo(trigger.itemName or 0)
+      local icon = GetItemIcon(trigger.itemName or 0)
       return name, icon
     end,
     statesParameter = "one",
@@ -4912,7 +4915,8 @@ Private.event_prototypes = {
       local ret = [[
         local itemName = %s
         local exactSpellMatch = %s
-        local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(itemName)
+        local name = GetItemInfo(itemName) or "Invalid"
+        local icon = GetItemIcon(itemName) or ""
         if not exactSpellMatch and tonumber(itemName) then
           itemName = name
         end
@@ -5756,7 +5760,7 @@ Private.event_prototypes = {
       local ret = [[
         local inverse = %s
         local triggerItemName = %s
-        local _, _, _, _, icon = GetItemInfo(triggerItemName)
+        local icon = GetItemIcon(triggerItemName) or ""
         local itemSlot = %s
       ]]
 
@@ -5775,7 +5779,8 @@ Private.event_prototypes = {
       return ret:format(trigger.use_inverse and "true" or "false", itemName, trigger.use_itemSlot and trigger.itemSlot or "nil");
     end,
     GetNameAndIcon = function(trigger)
-      local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(trigger.itemName or 0)
+      local name = GetItemInfo(trigger.itemName or 0)
+      local icon = GetItemIcon(trigger.itemName or 0)
       return name, icon
     end,
     statesParameter = "one",
