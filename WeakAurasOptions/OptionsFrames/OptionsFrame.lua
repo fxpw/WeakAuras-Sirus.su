@@ -124,6 +124,10 @@ function OptionsPrivate.CreateFrame()
     db.frame = nil
   end
 
+  if odb.frame then
+    xOffset, yOffset = odb.frame.xOffset, odb.frame.yOffset
+  end
+
   if not (xOffset and yOffset) then
     xOffset = GetScreenWidth() / 2
     yOffset = GetScreenHeight() - defaultHeight / 2
