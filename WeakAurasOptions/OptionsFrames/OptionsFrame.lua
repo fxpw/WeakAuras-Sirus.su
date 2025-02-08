@@ -124,6 +124,10 @@ function OptionsPrivate.CreateFrame()
     db.frame = nil
   end
 
+  if odb.frame then
+    xOffset, yOffset = odb.frame.xOffset, odb.frame.yOffset
+  end
+
   if not (xOffset and yOffset) then
     xOffset = GetScreenWidth() / 2
     yOffset = GetScreenHeight() - defaultHeight / 2
@@ -181,6 +185,7 @@ function OptionsPrivate.CreateFrame()
   frame:SetWidth(width)
   frame:SetHeight(height)
 
+
   OptionsPrivate.SetTitle()
 
   local function commitWindowChanges()
@@ -202,6 +207,7 @@ function OptionsPrivate.CreateFrame()
     frame:StopMovingOrSizing()
     commitWindowChanges()
   end)
+
 
   frame.bottomRightResizer = CreateFrameSizer(frame, commitWindowChanges, "BOTTOMRIGHT")
 
@@ -416,6 +422,7 @@ function OptionsPrivate.CreateFrame()
     tipPopupLabelCJ:GetRect()
     tipPopupLabelK:GetRect()
   end
+
   OptionsPrivate.ToggleTip = ToggleTip
 
   local addFooter = function(title, texture, url, description, descriptionCJ, descriptionK, rightAligned, width)
@@ -473,12 +480,12 @@ function OptionsPrivate.CreateFrame()
   discordButton:SetPoint("LEFT", tipFrame, "LEFT")
 
   local documentationButton = addFooter(L["Documentation"], [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/WeakAuras/WeakAuras2/wiki",
-                                        L["Check out our wiki for a large collection of examples and snippets."])
+            L["Check out our wiki for a large collection of examples and snippets."])
   documentationButton:SetParent(tipFrame)
   documentationButton:SetPoint("LEFT", discordButton, "RIGHT", 10, 0)
 
   local thanksButton = addFooter(L["Thanks"], [[Interface\AddOns\WeakAuras\Media\Textures\waheart.tga]],
-                                  "https://www.patreon.com/WeakAuras", thanksList, thanksListCJ, thanksListK, nil, 800)
+                                 "https://www.patreon.com/WeakAuras", thanksList, thanksListCJ, thanksListK, nil, 800)
   thanksButton:SetParent(tipFrame)
   thanksButton:SetPoint("LEFT", documentationButton, "RIGHT", 10, 0)
 
@@ -518,7 +525,7 @@ function OptionsPrivate.CreateFrame()
   local companionButton
   if not OptionsPrivate.Private.CompanionData.slugs then
     companionButton = addFooter(L["Update Auras"], [[Interface\AddOns\WeakAuras\Media\Textures\wagoupdate_refresh.tga]], "https://weakauras.wtf",
-                                L["Keep your Wago imports up to date with the Companion App."])
+            L["Keep your Wago imports up to date with the Companion App."])
     companionButton:SetParent(tipFrame)
     companionButton:SetPoint("RIGHT", wagoButton, "LEFT", -10, 0)
   end
@@ -709,6 +716,7 @@ function OptionsPrivate.CreateFrame()
     self.loadProgessVisible = visible
     self:UpdateFrameVisible()
   end
+
 
   local buttonsScroll = AceGUI:Create("ScrollFrame")
   buttonsScroll:SetLayout("ButtonsScrollLayout")
@@ -939,112 +947,115 @@ function OptionsPrivate.CreateFrame()
   unloadedButton.childButtons = {}
   frame.unloadedButton = unloadedButton
 
-    -- Sidebar used for Dynamic Text Replacements
-    local sidegroup = AceGUI:Create("WeakAurasInlineGroup")
-    sidegroup.frame:SetParent(frame)
-    sidegroup.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
-    sidegroup.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
-    sidegroup.frame:Show()
-    sidegroup:SetLayout("flow")
+  -- Sidebar used for Dynamic Text Replacements
+  local sidegroup = AceGUI:Create("WeakAurasInlineGroup")
+  sidegroup.frame:SetParent(frame)
+  sidegroup.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
+  sidegroup.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
+  sidegroup.frame:Show()
+  sidegroup:SetLayout("flow")
 
-    local dynamicTextCodesFrame = CreateFrame("Frame", "WeakAurasTextReplacements", sidegroup.frame, "WA_PortraitFrameTemplate")
-    dynamicTextCodesFrame:HidePortrait()
-    dynamicTextCodesFrame:SetPoint("TOPLEFT", sidegroup.frame, "TOPRIGHT", 20, 0)
-    dynamicTextCodesFrame:SetPoint("BOTTOMLEFT", sidegroup.frame, "BOTTOMRIGHT", 20, 0)
-    dynamicTextCodesFrame:SetWidth(250)
-    dynamicTextCodesFrame:SetScript("OnHide", function()
-      OptionsPrivate.currentDynamicTextInput = nil
-    end)
-    frame.dynamicTextCodesFrame = dynamicTextCodesFrame
+  local dynamicTextCodesFrame = CreateFrame("Frame", "WeakAurasTextReplacements", sidegroup.frame, "WA_PortraitFrameTemplate")
+  dynamicTextCodesFrame:HidePortrait()
+  dynamicTextCodesFrame:SetPoint("TOPLEFT", sidegroup.frame, "TOPRIGHT", 20, 0)
+  dynamicTextCodesFrame:SetPoint("BOTTOMLEFT", sidegroup.frame, "BOTTOMRIGHT", 20, 0)
+  dynamicTextCodesFrame:SetWidth(250)
+  dynamicTextCodesFrame:SetScript("OnHide", function()
+    OptionsPrivate.currentDynamicTextInput = nil
+  end)
+  frame.dynamicTextCodesFrame = dynamicTextCodesFrame
 
-    local dynamicTextCodesFrameTitle
-    if dynamicTextCodesFrame.TitleContainer and dynamicTextCodesFrame.TitleContainer.TitleText then
-      dynamicTextCodesFrameTitle = dynamicTextCodesFrame.TitleContainer.TitleText
-    elseif dynamicTextCodesFrame.TitleText then
-      dynamicTextCodesFrameTitle = dynamicTextCodesFrame.TitleText
+  local dynamicTextCodesFrameTitle
+  if dynamicTextCodesFrame.TitleContainer and dynamicTextCodesFrame.TitleContainer.TitleText then
+    dynamicTextCodesFrameTitle = dynamicTextCodesFrame.TitleContainer.TitleText
+  elseif dynamicTextCodesFrame.TitleText then
+    dynamicTextCodesFrameTitle = dynamicTextCodesFrame.TitleText
+  end
+  if dynamicTextCodesFrameTitle then
+    dynamicTextCodesFrameTitle:SetText("Dynamic Text Replacements")
+    dynamicTextCodesFrameTitle:SetJustifyH("CENTER")
+    dynamicTextCodesFrameTitle:SetPoint("LEFT", dynamicTextCodesFrame, "TOPLEFT")
+    dynamicTextCodesFrameTitle:SetPoint("RIGHT", dynamicTextCodesFrame, "TOPRIGHT", -10, 0)
+  end
+
+  local dynamicTextCodesLabel = AceGUI:Create("Label")
+  dynamicTextCodesLabel:SetText(L["Insert text replacement codes to make text dynamic."])
+  dynamicTextCodesLabel:SetFontObject(GameFontNormal)
+  dynamicTextCodesLabel:SetPoint("TOP", dynamicTextCodesFrame, "TOP", 0, -35)
+  dynamicTextCodesLabel:SetFontObject(GameFontNormalSmall)
+  dynamicTextCodesLabel.frame:SetParent(dynamicTextCodesFrame)
+  dynamicTextCodesLabel.frame:Show()
+
+  local dynamicTextCodesScrollContainer = AceGUI:Create("SimpleGroup")
+  dynamicTextCodesScrollContainer.frame:SetParent(dynamicTextCodesFrame)
+  dynamicTextCodesScrollContainer.frame:SetPoint("TOP", dynamicTextCodesLabel.frame, "BOTTOM", 0, -15)
+  dynamicTextCodesScrollContainer.frame:SetPoint("LEFT", dynamicTextCodesFrame, "LEFT", 15, 0)
+  dynamicTextCodesScrollContainer.frame:SetPoint("BOTTOMRIGHT", dynamicTextCodesFrame, "BOTTOMRIGHT", -15, 5)
+  dynamicTextCodesScrollContainer:SetFullWidth(true)
+  dynamicTextCodesScrollContainer:SetFullHeight(true)
+  dynamicTextCodesScrollContainer:SetLayout("Fill")
+
+
+  local dynamicTextCodesScrollList = AceGUI:Create("ScrollFrame")
+  dynamicTextCodesScrollList:SetLayout("List")
+  dynamicTextCodesScrollList:SetPoint("TOPLEFT", dynamicTextCodesScrollContainer.frame, "TOPLEFT")
+  dynamicTextCodesScrollList:SetPoint("BOTTOMRIGHT", dynamicTextCodesScrollContainer.frame, "BOTTOMRIGHT")
+  dynamicTextCodesScrollList.frame:SetParent(dynamicTextCodesFrame)
+  dynamicTextCodesScrollList:FixScroll()
+  dynamicTextCodesScrollList.scrollframe:SetScript(
+    "OnScrollRangeChanged",
+    function(frame)
+      frame.obj:DoLayout()
     end
-    if dynamicTextCodesFrameTitle then
-      dynamicTextCodesFrameTitle:SetText("Dynamic Text Replacements")
-      dynamicTextCodesFrameTitle:SetJustifyH("CENTER")
-      dynamicTextCodesFrameTitle:SetPoint("LEFT", dynamicTextCodesFrame, "TOPLEFT")
-      dynamicTextCodesFrameTitle:SetPoint("RIGHT", dynamicTextCodesFrame, "TOPRIGHT", -10, 0)
-    end
+  )
 
-    local dynamicTextCodesLabel = AceGUI:Create("Label")
-    dynamicTextCodesLabel:SetText(L["Insert text replacement codes to make text dynamic."])
-    dynamicTextCodesLabel:SetFontObject(GameFontNormal)
-    dynamicTextCodesLabel:SetPoint("TOP", dynamicTextCodesFrame, "TOP", 0, -35)
-    dynamicTextCodesLabel:SetFontObject(GameFontNormalSmall)
-    dynamicTextCodesLabel.frame:SetParent(dynamicTextCodesFrame)
-    dynamicTextCodesLabel.frame:Show()
-
-    local dynamicTextCodesScrollContainer = AceGUI:Create("SimpleGroup")
-    dynamicTextCodesScrollContainer.frame:SetParent(dynamicTextCodesFrame)
-    dynamicTextCodesScrollContainer.frame:SetPoint("TOP", dynamicTextCodesLabel.frame, "BOTTOM", 0, -15)
-    dynamicTextCodesScrollContainer.frame:SetPoint("LEFT", dynamicTextCodesFrame, "LEFT", 15, 0)
-    dynamicTextCodesScrollContainer.frame:SetPoint("BOTTOMRIGHT", dynamicTextCodesFrame, "BOTTOMRIGHT", -15, 5)
-    dynamicTextCodesScrollContainer:SetFullWidth(true)
-    dynamicTextCodesScrollContainer:SetFullHeight(true)
-    dynamicTextCodesScrollContainer:SetLayout("Fill")
-
-
-    local dynamicTextCodesScrollList = AceGUI:Create("ScrollFrame")
-    dynamicTextCodesScrollList:SetLayout("List")
-    dynamicTextCodesScrollList:SetPoint("TOPLEFT", dynamicTextCodesScrollContainer.frame, "TOPLEFT")
-    dynamicTextCodesScrollList:SetPoint("BOTTOMRIGHT", dynamicTextCodesScrollContainer.frame, "BOTTOMRIGHT")
-    dynamicTextCodesScrollList.frame:SetParent(dynamicTextCodesFrame)
-    dynamicTextCodesScrollList:FixScroll()
-    dynamicTextCodesScrollList.scrollframe:SetScript(
-      "OnScrollRangeChanged",
-      function(frame)
-        frame.obj:DoLayout()
-      end
-    )
-
-    dynamicTextCodesScrollList.scrollframe:SetScript(
-      "OnSizeChanged",
-      function(frame)
-        if frame.obj.scrollBarShown then
-          frame.obj.content.width = frame.obj.content.original_width - 10
-          frame.obj.scrollframe:SetPoint("BOTTOMRIGHT", -10, 0)
-        end
-      end
-    )
-
-    dynamicTextCodesFrame.scrollList = dynamicTextCodesScrollList
-    dynamicTextCodesFrame.label = dynamicTextCodesLabel
-    dynamicTextCodesFrame:Hide()
-
-    function OptionsPrivate.ToggleTextReplacements(data, widget, event)
-      -- If the text edit has focus when the user clicks on the button, we'll get two events:
-      -- a) The OnEditFocusLost
-      -- b) The ToggleButton OnClick event
-      -- Since we want to hide the text replacement window in that case,
-      -- ignore the ToggleButton if it is directly after the  OnEditFocusLost
-      local currentTime = GetTime()
-      if event == "ToggleButton"
-        and dynamicTextCodesFrame.lastCaller
-        and dynamicTextCodesFrame.lastCaller.event == "OnEditFocusLost"
-        and currentTime - dynamicTextCodesFrame.lastCaller.time < 0.2
-      then
-        return
-      end
-      dynamicTextCodesFrame.lastCaller = {
-        event = event,
-        time = currentTime,
-      }
-      if event == "OnEnterPressed" then
-        dynamicTextCodesFrame:Hide()
-      elseif event == "OnEditFocusGained" or not dynamicTextCodesFrame:IsShown() then
-        dynamicTextCodesFrame:Show()
-        if OptionsPrivate.currentDynamicTextInput ~= widget then
-          OptionsPrivate.UpdateTextReplacements(dynamicTextCodesFrame, data)
-        end
-        OptionsPrivate.currentDynamicTextInput = widget
-      elseif not dynamicTextCodesFrame:IsMouseOver() then -- Prevents hiding when clicking inside the frame
-        dynamicTextCodesFrame:Hide()
+  dynamicTextCodesScrollList.scrollframe:SetScript(
+    "OnSizeChanged",
+    function(frame)
+      if frame.obj.scrollBarShown then
+        frame.obj.content.width = frame.obj.content.original_width - 10
+        frame.obj.scrollframe:SetPoint("BOTTOMRIGHT", -10, 0)
       end
     end
+  )
+
+
+  dynamicTextCodesFrame.scrollList = dynamicTextCodesScrollList
+  dynamicTextCodesFrame.label = dynamicTextCodesLabel
+  dynamicTextCodesFrame:Hide()
+
+  function OptionsPrivate.ToggleTextReplacements(data, widget, event)
+    -- If the text edit has focus when the user clicks on the button, we'll get two events:
+    -- a) The OnEditFocusLost
+    -- b) The ToggleButton OnClick event
+    -- Since we want to hide the text replacement window in that case,
+    -- ignore the ToggleButton if it is directly after the  OnEditFocusLost
+    local currentTime = GetTime()
+    if event == "ToggleButton"
+      and dynamicTextCodesFrame.lastCaller
+      and dynamicTextCodesFrame.lastCaller.event == "OnEditFocusLost"
+      and currentTime - dynamicTextCodesFrame.lastCaller.time < 0.2
+    then
+      return
+    end
+
+    dynamicTextCodesFrame.lastCaller = {
+      event = event,
+      time = currentTime,
+    }
+
+    if event == "OnEnterPressed" then
+      dynamicTextCodesFrame:Hide()
+    elseif event == "OnEditFocusGained" or not dynamicTextCodesFrame:IsShown() then
+      dynamicTextCodesFrame:Show()
+      if OptionsPrivate.currentDynamicTextInput ~= widget then
+        OptionsPrivate.UpdateTextReplacements(dynamicTextCodesFrame, data)
+      end
+      OptionsPrivate.currentDynamicTextInput = widget
+    elseif not dynamicTextCodesFrame:IsMouseOver() then -- Prevents hiding when clicking inside the frame
+      dynamicTextCodesFrame:Hide()
+    end
+  end
 
   frame.ClearOptions = function(self, id)
     aceOptions[id] = nil
