@@ -3256,7 +3256,6 @@ Private.event_prototypes = {
     end,
     init = function(trigger)
       local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
-      print(spellName)
       local ret = {}
 
       local showOnCheck = "false";
@@ -3725,7 +3724,8 @@ Private.event_prototypes = {
       local itemName = type(trigger.itemName) == "number" and trigger.itemName or string.format("%q", trigger.itemName or "0")
       local ret = [=[
         local itemname = %s;
-        local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(itemname or 0) or "Invalid"
+        local name = GetItemInfo(itemname or 0) or "Invalid"
+        local icon = GetItemIcon(itemname) or ""
         local showgcd = %s
         local startTime, duration, enabled, gcdCooldown = WeakAuras.GetItemCooldown(itemname, showgcd);
         local expirationTime = startTime + duration
@@ -3733,14 +3733,14 @@ Private.event_prototypes = {
         state.itemname = itemname;
       ]=];
       if(trigger.use_remaining and trigger.genericShowOn ~= "showOnReady") then
-        local ret2 = [[
+        local ret2 = [=[
           local remaining = expirationTime > 0 and (expirationTime - GetTime()) or 0;
           local remainingCheck = %s;
           if(remaining >= remainingCheck and remaining > 0) then
             local event = "COOLDOWN_REMAINING_CHECK:" .. %s
             Private.ExecEnv.ScheduleScan(expirationTime - remainingCheck, event);
           end
-        ]];
+        ]=];
         ret = ret..ret2:format(tonumber(trigger.remaining or 0) or 0, itemName);
       end
       return ret:format(itemName,
@@ -4912,8 +4912,9 @@ Private.event_prototypes = {
       local ret = [[
         local itemName = %s
         local exactSpellMatch = %s
+        local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(itemName)
         if not exactSpellMatch and tonumber(itemName) then
-          itemName = GetItemInfo(itemName)
+          itemName = name
         end
         local count = GetItemCount(itemName or "", %s, %s);
       ]];
@@ -4923,10 +4924,6 @@ Private.event_prototypes = {
         trigger.use_includeBank and "true" or "nil",
         trigger.use_includeCharges and "true" or "nil"
       )
-    end,
-    GetNameAndIcon = function(trigger)
-      local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(trigger.itemName or 0)
-      return name, icon
     end,
     args = {
       {
@@ -5000,14 +4997,14 @@ Private.event_prototypes = {
       },
       {
         name = "icon",
-        init = "icon",
+        init = "icon or ''",
         hidden = true,
         store = true,
         test = "true"
       },
       {
         name = "name",
-        init = "itemName ~= '' and itemName",
+        init = "name or itemName",
         hidden = true,
         store = true,
         test = "true"
