@@ -1310,8 +1310,11 @@ function Private.Modernize(data, oldSnapshot)
     end
   end
 
-  if data.internalVersion < 67 or data.internalVersion > WeakAuras.InternalVersion() then
-    local castMigrationNeeded = data.internalVersion < 67
+  -- used to migrate Character Stats tables again, but not for cast trigger and used one down below for reverse migration between Version 49 to Version 65
+  local isFromFork = data.internalVersion == 67
+
+  if isFromFork or data.internalVersion < 67 or data.internalVersion > WeakAuras.InternalVersion() then
+    local castMigrationNeeded = (not isFromFork) or data.internalVersion < 67
     data.internalVersion = WeakAuras.InternalVersion()
 
     do
@@ -1497,6 +1500,219 @@ function Private.Modernize(data, oldSnapshot)
       for _, field in ipairs(loadFields) do
         migrateToTable(data.load, field)
         migrateToTable(data.load, field .. "_operator")
+      end
+    end
+  end
+
+  if isFromFork and data.internalVersion < 67.1 then -- WA 4.1.2 Fork reverse modernizer, applies modernizations between Version 49 to Version 65
+    -- Version < 49
+    if not data.regionType:match("group") then
+      data.subRegions = data.subRegions or {}
+      -- rename aurabar_bar into subforeground, and subbarmodel into submodel
+      for index, subRegionData in ipairs(data.subRegions) do
+        if subRegionData.type == "aurabar_bar" then
+          subRegionData.type = "subforeground"
+        elseif subRegionData.type == "subbarmodel" then
+          subRegionData.type = "submodel"
+        end
+        if subRegionData.bar_model_visible ~= nil then
+          subRegionData.model_visible = subRegionData.bar_model_visible
+          subRegionData.bar_model_visible = nil
+        end
+        if subRegionData.bar_model_alpha ~= nil then
+          subRegionData.model_alpha = subRegionData.bar_model_alpha
+          subRegionData.bar_model_alpha = nil
+        end
+      end
+      -- rename conditions for bar_model_visible and bar_model_alpha
+      if data.conditions then
+        for conditionIndex, condition in ipairs(data.conditions) do
+          if type(condition.changes) == "table" then
+            for changeIndex, change in ipairs(condition.changes) do
+              if change.property then
+                local prefix, property = change.property:match("(sub%.%d+%.)(.*)")
+                if prefix and property then
+                  if property == "bar_model_visible" then
+                    change.property = prefix .. "model_visible"
+                  elseif property == "bar_model_alpha" then
+                    change.property = prefix .. "model_alpha"
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+
+    -- Version == 49
+    -- Version 49 was a dud and contained a broken validation. Try to salvage the data, as
+    -- best as we can.
+    local broken = false
+    local properties = {}
+    Private.GetSubRegionProperties(data, properties)
+    if data.conditions then
+      for conditionIndex, condition in ipairs(data.conditions) do
+        if type(condition.changes) == "table" then
+          for changeIndex, change in ipairs(condition.changes) do
+            if change.property then
+              if not properties[change.property] then
+                -- The property does not exist, so maybe it's one that was accidentally not moved
+                local subRegionIndex, property = change.property:match("^sub%.(%d+)%.(.*)")
+                if subRegionIndex and property then
+                  broken = true
+                  for _, offset in ipairs({ -1, 1 }) do
+                    local newProperty = "sub." .. subRegionIndex + offset .. "." .. property
+                    if properties[newProperty] then
+                      change.property = newProperty
+                    end
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+    if broken then
+      WeakAuras.prettyPrint(L["Trying to repair broken conditions in %s likely caused by a WeakAuras bug."]:format(data.id))
+    end
+
+    -- Version < 49
+    for _, triggerData in ipairs(data.triggers) do
+      if triggerData.trigger.event == "Threat Situation" then
+        triggerData.trigger.unit = triggerData.trigger.threatUnit
+        triggerData.trigger.use_unit = triggerData.trigger.use_threatUnit
+        triggerData.trigger.threatUnit = nil
+        triggerData.trigger.use_threatUnit = nil
+      end
+    end
+
+    -- Version < 52
+    local function matchTarget(input)
+      return input == "target" or input == "'target'" or input == "\"target\"" or input == "%t" or input == "'%t'" or input == "\"%t\""
+    end
+
+    if data.conditions then
+      for _, condition in ipairs(data.conditions) do
+        for changeIndex, change in ipairs(condition.changes) do
+          if change.property == "chat" and change.value then
+            if matchTarget(change.value.message_dest) then
+              change.value.message_dest = "target"
+              change.value.message_dest_isunit = true
+            end
+          end
+        end
+      end
+    end
+
+    if data.actions.start.do_message and data.actions.start.message_type == "WHISPER" and matchTarget(data.actions.start.message_dest) then
+      data.actions.start.message_dest = "target"
+      data.actions.start.message_dest_isunit = true
+    end
+
+    if data.actions.finish.do_message and data.actions.finish.message_type == "WHISPER" and matchTarget(data.actions.finish.message_dest) then
+      data.actions.finish.message_dest = "target"
+      data.actions.finish.message_dest_isunit = true
+    end
+
+    -- Version < 53
+    local function ReplaceIn(text, table, prefix)
+      local seenSymbols = {}
+      Private.ParseTextStr(text, function(symbol)
+        if not seenSymbols[symbol] then
+          if table[prefix .. symbol .. "_format"] == "timed"
+              and table[prefix .. symbol .. "_time_format"] == 0
+          then
+            table[prefix .. symbol .. "_time_legacy_floor"] = true
+          end
+        end
+        seenSymbols[symbol] = symbol
+      end)
+    end
+
+    if data.regionType == "text" then
+      ReplaceIn(data.displayText, data, "displayText_format_")
+    end
+
+    if data.subRegions then
+      for index, subRegionData in ipairs(data.subRegions) do
+        if subRegionData.type == "subtext" then
+          ReplaceIn(subRegionData.text_text, subRegionData, "text_text_format_")
+        end
+      end
+    end
+
+    if data.actions then
+      if data.actions.start then
+        ReplaceIn(data.actions.start.message, data.actions.start, "message_format_")
+      end
+      if data.actions.finish then
+        ReplaceIn(data.actions.finish.message, data.actions.finish, "message_format_")
+      end
+    end
+
+    if data.conditions then
+      for conditionIndex, condition in ipairs(data.conditions) do
+        for changeIndex, change in ipairs(condition.changes) do
+          if change.property == "chat" and change.value then
+            ReplaceIn(change.value.message, change.value, "message_format_")
+          end
+        end
+      end
+    end
+
+    -- Version < 54
+    for _, triggerData in ipairs(data.triggers) do
+      if triggerData.trigger.type == "aura" then
+        triggerData.trigger.type = "unit"
+        triggerData.trigger.event = "Conditions"
+        triggerData.trigger.use_alwaystrue = false
+      end
+    end
+
+    -- Internal version 55 contained a incorrect Modernize (data.forceEvents = nil) reused to
+    -- migrate deathRune to isDeathRune & migrate use_inverse to use_genericShowOn
+    -- Version < 55
+    for _, triggerData in ipairs(data.triggers) do
+        if triggerData.trigger.event == "Death Knight Rune" then
+            -- migrate deathRune to isDeathRune
+            if triggerData.trigger.use_deathRune then
+                triggerData.trigger.use_isDeathRune = triggerData.trigger.use_deathRune
+            end
+            triggerData.trigger.use_deathRune = nil
+            -- migrate use_inverse to use_genericShowOn
+            if not (triggerData.trigger.use_genericShowOn or triggerData.trigger.genericShowOn) then
+                triggerData.trigger.use_genericShowOn = true
+                triggerData.trigger.genericShowOn = triggerData.trigger.use_inverse and "showOnCooldown"
+                                                    or "showAlways"
+            end
+            triggerData.trigger.use_inverse = nil
+        end
+    end
+
+    -- Internal version 55 contained a incorrect Modernize
+    -- Version < 56
+    data.information.forceEvents = data.forceEvents
+    data.forceEvents = nil
+
+    -- Version < 64
+    if data.regionType == "dynamicgroup" then
+      if data.sort == "custom" and type(data.sortOn) ~= "string" or data.sortOn == "" then
+        data.sortOn = "changed"
+      end
+      if data.grow == "CUSTOM" and type(data.growOn) ~= "string" then
+        data.growOn = "changed"
+      end
+    end
+
+    -- Version < 65
+    for triggerId, triggerData in ipairs(data.triggers) do
+      if triggerData.trigger.type == "item"
+      and triggerData.trigger.event == "Item Count"
+      and type(triggerData.trigger.itemName) == "number"
+      then
+        triggerData.trigger.use_exact_itemName = true
       end
     end
   end
