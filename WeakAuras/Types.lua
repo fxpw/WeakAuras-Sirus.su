@@ -80,7 +80,8 @@ Private.group_hybrid_sort_types = {
 
 Private.time_format_types = {
   [0] = L["WeakAuras Built-In (63:42 | 3:07 | 10 | 2.4)"],
-  [1] = L["Blizzard (2h | 3m | 10s | 2.4)"],
+  [1] = L["Old Blizzard (2h | 3m | 10s | 2.4)"],
+  [2] = L["Modern Blizzard (1h 3m | 3m 7s | 10s | 2.4)"],
 }
 
 Private.time_precision_types = {
@@ -98,7 +99,8 @@ Private.precision_types = {
 
 Private.big_number_types = {
   ["AbbreviateNumbers"] = L["AbbreviateNumbers (Blizzard)"],
-  ["AbbreviateLargeNumbers"] = L["AbbreviateLargeNumbers (Blizzard)"]
+  ["AbbreviateLargeNumbers"] = L["AbbreviateLargeNumbers (Blizzard)"],
+  ["BreakUpLargeNumbers"] = L["BreakUpLargeNumbers (Blizzard)"],
 }
 
 Private.big_number_types_with_disable = CopyTable(Private.big_number_types)
@@ -122,8 +124,70 @@ Private.unit_realm_name_types = {
   always = L["Always include realm"]
 }
 
+local timeFormatter = {}
+WeakAuras.Mixin(timeFormatter, SecondsFormatterMixin)
+timeFormatter:Init(0, SecondsFormatter.Abbreviation.OneLetter)
+
+-- The default time formatter adds a space between the value and the unit
+-- While there is a API to strip it, that API does not work on all locales, e.g. german
+-- Thus, copy the interval descriptions, strip the whitespace from them
+-- and hack the timeFormatter to use our interval descriptions
+local timeFormatIntervalDescriptionFixed = {}
+timeFormatIntervalDescriptionFixed = CopyTable(SecondsFormatter.IntervalDescription)
+for i, interval in ipairs(timeFormatIntervalDescriptionFixed) do
+  interval.formatString = CopyTable(SecondsFormatter.IntervalDescription[i].formatString)
+  for j, formatString in ipairs(interval.formatString) do
+    interval.formatString[j] = formatString:gsub(" ", "")
+  end
+end
+
+timeFormatter.GetIntervalDescription = function(self, interval)
+  return timeFormatIntervalDescriptionFixed[interval]
+end
+
+timeFormatter.GetMaxInterval = function(self)
+  return #timeFormatIntervalDescriptionFixed
+end
+
+local AbbreviateNumbers = AbbreviateNumbers
+local gameLocale = GetLocale()
+if gameLocale == "koKR" or gameLocale == "zhCN" or gameLocale == "zhTW" then
+  -- Work around https://github.com/Stanzilla/WoWUIBugs/issues/515
+  --
+  local NUMBER_ABBREVIATION_DATA_FIXED={
+    [1]={
+      breakpoint = 10000 * 10000,
+      significandDivisor = 10000 * 10000,
+      abbreviation = L["SECOND_NUMBER_CAP_NO_SPACE"],
+      fractionDivisor = 1
+    },
+    [2]={
+      breakpoint = 1000 * 10000,
+      significandDivisor = 1000 * 10000,
+      abbreviation = L["SECOND_NUMBER_CAP_NO_SPACE"],
+      fractionDivisor = 10
+    },
+    [3]={
+      breakpoint = 10000,
+      significandDivisor = 1000,
+      abbreviation = L["FIRST_NUMBER_CAP_NO_SPACE"],
+      fractionDivisor = 10
+    }
+  }
+
+  AbbreviateNumbers = function(value)
+    for i, data in ipairs(NUMBER_ABBREVIATION_DATA_FIXED) do
+      if value >= data.breakpoint then
+              local finalValue = math.floor(value / data.significandDivisor) / data.fractionDivisor;
+              return finalValue .. data.abbreviation;
+      end
+    end
+    return tostring(value);
+  end
+end
+
 local simpleFormatters = {
-  --[[AbbreviateNumbers = function(value)
+  AbbreviateNumbers = function(value)
     if type(value) == "string" then value = tonumber(value) end
     return (type(value) == "number") and AbbreviateNumbers(value) or value
   end,
@@ -134,7 +198,7 @@ local simpleFormatters = {
   BreakUpLargeNumbers = function(value)
     if type(value) == "string" then value = tonumber(value) end
     return (type(value) == "number") and BreakUpLargeNumbers(value) or value
-  end,]]
+  end,
   floor = function(value)
     if type(value) == "string" then value = tonumber(value) end
     return (type(value) == "number") and floor(value) or value
@@ -164,10 +228,10 @@ local simpleFormatters = {
       -- Remove the space between the value and unit
       return fmt:gsub(" ", ""):format(time)
     end,
-    --[[ Modern Blizzard
-    [2] = WeakAuras.IsRetail() and function(value)
+    -- Modern Blizzard
+    [2] = function(value)
       return timeFormatter:Format(value)
-    end,]]
+    end,
     -- Fixed built-in formatter
     [99] = function(value)
       if type(value) == "string" then value = tonumber(value) end
@@ -257,7 +321,7 @@ Private.format_types = {
       addOption(symbol .. "_time_legacy_floor", {
         type = "toggle",
         name = L["Use Legacy floor rounding"],
-        desc = L["Enables (incorrect) round down of seconds, which was the previous default behaviour."],
+        desc = L["Enables (incorrect) round down of seconds, which was the previous default behavior."],
         width = WeakAuras.normalWidth,
         hidden = hidden,
         disabled = function() return get(symbol .. "_time_format", 0) ~= 0 end
@@ -277,7 +341,6 @@ Private.format_types = {
       end
       local mainFormater = simpleFormatters.time[format]
 
-      local modRateProperty = {}
       local timePointProperty = {}
 
       -- For the mod rate support, we need to know which state member is the modRate, as
@@ -365,7 +428,6 @@ Private.format_types = {
       end
     end
   },
---[[
   Money = {
     display = L["Money"],
     AddOptions = function(symbol, hidden, addOption)
@@ -428,22 +490,23 @@ Private.format_types = {
         values = Private.big_number_types,
         hidden = hidden
       })
-    end,
       addOption(symbol .. "_big_number_space", {
         type = "description",
         name = "",
         width = WeakAuras.normalWidth,
         hidden = hidden
       })
+    end,
     CreateFormatter = function(symbol, get)
       local format = get(symbol .. "_big_number_format", "AbbreviateNumbers")
       if (format == "AbbreviateNumbers") then
         return simpleFormatters.AbbreviateNumbers
+      elseif (format == "BreakUpLargeNumbers") then
+        return simpleFormatters.BreakUpLargeNumbers
       end
       return simpleFormatters.AbbreviateLargeNumbers
     end
   },
-]]
   Number = {
     display = L["Number"],
     AddOptions = function(symbol, hidden, addOption, get)
@@ -2229,8 +2292,10 @@ Private.TocToExpansion = {
    [7] = L["Legion"],
    [8] = L["Battle for Azeroth"],
    [9] = L["Shadowlands"],
-  [10] = L["Dragonflight"]
+  [10] = L["Dragonflight"],
+  [11] = L["The War Within"]
 }
+
 
 Private.group_types = {
   solo = L["Not in Group"],

@@ -26,6 +26,7 @@ Pools.lua
 embeds.xml
 Init.lua
 locales.xml
+TimeUtil.lua
 ArchiveTypes\Repository.lua
 DefaultOptions.lua
 
