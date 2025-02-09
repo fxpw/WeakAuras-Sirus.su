@@ -3214,6 +3214,70 @@ function Private.ExecEnv.CheckTotemName(totemName, triggerTotemName, triggerTote
   return true
 end
 
+-- Queueable Spells
+local queueableSpells
+local classQueueableSpells = {
+  ["WARRIOR"] = {
+    (select(1, GetSpellInfo(78))),    -- Heroic Strike
+    (select(1, GetSpellInfo(845))),   -- Cleave
+  },
+  ["HUNTER"] = {
+    (select(1, GetSpellInfo(2973))),  -- Raptor Strike
+  },
+  ["DRUID"] = {
+    (select(1, GetSpellInfo(6807))),  -- Maul
+  },
+  ["DEATHKNIGHT"] = {
+    (select(1, GetSpellInfo(56815))), -- Rune Strike
+  },
+}
+local class = select(2, UnitClass("player"))
+queueableSpells = classQueueableSpells[class]
+
+local queuedSpellFrame
+function WeakAuras.WatchForQueuedSpell()
+  if not queuedSpellFrame then
+    queuedSpellFrame = CreateFrame("Frame")
+    Private.frames["Queued Spell Handler"] = queuedSpellFrame
+    queuedSpellFrame:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
+
+    queuedSpellFrame:SetScript("OnEvent", function(self)
+      local newQueuedSpell
+      if queueableSpells then
+        for _, spellName in ipairs(queueableSpells) do
+          if IsCurrentSpell(spellName) then
+            newQueuedSpell = spellName
+            break
+          end
+        end
+      end
+      if newQueuedSpell ~= self.queuedSpell then
+        self.queuedSpell = newQueuedSpell
+        Private.ScanEvents("WA_UNIT_QUEUED_SPELL_CHANGED", "player")
+      end
+    end)
+  end
+end
+
+function WeakAuras.GetQueuedSpell()
+  return queuedSpellFrame and queuedSpellFrame.queuedSpell
+end
+
+function WeakAuras.GetSpellCost(powerTypeToCheck)
+  local spellName = UnitCastingInfo("player")
+  if not spellName then -- not casting so check if it is queued
+    spellName = WeakAuras.GetQueuedSpell()
+  end
+  if spellName then
+    local _, _, _, powerCost, _, powerType = GetSpellInfo(spellName);
+    if powerType and powerCost then
+      if powerType == powerTypeToCheck then
+        return powerCost;
+      end
+    end
+  end
+end
+
 -- Weapon Enchants
 do
   local mh = GetInventorySlotInfo("MainHandSlot")

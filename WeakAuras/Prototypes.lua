@@ -2233,6 +2233,14 @@ Private.event_prototypes = {
       if trigger.use_ignoreDead or trigger.use_ignoreDisconnected then
         AddUnitEventForEvents(result, unit, "UNIT_FLAGS")
       end
+      -- The api for spell power costs is not meant to be for other units
+      if trigger.use_showCost and trigger.unit == "player" then
+        AddUnitEventForEvents(result, "player", "UNIT_SPELLCAST_START")
+        AddUnitEventForEvents(result, "player", "UNIT_SPELLCAST_STOP")
+        AddUnitEventForEvents(result, "player", "UNIT_SPELLCAST_FAILED")
+        AddUnitEventForEvents(result, "player", "UNIT_SPELLCAST_SUCCEEDED")
+        AddUnitEventForEvents(result, "player", "UPDATE_SHAPESHIFT_FORM")
+      end
       if unit and not Private.multiUnitUnits[unit] then
         if not result.events then
           result.events = {}
@@ -2255,9 +2263,15 @@ Private.event_prototypes = {
       if trigger.use_specId then
         AddUnitSpecChangeInternalEvents(unit, result)
       end
+      if trigger.use_showCost and trigger.unit == "player" then
+        tinsert(result, "WA_UNIT_QUEUED_SPELL_CHANGED");
+      end
       return result
     end,
     loadFunc = function(trigger)
+      if trigger.use_showCost and trigger.unit == "player" then
+        WeakAuras.WatchForQueuedSpell()
+      end
       local includePets = trigger.use_includePets == true and trigger.includePets or nil
       AddWatchedUnits(trigger.unit, includePets)
     end,
@@ -2276,6 +2290,25 @@ Private.event_prototypes = {
       ]=]):format(trigger.unit == "group" and "true" or "false", trigger.use_powertype and trigger.powertype or "nil"))
 
       table.insert(ret, unitHelperFunctions.SpecificUnitCheck(trigger))
+
+      local canEnableShowCost = (not trigger.use_powertype) and trigger.unit == "player";
+      if (canEnableShowCost and trigger.use_showCost) then
+        table.insert(ret, [[
+          if (event == "UPDATE_SHAPESHIFT_FORM") then
+            local cost = WeakAuras.GetSpellCost(powerTypeToCheck)
+            if state.cost ~= cost then
+              state.cost = cost
+              state.changed = true
+            end
+          elseif ( (event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_FAILED" or event == "UNIT_SPELLCAST_SUCCEEDED") and unit == "player") or event == "WA_UNIT_QUEUED_SPELL_CHANGED" then
+            local cost = WeakAuras.GetSpellCost(powerTypeToCheck)
+            if state.cost ~= cost then
+              state.cost = cost
+              state.changed = true
+            end
+          end
+        ]])
+      end
 
       return table.concat(ret)
     end,
@@ -2311,6 +2344,16 @@ Private.event_prototypes = {
         enable = function(trigger)
           return trigger.use_powertype
         end,
+      },
+      {
+        name = "showCost",
+        display = L["Overlay Cost of Casts"],
+        type = "toggle",
+        test = "true",
+        enable = function(trigger)
+          return (not trigger.use_powertype) and trigger.unit == "player";
+        end,
+        reloadOptions = true
       },
       {
         name = "power",
@@ -2573,6 +2616,17 @@ Private.event_prototypes = {
         hidden = true,
         test = "WeakAuras.UnitExistsFixed(unit, smart) and specificUnitCheck"
       }
+    },
+    overlayFuncs = {
+      {
+        name = L["Spell Cost"],
+        func = function(trigger, state)
+          return "back", type(state.cost) == "number" and state.cost;
+        end,
+        enable = function(trigger)
+          return trigger.use_showCost and (not trigger.use_powertype) and trigger.unit == "player";
+        end
+      },
     },
     automaticrequired = true
   },

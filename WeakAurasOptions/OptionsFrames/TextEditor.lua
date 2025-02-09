@@ -509,7 +509,6 @@ local function ConstructTextEditor(frame)
     "OnKeyDown",
     function(self, key)
       -- CTRL + S saves and closes
-      print(IsControlKeyDown(), key)
       if IsControlKeyDown() and key == "S" then
         group:Close()
       elseif IsControlKeyDown() and key == "Z" then
