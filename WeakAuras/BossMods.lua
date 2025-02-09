@@ -154,7 +154,7 @@ Private.ExecEnv.BossMods.DBM = {
       end
     end
     if self.nextExpire then
-      self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, self.nextExpire - now, self)
+      self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, self.nextExpire - now, self)
     end
   end,
 
@@ -218,11 +218,11 @@ Private.ExecEnv.BossMods.DBM = {
         Private.ScanEvents("BossMod_TimerStart", timerId)
       end
       if self.nextExpire == nil then
-        self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, expirationTime - now, self)
+        self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, expirationTime - now, self)
         self.nextExpire = expirationTime
       elseif expirationTime < self.nextExpire then
         timer:CancelTimer(self.recheckTimer)
-        self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, expirationTime - now, self)
+        self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, expirationTime - now, self)
         self.nextExpire = expirationTime
       end
     elseif event == "DBM_TimerStop" then
@@ -265,11 +265,11 @@ Private.ExecEnv.BossMods.DBM = {
           Private.ScanEvents("BossMod_TimerResume", timerId)
         end
         if self.nextExpire == nil then
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - GetTime(), self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - GetTime(), self)
           self.nextExpire = bar.expirationTime
         elseif bar.expirationTime < self.nextExpire then
           timer:CancelTimer(self.recheckTimer)
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - GetTime(), self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - GetTime(), self)
           self.nextExpire = bar.expirationTime
         end
       end
@@ -282,11 +282,11 @@ Private.ExecEnv.BossMods.DBM = {
         bar.duration = duration
         bar.expirationTime = expirationTime
         if self.nextExpire == nil then
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - now, self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - now, self)
           self.nextExpire = expirationTime
         elseif self.nextExpire == nil or expirationTime < self.nextExpire then
           timer:CancelTimer(self.recheckTimer)
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - now, self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - now, self)
           self.nextExpire = expirationTime
         end
       end
@@ -353,7 +353,7 @@ Private.ExecEnv.BossMods.DBM = {
 
   ScheduleCheck = function(self, fireTime)
     if not self.scheduled_scans[fireTime] then
-      self.scheduled_scans[fireTime] = timer:ScheduleTimerFixed(self.DoScan, fireTime - GetTime(), self, fireTime)
+      self.scheduled_scans[fireTime] = timer:ScheduleTimer(self.DoScan, fireTime - GetTime(), self, fireTime)
     end
   end
 }
@@ -824,7 +824,7 @@ Private.ExecEnv.BossMods.BigWigs = {
     end
 
     if self.nextExpire then
-      self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, self.nextExpire - now, self)
+      self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, self.nextExpire - now, self)
     end
   end,
 
@@ -864,11 +864,11 @@ Private.ExecEnv.BossMods.BigWigs = {
         Private.ScanEvents("BossMod_TimerStart", text)
       end
       if self.nextExpire == nil then
-        self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, expirationTime - now, self)
+        self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, expirationTime - now, self)
         self.nextExpire = expirationTime
       elseif expirationTime < self.nextExpire then
         timer:CancelTimer(self.recheckTimer)
-        self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, expirationTime - now, self)
+        self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, expirationTime - now, self)
         self.nextExpire = expirationTime
       end
     elseif event == "BigWigs_StopBar" then
@@ -910,10 +910,10 @@ Private.ExecEnv.BossMods.BigWigs = {
           Private.ScanEvents("BossMod_TimerResume", text)
         end
         if self.nextExpire == nil then
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - GetTime(), self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - GetTime(), self)
         elseif bar.expirationTime < self.nextExpire then
           timer:CancelTimer(self.recheckTimer)
-          self.recheckTimer = timer:ScheduleTimerFixed(self.RecheckTimers, bar.expirationTime - GetTime(), self)
+          self.recheckTimer = timer:ScheduleTimer(self.RecheckTimers, bar.expirationTime - GetTime(), self)
           self.nextExpire = bar.expirationTime
         end
       end
@@ -1000,7 +1000,7 @@ Private.ExecEnv.BossMods.BigWigs = {
 
   ScheduleCheck = function(self, fireTime)
     if not self.scheduled_scans[fireTime] then
-      self.scheduled_scans[fireTime] = timer:ScheduleTimerFixed(self.DoScan, fireTime - GetTime(), self, fireTime)
+      self.scheduled_scans[fireTime] = timer:ScheduleTimer(self.DoScan, fireTime - GetTime(), self, fireTime)
     end
   end
 }
