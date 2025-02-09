@@ -590,6 +590,9 @@ local function UpdateProgressFromManual(self, minMaxConfig, state, value, total)
   if self.UpdateValue then
     self:UpdateValue()
   end
+  if self.SetAdditionalProgress then
+    self:SetAdditionalProgress(nil)
+  end
 end
 
 local function UpdateProgressFrom(self, progressSource, minMaxConfig, state, states, parent)
