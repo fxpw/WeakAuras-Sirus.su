@@ -45,47 +45,47 @@ function tIndexOf(tbl, item)
 end
 
 function TableHasAnyEntries(tbl)
-    if tbl and type(tbl) == "table" then
-        for _ in pairs(tbl) do
-            return true
-        end
-    end
-    return false
+  if tbl and type(tbl) == "table" then
+      for _ in pairs(tbl) do
+          return true
+      end
+  end
+  return false
 end
 
 function tAppendAll(table, addedArray)
-	for i, element in ipairs(addedArray) do
-		tinsert(table, element);
-	end
+  for i, element in ipairs(addedArray) do
+    tinsert(table, element);
+  end
 end
 
 function MergeTable(t1, t2)
-    local merged = {}
-    for k, v in pairs(t1) do
-        merged[k] = v
-    end
-    for k, v in pairs(t2) do
-        merged[k] = v
-    end
-    return merged
+  local merged = {}
+  for k, v in pairs(t1) do
+    merged[k] = v
+  end
+  for k, v in pairs(t2) do
+    merged[k] = v
+  end
+  return merged
 end
 
 function tCompare(t1, t2)
-    for k, v in pairs(t1) do
-        if type(v) == "table" and type(t2[k]) == "table" then
-            if not tCompare(v, t2[k]) then
-                return false
-            end
-        elseif t2[k] ~= v then
-            return false
-        end
+  for k, v in pairs(t1) do
+    if type(v) == "table" and type(t2[k]) == "table" then
+      if not tCompare(v, t2[k]) then
+        return false
+      end
+    elseif t2[k] ~= v then
+      return false
     end
-    for k in pairs(t2) do
-        if t1[k] == nil then
-            return false
-        end
+  end
+  for k in pairs(t2) do
+    if t1[k] == nil then
+      return false
     end
-    return true
+  end
+  return true
 end
 
 function IsInGroup()

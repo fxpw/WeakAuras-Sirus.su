@@ -133,7 +133,7 @@ if LibGroupTalents then
             end
         end
     end
-end
+  end
 else
   function Private.LibGroupTalentsWrapper.Register(f) end
   function Private.LibGroupTalentsWrapper.SpecForUnit(unit) return nil end
