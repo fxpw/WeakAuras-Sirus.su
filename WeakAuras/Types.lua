@@ -2315,6 +2315,13 @@ Private.raid_role_types = {
   NONE = L["Other"]
 }
 
+Private.role_types = {
+  tank = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:0:19:22:41|t "..TANK,
+  melee = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:22:41|t "..MELEE,
+  caster = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:22:41|t "..L["Caster"],
+  healer = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:1:20|t "..HEALER,
+}
+
 Private.group_member_types = {
   LEADER = L["Leader"],
   ASSIST = L["Assist"],

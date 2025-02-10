@@ -249,11 +249,6 @@ local function createOptions(id, data)
       desc = "|TInterface\\AddOns\\WeakAuras\\Media\\Textures\\edge-example:30|t\n"..L["Enable \"Edge\" part of the overlay"],
       hidden = function() return not data.cooldown end,
     },
-    endHeader = {
-      type = "header",
-      order = 100,
-      name = "",
-    },
     ccWarning = {
       type = "description",
       width = WeakAuras.doubleWidth,
@@ -268,6 +263,11 @@ local function createOptions(id, data)
       end,
       order = 11.7,
       hidden = function() return data.cooldownTextDisabled end
+    },
+    endHeader = {
+      type = "header",
+      order = 100,
+      name = "",
     },
   };
 

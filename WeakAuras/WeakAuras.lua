@@ -236,7 +236,6 @@ local loadEvents = {}
 
 -- All regions keyed on id, has properties: region, regionType, also see clones
 Private.regions = {};
-local regions = Private.regions;
 
 -- keyed on id, contains bool indicating whether the aura is loaded
 Private.loaded = {};
@@ -1384,6 +1383,7 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   local _, race = UnitRace("player")
   local faction = UnitFactionGroup("player")
   local zoneId = GetCurrentMapAreaID()
+  local role = WeakAuras.GetUnitRole("player")
   local raidRole = false;
   local raidID = UnitInRaid("player")
   if raidID then
@@ -1391,7 +1391,7 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   end
   local _, class = UnitClass("player");
 
-  local inCombat = UnitAffectingCombat("player") -- or UnitAffectingCombat("pet");
+  local inCombat = UnitAffectingCombat("player")
   local alive = not UnitIsDeadOrGhost('player')
   local pvp = UnitIsPVPFreeForAll("player") or UnitIsPVP("player")
   local vehicle = UnitInVehicle("player") or UnitOnTaxi("player") or false
@@ -1422,8 +1422,8 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
     if (data and not data.controlledChildren) then
       local loadFunc = loadFuncs[id];
       local loadOpt = loadFuncsForOptions[id];
-      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, mounted, player, realm, class, race, faction, playerLevel, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
-      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, mounted, player, realm, class, race, faction, playerLevel, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, mounted, player, realm, class, race, faction, playerLevel, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, mounted, player, realm, class, race, faction, playerLevel, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
 
       if(shouldBeLoaded and not loaded[id]) then
         changed = changed + 1;
@@ -2888,9 +2888,9 @@ function Private.SetRegion(data, cloneId)
           region = clones[id][cloneId];
         end
       else
-        if((not regions[id]) or (not regions[id].region) or regions[id].regionType ~= regionType) then
+        if((not Private.regions[id]) or (not Private.regions[id].region) or Private.regions[id].regionType ~= regionType) then
           region = regionTypes[regionType].create(WeakAurasFrame, data);
-          regions[id] = {
+          Private.regions[id] = {
             regionType = regionType,
             region = region
           };
@@ -2901,7 +2901,7 @@ function Private.SetRegion(data, cloneId)
             region.toShow = true
           end
         else
-          region = regions[id].region
+          region = Private.regions[id].region
         end
       end
       region.id = id;
@@ -4428,7 +4428,7 @@ function Private.UpdatedTriggerState(id)
       state.changed = false;
     end
   end
-  
+
   -- once updatedTriggerStates is complete, and empty states removed, etc., then check for queued watched triggers update
   Private.SendDelayedWatchedTriggers()
 end

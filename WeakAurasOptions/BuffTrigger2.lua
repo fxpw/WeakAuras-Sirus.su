@@ -745,6 +745,35 @@ local function GetBuffTriggerOptions(data, triggernum)
                     and not trigger.useActualSpec)
       end
     },
+
+    useGroupRole = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Filter by Group Role"],
+      order = 67.1,
+      hidden = function() return
+        not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"))
+      end
+    },
+    group_role = {
+      type = "multiselect",
+      width = WeakAuras.normalWidth,
+      name = L["Group Role"],
+      values = OptionsPrivate.Private.role_types,
+      hidden = function() return
+        not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party") and trigger.useGroupRole)
+      end,
+      order = 67.2
+    },
+    group_roleSpace = {
+      type = "description",
+      name = "",
+      order = 67.3,
+      width = WeakAuras.normalWidth,
+      hidden = function() return
+        not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party") and not trigger.useGroupRole)
+      end
+    },
     useRaidRole = {
       type = "toggle",
       width = WeakAuras.normalWidth,

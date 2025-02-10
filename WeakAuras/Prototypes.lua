@@ -1095,6 +1095,14 @@ Private.load_prototype = {
       },
     },
     {
+      name = "role",
+      display = L["Spec Role"],
+      type = "multiselect",
+      values = "role_types",
+      init = "arg",
+      events = {"PLAYER_TALENT_UPDATE", "PLAYER_ROLES_ASSIGNED", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"}
+    },
+    {
       name = "raid_role",
       display = L["Raid Role"],
       type = "multiselect",
@@ -1474,9 +1482,8 @@ Private.event_prototypes = {
       local unit = trigger.unit
       local result = {}
       AddUnitChangeInternalEvents(unit, result, nil, trigger.use_unitisunit and trigger.unitisunit or nil)
-      if trigger.use_specId then
-        AddUnitSpecChangeInternalEvents(unit, result)
-      end
+      AddUnitRoleChangeInternalEvents(unit, result)
+      AddUnitSpecChangeInternalEvents(unit, result)
       return result
     end,
     loadFunc = function(trigger)
@@ -1586,6 +1593,18 @@ Private.event_prototypes = {
         values = "classification_types",
         store = true,
         conditionType = "select"
+      },
+      {
+        name = "role",
+        display = L["Spec Role"],
+        type = "select",
+        init = "WeakAuras.GetUnitRole(unit)",
+        values = "role_types",
+        store = true,
+        conditionType = "select",
+        enable = function(trigger)
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+        end
       },
       {
         name = "raid_role",
@@ -1912,9 +1931,7 @@ Private.event_prototypes = {
       if includePets ~= "PetsOnly" then
         AddUnitRoleChangeInternalEvents(unit, result)
       end
-      if trigger.use_specId then
-        AddUnitSpecChangeInternalEvents(unit, result)
-      end
+      AddUnitSpecChangeInternalEvents(unit, result)
       return result
     end,
     loadFunc = function(trigger)
@@ -2102,6 +2119,18 @@ Private.event_prototypes = {
         desc = L["Requires syncing the specialization via LibGroupTalents."],
       },
       {
+        name = "role",
+        display = L["Spec Role"],
+        type = "select",
+        init = "WeakAuras.GetUnitRole(unit)",
+        values = "role_types",
+        store = true,
+        conditionType = "select",
+        enable = function(trigger)
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+        end
+      },
+      {
         name = "raid_role",
         display = L["Raid Role"],
         type = "select",
@@ -2260,9 +2289,7 @@ Private.event_prototypes = {
       if includePets ~= "PetsOnly" then
         AddUnitRoleChangeInternalEvents(unit, result)
       end
-      if trigger.use_specId then
-        AddUnitSpecChangeInternalEvents(unit, result)
-      end
+      AddUnitSpecChangeInternalEvents(unit, result)
       if trigger.use_showCost and trigger.unit == "player" then
         tinsert(result, "WA_UNIT_QUEUED_SPELL_CHANGED");
       end
@@ -2514,6 +2541,18 @@ Private.event_prototypes = {
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end,
         desc = L["Requires syncing the specialization via LibGroupTalents."],
+      },
+      {
+        name = "role",
+        display = L["Spec Role"],
+        type = "select",
+        init = "WeakAuras.GetUnitRole(unit)",
+        values = "role_types",
+        store = true,
+        conditionType = "select",
+        enable = function(trigger)
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+        end
       },
       {
         name = "raid_role",
@@ -6444,6 +6483,18 @@ Private.event_prototypes = {
         conditionType = "select",
         enable = function(trigger)
           return not trigger.use_inverse
+        end
+      },
+      {
+        name = "role",
+        display = L["Spec Role"],
+        type = "select",
+        init = "WeakAuras.GetUnitRole(unit)",
+        values = "role_types",
+        store = true,
+        conditionType = "select",
+        enable = function(trigger)
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
         end
       },
       {

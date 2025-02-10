@@ -8,8 +8,11 @@ local unpack = unpack
 -- WoW APIs
 local UnitName, UnitIsUnit, UnitClass, GetNumGroupMembers = UnitName, UnitIsUnit, UnitClass, GetNumGroupMembers
 
+local LibGroupTalents = LibStub("LibGroupTalents-1.0")
+
 local nameToGlyphs = {}
 local nameToSpecMap = {}
+local nameToUnitRole = {}
 local nameToUnitMap = {
   [UnitName("player")] = "player"
 }
@@ -17,14 +20,14 @@ local nameToUnitMap = {
 local subscribers = {}
 
 Private.LibGroupTalentsWrapper = {
-  Register = function(callback) end,
+  Register = function(f) end,
   SpecForUnit = function(unit) end,
+  GetUnitRole = function(unit) end,
   SpecRolePositionForUnit = function(unit) end,
-  CheckTalentForUnit = function(unit, talentId) end,
-  CheckGlyphForUnit = function(unit, glyphId) end,
+  CheckTalentForUnit = function(unit) end,
+  CheckGlyphForUnit = function(unit) end,
 }
 
-local LibGroupTalents = LibStub("LibGroupTalents-1.0")
 if LibGroupTalents then
   --- LibGroupTalents callback for talents and glyphs
   function Private.LibGroupTalentsWrapper:LibGroupTalentsCallback(_, _, unit)
@@ -58,14 +61,21 @@ if LibGroupTalents then
       if not nameToUnitMap[storedName] then
         nameToSpecMap[storedName] = nil
         nameToGlyphs[storedName] = nil
+        nameToUnitRole[storedName] = nil
       end
     end
 
     local specInfo = { LibGroupTalents:GetUnitTalentSpec(unit) }
-    local class = select(2, UnitClass(unit))
-    if specInfo and #specInfo > 0 and class then
-      nameToSpecMap[unitName] = class .. specInfo[1]
+    if specInfo and #specInfo > 0 then
+      local class = select(2, UnitClass(unit))
+      if specInfo and #specInfo > 0 and class then
+        nameToSpecMap[unitName] = {
+          class .. specInfo[1], unpack(specInfo)
+        }
+      end
     end
+
+    nameToUnitRole[unitName] = LibGroupTalents:GetUnitRole(unit)
 
     local glyphs = { LibGroupTalents:GetUnitGlyphs(unit) }
     if glyphs and #glyphs > 0 then
@@ -83,6 +93,8 @@ if LibGroupTalents then
   end
 
   LibGroupTalents.RegisterCallback(Private.LibGroupTalentsWrapper, "LibGroupTalents_Update", "LibGroupTalentsCallback")
+  LibGroupTalents.RegisterCallback(Private.LibGroupTalentsWrapper, "LibGroupTalents_RoleChange", "LibGroupTalentsCallback")
+  LibGroupTalents.RegisterCallback(Private.LibGroupTalentsWrapper, "LibGroupTalents_GlyphUpdate", "LibGroupTalentsCallback")
 
   function Private.LibGroupTalentsWrapper.Register(f)
     table.insert(subscribers, f)
@@ -97,17 +109,30 @@ if LibGroupTalents then
     end
 
     if UnitIsUnit(unit, "player") and class then
-      local specInfo = LibGroupTalents:GetUnitTalentSpec(unit)
+      local specInfo = { LibGroupTalents:GetUnitTalentSpec(unit) }
       if specInfo and #specInfo > 0 then
-        return class .. specInfo[1]
+        return class .. specInfo[1], unpack(specInfo)
       end
+    end
+  end
+
+  function Private.LibGroupTalentsWrapper.GetUnitRole(unit)
+    local unitName = UnitName(unit)
+
+    if nameToUnitRole[unitName] then
+      return nameToUnitRole[unitName]
+    end
+
+    if UnitIsUnit(unit, "player") then
+      local unitRole = LibGroupTalents:GetUnitRole(unit)
+      return unitRole
     end
   end
 
   function Private.LibGroupTalentsWrapper.SpecRolePositionForUnit(unit)
     local data = nameToSpecMap[UnitName(unit)]
     if data then
-      return unpack(data)
+      return unpack(data, 2)
     end
 
     if UnitIsUnit(unit, "player") then
@@ -116,7 +141,7 @@ if LibGroupTalents then
   end
 
   function Private.LibGroupTalentsWrapper.CheckTalentForUnit(unit, talentId)
-    return UnitIsUnit(unit, "player") and LibGroupTalents:UnitHasTalent(unit, talentId) and true or false
+    return UnitIsUnit(unit, "player") and LibGroupTalents:UnitHasTalent(unit, talentId) and true or nil
   end
 
   function Private.LibGroupTalentsWrapper.CheckGlyphForUnit(unit, glyphId)
@@ -127,23 +152,20 @@ if LibGroupTalents then
 
     if UnitIsUnit(unit, "player") then
       local glyphs = { LibGroupTalents:GetUnitGlyphs(unit) }
+      if glyphs then
         for _, id in ipairs(glyphs) do
             if id == glyphId then
               return true
             end
         end
+      end
     end
   end
-else
-  function Private.LibGroupTalentsWrapper.Register(f) end
-  function Private.LibGroupTalentsWrapper.SpecForUnit(unit) return nil end
-  function Private.LibGroupTalentsWrapper.SpecRolePositionForUnit(unit) return nil end
-  function Private.LibGroupTalentsWrapper.CheckTalentForUnit(unit) return nil end
-  function Private.LibGroupTalentsWrapper.CheckGlyphForUnit(unit) return nil end
 end
 
--- Export for GenericTrigger
+-- Export for GenericTrigger/Custom Code
 WeakAuras.SpecForUnit = Private.LibGroupTalentsWrapper.SpecForUnit
+WeakAuras.GetUnitRole = Private.LibGroupTalentsWrapper.GetUnitRole
 WeakAuras.SpecRolePositionForUnit = Private.LibGroupTalentsWrapper.SpecRolePositionForUnit
 WeakAuras.CheckTalentForUnit = Private.LibGroupTalentsWrapper.CheckTalentForUnit
 WeakAuras.CheckGlyphForUnit = Private.LibGroupTalentsWrapper.CheckGlyphForUnit

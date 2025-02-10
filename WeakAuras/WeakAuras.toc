@@ -32,6 +32,7 @@ DefaultOptions.lua
 
 # Core files
 Types.lua
+LibGroupTalentsWrapper.lua
 Prototypes.lua
 Profiling.lua
 WeakAuras.lua
@@ -43,7 +44,6 @@ Conditions.lua
 AnchorToWeakAuras.lua
 
 # Trigger systems
-LibGroupTalentsWrapper.lua
 BuffTrigger2.lua
 GenericTrigger.lua
 BossMods.lua
