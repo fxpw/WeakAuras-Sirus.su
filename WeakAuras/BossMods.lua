@@ -1724,7 +1724,7 @@ if not (DBM and DBM.Revision >= 20250209000000) then
 
   -- Remove all relevant DBM event prototypes
   for _, event in ipairs(dbm_trigger) do
-    Private.event_prototype[event] = nil
+    Private.event_prototypes[event] = nil
   end
 end
 
@@ -1736,5 +1736,5 @@ local bigwigs_trigger = {
 }
 
 for _, event in ipairs(bigwigs_trigger) do
-  Private.event_prototype[event] = nil
+  Private.event_prototypes[event] = nil
 end
