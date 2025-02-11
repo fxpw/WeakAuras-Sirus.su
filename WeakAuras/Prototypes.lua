@@ -3855,6 +3855,16 @@ Private.event_prototypes = {
         test = "true"
       },
       {
+        name = "itemId",
+        display = WeakAuras.newFeatureString .. L["ItemId"],
+        hidden = true,
+        init = "itemId",
+        test = "true",
+        store = true,
+        conditionType = "number",
+        operator_types = "only_equal",
+      },
+      {
         name = "remaining",
         display = L["Remaining Time"],
         type = "number",
@@ -3909,26 +3919,6 @@ Private.event_prototypes = {
         conditionTest = function(state, needle)
           return state and state.show and (not state.gcdCooldown and state.expirationTime and state.expirationTime > GetTime() or state.enabled == 0) == (needle == 1)
         end,
-      },
-      {
-        name = "itemInRange",
-        display = L["Item in Range"],
-        hidden = true,
-        test = "true",
-        conditionType = "bool",
-        conditionTest = function(state, needle)
-          if not state or not state.show or not UnitExists('target') then
-            return false
-          end
-          if InCombatLockdown() and not UnitCanAttack('player', 'target') then
-            return false
-          end
-          return IsItemInRange(state.itemname, 'target') == (needle == 1)
-        end,
-        conditionEvents = {
-          "PLAYER_TARGET_CHANGED",
-          "WA_SPELL_RANGECHECK",
-        }
       },
       {
         hidden = true,
@@ -4065,6 +4055,16 @@ Private.event_prototypes = {
     statesParameter = "one",
     args = {
       {
+        name = "itemId",
+        display = WeakAuras.newFeatureString .. L["ItemId"],
+        hidden = true,
+        init = "item",
+        test = "true",
+        store = true,
+        conditionType = "number",
+        operator_types = "only_equal",
+      },
+      {
         name = "itemSlot",
         required = true,
         display = L["Equipment Slot"],
@@ -4188,6 +4188,7 @@ Private.event_prototypes = {
       }
     },
     automaticrequired = true,
+    hasItemID = true,
     progressType = "timed"
   },
   ["Cooldown Ready (Item)"] = {
@@ -4223,6 +4224,18 @@ Private.event_prototypes = {
         type = "item",
         init = "arg"
       },
+      --[[
+      {
+        name = "itemId",
+        display = WeakAuras.newFeatureString .. L["ItemId"],
+        hidden = true,
+        init = "itemId",
+        test = "true",
+        store = true,
+        conditionType = "number",
+        operator_types = "only_equal",
+      },
+      ]]
       {
         name = "name",
         display = L["Name"],
@@ -4283,6 +4296,16 @@ Private.event_prototypes = {
         type = "select",
         values = "item_slot_types",
         init = "arg"
+      },
+      {
+        name = "itemId",
+        display = WeakAuras.newFeatureString .. L["ItemId"],
+        hidden = true,
+        init = "item",
+        test = "true",
+        store = true,
+        conditionType = "number",
+        operator_types = "only_equal",
       },
       {
         name = "name",
@@ -5041,6 +5064,18 @@ Private.event_prototypes = {
         test = "true",
         conditionType = "string"
       },
+      --[[
+      {
+        name = "itemId",
+        display = WeakAuras.newFeatureString .. L["ItemId"],
+        hidden = true,
+        init = "itemId",
+        test = "true",
+        store = true,
+        conditionType = "number",
+        operator_types = "only_equal",
+      },
+      ]]
       {
         name = "includeBank",
         display = L["Include Bank"],
@@ -5886,6 +5921,18 @@ Private.event_prototypes = {
         test = "true",
         showExactOption = true
       },
+      --[[
+      {
+        name = "itemId",
+        display = WeakAuras.newFeatureString .. L["ItemId"],
+        hidden = true,
+        init = "itemId",
+        test = "true",
+        store = true,
+        conditionType = "number",
+        operator_types = "only_equal",
+      },
+      ]]
       {
         name = "itemSlot",
         display = WeakAuras.newFeatureString .. L["Item Slot"],

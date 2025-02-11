@@ -89,7 +89,9 @@ local function modify(parent, region, data)
     text:SetText("")
     text:SetText(WeakAuras.ReplaceRaidMarkerSymbols(data.displayText));
   end
+
   text:SetJustifyH(data.justify);
+  text:SetText("")
 
   text:ClearAllPoints();
   text:SetPoint("CENTER", UIParent, "CENTER");
@@ -230,10 +232,9 @@ local function modify(parent, region, data)
     local UpdateText
     if self.displayText and Private.ContainsAnyPlaceHolders(self.displayText) then
       UpdateText = function()
-        local textStr = self.displayText;
-        textStr = Private.ReplacePlaceHolders(textStr, self, nil, false, formatters);
-        if (textStr == nil or textStr == "") then
-          textStr = " ";
+        local textStr = Private.ReplacePlaceHolders(self.displayText, self, nil, false, formatters);
+        if textStr == "" then
+          textStr = " "
         end
 
         SetText(textStr)

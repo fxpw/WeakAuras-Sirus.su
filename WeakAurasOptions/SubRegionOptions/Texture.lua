@@ -82,6 +82,7 @@ local function createOptions(parentData, data, index, subIndex)
       width = WeakAuras.normalWidth,
       name = L["Allow Full Rotation"],
       order = 13,
+      -- hidden = data -- do we need this???
     },
     textureRotation = {
       type = "range",
