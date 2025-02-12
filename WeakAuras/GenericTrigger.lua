@@ -3220,13 +3220,6 @@ function Private.ExecEnv.CheckTotemName(totemName, triggerTotemName, triggerTote
   return true
 end
 
-function Private.ExecEnv.CheckTotemIcon(totemIcon, triggerTotemIcon, operator)
-  if not triggerTotemIcon then
-    return true
-  end
-  return (totemIcon == triggerTotemIcon) == (operator == "==")
-end
-
 -- Queueable Spells
 local queueableSpells
 local classQueueableSpells = {

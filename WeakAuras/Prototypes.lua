@@ -4854,8 +4854,6 @@ Private.event_prototypes = {
         local triggerTotemName = %q
         local triggerTotemPattern = %q
         local triggerTotemPatternOperator = %q
-        local triggerTotemIcon = %s
-        local triggerTotemIconOperator = %q
         local clone = %s
         local inverse = %s
         local remainingCheck = %s
@@ -4870,10 +4868,6 @@ Private.event_prototypes = {
 
           if not Private.ExecEnv.CheckTotemName(totemName, triggerTotemName, triggerTotemPattern, triggerTotemPatternOperator) then
             active = false;
-          end
-
-          if not Private.ExecEnv.CheckTotemIcon(icon, triggerTotemIcon, triggerTotemIconOperator) then
-            active = false
           end
 
           if (inverse) then
@@ -4906,9 +4900,7 @@ Private.event_prototypes = {
           for i = 1, 4 do
             local _, totemName, startTime, duration, icon = GetTotemInfo(i);
             if ((startTime and startTime ~= 0) and
-            if ((startTime and startTime ~= 0)
-              and Private.ExecEnv.CheckTotemName(totemName, triggerTotemName, triggerTotemPattern, triggerTotemPatternOperator)
-              and Private.ExecEnv.CheckTotemIcon(icon, triggerTotemIcon, triggerTotemIconOperator)
+                Private.ExecEnv.CheckTotemName(totemName, triggerTotemName, triggerTotemPattern, triggerTotemPatternOperator)
             ) then
               found = true;
             end
@@ -4928,9 +4920,7 @@ Private.event_prototypes = {
             local _, totemName, startTime, duration, icon = GetTotemInfo(i);
             active = (startTime and startTime ~= 0);
 
-            if not Private.ExecEnv.CheckTotemName(totemName, triggerTotemName, triggerTotemPattern, triggerTotemPatternOperator)
-              or not Private.ExecEnv.CheckTotemIcon(icon, triggerTotemIcon, triggerTotemIconOperator)
-            then
+            if not Private.ExecEnv.CheckTotemName(totemName, triggerTotemName, triggerTotemPattern, triggerTotemPatternOperator) then
               active = false;
             end
             if (active and remainingCheck) then
@@ -4968,8 +4958,6 @@ Private.event_prototypes = {
         trigger.use_totemName and totemName or "",
         trigger.use_totemNamePattern and trigger.totemNamePattern or "",
         trigger.use_totemNamePattern and trigger.totemNamePattern_operator or "",
-        trigger.use_icon and trigger.icon or "nil",
-        trigger.use_icon and trigger.icon_operator or "",
         trigger.use_clones and "true" or "false",
         trigger.use_inverse and "true" or "false",
         trigger.use_remaining and tonumber(trigger.remaining or 0) or "nil",
@@ -4995,14 +4983,6 @@ Private.event_prototypes = {
         name = "totemNamePattern",
         display = L["Totem Name Pattern Match"],
         type = "longstring",
-      },
-      {
-        name = "icon",
-        display = L["Totem Icon"],
-        type = "number",
-        conditionType = "number",
-        operator_types = "only_equal",
-        store = true,
       },
       {
         name = "clones",
