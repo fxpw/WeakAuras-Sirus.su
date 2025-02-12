@@ -1408,13 +1408,13 @@ Private.totalcount_currencies = {
   [49426] = 4730, -- Emblems of Frost
 }
 
-function Private.GetTotalCountCurrencies(currencyID)
+function Private.ExecEnv.GetTotalCountCurrencies(currencyID)
   local achievementID = Private.totalcount_currencies[currencyID]
   if achievementID then
       local totalEarned = GetStatistic(achievementID)
       return tonumber(totalEarned) or 0
   end
-  return nil
+  return 0
 end
 
 local function InitializeCurrencies()
@@ -1460,17 +1460,17 @@ local function InitializeCurrencies()
   Private.discovered_currencies_sorted["member"] = -1;
 end
 
-Private.GetDiscoveredCurencies = function()
+Private.ExecEnv.GetDiscoveredCurrencies = function()
   InitializeCurrencies()
   return Private.discovered_currencies
 end
 
-Private.GetDiscoveredCurenciesSorted  = function()
+Private.GetDiscoveredCurrenciesSorted  = function()
   InitializeCurrencies()
   return Private.discovered_currencies_sorted
 end
 
-Private.GetDiscoveredCurenciesHeaders  = function()
+Private.GetDiscoveredCurrenciesHeaders  = function()
   InitializeCurrencies()
   return Private.discovered_currencies_headers
 end

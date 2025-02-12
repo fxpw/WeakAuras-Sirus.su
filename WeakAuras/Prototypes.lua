@@ -3037,7 +3037,7 @@ Private.event_prototypes = {
         end,
         store = true,
         preambleGroup = "spell",
-        preamble = "local spellChecker = WeakAuras.CreateSpellChecker()",
+        preamble = "local spellChecker = Private.ExecEnv.CreateSpellChecker()",
         multiEntry = {
           operator = "preamble",
           preambleAdd = "spellChecker:AddExact(%q)"
@@ -3059,7 +3059,7 @@ Private.event_prototypes = {
         end,
         store = true,
         preambleGroup = "spell",
-        preamble = "local spellChecker = WeakAuras.CreateSpellChecker()",
+        preamble = "local spellChecker = Private.ExecEnv.CreateSpellChecker()",
         multiEntry = {
           operator = "preamble",
           preambleAdd = "spellChecker:AddName(%q)"
@@ -5542,15 +5542,21 @@ Private.event_prototypes = {
     timedrequired = true,
     progressType = "timed"
   },
-  -- fixing later
   --[[
-    ["Spell Cast Succeeded"] = {
+  ["Spell Cast Succeeded"] = {
     type = "event",
     events = function(trigger)
       local result = {}
       local unit = trigger.unit
       AddUnitEventForEvents(result, unit, "UNIT_SPELLCAST_SUCCEEDED")
       return result
+    end,
+    init = function(trigger)
+      local ret =
+        local spellRank = %d
+        local rank = tonumber(spellRank:match("Rank (%d+)")) or nil
+      ;
+      return ret:format(trigger.spellRank or nil);
     end,
     name = L["Spell Cast Succeeded"],
     statesParameter = "unit",
@@ -5569,11 +5575,8 @@ Private.event_prototypes = {
         end
       },
       {
-      },
-      { -- castGUID
-      },
-      {
         name = "spellNames",
+        init = "arg",
         display = L["Name(s)"],
         type = "spell",
         multiEntry = {
@@ -5582,36 +5585,40 @@ Private.event_prototypes = {
         },
         preamble = "local spellChecker = Private.ExecEnv.CreateSpellChecker()",
         preambleGroup = "spell",
-        test = "spellChecker:Check(spellId)",
+        test = "spellChecker:Check(spellNames)",
         noValidation = true,
       },
       {
-        name = "spellId",
-        display = L["Exact Spell ID(s)"],
-        type = "spell",
+        name = "spellRank",
+        hidden = true,
         init = "arg",
+        type = "string",
         store = true,
-        multiEntry = {
-          operator = "preamble",
-          preambleAdd = "spellChecker:AddExact(%q)"
-        },
-        preamble = "local spellChecker = Private.ExecEnv.CreateSpellChecker()",
-        preambleGroup = "spell",
-        test = "spellChecker:Check(spellId)",
+        test = "true"
+      },
+      {
+        name = "rank",
+        hidden = true,
+        init = "rank",
+        display = L["Rank"],
+        store = true,
         conditionType = "number",
-        noProgressSource = true
+        multiEntry = {
+          operator = "or",
+          limit = 2
+        },
       },
       {
         name = "icon",
         hidden = true,
-        init = "GetSpellIcon(spellId or 0)",
+        init = "GetSpellIcon(spellNames or 0)",
         store = true,
         test = "true"
       },
       {
         name = "name",
         hidden = true,
-        init = "GetSpellInfo(spellId or 0)",
+        init = "GetSpellInfo(spellNames or 0)",
         store = true,
         test = "true"
       },
@@ -6382,7 +6389,7 @@ Private.event_prototypes = {
         type = "spell",
         enable = function(trigger) return not trigger.use_inverse end,
         preambleGroup = "spell",
-        preamble = "local spellChecker = WeakAuras.CreateSpellChecker()",
+        preamble = "local spellChecker = Private.ExecEnv.CreateSpellChecker()",
         multiEntry = {
           operator = "preamble",
           preambleAdd = "spellChecker:AddName(%q)"
@@ -6396,7 +6403,7 @@ Private.event_prototypes = {
         type = "spell",
         enable = function(trigger) return not trigger.use_inverse end,
         preambleGroup = "spell",
-        preamble = "local spellChecker = WeakAuras.CreateSpellChecker()",
+        preamble = "local spellChecker = Private.ExecEnv.CreateSpellChecker()",
         multiEntry = {
           operator = "preamble",
           preambleAdd = "spellChecker:AddName(GetSpellInfo(%q))"
@@ -7798,11 +7805,10 @@ Private.event_prototypes = {
         test = "true",
       },
     },
-    GetNameAndIcon = function(trigger)
+    GetNameAndIcon = function()
       return MONEY, "interface/moneyframe/ui-goldicon"
     end,
   },
-  --[[  Some day i will finish this, soonTM
   ["Currency"] = {
     type = "unit",
     progressType = "static",
@@ -7815,24 +7821,26 @@ Private.event_prototypes = {
     name = WeakAuras.newFeatureString..L["Currency"],
     init = function(trigger)
       local ret = [=[
+          local currencyID = %d
+          local discoveredTbl = Private.ExecEnv.GetDiscoveredCurrencies() or {}
           local currencyInfo = {
-              name = GetItemInfo(%d),
-              quantity = GetItemCount(%d),
-              iconFileID = select(6, GetItemInfo(%d)),
-              totalEarned = Private.GetTotalCountCurrencies(%d),
-              discovered = Private.GetDiscoveredCurencies(%d),
+              name = GetItemInfo(currencyID),
+              quantity = GetItemCount(currencyID),
+              icon = GetItemIcon(currencyID),
+              totalEarned = Private.ExecEnv.GetTotalCountCurrencies(currencyID),
+              discovered = discoveredTbl[currencyID] and true or false,
           }
           if not currencyInfo.name then
               currencyInfo = {
                   name = "Unknown Currency",
                   quantity = 0,
-                  iconFileID = "Interface\\Icons\\INV_Misc_QuestionMark",
+                  icon = "Interface\\Icons\\INV_Misc_QuestionMark",
                   totalEarned = 0,
                   discovered = false
               }
           end
       ]=]
-      return ret:format(trigger.currencyId or 1, trigger.currencyId or 1, trigger.currencyId or 1, trigger.currencyId or 1, trigger.currencyId or 1)
+      return ret:format(tonumber(trigger.currencyId) or 1)
     end,
     statesParameter = "one",
     args = {
@@ -7840,13 +7848,13 @@ Private.event_prototypes = {
         name = "currencyId",
         type = "currency",
         itemControl = "Dropdown-Currency",
-        values = Private.GetDiscoveredCurencies,
-        headers = Private.GetDiscoveredCurenciesHeaders,
+        values = Private.ExecEnv.GetDiscoveredCurrencies,
+        headers = Private.GetDiscoveredCurrenciesHeaders,
         sorted = true,
         sortOrder = function()
-          local discovered_currencies_sorted = Private.GetDiscoveredCurenciesSorted()
+          local discovered_currencies_sorted = Private.GetDiscoveredCurrenciesSorted()
           local sortOrder = {}
-          for key, value in pairs(Private.GetDiscoveredCurencies()) do
+          for key, value in pairs(Private.ExecEnv.GetDiscoveredCurrencies()) do
             tinsert(sortOrder, key)
           end
           table.sort(sortOrder, function(aKey, bKey)
@@ -7877,12 +7885,12 @@ Private.event_prototypes = {
         conditionType = "number",
       },
       {
-        name = "total",
-        init = "currencyInfo.maxQuantity",
+        name = "totalEarned",
+        init = "currencyInfo.totalEarned",
         type = "number",
-        hidden = true,
+        display = L["Total"],
         store = true,
-        test = "true",
+        conditionType = "number",
       },
       {
         name = "progressType",
@@ -7893,21 +7901,10 @@ Private.event_prototypes = {
       },
       {
         name = "icon",
-        init = "currencyInfo.iconFileID",
+        init = "currencyInfo.icon",
         store = true,
         hidden = true,
         test = "true",
-      },
-      {
-        name = "totalEarned",
-        init = "currencyInfo.totalEarned",
-        type = "number",
-        display = L["Total Earned in this Season"],
-        store = true,
-        conditionType = "number",
-        enable = function(trigger)
-          -- soonTM
-        end
       },
       {
         name = "description",
@@ -7928,12 +7925,12 @@ Private.event_prototypes = {
       },
     },
     GetNameAndIcon = function(trigger)
-      local currencyInfo = Private.GetCurrencyInfoForTrigger(trigger)
-      return currencyInfo and currencyInfo.name, currencyInfo and currencyInfo.iconFileID
+      local name = GetItemInfo(trigger.currencyId or 0)
+      local icon = GetItemIcon(trigger.currencyId or 0)
+      return name, icon
     end,
     automaticrequired = true
   },
-  ]]
   ["Location"] = {
     type = "unit",
     events = {
@@ -8051,15 +8048,12 @@ Private.event_prototypes = {
   },
 };
 
-if not (DBM and DBM.ReleaseRevision >= 7003) then
-  Private.event_prototypes["DBM Announce"] = nil
-  Private.event_prototypes["DBM Timer"] = nil
-end
-if not (DBM and DBM.ReleaseRevision >= 7005) then
-  Private.event_prototypes["DBM Stage"] = nil
-end
-Private.event_prototypes["BigWigs Message"] = nil
-Private.event_prototypes["BigWigs Timer"] = nil
+--[[
+Disable any event here
+if () then
+  Private.event_prototypes[] = nil
+  end
+]]
 
 Private.category_event_prototype = {}
 for name, prototype in pairs(Private.event_prototypes) do

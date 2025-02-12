@@ -1157,7 +1157,7 @@ loadedFrame:SetScript("OnEvent", function(self, event, addon)
     if(addon == ADDON_NAME) then
       WeakAurasSaved = WeakAurasSaved or {};
       db = WeakAurasSaved;
-
+      Private.db = db
       -- Defines the action squelch period after login
       -- Stored in SavedVariables so it can be changed by the user if they find it necessary
       db.login_squelch_time = db.login_squelch_time or 10;
@@ -1668,7 +1668,7 @@ function Private.UnloadDisplays(toUnload, ...)
     -- Even though auras are collapsed, their finish animation can be running
     Private.CancelAnimation(Private.regions[id].region, true, true, true, true, true, true)
     if clones[id] then
-      for cloneId, region in pairs(clones[id]) do
+      for _, region in pairs(clones[id]) do
         Private.CancelAnimation(region, true, true, true, true, true, true)
       end
     end
@@ -1744,8 +1744,8 @@ function WeakAuras.Delete(data)
 
   if clones[id] then
     for _, region in pairs(clones[id]) do
-        region:Collapse();
-        Private.CancelAnimation(region, true, true, true, true, true, true)
+      region:Collapse();
+      Private.CancelAnimation(region, true, true, true, true, true, true)
     end
     clones[id] = nil
   end
@@ -1755,6 +1755,7 @@ function WeakAuras.Delete(data)
   for _, triggerSystem in pairs(triggerSystems) do
     triggerSystem.Delete(id);
   end
+
 
   loaded[id] = nil;
   loadFuncs[id] = nil;
@@ -1815,6 +1816,7 @@ function WeakAuras.Rename(data, newid)
   if Private.regions[newid] and Private.regions[newid].region then
     Private.regions[newid].region.id = newid
   end
+
   if(clones[oldid]) then
     clones[newid] = clones[oldid]
     clones[oldid] = nil
@@ -1850,7 +1852,6 @@ function WeakAuras.Rename(data, newid)
 
   db.displays[newid] = db.displays[oldid];
   db.displays[oldid] = nil;
-
   db.displays[newid].id = newid;
 
   if(data.controlledChildren) then
@@ -1892,7 +1893,6 @@ end
 
 function Private.Convert(data, newType)
   local id = data.id;
-
   Private.FakeStatesFor(id, false)
 
   if Private.regions[id] then
@@ -2633,9 +2633,7 @@ function WeakAuras.PreAdd(data, snapshot)
     Private.GetErrorHandlerId(data.id, L["Modernize"])
   end
 
-  local default = data.regionType and
-  Private.regionTypes[data.regionType] and
-  Private.regionTypes[data.regionType].default
+  local default = data.regionType and Private.regionTypes[data.regionType] and Private.regionTypes[data.regionType].default
   if default then
     Private.validate(data, default)
   end
@@ -2837,7 +2835,7 @@ function WeakAuras.Add(data, simpleChange)
   if (data.internalVersion or 0) < internalVersion then
     Private.SetMigrationSnapshot(data.uid, data)
   end
-  local ok, ret = pcall(WeakAuras.PreAdd, data, oldSnapshot)
+  local ok = pcall(WeakAuras.PreAdd, data, oldSnapshot)
   if ok then
     pAdd(data, simpleChange)
   else
@@ -2978,9 +2976,11 @@ local function EnsureRegion(id)
   end
   return Private.regions[id] and Private.regions[id].region
 end
+
 --- Ensures that a region/clone exists and returns it
--- Even if we are asked to only create a clone, we create the default region too.
 function Private.EnsureRegion(id, cloneId)
+  -- Even if we are asked to only create a clone, we create the default region
+  -- too.
   EnsureRegion(id)
   if(cloneId and cloneId ~= "") then
     return EnsureClone(id, cloneId);
@@ -3143,35 +3143,40 @@ local glow_frame_monitor
 local anchor_unitframe_monitor
 Private.dyngroup_unitframe_monitor = {}
 do
-  local function frame_monitor_callback(event, frame, unit)
+  local function frame_monitor_callback(event, frame, unit, previousUnit)
     local new_frame
-    local update_frame = event == "FRAME_UNIT_UPDATE"
+    local FRAME_UNIT_UPDATE = event == "FRAME_UNIT_UPDATE"
+    local FRAME_UNIT_ADDED = event == "FRAME_UNIT_ADDED"
+    local FRAME_UNIT_REMOVED = event == "FRAME_UNIT_REMOVED"
 
     local dynamicGroupsToUpdate = {}
 
     if type(glow_frame_monitor) == "table" then
       for region, data in pairs(glow_frame_monitor) do
-        if region.state and UnitIsUnit(region.state.unit, unit)
-        and (data.frame ~= frame) == update_frame
+        if region.state and type(region.state.unit) == "string" and UnitIsUnit(region.state.unit, unit)
+        and ((data.frame ~= frame) and (FRAME_UNIT_ADDED or FRAME_UNIT_UPDATE))
+        or ((data.frame == frame) and FRAME_UNIT_REMOVED)
         then
           if not new_frame then
-            new_frame = WeakAuras.GetUnitFrame(unit) or WeakAuras.HiddenFrames
+            new_frame = WeakAuras.GetUnitFrame(unit)
           end
-          if new_frame and new_frame ~= data.frame then
+          if new_frame ~= data.frame then
             local id = region.id .. (region.cloneId or "")
             -- remove previous glow
             if data.frame then
               actionGlowStop(data.actions, data.frame, id)
             end
-            -- apply the glow to new_frame
             data.frame = new_frame
-            actionGlowStart(data.actions, data.frame, id)
-            -- update hidefunc
-            local region = region
-            region.active_glows_hidefunc = region.active_glows_hidefunc or {}
-            region.active_glows_hidefunc[data.frame] = function()
-              actionGlowStop(data.actions, data.frame, id)
-              glow_frame_monitor[region] = nil
+            if new_frame then
+              -- apply the glow to new_frame
+              actionGlowStart(data.actions, data.frame, id)
+              -- update hidefunc
+              local region = region
+              region.active_glows_hidefunc = region.active_glows_hidefunc or {}
+              region.active_glows_hidefunc[data.frame] = function()
+                actionGlowStop(data.actions, data.frame, id)
+                glow_frame_monitor[region] = nil
+              end
             end
           end
         end
@@ -3179,21 +3184,23 @@ do
     end
     if type(anchor_unitframe_monitor) == "table" then
       for region, data in pairs(anchor_unitframe_monitor) do
-        if region.state and region.state.unit == unit
-        and (data.frame ~= frame) == update_frame
+        if region.state and type(region.state.unit) == "string" and UnitIsUnit(region.state.unit, unit)
+        and ((data.frame ~= frame) and (FRAME_UNIT_ADDED or FRAME_UNIT_UPDATE))
+        or ((data.frame == frame) and FRAME_UNIT_REMOVED)
         then
           if not new_frame then
             new_frame = WeakAuras.GetUnitFrame(unit) or WeakAuras.HiddenFrames
           end
-          if new_frame and new_frame ~= data.frame then
+          if new_frame ~= data.frame then
             Private.AnchorFrame(data.data, region, data.parent)
           end
         end
       end
     end
     for regionData, data_frame in pairs(Private.dyngroup_unitframe_monitor) do
-      if regionData.region and regionData.region.state and regionData.region.state.unit == unit
-      and (data_frame ~= frame) == update_frame
+      if regionData.region.state and type(regionData.region.state.unit) == "string" and UnitIsUnit(regionData.region.state.unit, unit)
+      and ((data_frame ~= frame) and (FRAME_UNIT_ADDED or FRAME_UNIT_UPDATE))
+      or ((data_frame == frame) and FRAME_UNIT_REMOVED)
       then
         if not new_frame then
           new_frame = WeakAuras.GetUnitFrame(unit) or WeakAuras.HiddenFrames
@@ -3207,10 +3214,10 @@ do
     for frame in pairs(dynamicGroupsToUpdate) do
       frame:DoPositionChildren()
     end
-
   end
 
   LGF.RegisterCallback("WeakAuras", "FRAME_UNIT_UPDATE", frame_monitor_callback)
+  LGF.RegisterCallback("WeakAuras", "FRAME_UNIT_ADDED", frame_monitor_callback)
   LGF.RegisterCallback("WeakAuras", "FRAME_UNIT_REMOVED", frame_monitor_callback)
 end
 
@@ -3218,8 +3225,7 @@ function Private.HandleGlowAction(actions, region)
   if actions.glow_action
   and (
     (
-      (actions.glow_frame_type == "UNITFRAME" or
-      actions.glow_frame_type == "NAMEPLATE")
+      (actions.glow_frame_type == "UNITFRAME" or actions.glow_frame_type == "NAMEPLATE")
       and region.state.unit
     )
     or (actions.glow_frame_type == "FRAMESELECTOR" and actions.glow_frame)
@@ -3559,6 +3565,7 @@ function Private.GetProgressSourcesForUi(data, subelement)
 
   return result
 end
+
 
 function Private.GetOverlayInfo(data, triggernum)
   local overlayInfo;
@@ -4175,8 +4182,8 @@ local function startStopTimers(id, cloneId, triggernum, state)
             state.changed = true;
 
             -- if the trigger has updated then check to see if it is flagged for WatchedTrigger and send to queue if it is
-              if Private.watched_trigger_events[id] and Private.watched_trigger_events[id][triggernum] then
-                Private.AddToWatchedTriggerDelay(id, triggernum)
+            if Private.watched_trigger_events[id] and Private.watched_trigger_events[id][triggernum] then
+              Private.AddToWatchedTriggerDelay(id, triggernum)
             end
             Private.UpdatedTriggerState(id);
           end
@@ -4239,11 +4246,11 @@ local function evaluateTriggerStateTriggers(id)
       Private.ActivateAuraEnvironment(id)
       local ok, returnValue = pcall(triggerState[id].triggerLogicFunc, triggerState[id].triggers);
       Private.ActivateAuraEnvironment()
-      if not ok then
+      if ok then
+        result = returnValue
+      else
         Private.GetErrorHandlerId(id, L["Custom Trigger Combination"])
         result = false
-      else
-        result = returnValue
       end
     end
   end
@@ -4428,7 +4435,6 @@ function Private.UpdatedTriggerState(id)
       state.changed = false;
     end
   end
-
   -- once updatedTriggerStates is complete, and empty states removed, etc., then check for queued watched triggers update
   Private.SendDelayedWatchedTriggers()
 end
@@ -4484,12 +4490,19 @@ local function ReplaceValuePlaceHolders(textStr, region, customFunc, state, form
     end
 
     local index = tonumber(textStr:match("^c(%d+)$") or 1)
+
     if custom then
-      value = WeakAuras.EnsureString(custom[index])
+      value = custom[index]
     end
+
+    if value == nil then value = "" end
 
     if formatter then
       value = formatter(value, state)
+    end
+
+    if custom then
+      value = WeakAuras.EnsureString(value)
     end
   else
     local variable = Private.dynamic_texts[textStr];
@@ -5243,7 +5256,6 @@ local function GetAnchorFrame(data, region, parent)
   local anchorFrameType = data.anchorFrameType
   local anchorFrameFrame = data.anchorFrameFrame
   if not id then return end
-
   if (personalRessourceDisplayFrame) then
     personalRessourceDisplayFrame:anchorFrame(id, anchorFrameType);
   end
@@ -5352,7 +5364,7 @@ function Private.AnchorFrame(data, region, parent, force)
     if not anchorParent then return end
     if (data.anchorFrameParent or data.anchorFrameParent == nil
     or data.anchorFrameType == "SCREEN" or data.anchorFrameType == "UIPARENT" or data.anchorFrameType == "MOUSE") then
-      local ok, ret = pcall(region.SetParent, region, anchorParent);
+      local ok = pcall(region.SetParent, region, anchorParent);
       if not ok then
         Private.GetErrorHandlerId(data.id, L["Anchoring"])
       end
@@ -5524,6 +5536,10 @@ do
     trackableUnits["raidpet" .. i] = true
   end
 
+  for i = 1, 100 do
+    trackableUnits["nameplate" .. i] = true
+  end
+
   function WeakAuras.UntrackableUnit(unit)
     return not trackableUnits[unit]
   end
@@ -5639,7 +5655,6 @@ function Private.ExecEnv.ParseZoneCheck(input)
   for id in string.gmatch(input, "%d+") do
     matcher:AddId(tonumber(id))
   end
-
   return matcher
 end
 
@@ -5647,7 +5662,7 @@ function WeakAuras.IsAuraLoaded(id)
   return Private.loaded[id]
 end
 
-function WeakAuras.CreateSpellChecker()
+function Private.ExecEnv.CreateSpellChecker()
   local matcher = {
     names = {},
     spellIds = {},
@@ -5820,3 +5835,4 @@ do
     return data.regionType == "group" or data.regionType == "dynamicgroup"
   end
 end
+

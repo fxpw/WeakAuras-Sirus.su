@@ -3,7 +3,6 @@ local AddonName, Private = ...
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
-local prettyPrint = WeakAuras.prettyPrint
 
 local LibSerialize = LibStub("LibSerialize")
 local LibDeflate = LibStub:GetLibrary("LibDeflate")
@@ -142,6 +141,7 @@ local blockedFunctions = {
   EditMacro = true,
   DevTools_DumpCommand = true,
   hash_SlashCmdList = true,
+  RegisterNewSlashCommand = true,
   CreateMacro = true,
   SetBindingMacro = true,
   GuildDisband = true,
@@ -193,6 +193,7 @@ local current_uid = nil
 local current_aura_env = nil
 -- Stack of of aura environments/uids, allows use of recursive aura activations through calls to WeakAuras.ScanEvents().
 local aura_env_stack = {}
+
 
 local function UpdateSavedDataWarning(uid, size)
   local savedDataWarning = 16 * 1024 * 1024 -- 16 KB, but it's only a warning
@@ -547,6 +548,7 @@ end
 local PrivateForBuiltIn = {
   ExecEnv = Private.ExecEnv
 }
+
 local env_getglobal_builtin
 local exec_env_builtin = setmetatable({},
 {
