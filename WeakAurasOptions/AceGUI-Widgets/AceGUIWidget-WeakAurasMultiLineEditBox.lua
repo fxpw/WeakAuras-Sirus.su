@@ -79,6 +79,7 @@ local function OnEditFocusLost(frame)                                           
   frame:HighlightText(0, 0)
   self:Fire("OnEditFocusLost")
   self.scrollFrame:EnableMouseWheel(false);
+
   local option = self.userdata.option
   if option and option.callbacks and option.callbacks.OnEditFocusLost then
     option.callbacks.OnEditFocusLost(self)
@@ -337,7 +338,8 @@ local function Constructor()
   scrollBG:SetBackdropColor(0, 0, 0)
   scrollBG:SetBackdropBorderColor(0.4, 0.4, 0.4)
 
-  local scrollFrame = CreateFrame("ScrollFrame", ("%s%dScrollFrame"):format(Type, widgetNum), frame, "UIPanelScrollFrameTemplate")
+  local scrollFrame = CreateFrame("ScrollFrame", ("%s%dScrollFrame"):format(Type, widgetNum),
+                                  frame, "UIPanelScrollFrameTemplate")
   scrollFrame:EnableMouseWheel(false);
 
   local scrollBar = _G[scrollFrame:GetName() .. "ScrollBar"]

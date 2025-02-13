@@ -362,8 +362,8 @@ local function Constructor()
     progressBar = progressBar,
     progressBarHandle = progressBarHandle,
     progressBarHandleTexture = progressBarHandleTexture,
-    type = Type,
     frame = frame,
+    type = Type,
   }
   for method, func in pairs(methods) do
     widget[method] = func

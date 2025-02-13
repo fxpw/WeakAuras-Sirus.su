@@ -1,9 +1,8 @@
+if not WeakAuras.IsLibsOK() then return end
 --[[-----------------------------------------------------------------------------
 ToolbarButton Widget, based on AceGUI Button
 Graphical Button.
 -------------------------------------------------------------------------------]]
-if not WeakAuras.IsLibsOK() then return end
-
 local Type, Version = "WeakAurasToolbarButton", 6
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
@@ -58,7 +57,7 @@ local methods = {
 	["SetText"] = function(self, text)
 		self.text:SetText(text)
 		if text ~= "" then
-			self:SetWidth(self.text:GetStringWidth() + 28)
+			self:SetWidth(self.text:GetStringWidth() + 24)
 		else
 			self:SetWidth(16)
 		end

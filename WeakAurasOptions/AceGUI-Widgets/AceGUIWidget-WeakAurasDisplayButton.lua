@@ -1,7 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
-local tinsert, tremove, wipe = table.insert, table.remove, wipe
+local tinsert, tremove = table.insert, table.remove
 local select, pairs, type, unpack = select, pairs, type, unpack
 local error = error
 
@@ -1139,12 +1139,12 @@ local methods = {
       -- mark as being dragged, attach to mouse and raise frame strata
       self.dragging = true
       self.frame:StartMoving()
-      --self.frame:ClearAllPoints()
+      self.frame:ClearAllPoints()
       self.frame.temp = {
         parent = self.frame:GetParent(),
         strata = self.frame:GetFrameStrata(),
       }
-      --self.frame:SetParent(UIParent)
+      self.frame:SetParent(UIParent)
       self.frame:SetFrameStrata("FULLSCREEN_DIALOG")
       if self.data.id == mainAura.id then
         self.frame:SetPoint("Center", UIParent, "BOTTOMLEFT", (x+w/2)*scale/uiscale, y/uiscale)
@@ -1916,7 +1916,9 @@ local function Constructor()
   downgrouptexture:SetAllPoints(downgroup);
   downgroup:SetNormalTexture(downgrouptexture);
   downgroup:SetHighlightTexture("Interface\\BUTTONS\\UI-Panel-MinimizeButton-Highlight.blp");
-  downgroup:SetScript("OnEnter", function() Show_Tooltip(button, L["Move Down"], L["Move this display down in its group's order"]) end);
+  downgroup:SetScript("OnEnter", function()
+    Show_Tooltip(button, L["Move Down"], L["Move this display down in its group's order"])
+  end)
   downgroup:SetScript("OnLeave", Hide_Tooltip);
   downgroup:Hide();
 
