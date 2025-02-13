@@ -138,7 +138,7 @@ local function nameUserDesc(option)
     return option.text
   else
     local text = {}
-    for _, optionData in pairs(option.references) do
+    for id, optionData in pairs(option.references) do
       local childOption = optionData.options[optionData.index]
       if childOption.text and childOption.text ~= nil then
         tinsert(text, childOption.text)
@@ -1244,7 +1244,7 @@ typeControlAdders = {
       name = WeakAuras.newFeatureString .. name(option, "noMerge", L["Prevent Merging"]),
       desc = desc(option, "noMerge", L["If checked, then this group will not merge with other group when selecting multiple auras."]),
       order = order(),
-      width = option.groupType == "simple" and WeakAuras.doubleWidth or WeakAuras.normalWidth,
+      width = option.groupType =="simple" and WeakAuras.doubleWidth or WeakAuras.normalWidth,
       get = get(option, "noMerge"),
       set = set(data, option, "noMerge"),
     }
@@ -2587,6 +2587,7 @@ local function valuesAreEqual(t1, t2)
       return false
     end
   end
+
   for k2, v2 in pairs(t2) do
     local v1 = t1[k2]
     if v1 == nil or not valuesAreEqual(v1, v2) then

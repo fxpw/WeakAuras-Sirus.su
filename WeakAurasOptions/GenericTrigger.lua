@@ -121,7 +121,7 @@ local function GetCustomTriggerOptions(data, triggernum)
               end
             elseif trueEvent:match("^UNIT_") then
               local unit = string.lower(i)
-              if not ((OptionsPrivate.Private.baseUnitId[unit] and OptionsPrivate.Private.multiUnitId[unit]) or unit ~= "nameplate") then
+              if not OptionsPrivate.Private.baseUnitId[unit] and not OptionsPrivate.Private.multiUnitId[unit] then
                 return "|cFFFF0000"..L["Unit %s is not a valid unit for RegisterUnitEvent"]:format(unit)
               end
             elseif trueEvent == "TRIGGER" then
@@ -169,7 +169,7 @@ local function GetCustomTriggerOptions(data, triggernum)
               end
             elseif trueEvent:match("^UNIT_") then
               local unit = string.lower(i)
-              if not (OptionsPrivate.Private.baseUnitId[unit] or unit ~= "nameplate") then
+              if not OptionsPrivate.Private.baseUnitId[unit] then
                 return false
               end
             elseif trueEvent == "TRIGGER" then
@@ -403,14 +403,22 @@ local function GetCustomTriggerOptions(data, triggernum)
                             17 + i / 10, hideOverlay, appendToTriggerPath("customOverlay" .. i), false, { multipath = false, extraSetFunction = extraSetFunctionReload, extraFunctions = extraFunctions});
   end
 
-  OptionsPrivate.commonOptions.AddCodeOption(customOptions, data, L["Name Info"], "custom_name", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#name-info",
-                          18, hideIfTriggerStateUpdate, appendToTriggerPath("customName"), false, { multipath = false, extraSetFunction = extraSetFunctionReload});
-  OptionsPrivate.commonOptions.AddCodeOption(customOptions, data, L["Icon Info"], "custom_icon", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#icon-info",
-                          20, hideIfTriggerStateUpdate, appendToTriggerPath("customIcon"), false, { multipath = false, extraSetFunction = extraSetFunction});
-  OptionsPrivate.commonOptions.AddCodeOption(customOptions, data, L["Texture Info"], "custom_texture", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#texture-info",
-                          22, hideIfTriggerStateUpdate, appendToTriggerPath("customTexture"), false, { multipath = false, extraSetFunction = extraSetFunction});
-  OptionsPrivate.commonOptions.AddCodeOption(customOptions, data, L["Stack Info"], "custom_stacks", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#stack-info",
-                          23, hideIfTriggerStateUpdate, appendToTriggerPath("customStacks"), false, { multipath = false, extraSetFunction = extraSetFunctionReload});
+  OptionsPrivate.commonOptions.AddCodeOption(customOptions, data, L["Name Info"], "custom_name",
+                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#name-info",
+                          18, hideIfTriggerStateUpdate, appendToTriggerPath("customName"), false,
+                          { multipath = false, extraSetFunction = extraSetFunctionReload});
+  OptionsPrivate.commonOptions.AddCodeOption(customOptions, data, L["Icon Info"], "custom_icon",
+                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#icon-info",
+                          20, hideIfTriggerStateUpdate, appendToTriggerPath("customIcon"), false,
+                          { multipath = false, extraSetFunction = extraSetFunction});
+  OptionsPrivate.commonOptions.AddCodeOption(customOptions, data, L["Texture Info"], "custom_texture",
+                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#texture-info",
+                          22, hideIfTriggerStateUpdate, appendToTriggerPath("customTexture"), false,
+                          { multipath = false, extraSetFunction = extraSetFunction});
+  OptionsPrivate.commonOptions.AddCodeOption(customOptions, data, L["Stack Info"], "custom_stacks",
+                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#stack-info",
+                          23, hideIfTriggerStateUpdate, appendToTriggerPath("customStacks"), false,
+                          { multipath = false, extraSetFunction = extraSetFunctionReload});
 
   return customOptions;
 end

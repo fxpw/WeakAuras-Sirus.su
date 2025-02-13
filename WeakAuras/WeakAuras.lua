@@ -2018,8 +2018,9 @@ StaticPopupDialogs["WEAKAURAS_CONFIRM_REPAIR"] = {
       Private.Login()
     end
   end,
-  whileDead = true,
-  showAlert = true,
+
+  whileDead = 1,
+  showAlert = 1,
   timeout = 0,
   preferredindex = STATICPOPUP_NUMDIALOGS
 }

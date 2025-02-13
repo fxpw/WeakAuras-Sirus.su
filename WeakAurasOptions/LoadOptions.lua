@@ -364,7 +364,11 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
         options["use_"..name].desc = arg.desc;
       end
       if(arg.required) then
-        trigger["use_"..realname] = true;
+        if arg.type == "multiselect" and arg.multiNoSingle then
+          trigger["use_"..realname] = false
+        else
+          trigger["use_"..realname] = true
+        end
         if not(triggertype) then
           options["use_"..name].disabled = true;
         else
@@ -438,6 +442,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
               values = arg.operator_types == "without_equal" and OptionsPrivate.Private.operator_types_without_equal
                        or arg.operator_types == "only_equal" and OptionsPrivate.Private.equality_operator_types
                        or OptionsPrivate.Private.operator_types,
+
               get = function()
                 return getValue(trigger, "use_"..realname, realname.."_operator", multiEntry, entryNumber)
               end,

@@ -456,27 +456,27 @@ StaticPopupDialogs["WEAKAURAS_CONFIRM_DELETE"] = {
 }
 
 function OptionsPrivate.IsWagoUpdateIgnored(auraId)
+    local auraData = WeakAuras.GetData(auraId)
+      if auraData then
+        for child in OptionsPrivate.Private.TraverseAll(auraData) do
+          if child.ignoreWagoUpdate then
+            return true
+          end
+        end
+      end
+    return false
+end
+
+function OptionsPrivate.HasWagoUrl(auraId)
   local auraData = WeakAuras.GetData(auraId)
     if auraData then
       for child in OptionsPrivate.Private.TraverseAll(auraData) do
-        if child.ignoreWagoUpdate then
+        if child.url and child.url ~= "" then
           return true
         end
       end
     end
   return false
-end
-
-function OptionsPrivate.HasWagoUrl(auraId)
-local auraData = WeakAuras.GetData(auraId)
-  if auraData then
-    for child in OptionsPrivate.Private.TraverseAll(auraData) do
-      if child.url and child.url ~= "" then
-        return true
-      end
-    end
-  end
-return false
 end
 
 function OptionsPrivate.ConfirmDelete(toDelete, parents)
@@ -801,6 +801,7 @@ function OptionsPrivate.DeleteAuras(auras, parents)
         parentButton:SetNormalTooltip()
         WeakAuras.Add(parentData)
         WeakAuras.ClearAndUpdateOptions(parentData.id)
+        parentButton:UpdateParentWarning()
         frame.loadProgress:SetText(L["Finishing..."])
         coroutine.yield()
       end
@@ -887,6 +888,7 @@ function WeakAuras.ShowOptions(msg)
   if firstLoad then
     frame:ShowTip()
   end
+
 end
 
 function OptionsPrivate.UpdateOptions()
@@ -1407,7 +1409,10 @@ function OptionsPrivate.StartGrouping(data)
     end
 
     for id, button in pairs(displayButtons) do
-      button:StartGrouping({data.id}, data.id == id, data.regionType == "dynamicgroup" or data.regionType == "group", children[id]);
+      button:StartGrouping({data.id},
+                           data.id == id,
+                           data.regionType == "dynamicgroup" or data.regionType == "group",
+                           children[id]);
     end
   end
 end
@@ -1587,7 +1592,7 @@ function OptionsPrivate.StartDrag(mainAura)
       children[child.id] = true
     end
     -- set dragging for non selected buttons
-    for _, button in pairs(displayButtons) do
+    for id, button in pairs(displayButtons) do
       if not children[button.data.id] then
         button:DragStart("MULTI", false, mainAura);
       end
@@ -1603,7 +1608,7 @@ function OptionsPrivate.StartDrag(mainAura)
         children[child.id] = true
       end
       -- set dragging for non selected buttons
-      for id, button in pairs(displayButtons) do
+      for _, button in pairs(displayButtons) do
         if not children[button.data.id] then
           button:DragStart(mode, false, mainAura);
         end
@@ -1696,7 +1701,6 @@ function OptionsPrivate.OpenModelPicker(baseObject, path)
       WeakAuras.prettyPrint(string.format(L["ModelPaths could not be loaded, the addon is %s"], reason));
       WeakAuras.ModelPaths = {};
     end
-
     OptionsPrivate.ModelPicker(frame).modelTree:SetTree(WeakAuras.ModelPaths)
   end
   OptionsPrivate.ModelPicker(frame):Open(baseObject, path);
@@ -2044,7 +2048,8 @@ function OptionsPrivate.MoveCollapseDataUp(id, namespace, path)
   collapsedOptions[id] = collapsedOptions[id] or {}
   collapsedOptions[id][namespace] = collapsedOptions[id][namespace] or {}
   if type(path) ~= "table" then
-    collapsedOptions[id][namespace][path], collapsedOptions[id][namespace][path - 1] = collapsedOptions[id][namespace][path - 1], collapsedOptions[id][namespace][path]
+    collapsedOptions[id][namespace][path], collapsedOptions[id][namespace][path - 1]
+      = collapsedOptions[id][namespace][path - 1], collapsedOptions[id][namespace][path]
   else
     local tmp = collapsedOptions[id][namespace]
     local lastKey = tremove(path)
@@ -2060,7 +2065,8 @@ function OptionsPrivate.MoveCollapseDataDown(id, namespace, path)
   collapsedOptions[id] = collapsedOptions[id] or {}
   collapsedOptions[id][namespace] = collapsedOptions[id][namespace] or {}
   if type(path) ~= "table" then
-    collapsedOptions[id][namespace][path], collapsedOptions[id][namespace][path + 1] = collapsedOptions[id][namespace][path + 1], collapsedOptions[id][namespace][path]
+    collapsedOptions[id][namespace][path], collapsedOptions[id][namespace][path + 1]
+      = collapsedOptions[id][namespace][path + 1], collapsedOptions[id][namespace][path]
   else
     local tmp = collapsedOptions[id][namespace]
     local lastKey = tremove(path)
@@ -2155,7 +2161,8 @@ function OptionsPrivate.DuplicateCollapseData(id, namespace, path)
   end
 end
 
-function OptionsPrivate.AddTextFormatOption(input, withHeader, get, addOption, hidden, setHidden, withoutColor, index, total)
+function OptionsPrivate.AddTextFormatOption(input, withHeader, get, addOption, hidden, setHidden,
+                                            withoutColor, index, total)
   local headerOption
   if withHeader and (not index or index == 1) then
     headerOption =  {
@@ -2182,6 +2189,7 @@ function OptionsPrivate.AddTextFormatOption(input, withHeader, get, addOption, h
 
 
   local seenSymbols = {}
+
   local parseFn = function(symbol)
     if not seenSymbols[symbol] then
       local _, sym = string.match(symbol, "(.+)%.(.+)")

@@ -123,7 +123,7 @@ local function addCollapsibleHeader(options, key, input, order, isGroupTab)
   end
 
   local titleWidth = WeakAuras.doubleWidth - (hasAdd and 0.15 or 0) - (hasDelete and 0.15 or 0)  - (hasUp and 0.15 or 0)
-                    - (hasDown and 0.15 or 0) - (hasDuplicate and 0.15 or 0) - (hasApplyTemplate and 0.15 or 0) - (hasDynamicTextCodes and 0.15 or 0)
+                     - (hasDown and 0.15 or 0) - (hasDuplicate and 0.15 or 0) - (hasApplyTemplate and 0.15 or 0) - (hasDynamicTextCodes and 0.15 or 0)
 
   options[key .. "collapseSpacer"] = {
     type = marginTop and "header" or "description",
@@ -759,7 +759,6 @@ local function replaceNameDescFuncs(intable, data, subOption)
                         display = math.floor(display * 100) / 100;
                       else
                         local nullBytePos = display:find("\0", nil, true)
-
                         if nullBytePos then
                           display = display:sub(1, nullBytePos - 1)
                         end
@@ -824,6 +823,13 @@ local function replaceImageFuncs(intable, data, subOption)
   recurse(intable);
 end
 
+local concatenableTypes = {
+  string = true,
+  number = true
+}
+local function isConcatenableValue(value)
+  return value and concatenableTypes[type(value)]
+end
 local function replaceValuesFuncs(intable, data, subOption)
   local function valuesAll(info)
     local combinedValues = {};
@@ -854,7 +860,9 @@ local function replaceValuesFuncs(intable, data, subOption)
             -- Already known key/value pair
             else
               if (combinedValues[k]) then
-                combinedValues[k] = combinedValues[k] .. "/" .. v;
+                if isConcatenableValue(k) and isConcatenableValue(v) then
+                  combinedValues[k] = combinedValues[k] .. "/" .. v;
+                end
               else
                 combinedValues[k] = v;
               end
@@ -1390,6 +1398,7 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
     },
     anchorFramePoints = {
       type = "execute",
+      width = WeakAuras.normalWidth,
       name = "",
       order = 78,
       image = function() return "", 0, 0 end,
@@ -1400,9 +1409,9 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
     xOffset = {
       type = "range",
       control = "WeakAurasSpinBox",
-      width = WeakAuras.normalWidth,
       name = L["X Offset"],
       order = 79,
+      width = WeakAuras.normalWidth,
       softMin = (-1 * screenWidth),
       min = (-4 * screenWidth),
       softMax = screenWidth,
@@ -1420,9 +1429,9 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
     yOffset = {
       type = "range",
       control = "WeakAurasSpinBox",
-      width = WeakAuras.normalWidth,
       name = L["Y Offset"],
       order = 80,
+      width = WeakAuras.normalWidth,
       softMin = (-1 * screenHeight),
       min = (-4 * screenHeight),
       softMax = screenHeight,
@@ -1911,7 +1920,7 @@ local function AddCodeOption(args, data, name, prefix, url, order, hiddenFunc, p
         OptionsPrivate.ClearOptions(data.id)
       end
     end,
-    get = function()
+    get = function(info)
       return GetCustomCode(data, path);
     end
   };
@@ -1995,7 +2004,7 @@ local function AddCommonTriggerOptions(options, data, triggernum, doubleWidth)
     order = 1.1,
     values = trigger_types,
     sorting = OptionsPrivate.Private.SortOrderForValues(trigger_types),
-    get = function(info)
+    get = function()
       return trigger.type
     end,
     set = function(info, v)

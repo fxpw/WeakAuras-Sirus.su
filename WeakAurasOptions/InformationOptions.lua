@@ -332,6 +332,7 @@ function OptionsPrivate.GetInformationOptions(data)
     order = order,
   }
   order = order + 1
+
   args.debugLogDesc = {
     type = "description",
     name = L["This enables the collection of debug logs. Custom code can add debug information to the log through the function DebugPrint."],
@@ -358,6 +359,7 @@ function OptionsPrivate.GetInformationOptions(data)
       end
     end
   end
+
   args.debugLogToggle = {
     type = "toggle",
     name = sameDebugLog and L["Enable Debug Logging"] or "|cFF4080FF" .. L["Enable Debug Logging"],
@@ -378,10 +380,12 @@ function OptionsPrivate.GetInformationOptions(data)
           OptionsPrivate.ClearOptions(child.id)
         end
       end
+
       WeakAuras.ClearAndUpdateOptions(data.id)
     end
   }
   order = order + 1
+
   if not sameDebugLog or commonDebugLog then
     args.debugLogShow = {
       type = "execute",
@@ -425,6 +429,7 @@ function OptionsPrivate.GetInformationOptions(data)
       end
     }
     order = order + 1
+
     args.debugLogClear = {
       type = "execute",
       name = L["Clear Debug Logs"],

@@ -73,17 +73,17 @@ local function compareValues(a, b, propertytype)
       and a[2] == b[2]
       and a[3] == b[3]
       and a[4] == b[4];
-    elseif propertytype == "progressSource" then
-      if type(a) == "table" and type(b) == "table" then
-        local triggerA, propertyA, triggerB, propertyB = a[1], a[2], b[1], b[2]
-        if triggerA ~= triggerB or propertyA ~= propertyB then
-          return false
-        end
-        if triggerA == 0 then
-          return a[3] == b[3] and a[4] == b[4]
-        end
-        return true
+  elseif propertytype == "progressSource" then
+    if type(a) == "table" and type(b) == "table" then
+      local triggerA, propertyA, triggerB, propertyB = a[1], a[2], b[1], b[2]
+      if triggerA ~= triggerB or propertyA ~= propertyB then
+        return false
       end
+      if triggerA == 0 then
+        return a[3] == b[3] and a[4] == b[4]
+      end
+      return true
+    end
   end
   return a == b;
 end
@@ -223,7 +223,6 @@ end
 
 ---  a sound from each setter
 local lastPlayedSoundFromSet
-
 local function wrapWithPlaySound(func, kit)
   return function(info, v)
     func(info, v);
@@ -380,11 +379,7 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       conditions[i].changes[j].value[4] = a;
       WeakAuras.ClearAndUpdateOptions(data.id)
     end
-    setValueTable = function(info, v)
-      conditions[i].changes[j].value = CopyTable(v)
-      WeakAuras.Add(data)
-      WeakAuras.ClearAndUpdateOptions(data.id)
-    end
+
     setValueComplex = function(property)
       return function(info, v)
         for id, reference in pairs(conditions[i].changes[j].references) do
@@ -440,6 +435,11 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
     setValue = function(info, v)
       conditions[i].changes[j].value = v;
       WeakAuras.Add(data);
+      WeakAuras.ClearAndUpdateOptions(data.id)
+    end
+    setValueTable = function(info, v)
+      conditions[i].changes[j].value = CopyTable(v)
+      WeakAuras.Add(data)
       WeakAuras.ClearAndUpdateOptions(data.id)
     end
     setValueColor = function(info, r, g, b, a)
@@ -625,6 +625,7 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       WeakAuras.Mixin(statusbarList, SharedMedia:HashTable("statusbar"))
       values = statusbarList
     end
+
     args["condition" .. i .. "value" .. j] = {
       type = "select",
       width = WeakAuras.normalWidth,
