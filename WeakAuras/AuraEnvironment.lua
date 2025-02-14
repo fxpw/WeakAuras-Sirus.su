@@ -461,9 +461,9 @@ local FakeWeakAurasMixin = {
       return data and CopyTable(data) or nil
     end,
     clones = MakeDeprecated(Private.clones, "clones",
-                            L["Using WeakAuras.clones is deprecated. Use WeakAuras.GetRegion(id, cloneId) instead."]),
+                L["Using WeakAuras.clones is deprecated. Use WeakAuras.GetRegion(id, cloneId) instead."]),
     regions = MakeDeprecated(Private.regions, "regions",
-                              L["Using WeakAuras.regions is deprecated. Use WeakAuras.GetRegion(id) instead."]),
+                L["Using WeakAuras.regions is deprecated. Use WeakAuras.GetRegion(id) instead."]),
     GetAllDBMTimers = function() return Private.ExecEnv.BossMods.DBM:GetAllTimers() end,
     GetDBMTimerById = function(...) return Private.ExecEnv.BossMods.DBM:GetTimerById(...) end,
     GetDBMTimer = function(...) return Private.ExecEnv.BossMods.DBM:GetTimer(...) end,

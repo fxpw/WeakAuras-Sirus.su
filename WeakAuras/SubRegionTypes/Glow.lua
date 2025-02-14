@@ -2,7 +2,8 @@ if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local LCG = LibStub("LibCustomGlow-1.0")
-local MSQ = LibStub("Masque", true);
+
+local MSQ = LibStub("Masque", true)
 local L = WeakAuras.L
 
 local default = function(parentType)
@@ -306,6 +307,9 @@ end
 
 local function onRelease(subRegion)
   subRegion.glowType = nil
+  if subRegion.glow then
+    subRegion:SetVisible(false)
+  end
   subRegion:Hide()
   subRegion:ClearAllPoints()
   subRegion:SetParent(UIParent)
@@ -411,4 +415,5 @@ local function addDefaultsForNewAura(data)
   end
 end
 
-WeakAuras.RegisterSubRegionType("subglow", L["Glow"], supports, create, modify, onAcquire, onRelease, default, addDefaultsForNewAura, properties);
+WeakAuras.RegisterSubRegionType("subglow", L["Glow"], supports, create, modify, onAcquire, onRelease,
+                                default, addDefaultsForNewAura, properties)

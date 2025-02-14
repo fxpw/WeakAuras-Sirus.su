@@ -121,11 +121,15 @@ local function GetTexCoord(region, texWidth, aspectRatio, xOffset, yOffset)
     local db = region.MSQGroup.db
     if db and not db.Disabled then
       usesMasque = true
-      region.currentCoord[1], region.currentCoord[2], region.currentCoord[3], region.currentCoord[4], region.currentCoord[5], region.currentCoord[6], region.currentCoord[7], region.currentCoord[8] = region.icon:GetTexCoord()
+      region.currentCoord[1], region.currentCoord[2], region.currentCoord[3], region.currentCoord[4],
+        region.currentCoord[5], region.currentCoord[6], region.currentCoord[7], region.currentCoord[8]
+        = region.icon:GetTexCoord()
     end
   end
   if (not usesMasque) then
-    region.currentCoord[1], region.currentCoord[2], region.currentCoord[3], region.currentCoord[4], region.currentCoord[5], region.currentCoord[6], region.currentCoord[7], region.currentCoord[8] = 0, 0, 0, 1, 1, 0, 1, 1;
+    region.currentCoord[1], region.currentCoord[2], region.currentCoord[3], region.currentCoord[4],
+      region.currentCoord[5], region.currentCoord[6], region.currentCoord[7], region.currentCoord[8]
+      = 0, 0, 0, 1, 1, 0, 1, 1;
   end
 
   local xRatio = aspectRatio < 1 and aspectRatio or 1;
@@ -149,8 +153,7 @@ local function AnchorSubRegion(self, subRegion, anchorType, anchorPoint, selfPoi
 
   if anchorType == "area" then
     Private.regionPrototype.AnchorSubRegion(selfPoint == "region" and self or self.icon,
-                                            subRegion, anchorType, anchorPoint,
-                                            selfPoint, anchorXOffset, anchorYOffset)
+                    subRegion, anchorType, anchorPoint, selfPoint, anchorXOffset, anchorYOffset)
   else
     subRegion:ClearAllPoints()
     anchorPoint = anchorPoint or "CENTER"
@@ -313,7 +316,8 @@ local function create(parent, data)
   icon.SetTexture = setTexture
 
   --This section creates a unique frame id for the cooldown frame so that it can be created with a global reference
-  --The reason is so that WeakAuras cooldown frames can interact properly with OmniCC (i.e., put on its ignore list for timer overlays)
+  --The reason is so that WeakAuras cooldown frames can interact properly with OmniCC
+  -- (i.e., put on its ignore list for timer overlays)
   local id = data.id;
   local frameId = id:lower():gsub(" ", "_");
   if(_G["WeakAurasCooldown"..frameId]) then
@@ -465,13 +469,15 @@ local function modify(parent, region, data)
     if region.inverseDirection == inverse then
       return
     end
+
     region.inverseDirection = inverse
     region:UpdateEffectiveInverse()
   end
+
   function region:UpdateEffectiveInverse()
     -- If cooldown.inverse == false then effectiveReverse = not inverse
     -- If cooldown.inverse == true then effectiveReverse = inverse
-      local effectiveReverse = not region.inverseDirection == not cooldown.inverse
+    local effectiveReverse = not region.inverseDirection == not cooldown.inverse
     cooldown:SetReverse(effectiveReverse)
     if (cooldown.expirationTime and cooldown.duration and cooldown:IsShown()) then
       -- WORKAROUND SetReverse not applying until next frame
@@ -481,6 +487,7 @@ local function modify(parent, region, data)
                            cooldown.useCooldownModRate and cooldown.modRate or nil)
     end
   end
+
   region:SetInverse(data.inverse)
 
   function region:Color(r, g, b, a)
@@ -491,7 +498,8 @@ local function modify(parent, region, data)
     if (r or g or b) then
       a = a or 1;
     end
-    icon:SetVertexColor(region.color_anim_r or r, region.color_anim_g or g, region.color_anim_b or b, region.color_anim_a or a);
+    icon:SetVertexColor(region.color_anim_r or r, region.color_anim_g or g,
+                        region.color_anim_b or b, region.color_anim_a or a)
     if region.button then
       region.button:SetAlpha(region.color_anim_a or a or 1);
     end

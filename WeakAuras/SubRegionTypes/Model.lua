@@ -173,8 +173,6 @@ local function onRelease(subRegion)
   subRegion:Hide()
 end
 
-
-
 local function modify(parent, region, parentData, data, first)
   if region.model then
     ReleaseModel(region.model)
@@ -204,6 +202,7 @@ local function modify(parent, region, parentData, data, first)
     extra_height = data.extra_height or 0
   end
 
+  region:ClearAllPoints()
   region:SetPoint("TOPLEFT", anchor ,"TOPLEFT", -extra_width/2, extra_height/2)
   region:SetPoint("BOTTOMRIGHT", anchor ,"BOTTOMRIGHT", extra_width/2, -extra_height/2)
 

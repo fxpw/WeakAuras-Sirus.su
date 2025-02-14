@@ -873,7 +873,9 @@ local funcs = {
     if (self.total ~= 0) then
       progress = self.value / self.total;
     end
+
     self:SetProgress(progress)
+
     if self.FrameTick then
       self.FrameTick = nil
       self.subRegionEvents:RemoveSubscriber("FrameTick", self)
@@ -886,6 +888,7 @@ local funcs = {
       progress = 1 - progress;
     end
     self:SetProgress(progress)
+
     if self.paused and self.FrameTick then
       self.FrameTick = nil
       self.subRegionEvents:RemoveSubscriber("FrameTick", self)

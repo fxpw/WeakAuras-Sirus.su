@@ -11,7 +11,7 @@ local GetNumShapeshiftForms, GetShapeshiftFormInfo = GetNumShapeshiftForms, GetS
 
 local function WA_GetClassColor(classFilename)
   local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[classFilename]
-  if color and color.colorStr then
+  if color then
     return color.colorStr
   end
 
@@ -2378,7 +2378,7 @@ Private.anim_finish_preset_types = {
   spiral = L["Spiral"],
   bounceDecay = L["Bounce"],
   starShakeDecay = L["Star Shake"],
-};
+}
 
 Private.chat_message_types = {
   CHAT_MSG_BATTLEGROUND = L["Battleground"],
@@ -2517,7 +2517,6 @@ LSM:Register("sound", "Voice: Switch", "Interface\\AddOns\\WeakAuras\\Media\\Sou
 LSM:Register("sound", "Voice: Taunt", "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\Taunt.ogg")
 LSM:Register("sound", "Voice: Triangle", "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\Triangle.ogg")
 
-
 local PowerAurasSoundPath = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Sounds\\"
 LSM:Register("sound", "Aggro", PowerAurasSoundPath.."aggro.ogg")
 LSM:Register("sound", "Arrow Swoosh", PowerAurasSoundPath.."Arrow_swoosh.ogg")
@@ -2612,7 +2611,6 @@ LSM:Register("font", "PT Sans Narrow Bold", "Interface\\Addons\\WeakAuras\\Media
 -- register plain white border
 LSM:Register("border", "Square Full White", [[Interface\AddOns\WeakAuras\Media\Textures\Square_FullWhite.tga]])
 
---
 LSM:Register("statusbar", "Clean", [[Interface\AddOns\WeakAuras\Media\Textures\Statusbar_Clean]])
 LSM:Register("statusbar", "Stripes", [[Interface\AddOns\WeakAuras\Media\Textures\Statusbar_Stripes]])
 LSM:Register("statusbar", "Thick Stripes", [[Interface\AddOns\WeakAuras\Media\Textures\Statusbar_Stripes_Thick]])

@@ -132,7 +132,8 @@ function CompressDisplay(data, version)
   end
 
   local copiedData = CopyTable(data)
-  local non_transmissable_fields = version >= 2000 and Private.non_transmissable_fields_v2000 or Private.non_transmissable_fields
+  local non_transmissable_fields = version >= 2000 and Private.non_transmissable_fields_v2000
+                                                       or Private.non_transmissable_fields
   stripNonTransmissableFields(copiedData, non_transmissable_fields)
   copiedData.tocversion = WeakAuras.BuildInfo
   return copiedData;
@@ -492,7 +493,7 @@ function ShowTooltip(lines)
   ItemRefTooltip:Show()
 end
 
-local delayedImport = CreateFrame("FRAME")
+local delayedImport = CreateFrame("Frame")
 
 local function ImportNow(data, children, target, linkedAuras, sender, callbackFunc)
   if InCombatLockdown() then

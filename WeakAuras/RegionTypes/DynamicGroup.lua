@@ -48,7 +48,8 @@ Private.regionPrototype.AddAlphaToDefault(default);
 local controlPointFunctions = {
   ["SetAnchorPoint"] = function(self, point, relativeFrame, relativePoint, offsetX, offsetY)
     self:ClearAllPoints();
-    self.point, self.relativeFrame, self.relativePoint, self.offsetX, self.offsetY = point, relativeFrame, relativePoint, offsetX, offsetY
+    self.point, self.relativeFrame, self.relativePoint, self.offsetX, self.offsetY
+      = point, relativeFrame, relativePoint, offsetX, offsetY
     self.totalOffsetX = (self.animOffsetX or 0) + (self.offsetX or 0)
     self.totalOffsetY = (self.animOffsetY or 0) + (self.offsetY or 0)
     if self.relativeFrame and self.relativePoint then
@@ -96,7 +97,7 @@ end
 
 local function releaseControlPoint(self, controlPoint)
   controlPoint:Hide()
-  controlPoint:ClearAnchorPoint()
+  controlPoint:SetAnchorPoint(self.parent.selfPoint)
   local regionData = controlPoint.regionData
   if regionData then
     if self.parent.anchorPerUnit == "UNITFRAME" then
@@ -457,7 +458,7 @@ local centeredIndexerStart = {
     if maxIndex % 2 == 1 then
       return maxIndex
     else
-      return maxIndex > 0 and maxIndex - 1 or nil
+     return maxIndex > 0 and maxIndex - 1 or nil
     end
   end
 }
@@ -506,7 +507,7 @@ local centeredIndexerNext = {
 }
 
 local function createAnchorPerUnitFunc(data)
-  local anchorer = anchorers[data.anchorPerUnit] or anchorers.NAMEPLATE or anchorers.UNITFRAME
+  local anchorer = anchorers[data.anchorPerUnit] or anchorers.NAMEPLATE
   return anchorer(data)
 end
 
@@ -1065,8 +1066,10 @@ local function modify(parent, region, data)
         bottom  = data.borderInset,
       },
     });
-    background:SetBackdropBorderColor(data.borderColor[1], data.borderColor[2], data.borderColor[3], data.borderColor[4]);
-    background:SetBackdropColor(data.backdropColor[1], data.backdropColor[2], data.backdropColor[3], data.backdropColor[4]);
+    background:SetBackdropBorderColor(data.borderColor[1], data.borderColor[2],
+                                      data.borderColor[3], data.borderColor[4]);
+    background:SetBackdropColor(data.backdropColor[1], data.backdropColor[2],
+                                data.backdropColor[3], data.backdropColor[4]);
 
     background:ClearAllPoints();
     background:SetPoint("bottomleft", region, "bottomleft", -1 * data.borderOffset, -1 * data.borderOffset)
@@ -1368,13 +1371,13 @@ local function modify(parent, region, data)
       controlPoint:SetWidth(regionData.dimensions.width)
       controlPoint:SetHeight(regionData.dimensions.height)
       if (data.anchorFrameParent or data.anchorFrameParent == nil)
-      and (data.useAnchorPerUnit
+      and (
+        data.useAnchorPerUnit
         or (
           not data.useAnchorPerUnit
-          and not (data.anchorFrameType == "SCREEN"
-          or data.anchorFrameType == "UIPARENT"
-          or data.anchorFrameType == "MOUSE")
-        ))
+          and not (data.anchorFrameType == "SCREEN" or data.anchorFrameType == "UIPARENT" or data.anchorFrameType == "MOUSE")
+        )
+      )
       then
         local parent
         if frame == "" then

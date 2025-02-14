@@ -27,7 +27,7 @@ function Private.Modernize(data, oldSnapshot)
     if data.conditions then
       for conditionIndex, condition in ipairs(data.conditions) do
         if condition.check then
-          local triggernum = condition.check.trigger;
+          local triggernum = condition.check.trigger
           if triggernum then
             local trigger
             if triggernum == 0 then
@@ -136,13 +136,13 @@ function Private.Modernize(data, oldSnapshot)
   if data.internalVersion < 9 then
     local function repairCheck(check)
       if check and check.variable == "buffed" then
-        local trigger = check.trigger and data.triggers[check.trigger] and data.triggers[check.trigger].trigger;
+        local trigger = check.trigger and data.triggers[check.trigger] and data.triggers[check.trigger].trigger
         if trigger then
           if trigger.buffShowOn == "showOnActive" then
             check.variable = "show"
           elseif trigger.buffShowOn == "showOnMissing" then
             check.variable = "show"
-            check.value = check.value == 0 and 1 or 0;
+            check.value = check.value == 0 and 1 or 0
           end
         end
       end
@@ -302,6 +302,7 @@ function Private.Modernize(data, oldSnapshot)
       end
     end
   end
+
   -- Version 20 was introduced July 2019 in BfA
   if data.internalVersion < 20 then
     if data.regionType == "icon" then
@@ -436,7 +437,7 @@ function Private.Modernize(data, oldSnapshot)
         text_anchorPoint = positions[2],
         anchorXOffset = 0,
         anchorYOffset = 0,
-        text_shadowColor = { 0, 0, 0, 1} ,
+        text_shadowColor = { 0, 0, 0, 1 },
         text_shadowXOffset = 1,
         text_shadowYOffset = -1,
         rotateText = data.rotateText,
@@ -1169,7 +1170,7 @@ function Private.Modernize(data, oldSnapshot)
 
   if data.internalVersion < 52 then
     local function matchTarget(input)
-      return input == "target" or input == "'target'" or input == "\"target\"" or input == "%t" or input == "'%t'" or input == "\"%t\""
+      return input == "target" or input == "'target'" or input == '"target"' or input == "%t" or input == "'%t'" or input == '"%t"'
     end
 
     if data.conditions then
@@ -1201,9 +1202,7 @@ function Private.Modernize(data, oldSnapshot)
       local seenSymbols = {}
       Private.ParseTextStr(text, function(symbol)
         if not seenSymbols[symbol] then
-          if table[prefix .. symbol .. "_format"] == "timed"
-              and table[prefix .. symbol .. "_time_format"] == 0
-          then
+          if table[prefix .. symbol .. "_format"] == "timed" and table[prefix .. symbol .. "_time_format"] == 0 then
             table[prefix .. symbol .. "_time_legacy_floor"] = true
           end
         end

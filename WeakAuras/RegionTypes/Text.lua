@@ -74,20 +74,15 @@ local function modify(parent, region, data)
   local text = region.text;
 
   local fontPath = SharedMedia:Fetch("font", data.font);
+  text:SetFont(fontPath, data.fontSize < 33 and data.fontSize or 33, data.outline == "None" and "" or data.outline);
   if not text:GetFont() and fontPath then -- workaround font not loading correctly
     local objectName = "WeakAuras-Font-" .. data.font
     local fontObject = _G[objectName] or CreateFont(objectName)
     fontObject:SetFont(fontPath, data.fontSize < 33 and data.fontSize or 33, data.outline == "None" and "" or data.outline)
     text:SetFontObject(fontObject)
   end
-  text:SetFont(fontPath, data.fontSize < 33 and data.fontSize or 33, data.outline);
   if not text:GetFont() then -- Font invalid, set the font but keep the setting
-    text:SetFont(STANDARD_TEXT_FONT, data.fontSize <= 33 and data.fontSize or 33, data.outline);
-  end
-  text:SetTextHeight(data.fontSize);
-  if text:GetFont() then
-    text:SetText("")
-    text:SetText(WeakAuras.ReplaceRaidMarkerSymbols(data.displayText));
+    text:SetFont(STANDARD_TEXT_FONT, data.fontSize < 33 and data.fontSize or 33, data.outline == "None" and "" or data.outline);
   end
 
   text:SetJustifyH(data.justify);
@@ -116,6 +111,7 @@ local function modify(parent, region, data)
     region.tooltipFrame:EnableMouse(false);
   end
 
+  text:SetTextHeight(data.fontSize);
   text:SetShadowColor(unpack(data.shadowColor))
   text:SetShadowOffset(data.shadowXOffset, data.shadowYOffset)
 
@@ -333,7 +329,6 @@ local function modify(parent, region, data)
   region.displayText = data.displayText
   region:ConfigureTextUpdate()
   region:ConfigureSubscribers()
-
   Private.regionPrototype.modifyFinish(parent, region, data);
 end
 
@@ -349,8 +344,7 @@ local function fallbackmodify(parent, region, data)
   Private.regionPrototype.modify(parent, region, data);
   local text = region.text;
 
-  text:SetFont(STANDARD_TEXT_FONT, data.fontSize < 33 and data.fontSize or 33, data.outline and "OUTLINE" or nil);
-  text:SetTextHeight(data.fontSize);
+  text:SetFont(STANDARD_TEXT_FONT, data.fontSize, data.outline and "OUTLINE" or nil);
   if text:GetFont() then
     text:SetText(WeakAuras.L["Region type %s not supported"]:format(data.regionType));
   end

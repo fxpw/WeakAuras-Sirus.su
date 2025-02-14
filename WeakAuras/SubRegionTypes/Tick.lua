@@ -228,6 +228,7 @@ local funcs = {
         end
       end
     end
+
     if requiresFrameTick then
       if not self.FrameTick then
         self.FrameTick = self.UpdateTickPlacement
@@ -263,6 +264,7 @@ local funcs = {
     local minValue, maxValue = self.parent:GetMinMaxProgress()
     local valueRange = maxValue - minValue
     local inverse = self.inverse_direction
+
     if self.parent.inverse then
       inverse = not inverse
     end
@@ -444,11 +446,14 @@ local funcs = {
     self.use_texture = use
     self:UpdateTexture()
   end,
+
   AnchorSubRegion = function(self, subRegion, anchorType, anchorPoint, subRegionPoint, anchorXOffset, anchorYOffset)
     subRegion:ClearAllPoints()
+
     if anchorType == "point" then
       local xOffset = anchorXOffset or 0
       local yOffset = anchorYOffset or 0
+
       subRegionPoint = Private.point_types[subRegionPoint] and subRegionPoint or "CENTER"
       local tickIndex = tonumber(anchorPoint:sub(6))
       local anchorTo = tickIndex and self.ticks[tickIndex] or nil

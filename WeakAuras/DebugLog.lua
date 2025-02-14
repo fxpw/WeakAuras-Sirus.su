@@ -56,7 +56,7 @@ function Private.DebugLog.Print(uid, text, ...)
     end
 
     if #log > 1000 then
-      Private.AuraWarnings.UpdateWarning(uid, "Debug_Log", "warning",
+      Private.AuraWarnings.UpdateWarning(uid, "Debug Log", "warning",
                                          L["Debug Log contains more than 1000 entries"],
                                          true)
     end
@@ -73,8 +73,8 @@ function Private.DebugLog.Clear(uid)
       AddMessage = AddMessage
     }
     -- Dance to clear a potential console message from the AuraWarnings
-    Private.AuraWarnings.UpdateWarning(uid, "Debug_Log", "info")
-    Private.AuraWarnings.UpdateWarning(uid, "Debug_Log", "info", L["Debug Logging enabled"])
+    Private.AuraWarnings.UpdateWarning(uid, "Debug Log", "info")
+    Private.AuraWarnings.UpdateWarning(uid, "Debug Log", "info", L["Debug Logging enabled"])
   end
 end
 
@@ -87,10 +87,10 @@ function Private.DebugLog.SetEnabled(uid, enable)
     debugLogs[uid] = {
       AddMessage = AddMessage
     }
-    Private.AuraWarnings.UpdateWarning(uid, "Debug_Log", "info", L["Debug Logging enabled"])
+    Private.AuraWarnings.UpdateWarning(uid, "Debug Log", "info", L["Debug Logging enabled"])
   else
     debugLogs[uid] = nil
-    Private.AuraWarnings.UpdateWarning(uid, "Debug_Log", "info")
+    Private.AuraWarnings.UpdateWarning(uid, "Debug Log", "info")
   end
 end
 

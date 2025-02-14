@@ -101,7 +101,9 @@ local function formatValueForAssignment(vType, value, pathToCustomFunction, path
     return "nil"
   elseif(vType == "color") then
     if (value and type(value) == "table") then
-      return string.format("{%s, %s, %s, %s}", tostring(value[1]), tostring(value[2]), tostring(value[3]), tostring(value[4]));
+      return string.format("{%s, %s, %s, %s}",
+                           tostring(value[1]), tostring(value[2]),
+                           tostring(value[3]), tostring(value[4]))
     end
     return "{1, 1, 1, 1}";
   elseif(vType == "chat") then
@@ -167,6 +169,7 @@ local function formatValueForCall(type, property)
   end
   return "nil";
 end
+
 
 function Private.ExecEnv.CancelConditionCheck(uid, cloneId)
   if conditionChecksTimers.recheckHandle[uid] and conditionChecksTimers.recheckHandle[uid][cloneId] then
@@ -272,20 +275,23 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
     if (test) then
       if (value) then
         Private.ExecEnv.conditionHelpers[uid] = Private.ExecEnv.conditionHelpers[uid] or {}
-        Private.ExecEnv.conditionHelpers[uid].customTestFunctions = Private.ExecEnv.conditionHelpers[uid].customTestFunctions or {}
+        Private.ExecEnv.conditionHelpers[uid].customTestFunctions
+          = Private.ExecEnv.conditionHelpers[uid].customTestFunctions or {}
         tinsert(Private.ExecEnv.conditionHelpers[uid].customTestFunctions, test);
         local testFunctionNumber = #(Private.ExecEnv.conditionHelpers[uid].customTestFunctions);
         local valueString = type(value) == "string" and string.format("%q", value) or value;
         local opString = type(op) == "string" and string.format("%q", op) or op;
         check = string.format("state and Private.ExecEnv.CallCustomConditionTest(%q, %s, state[%s], %s, %s, %s)",
-                              uid, testFunctionNumber, trigger, valueString, (opString or "nil"), preambleString or "nil");
+                              uid, testFunctionNumber, trigger, valueString, (opString or "nil"),
+                              preambleString or "nil")
       end
     elseif (cType == "customcheck") then
       if value then
         local customCheck = WeakAuras.LoadFunction("return " .. value)
         if customCheck then
           Private.ExecEnv.conditionHelpers[uid] = Private.ExecEnv.conditionHelpers[uid] or {}
-          Private.ExecEnv.conditionHelpers[uid].customTestFunctions = Private.ExecEnv.conditionHelpers[uid].customTestFunctions or {}
+          Private.ExecEnv.conditionHelpers[uid].customTestFunctions
+            = Private.ExecEnv.conditionHelpers[uid].customTestFunctions or {}
           tinsert(Private.ExecEnv.conditionHelpers[uid].customTestFunctions, customCheck);
           local testFunctionNumber = #(Private.ExecEnv.conditionHelpers[uid].customTestFunctions);
 
@@ -298,7 +304,8 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
     elseif (cType == "number" and value and op) then
       local v = tonumber(value)
       if (v) then
-        check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable) .. op .. v;
+          check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable)
+                  .. op .. v;
       end
     elseif (cType == "timer" and value and op) then
       local triggerState = "state[" .. trigger .. "]"
@@ -317,15 +324,19 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
       end
     elseif (cType == "elapsedTimer" and value and op) then
       if (op == "==") then
-        check = stateCheck .. stateVariableCheck .. "abs(state[" .. trigger .. "]" .. string.format("[%q]", variable) .. "- now +" .. value .. ") < 0.05";
+        check = stateCheck .. stateVariableCheck .. "abs(state[" .. trigger .. "]" .. string.format("[%q]", variable)
+                .. "- now +" .. value .. ") < 0.05";
       else
-        check = stateCheck .. stateVariableCheck .. "now - state[" .. trigger .. "]" .. string.format("[%q]", variable) .. op .. value;
+        check = stateCheck .. stateVariableCheck .. "now - state[" .. trigger .. "]" .. string.format("[%q]", variable)
+                .. op .. value;
       end
     elseif (cType == "select" and value and op) then
       if (tonumber(value)) then
-        check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable) .. op .. tonumber(value);
+        check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable)
+                .. op .. tonumber(value);
       else
-        check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]".. string.format("[%q]", variable) .. op .. "'" .. value .. "'";
+        check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]".. string.format("[%q]", variable)
+                .. op .. "'" .. value .. "'";
       end
     elseif (cType == "range" and value and op and input.type and input.op_range and input.range) then
       local fn
@@ -365,7 +376,8 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
         local customCheck = WeakAuras.LoadFunction(fn)
         if customCheck then
           Private.ExecEnv.conditionHelpers[uid] = Private.ExecEnv.conditionHelpers[uid] or {}
-          Private.ExecEnv.conditionHelpers[uid].customTestFunctions = Private.ExecEnv.conditionHelpers[uid].customTestFunctions or {}
+          Private.ExecEnv.conditionHelpers[uid].customTestFunctions
+            = Private.ExecEnv.conditionHelpers[uid].customTestFunctions or {}
           tinsert(Private.ExecEnv.conditionHelpers[uid].customTestFunctions, customCheck);
           local testFunctionNumber = #(Private.ExecEnv.conditionHelpers[uid].customTestFunctions);
 
@@ -375,14 +387,18 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
       end
     elseif (cType == "bool" and value) then
       local rightSide = value == 0 and "false" or "true";
-      check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable) .. "==" .. rightSide
+      check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable)
+              .. "==" .. rightSide
     elseif (cType == "string" and value) then
       if(op == "==") then
-        check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable) .. " == [[" .. value .. "]]";
+        check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable)
+                .. " == [[" .. value .. "]]";
       elseif (op  == "find('%s')") then
-        check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable) .. ":find([[" .. value .. "]], 1, true)";
+        check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable)
+                .. ":find([[" .. value .. "]], 1, true)";
       elseif (op == "match('%s')") then
-        check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]",  variable) .. ":match([[" .. value .. "]], 1, true)";
+        check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]",  variable)
+                .. ":match([[" .. value .. "]], 1, true)";
       end
     end
     -- If adding a new condition type, don't forget to adjust the validator in the options code
@@ -465,7 +481,7 @@ end
 local function CreateDeactivateCondition(ret, condition, conditionNumber, data, properties, usedProperties, debug)
   if (condition.changes) then
     table.insert(ret, "  if (activatedConditions[".. conditionNumber .. "] and not newActiveConditions[" .. conditionNumber .. "]) then\n")
-      if (debug) then table.insert(ret, "    print('Deactivating condition " .. conditionNumber .. "' )\n") end
+    if (debug) then table.insert(ret, "    print('Deactivating condition " .. conditionNumber .. "' )\n") end
     for changeNum, change in ipairs(condition.changes) do
       if (change.property) then
         local propertyData = properties and properties[change.property]
@@ -474,12 +490,12 @@ local function CreateDeactivateCondition(ret, condition, conditionNumber, data, 
           table.insert(ret, "    propertyChanges['" .. change.property .. "'] = "
                 .. formatValueForAssignment(propertyData.type, GetBaseProperty(data, change.property),
                                             nil, nil, data)
-                                            .. "\n")
+                .. "\n")
           if (debug) then
             table.insert(ret, "    print('- " .. change.property .. " "
                       .. formatValueForAssignment(propertyData.type, GetBaseProperty(data, change.property),
                                                  nil, nil, data)
-                                                 .. "')\n")
+                      .. "')\n")
           end
         end
       end
@@ -493,8 +509,8 @@ end
 local function CreateActivateCondition(ret, id, condition, conditionNumber, data, properties, debug)
   if (condition.changes) then
     table.insert(ret, "  if (newActiveConditions[" .. conditionNumber .. "]) then\n")
-      table.insert(ret, "    if (not activatedConditions[".. conditionNumber .. "]) then\n")
-      if (debug) then table.insert(ret, "      print('Activating condition " .. conditionNumber .. "' )\n") end
+    table.insert(ret, "    if (not activatedConditions[".. conditionNumber .. "]) then\n")
+    if (debug) then table.insert(ret, "      print('Activating condition " .. conditionNumber .. "' )\n") end
     -- non active => active
     for changeNum, change in ipairs(condition.changes) do
       if (change.property) then
@@ -503,10 +519,10 @@ local function CreateActivateCondition(ret, id, condition, conditionNumber, data
           if (propertyData.setter) then
             table.insert(ret, "      propertyChanges['" .. change.property .. "'] = "
                       .. formatValueForAssignment(propertyData.type, change.value, nil, nil, data) .. "\n")
-                  if (debug) then
-                    table.insert(ret, "      print('- " .. change.property .. " "
-                    .. formatValueForAssignment(propertyData.type, change.value, nil, nil, data) .. "')\n")
-                  end
+            if (debug) then
+              table.insert(ret, "      print('- " .. change.property .. " "
+                         .. formatValueForAssignment(propertyData.type, change.value, nil, nil, data) .. "')\n")
+            end
           elseif (propertyData.action) then
             local pathToCustomFunction = "nil";
             local pathToFormatter = "nil"
@@ -514,23 +530,25 @@ local function CreateActivateCondition(ret, id, condition, conditionNumber, data
               and Private.ExecEnv.customConditionsFunctions[id][conditionNumber]
               and  Private.ExecEnv.customConditionsFunctions[id][conditionNumber].changes
               and Private.ExecEnv.customConditionsFunctions[id][conditionNumber].changes[changeNum]) then
-              pathToCustomFunction = string.format("Private.ExecEnv.customConditionsFunctions[%q][%s].changes[%s]", id, conditionNumber, changeNum);
+              pathToCustomFunction = string.format("Private.ExecEnv.customConditionsFunctions[%q][%s].changes[%s]",
+                                                   id, conditionNumber, changeNum);
             end
             if Private.ExecEnv.conditionTextFormatters[id]
               and Private.ExecEnv.conditionTextFormatters[id][conditionNumber]
               and Private.ExecEnv.conditionTextFormatters[id][conditionNumber].changes
               and Private.ExecEnv.conditionTextFormatters[id][conditionNumber].changes[changeNum] then
-              pathToFormatter = string.format("Private.ExecEnv.conditionTextFormatters[%q][%s].changes[%s]", id, conditionNumber, changeNum);
+              pathToFormatter = string.format("Private.ExecEnv.conditionTextFormatters[%q][%s].changes[%s]",
+                                              id, conditionNumber, changeNum);
             end
             table.insert(ret, "     region:" .. propertyData.action .. "("
-                    .. formatValueForAssignment(propertyData.type, change.value,
-                    pathToCustomFunction, pathToFormatter, data)
-                    .. ")" .. "\n")
-                    if (debug) then
-                    table.insert(ret, "     print('# " .. propertyData.action .. "("
-                    .. formatValueForAssignment(propertyData.type, change.value,
-                                  pathToCustomFunction, pathToFormatter, data)
-                    .. "')\n")
+                      .. formatValueForAssignment(propertyData.type, change.value,
+                                                  pathToCustomFunction, pathToFormatter, data)
+                      .. ")" .. "\n")
+            if (debug) then
+              table.insert(ret, "     print('# " .. propertyData.action .. "("
+                        .. formatValueForAssignment(propertyData.type, change.value,
+                                                    pathToCustomFunction, pathToFormatter, data)
+                        .. "')\n")
             end
           end
         end
@@ -543,11 +561,11 @@ local function CreateActivateCondition(ret, id, condition, conditionNumber, data
         local propertyData = properties and properties[change.property]
         if (propertyData and propertyData.type and propertyData.setter) then
           table.insert(ret, "      if(propertyChanges['" .. change.property .. "'] ~= nil) then\n")
-            table.insert(ret, "        propertyChanges['" .. change.property .. "'] = "
-                         .. formatValueForAssignment(propertyData.type, change.value, nil, nil, data) .. "\n")
-            if (debug) then table.insert(ret, "        print('- " .. change.property .. " "
-                         .. formatValueForAssignment(propertyData.type,  change.value, nil, nil, data) .. "')\n") end
-            table.insert(ret, "      end\n")
+          table.insert(ret, "        propertyChanges['" .. change.property .. "'] = "
+                       .. formatValueForAssignment(propertyData.type, change.value, nil, nil, data) .. "\n")
+          if (debug) then table.insert(ret, "        print('- " .. change.property .. " "
+                       .. formatValueForAssignment(propertyData.type,  change.value, nil, nil, data) .. "')\n") end
+          table.insert(ret, "      end\n")
         end
       end
     end
@@ -577,8 +595,8 @@ function Private.GetSubRegionProperties(data, properties)
         for key, property in pairs(subProperties) do
           subIndex[key] = subIndex[key] and subIndex[key] + 1 or 1
           property.display = { subRegionTypeData.displayName .. " " .. subIndex[key],
-                              property.display,
-                              property.defaultProperty }
+                               property.display,
+                               property.defaultProperty }
           properties["sub." .. index .. "." .. key ] = property;
         end
       end
@@ -797,9 +815,9 @@ function Private.LoadConditionFunction(data)
   CancelTimers(data.uid)
 
   local checkConditionsFuncStr = ConstructConditionFunction(data);
-  local checkCondtionsFunc = checkConditionsFuncStr and Private.LoadFunction(checkConditionsFuncStr)
+  local checkConditionsFunc = checkConditionsFuncStr and Private.LoadFunction(checkConditionsFuncStr)
 
-  checkConditions[data.uid] = checkCondtionsFunc;
+  checkConditions[data.uid] = checkConditionsFunc;
 end
 
 function Private.RunConditions(region, uid, hideRegion)
@@ -863,7 +881,7 @@ local function handleDynamicConditions(self, event)
 end
 
 local function UpdateDynamicConditionsPerUnitState(self, event, unit)
-  if unit and unit == self.unit then
+  if unit then
     local unitEvent = event..":"..unit
     if globalDynamicConditionFuncs[unitEvent] then
       for i, func in ipairs(globalDynamicConditionFuncs[unitEvent]) do
@@ -976,8 +994,7 @@ function Private.RegisterForGlobalConditions(uid)
           dynamicConditionsFrame.units[unit] = CreateFrame("Frame");
           dynamicConditionsFrame.units[unit]:SetScript("OnEvent", handleDynamicConditionsPerUnit);
         end
-        dynamicConditionsFrame.units[unit].unit = unit;
-        pcall(dynamicConditionsFrame.RegisterEvent, dynamicConditionsFrame.units[unit], unitEvent);
+        pcall(dynamicConditionsFrame.units[unit].RegisterUnitEvent, dynamicConditionsFrame.units[unit], unitEvent, unit);
         UpdateDynamicConditionsPerUnitState(dynamicConditionsFrame, event, unit)
       else
         pcall(dynamicConditionsFrame.RegisterEvent, dynamicConditionsFrame, event);
@@ -994,7 +1011,7 @@ function Private.UnregisterForGlobalConditions(uid)
       local unitEvent, unit = event:match("([^:]+):([^:]+)")
       if unitEvent and unit then
         unit = unit:lower()
-        dynamicConditionsFrame.units[unit]:UnregisterEvent(unitEvent)
+        pcall(dynamicConditionsFrame.units[unit].UnregisterEvent, dynamicConditionsFrame.units[unit], unitEvent);
       elseif (event == "FRAME_UPDATE" or event == "WA_SPELL_RANGECHECK") then
         if (event == "FRAME_UPDATE" and dynamicConditions["WA_SPELL_RANGECHECK"] == nil)
         or (event == "WA_SPELL_RANGECHECK" and dynamicConditions["FRAME_UPDATE"] == nil)
@@ -1003,7 +1020,7 @@ function Private.UnregisterForGlobalConditions(uid)
           dynamicConditionsFrame.onUpdate = false
         end
       else
-        dynamicConditionsFrame:UnregisterEvent(event)
+        pcall(dynamicConditionsFrame.UnregisterEvent, dynamicConditionsFrame, event);
       end
       dynamicConditions[event] = nil
     end

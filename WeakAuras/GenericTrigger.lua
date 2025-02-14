@@ -27,7 +27,6 @@ Modernizes all generic triggers in data.
 #####################################################
 # Helper functions mainly for the WeakAuras Options #
 #####################################################
-
 GetOverlayInfo(data, triggernum)
 Returns a table containing the names of all overlays
 
@@ -41,7 +40,7 @@ GetAdditionalProperties(data, triggernum)
 Returns the a tooltip for the additional properties.
 
 GetProgressSources(data, triggernum, outValues)
-Fills outValues with the potential progress sources
+  Fills outValues with the potential progress sources
 
 GetTriggerConditions(data, triggernum)
 Returns potential conditions that this trigger provides.
@@ -51,7 +50,7 @@ local AddonName, Private = ...
 
 -- Lua APIs
 local tinsert, tconcat, wipe = table.insert, table.concat, wipe
-local tonumber, tostring, pairs, type = tonumber, tostring, pairs, type
+local tostring, pairs, type = tostring, pairs, type
 local error = error
 
 local WeakAuras = WeakAuras;
@@ -73,6 +72,7 @@ local loaded_auras = {}; -- id to bool map
 local LoadEvent, HandleEvent, HandleUnitEvent, TestForTriState, TestForToggle, TestForLongString, TestForMultiSelect
 local ConstructTest, ConstructFunction
 
+
 local nameplateExists = {}
 
 ---@param unit UnitToken
@@ -93,7 +93,7 @@ end
 function WeakAuras.split(input)
   input = input or "";
   local ret = {};
-  local split, element = nil, nil;
+  local split, element = nil, nil
   split = input:find("[,%s]");
   while(split) do
     element, input = input:sub(1, split-1), input:sub(split+1);
@@ -202,9 +202,9 @@ function TestForMultiSelect(trigger, arg)
     if trigger[name] and trigger[name].multi then
       for value, _ in pairs(trigger[name].multi) do
         if not arg.test then
-          test = test..name.."=="..(tonumber(value) or "[["..value.."]]").." or ";
+          test = test..name.."=="..(tonumber(value) or ("[["..value.."]]")).." or ";
         else
-          test = test..arg.test:format(tonumber(value) or "[["..value.."]]").." or ";
+          test = test..arg.test:format(tonumber(value) or ("[["..value.."]]")).." or ";
         end
         any = true;
       end
@@ -222,9 +222,9 @@ function TestForMultiSelect(trigger, arg)
       return test;
     end
     if not arg.test then
-      test = trigger[name].single and "("..name.."=="..(tonumber(value) or "[["..value.."]]")..")";
+      test = trigger[name].single and "("..name.."=="..(tonumber(value) or ("[["..value.."]]"))..")";
     else
-      test = trigger[name].single and "("..arg.test:format(tonumber(value) or "[["..value.."]]")..")";
+      test = trigger[name].single and "("..arg.test:format(tonumber(value) or ("[["..value.."]]"))..")";
     end
   end
   return test;
@@ -420,7 +420,7 @@ function ConstructFunction(prototype, trigger)
   table.insert(ret, #tests > 0 and tconcat(tests, " and ") or "true")
   table.insert(ret, ") then\n")
   if(#debug > 0) then
-    table.insert(ret, "print('ret: true');\n")
+    table.insert("print('ret: true');\n")
   end
 
   if (prototype.statesParameter == "all") then
@@ -705,6 +705,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
           if data.trigger.unit == "group" and IsInRaid() and Private.multiUnitUnits.party[arg1] then
             return
           end
+
           unitForUnitTrigger = arg1
           cloneIdForUnitTrigger = arg1
         else
@@ -825,7 +826,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
           elseif (ok and returnValue) then
             allStates[""] = allStates[""] or {};
             local state = allStates[""];
-            if (Private.EndEvent(state)) then
+            if(Private.EndEvent(state)) then
               updateTriggerState = true;
             end
           end
@@ -951,9 +952,9 @@ function Private.ScanEventsInternal(event_list, event, arg1, arg2, ... )
     Private.ActivateAuraEnvironment(id);
     local updateTriggerState = false;
     for triggernum, data in pairs(triggers) do
-      local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
       local delay = GenericTrigger.GetDelay(data)
       if delay == 0 then
+        local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
         if (RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2, ...)) then
           updateTriggerState = true
         end
@@ -1018,6 +1019,7 @@ end
 
 
 function Private.ScanEventsWatchedTrigger(id, watchedTriggernums)
+  if #watchedTriggernums == 0 then return end
   Private.StartProfileAura(id);
   Private.ActivateAuraEnvironment(id);
   local updateTriggerState = false
@@ -1109,6 +1111,7 @@ function GenericTrigger.CreateFakeStates(id, triggernum)
       arg1 = unit
     end
   end
+
   RunTriggerFunc(allStates, eventData, id, triggernum, "OPTIONS", arg1)
 
   local shown = 0
@@ -1466,7 +1469,7 @@ function GenericTrigger.LoadDisplays(toLoad, loadEvent, ...)
   for unit, events in pairs(unitEventsToRegister) do
     for event in pairs(events) do
       if not frame.unitFrames[unit] then
-        frame.unitFrames[unit] = CreateFrame("FRAME")
+        frame.unitFrames[unit] = CreateFrame("Frame")
         frame.unitFrames[unit].unit = unit
         frame.unitFrames[unit]:SetScript("OnEvent", HandleUnitEvent);
       end
@@ -1698,7 +1701,6 @@ function GenericTrigger.Add(data, region)
                 force_events = force_events(trigger, untrigger)
               end
 
-
               if prototype.includePets then
                 includePets = trigger.use_includePets == true and trigger.includePets or nil
               end
@@ -1754,8 +1756,8 @@ function GenericTrigger.Add(data, region)
               local trueEvent
               local hasParam = false
               local isCLEU = false
-              local isUnitEvent = false
               local isTrigger = false
+              local isUnitEvent = false
               if event == "CLEU" or event == "COMBAT_LOG_EVENT_UNFILTERED" then
                 warnAboutCLEUEvents = true
               end
@@ -1772,7 +1774,7 @@ function GenericTrigger.Add(data, region)
                   end
                 elseif Private.InternalEventByIDList[trueEvent] then
                   tinsert(trigger_events, trueEvent..":"..i)
-                elseif trueEvent:match("^UNIT_") then
+                elseif trueEvent:match("^UNIT_") or Private.UnitEventList[trueEvent] then
                   isUnitEvent = true
 
                   if string.lower(strsub(i, #i - 3)) == "pets" then
@@ -1854,7 +1856,7 @@ function GenericTrigger.Add(data, region)
           tsuConditionVariables = tsuConditionVariables,
           prototype = prototype,
           ignoreOptionsEventErrors = data.information.ignoreOptionsEventErrors,
-          counter = counter,
+          counter = counter
         };
       end
     end
@@ -1862,7 +1864,7 @@ function GenericTrigger.Add(data, region)
 
   if warnAboutCLEUEvents then
     Private.AuraWarnings.UpdateWarning(data.uid, "spammy_event_warning", "error",
-                                        L["|cFFFF0000Support for unfiltered COMBAT_LOG_EVENT_UNFILTERED is deprecated|r\nCOMBAT_LOG_EVENT_UNFILTERED without a filter are disabled as it’s very performance costly.\nFind more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Custom-Triggers#events"])
+                L["|cFFFF0000Support for unfiltered COMBAT_LOG_EVENT_UNFILTERED is deprecated|r\nCOMBAT_LOG_EVENT_UNFILTERED without a filter are disabled as it’s very performance costly.\nFind more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Custom-Triggers#events"])
   else
     Private.AuraWarnings.UpdateWarning(data.uid, "spammy_event_warning")
   end
@@ -1919,6 +1921,7 @@ do
     updating = false;
   end
 end
+
 
 --#############################
 --# Support code for triggers #
@@ -2575,7 +2578,7 @@ do
     end
 
     if (startTimeCooldown > GetTime() + 2^31 / 1000) then
-      -- WORKAROUND WoW wraps around negative values with 2^32/1000
+      -- WORKAROUND: WoW wraps around negative values with 2^32/1000
       -- So if we find a cooldown in the far future, then undo the wrapping
       startTimeCooldown = startTimeCooldown - 2^32 / 1000
     end
@@ -2675,7 +2678,7 @@ do
 
       -- We check against 1.5 and gcdDuration, as apparently the durations might not match exactly.
       -- But there shouldn't be any trinket with a actual cd of less than 1.5 anyway
-      if(duration and duration > 0 and duration > 1.5 and duration ~= WeakAuras.gcdDuration()) then
+      if(duration > 0 and duration > 1.5 and duration ~= WeakAuras.gcdDuration()) then
         -- On non-GCD cooldown
         local endTime = startTime + duration;
 
@@ -2909,7 +2912,7 @@ local watchUnitChange
 -- Nameplates only distinguish between friends and everyone else
 ---@param unit UnitToken
 ---@return string? reaction
-  function WeakAuras.GetPlayerReaction(unit)
+function WeakAuras.GetPlayerReaction(unit)
   local r = UnitReaction("player", unit)
   if r then
     return r < 5 and "hostile" or "friendly"
@@ -3126,6 +3129,7 @@ function WeakAuras.WatchUnitChange(unit)
         end
       end
     }
+
     watchUnitChange:SetScript("OnEvent", function(self, event, unit)
       Private.StartProfileSystem("generictrigger unit change");
       local eventsToSend = {}
@@ -3954,7 +3958,6 @@ function GenericTrigger.GetAdditionalProperties(data, triggernum)
       elseif type(v.enable) == "boolean" then
         enable = v.enable
       end
-
       if (enable and v.store and v.name and v.display and v.conditionType ~= "bool") then
         props[v.name] = v.display
       end
@@ -3974,7 +3977,6 @@ function GenericTrigger.GetAdditionalProperties(data, triggernum)
       end
     end
   end
-
   return props;
 end
 
@@ -4017,16 +4019,16 @@ local commonConditions = {
     type = "number",
   },
   paused = {
-    display = L["Is Paused"],
+    display =L["Is Paused"],
     type = "bool",
     test = function(state, needle)
       return (state.paused and 1 or 0) == needle
-    end,
+    end
   },
   value = {
     display = L["Progress Value"],
     type = "number",
-    total = "total",
+    total = "total"
   },
   total = {
     display = L["Progress Total"],
@@ -4034,11 +4036,11 @@ local commonConditions = {
   },
   stacks = {
     display = L["Stacks"],
-    type = "number",
+    type = "number"
   },
   name = {
     display = L["Name"],
-    type = "string",
+    type = "string"
   },
   itemInRange = {
     display = WeakAuras.newFeatureString .. L["Item in Range"],
@@ -4099,6 +4101,7 @@ function Private.GetTsuConditionVariablesExpanded(id, triggernum)
         end
       end
     end
+
     return result
   end
 end

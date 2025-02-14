@@ -150,6 +150,7 @@ function Private.AuraWarnings.GetAllWarnings(uid)
       thisWarnings[key].auraId = auraId
     end
   end
+
   -- Order them by severity, keeping just one per severity
   for key, warning in pairs(thisWarnings) do
     results[warning.severity] = {

@@ -1,6 +1,5 @@
---[[ BuffTrigger2.lua
-This file contains the "aura2" trigger for buffs and debuffs. It is intended to replace
-the buff trigger old BuffTrigger at some future point
+--[=[ BuffTrigger2.lua
+This file contains the "aura2" trigger for buffs and debuffs. It has replaced the older Bufftrigger 1, which is now gone.
 
 It registers the BuffTrigger table for the trigger type "aura2" and has the following API:
 
@@ -43,7 +42,7 @@ Returns the tooltip text for additional properties.
 
 GetTriggerConditions(data, triggernum)
 Returns the potential conditions for a trigger
-]]--
+]=]--
 if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
@@ -60,8 +59,8 @@ local triggerInfos = {}
 
 local watched_trigger_events = Private.watched_trigger_events
 
+-- Active scan functions used to quickly check which apply to a aura instance
 -- keyed on unit, debuffType, spellname, with a scan object value
--- scan object: id, triggernum, scanFunc
 local scanFuncName = {}
 local scanFuncSpellId = {}
 local scanFuncGeneral = {}
@@ -73,7 +72,7 @@ local scanFuncGeneralGroup = {}
 
 -- Contains all scanFuncs that should be check if the existence of a unit changed
 local unitExistScanFunc = {}
--- Which units exist
+-- Which units exist, actually contains the GUID for the unit
 local existingUnits = {}
 
 -- Contains all scanFuncs that fetch the role + roleIcon
@@ -113,7 +112,7 @@ local function UnitExistsFixed(unit)
   if #unit > 9 and unit:sub(1, 9) == "nameplate" then
     return nameplateExists[unit] or false
   end
-  return UnitExists(unit) or UnitGUID(unit) or false
+  return UnitExists(unit) and UnitGUID(unit) or false
 end
 
 local function UnitIsVisibleFixed(unit)
@@ -249,9 +248,8 @@ local function UpdateToolTipDataInMatchData(matchData, time)
 
   if matchData.unit and matchData.index and matchData.filter then
     local tooltip, _, tooltip1, tooltip2, tooltip3, tooltip4 = WeakAuras.GetAuraTooltipInfo(matchData.unit, matchData.index, matchData.filter)
-
     changed = matchData.tooltip ~= tooltip or matchData.tooltip1 ~= tooltip1
-    or matchData.tooltip2 ~= tooltip2 or matchData.tooltip3 ~= tooltip3 or matchData.tooltip4 ~= tooltip4
+      or matchData.tooltip2 ~= tooltip2 or matchData.tooltip3 ~= tooltip3 or matchData.tooltip4 ~= tooltip4
     matchData.tooltip, matchData.tooltip1, matchData.tooltip2, matchData.tooltip3, matchData.tooltip4 = tooltip, tooltip1, tooltip2, tooltip3, tooltip4
   end
 
@@ -287,6 +285,7 @@ local function UpdateMatchData(time, matchDataChanged, unit, index, filter, name
       UpdateTooltip = UpdateToolTipDataInMatchData,
       auras = {}
     }
+
     return true
   end
 
@@ -786,6 +785,7 @@ local function UpdateStateWithNoMatch(time, triggerStates, triggerInfo, cloneId,
       state.initialTime = nil
       changed = true
     end
+
     if state.refreshTime then
       state.refreshTime = nil
       changed = true
@@ -1086,12 +1086,13 @@ local function MaxUnitCount(triggerInfo)
   end
 end
 
+
+
 local function TriggerInfoApplies(triggerInfo, unit)
   local controllingUnit = unit
   if WeakAuras.UnitIsPet(unit) then
     controllingUnit = WeakAuras.petUnitToUnit[unit]
   end
-
 
   if triggerInfo.ignoreSelf and UnitIsUnit("player", controllingUnit) then
     return false
@@ -1265,7 +1266,7 @@ local function UpdateTriggerState(time, id, triggernum)
     local cloneId = ""
 
     local useMatch = true
-    if triggerInfo.unitExists ~= nil and not existingUnits[triggerInfo.unit] then
+    if triggerInfo.unitExists ~= nil and not UnitExistsFixed(triggerInfo.unit) then
       useMatch = triggerInfo.unitExists
     else
       useMatch = SatisfiesGroupMatchCount(triggerInfo, unitCount, maxUnitCount, matchCount)
@@ -1321,7 +1322,7 @@ local function UpdateTriggerState(time, id, triggernum)
     end
 
     local useMatches = true
-    if triggerInfo.unitExists ~= nil and not existingUnits[triggerInfo.unit] then
+    if triggerInfo.unitExists ~= nil and not UnitExistsFixed(triggerInfo.unit) then
       useMatches = triggerInfo.unitExists
     else
       useMatches = SatisfiesGroupMatchCount(triggerInfo, unitCount, maxUnitCount, matchCount)
@@ -1345,6 +1346,7 @@ local function UpdateTriggerState(time, id, triggernum)
         else
           usedCloneIds[cloneId] = 1
         end
+
 
         local role = roleForTriggerInfo(triggerInfo, auraData.unit)
         local mark = markForTriggerInfo(triggerInfo, auraData.unit)
@@ -1466,7 +1468,6 @@ local function UpdateTriggerState(time, id, triggernum)
       Private.AddToWatchedTriggerDelay(id, triggernum)
     end
   end
-
   return updated
 end
 
@@ -1517,7 +1518,7 @@ local function CleanUpOutdatedMatchData(removeIndex, unit, filter)
              matchDataChanged[id] = matchDataChanged[id] or {}
              matchDataChanged[id][triggernum] = true
            end
-         end
+        end
       end
     end
   end
@@ -1660,7 +1661,7 @@ local function ScanRaidMarkScanFunc(matchDataChanged)
 end
 
 local function ScanGroupUnit(time, matchDataChanged, unitType, unit)
-  local unitExists = UnitExistsFixed(unit) == 1 and true or false
+  local unitExists = UnitExistsFixed(unit)
   if existingUnits[unit] ~= unitExists then
     existingUnits[unit] = unitExists
 
@@ -1834,8 +1835,8 @@ end
 local Buff2Frame = CreateFrame("Frame")
 Private.frames["WeakAuras Buff2 Frame"] = Buff2Frame
 
-local function EventHandler(frame, event, arg1, arg2, ...)
 
+local function EventHandler(frame, event, arg1, arg2, ...)
   Private.StartProfileSystem("bufftrigger2")
 
   local deactivatedTriggerInfos = {}
@@ -2107,7 +2108,7 @@ local function LoadAura(id, triggernum, triggerInfo)
     tinsert(unitExistScanFunc[triggerInfo.unit][id], triggerInfo)
 
     if existingUnits[triggerInfo.unit] == nil then
-      existingUnits[triggerInfo.unit] = UnitExistsFixed(triggerInfo.unit) == 1 and true or false
+      existingUnits[triggerInfo.unit] = UnitExistsFixed(triggerInfo.unit)
     end
   end
 
@@ -2181,7 +2182,6 @@ function BuffTrigger.UnloadDisplays(toUnload)
     matchDataChanged[id] = nil
   end
 
-
   for unitType, funcs in pairs(groupScanFuncs) do
     for i = #funcs, 1, -1 do
       if toUnload[funcs[i].id] then
@@ -2197,6 +2197,7 @@ function BuffTrigger.UnloadDisplays(toUnload)
       end
     end
   end
+
 end
 
 function BuffTrigger.FinishLoadUnload()
@@ -2204,15 +2205,15 @@ function BuffTrigger.FinishLoadUnload()
 end
 
 --- Removes all data for an aura id
--- @param id
+--- @param id number
 function BuffTrigger.Delete(id)
   BuffTrigger.UnloadDisplays({[id] = true})
   triggerInfos[id] = nil
 end
 
 --- Updates all data for aura oldid to use newid
--- @param oldid
--- @param newid
+--- @param oldid number
+--- @param newid number
 function BuffTrigger.Rename(oldid, newid)
   triggerInfos[newid] = triggerInfos[oldid]
   triggerInfos[oldid] = nil
@@ -2358,7 +2359,7 @@ local function createScanFunc(trigger)
         return false
       end
     ]=]
-    ret = ret .. ret2:format(property, property, trigger.tooltipValue_operator, trigger.tooltipValue)
+    table.insert(ret, ret2:format(property, property, trigger.tooltipValue_operator, trigger.tooltipValue))
   end
 
   if trigger.useNamePattern and trigger.namePattern_operator and trigger.namePattern_name then
@@ -2620,6 +2621,7 @@ function BuffTrigger.Add(data)
         compareFunc = matchCombineFunctions[trigger.combineMode] or matchCombineFunctions["showLowest"],
         unitExists = showIfInvalidUnit,
         fetchTooltip = not IsSingleMissing(trigger) and trigger.unit ~= "multi" and trigger.fetchTooltip,
+        fetchRole = trigger.unit ~= "multi" and trigger.fetchRole,
         fetchRaidMark = trigger.unit ~= "multi" and trigger.fetchRaidMark,
         groupTrigger = IsGroupTrigger(trigger),
         ignoreSelf = effectiveIgnoreSelf,
@@ -2648,16 +2650,16 @@ function BuffTrigger.Add(data)
 end
 
 --- Returns a table containing the names of all overlays
--- @param data
--- @param triggernum
+--- @param data table
+--- @param triggernum number
 function BuffTrigger.GetOverlayInfo(data, triggernum)
   return {}
 end
 
 --- Returns whether the trigger can have clones.
--- @param data
--- @param triggernum
--- @return
+--- @param data table
+--- @param triggernum number
+--- @return boolean
 local function CanHaveClones(data, triggernum)
   local trigger = data.triggers[triggernum].trigger
   if not IsSingleMissing(trigger) and trigger.showClones then
@@ -2667,13 +2669,14 @@ local function CanHaveClones(data, triggernum)
 end
 
 ---Returns the type of tooltip to show for the trigger.
--- @param data
--- @param triggernum
--- @return string
+--- @param data table
+--- @param triggernum number
+--- @return string
 function BuffTrigger.CanHaveTooltip(data, triggernum)
   return "aura"
 end
 
+--- @return boolean
 function BuffTrigger.SetToolTip(trigger, state)
   if not state.unit or not state.index then
     return false
@@ -2725,9 +2728,9 @@ function BuffTrigger.GetNameAndIconSimple(data, triggernum)
 end
 
 --- Returns the name and icon to show in the options.
--- @param data
--- @param triggernum
--- @return name and icon
+--- @param data table
+--- @param triggernum number
+--- @return string|nil name, any icon
 function BuffTrigger.GetNameAndIcon(data, triggernum)
   local name, icon = BuffTrigger.GetNameAndIconSimple(data, triggernum)
   if (not name or not icon and WeakAuras.spellCache) then
@@ -2745,12 +2748,13 @@ function BuffTrigger.GetNameAndIcon(data, triggernum)
 end
 
 --- Returns the tooltip text for additional properties.
--- @param data
--- @param triggernum
--- @return string of additional properties
+--- @param data table
+--- @param triggernum number
+--- @return table @additional properties
 function BuffTrigger.GetAdditionalProperties(data, triggernum)
   local trigger = data.triggers[triggernum].trigger
   local props = {}
+
   props["spellId"] = L["Spell ID"]
   props["debuffClass"] = L["Debuff Class"]
   props["debuffClassIcon"] = L["Debuff Class Icon"]
@@ -2760,6 +2764,7 @@ function BuffTrigger.GetAdditionalProperties(data, triggernum)
   if trigger.unit ~= "multi" then
     props["unit"] = L["Unit"]
   end
+
   props["unitName"] = L["Unit Name"]
   props["matchCount"] = L["Match Count"]
   props["matchCountPerUnit"] = L["Match Count per Unit"]
@@ -2837,6 +2842,7 @@ function BuffTrigger.GetProgressSources(data, triggernum, values)
     type = "number",
     display = L["Total stacks over all matches"]
   })
+
   if not IsSingleMissing(trigger) and trigger.unit ~= "multi" and trigger.fetchTooltip then
     tinsert(values, {
       trigger = triggernum,
@@ -2857,6 +2863,7 @@ function BuffTrigger.GetProgressSources(data, triggernum, values)
       display = L["Tooltip 3"]
     })
   end
+
   tinsert(values, {
     trigger = triggernum,
     property = "expirationTime",
@@ -2974,7 +2981,7 @@ function BuffTrigger.GetTriggerConditions(data, triggernum)
   end
 
   if not IsGroupTrigger(trigger) and trigger.matchesShowOn == "showAlways"
-  or IsGroupTrigger(trigger) and trigger.showClones and trigger.unit ~= "multi" and trigger.combinePerUnit
+    or IsGroupTrigger(trigger) and trigger.showClones and trigger.unit ~= "multi" and trigger.combinePerUnit
   then
     result["buffed"] = {
       display = L["Aura(s) Found"],
@@ -3581,7 +3588,7 @@ end
 
 function BuffTrigger.InitMultiAura()
   if not multiAuraFrame then
-    multiAuraFrame = CreateFrame("frame")
+    multiAuraFrame = CreateFrame("Frame")
     multiAuraFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     multiAuraFrame:RegisterEvent("UNIT_TARGET")
     multiAuraFrame:RegisterEvent("UNIT_AURA")

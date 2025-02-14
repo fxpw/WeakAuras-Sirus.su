@@ -7,26 +7,26 @@ local AddonName, Private = ...
 local g_updatingBars = {};
 
 local function IsCloseEnough(bar, newValue, targetValue)
-        local min, max = bar:GetMinMaxValues();
-        local range = max - min;
-        if range > 0.0 then
-                return math.abs((newValue - targetValue) / range) < 0.00001;
-        end
+  local min, max = bar:GetMinMaxValues();
+  local range = max - min;
+  if range > 0.0 then
+    return math.abs((newValue - targetValue) / range) < 0.00001;
+  end
 
-        return true;
+  return true;
 end
 
 local function ProcessSmoothStatusBars(self, elapsed)
-        for bar, targetValue in pairs(g_updatingBars) do
-                local newValue = FrameDeltaLerp(bar:GetValue(), targetValue, 0.25, elapsed);
+  for bar, targetValue in pairs(g_updatingBars) do
+    local newValue = FrameDeltaLerp(bar:GetValue(), targetValue, 0.25, elapsed);
 
-                if IsCloseEnough(bar, newValue, targetValue) then
-                        g_updatingBars[bar] = nil;
-                        bar:SetValue(targetValue);
-                else
-                        bar:SetValue(newValue);
-                end
-        end
+    if IsCloseEnough(bar, newValue, targetValue) then
+      g_updatingBars[bar] = nil;
+      bar:SetValue(targetValue);
+    else
+      bar:SetValue(newValue);
+    end
+  end
 end
 
 CreateFrame("Frame"):SetScript("OnUpdate", ProcessSmoothStatusBars);
@@ -34,32 +34,32 @@ CreateFrame("Frame"):SetScript("OnUpdate", ProcessSmoothStatusBars);
 Private.SmoothStatusBarMixin = {};
 
 function Private.SmoothStatusBarMixin:ResetSmoothedValue(value) --If nil, tries to set to the last target value
-        local targetValue = g_updatingBars[self];
-        if targetValue then
-                g_updatingBars[self] = nil;
-                self:SetValue(value or targetValue);
-        elseif value then
-                self:SetValue(value);
-        end
+  local targetValue = g_updatingBars[self];
+  if targetValue then
+    g_updatingBars[self] = nil;
+    self:SetValue(value or targetValue);
+  elseif value then
+    self:SetValue(value);
+  end
 end
 
 function Private.SmoothStatusBarMixin:SetSmoothedValue(value)
-        g_updatingBars[self] = value;
+  g_updatingBars[self] = value;
 end
 
 function Private.SmoothStatusBarMixin:SetMinMaxSmoothedValue(min, max)
-        self:SetMinMaxValues(min, max);
+  self:SetMinMaxValues(min, max);
 
-        local targetValue = g_updatingBars[self];
-        if targetValue then
-                local ratio = 1;
-                if max ~= 0 and self.lastSmoothedMax and self.lastSmoothedMax ~= 0 then
-                        ratio = max / self.lastSmoothedMax;
-                end
+  local targetValue = g_updatingBars[self];
+  if targetValue then
+    local ratio = 1;
+    if max ~= 0 and self.lastSmoothedMax and self.lastSmoothedMax ~= 0 then
+      ratio = max / self.lastSmoothedMax;
+    end
 
-                g_updatingBars[self] = targetValue * ratio;
-        end
+    g_updatingBars[self] = targetValue * ratio;
+  end
 
-        self.lastSmoothedMin = min;
-        self.lastSmoothedMax = max;
+  self.lastSmoothedMin = min;
+  self.lastSmoothedMax = max;
 end

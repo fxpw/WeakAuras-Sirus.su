@@ -482,7 +482,6 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
     else
       max = duration
     end
-
     self.minProgress, self.maxProgress = adjustMin, max
     self.progressType = "timed"
     self.duration = max - adjustMin
@@ -520,6 +519,7 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
     else
       max = duration
     end
+
     self.minProgress, self.maxProgress = adjustMin, max
     self.progressType = "timed"
     self.duration = max - adjustMin
@@ -703,6 +703,7 @@ function Private.regionPrototype.create(region)
   region.RunCode = RunCode;
   region.GlowExternal = GlowExternal;
 
+  region.ReAnchor = UpdatePosition;
   region.SetAnchor = SetAnchor;
   region.SetOffset = SetOffset;
   region.SetXOffset = SetXOffset;
@@ -778,17 +779,22 @@ function Private.regionPrototype.AddMinMaxProgressSource(hasProgressSource, regi
     end
   end
 end
+
 function Private.regionPrototype.modify(parent, region, data)
   region.state = nil
   region.states = nil
   region.subRegionEvents:ClearSubscribers()
   region.subRegionEvents:ClearCallbacks()
   Private.FrameTick:RemoveSubscriber("Tick", region)
+
   local defaultsForRegion = Private.regionTypes[data.regionType] and Private.regionTypes[data.regionType].default;
+
   if region.SetRegionAlpha then
     region:SetRegionAlpha(data.alpha)
   end
+
   local hasProgressSource = defaultsForRegion and defaultsForRegion.progressSource
+
   Private.regionPrototype.AddMinMaxProgressSource(hasProgressSource, region, data, data)
 
   region:SetOffset(data.xOffset or 0, data.yOffset or 0);

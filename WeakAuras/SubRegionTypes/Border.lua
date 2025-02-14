@@ -34,7 +34,8 @@ local properties = {
 
 
 local function create()
-  return CreateFrame("Frame", nil, UIParent)
+  local region = CreateFrame("Frame", nil, UIParent)
+  return region
 end
 
 local function onAcquire(subRegion)
@@ -55,7 +56,8 @@ local function modify(parent, region, parentData, data, first)
       edgeSize = data.border_size,
       bgFile = nil,
     })
-    region:SetBackdropBorderColor(data.border_color[1], data.border_color[2], data.border_color[3], data.border_color[4])
+    region:SetBackdropBorderColor(data.border_color[1], data.border_color[2],
+                                  data.border_color[3], data.border_color[4])
     region:SetBackdropColor(0, 0, 0, 0)
   end
 
@@ -83,10 +85,11 @@ end
 
 local function supports(regionType)
   return regionType == "texture"
-          or regionType == "progresstexture"
-          or regionType == "icon"
-          or regionType == "aurabar"
-          or regionType == "empty"
+         or regionType == "progresstexture"
+         or regionType == "icon"
+         or regionType == "aurabar"
+         or regionType == "empty"
 end
 
-WeakAuras.RegisterSubRegionType("subborder", L["Border"], supports, create, modify, onAcquire, onRelease, default, nil, properties);
+WeakAuras.RegisterSubRegionType("subborder", L["Border"], supports, create, modify, onAcquire, onRelease,
+                                default, nil, properties)
