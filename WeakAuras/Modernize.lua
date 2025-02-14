@@ -1314,7 +1314,6 @@ function Private.Modernize(data, oldSnapshot)
 
   if isFromFork or data.internalVersion < 67 or data.internalVersion > WeakAuras.InternalVersion() then
     local castMigrationNeeded = (not isFromFork) or data.internalVersion < 67
-    data.internalVersion = WeakAuras.InternalVersion()
 
     do
       local trigger_migration = {
