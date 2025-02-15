@@ -3382,7 +3382,7 @@ do
         Private.StopProfileSystem("generictrigger temporary enchant");
       end
 
-      tenchFrame:SetScript("OnEvent", function(_, unit, ...)
+      tenchFrame:SetScript("OnEvent", function(_,_,unit, ...)
         if unit and unit ~= "player" then return end
         Private.StartProfileSystem("generictrigger temporary enchant");
         timer:ScheduleTimer(tenchUpdate, 0.1)
