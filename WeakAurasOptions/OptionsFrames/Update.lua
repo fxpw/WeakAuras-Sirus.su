@@ -342,14 +342,15 @@ local function BuildUidMap(data, children, type)
 
     -- Handle anchorFrameFrame
     if data.anchorFrameType == "SELECTFRAME"
-      and data.anchorFrameFrame
-      and data.anchorFrameFrame:sub(1, 10) == "WeakAuras:"
-    then
-      local target = data.anchorFrameFrame:sub(11)
-      if idToUid[target] then
-        uidMap.map[data.uid].anchorFrameFrame = idToUid[target]
-      end
+     and data.anchorFrameFrame
+     and data.anchorFrameFrame:sub(1, 10) == "WeakAuras:"
+  then
+    local target = data.anchorFrameFrame:sub(11)
+    if idToUid[target] then
+      uidMap.map[data.uid].anchorFrameFrame = idToUid[target]
     end
+  end
+
   end
 
   local function handleSortHybridTable(data)
@@ -1564,7 +1565,7 @@ local methods = {
       local flavorWarning = AceGUI:Create("Label")
       flavorWarning:SetFontObject(GameFontHighlight)
       flavorWarning:SetFullWidth(true)
-      flavorWarning:SetText(L["This aura was created with a different version (%s) of World of Warcraft.\nIt might not work correctly!"]:format(OptionsPrivate.Private.TocToExpansion[importBuild]))
+      flavorWarning:SetText(L["This aura was created with a different version (%s) of World of Warcraft.\nIt might not work correctly!"]:format(OptionsPrivate.Private.TocToExpansion[importBuild] or L["Unknown"]))
       flavorWarning:SetColor(1, 0, 0)
       self:AddChild(flavorWarning)
     end
@@ -1939,12 +1940,14 @@ local methods = {
         error("Can't remove root")
       end
 
-    if (uidMap:GetGroupRegionType(uid) and removeGroups)
-        or (uidMap:GetGroupRegionType(uid) == nil and removeAuras)
-      then
+      if (uidMap:GetGroupRegionType(uid) and removeGroups)
+          or (uidMap:GetGroupRegionType(uid) == nil and removeAuras)
+        then
+
         for index, childUid in ipairs_reverse(children) do
           uidMap:UnsetParent(childUid)
         end
+
         local data = OptionsPrivate.Private.GetDataByUID(uid)
         if not data then
           error("Can't find data")
@@ -1983,9 +1986,11 @@ local methods = {
       if (uidMap:GetGroupRegionType(uid) and removeGroups)
           or (uidMap:GetGroupRegionType(uid) == nil and removeAuras)
         then
+
         for index, childUid in ipairs_reverse(children) do
           uidMap:UnsetParent(childUid)
         end
+
         uidMap:Remove(uid)
         self:IncProgress()
         coroutine.yield()

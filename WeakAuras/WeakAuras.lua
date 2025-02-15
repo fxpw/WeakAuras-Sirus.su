@@ -111,7 +111,6 @@ do
     currentErrorHandlerContext = context
     return waErrorHandler
   end
-
   function Private.GetErrorHandlerUid(uid, context)
     currentErrorHandlerUid = uid
     currentErrorHandlerId = nil
@@ -164,14 +163,13 @@ end
 
 SLASH_WEAKAURAS1, SLASH_WEAKAURAS2 = "/weakauras", "/wa";
 function SlashCmdList.WEAKAURAS(input)
-
   local args, msg = {}, nil
 
   for v in string.gmatch(input, "%S+") do
     if not msg then
-      msg = v
+      msg = v:lower()
     else
-      insert(args, v)
+      insert(args, v:lower())
     end
   end
 
@@ -1150,7 +1148,7 @@ local loadedFrame = CreateFrame("Frame");
 Private.frames["Addon Initialization Handler"] = loadedFrame;
 loadedFrame:RegisterEvent("ADDON_LOADED");
 loadedFrame:RegisterEvent("PLAYER_LOGIN");
-loadedFrame:RegisterEvent("PLAYER_LOGOUT");
+loadedFrame:RegisterEvent("PLAYER_LOGOUT")
 loadedFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
 loadedFrame:SetScript("OnEvent", function(self, event, addon)
   if(event == "ADDON_LOADED") then
@@ -2950,15 +2948,19 @@ local function EnsureClone(id, cloneId)
 end
 
 local creatingRegions = false
+
 function Private.CreatingRegions()
   return creatingRegions
 end
+
 --- Ensures that a region exists
 local function EnsureRegion(id)
   if not Private.regions[id] or not Private.regions[id].region then
     Private.regions[id] = Private.regions[id] or {}
+
     -- The region doesn't yet exist
     -- But we must also ensure that our parents exists
+
     -- So we go up the list of parents and collect auras that must be created
     -- If we find a parent already exists, we can stop
 
@@ -3676,7 +3678,7 @@ function Private.HideTooltip()
   GameTooltip:SetPoint("RIGHT", UIParent, "LEFT");
   GameTooltip:SetClampedToScreen(true)
 
-  GameTooltip:Hide();
+  GameTooltip:Hide()
 end
 
 do

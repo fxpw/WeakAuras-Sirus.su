@@ -61,6 +61,8 @@ local function ConstructIconPicker(frame)
       subname = subname:lower();
     end
 
+
+
     local num = 0;
     if(subname and subname ~= "") then
       for name, icons in pairs(spellCache.Get()) do

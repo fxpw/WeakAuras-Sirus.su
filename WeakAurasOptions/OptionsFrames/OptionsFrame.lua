@@ -554,7 +554,6 @@ function OptionsPrivate.CreateFrame()
   container.content:SetPoint("TOPLEFT", 0, -28)
   container.content:SetPoint("BOTTOMRIGHT", 0, 0)
   frame.container = container
-
   frame.moversizer, frame.mover = OptionsPrivate.MoverSizer(frame)
 
   -- filter line
