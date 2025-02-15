@@ -3270,6 +3270,7 @@ do
     if not(tenchFrame) then
       tenchFrame = CreateFrame("Frame");
       tenchFrame:RegisterEvent("UNIT_INVENTORY_CHANGED");
+      tenchFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
 
       tenchTip = WeakAuras.GetHiddenTooltip();
 
@@ -3322,11 +3323,12 @@ do
         Private.StopProfileSystem("generictrigger");
       end
 
-      tenchFrame:SetScript("OnEvent", function(self, event, arg1)
+      tenchFrame:SetScript("OnEvent", function(_, _, arg1)
         Private.StartProfileSystem("generictrigger");
-        if (event == "UNIT_INVENTORY_CHANGED" and arg1 == "player") then
-          timer:ScheduleTimer(tenchUpdate, 0.1);
-        end
+
+        if arg1 and arg1 ~= "player" then return end
+        timer:ScheduleTimer(tenchUpdate, 0.1);
+
         Private.StopProfileSystem("generictrigger");
       end);
 
