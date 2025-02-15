@@ -1205,7 +1205,7 @@ Private.load_prototype = {
       values = "instance_types",
       sorted = true,
       init = "arg",
-      events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
+      events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
       optional = true,
     },
     {
@@ -1725,16 +1725,13 @@ Private.event_prototypes = {
         preamble = "local npcIdChecker = Private.ExecEnv.ParseStringCheck(%q)",
         test = "npcIdChecker:Check(npcId)",
         conditionPreamble = function(input)
-            return Private.ExecEnv.ParseStringCheck(input)
+          return Private.ExecEnv.ParseStringCheck(input)
         end,
         conditionTest = function(state, needle, op, preamble)
-            return preamble:Check(state.npcId)
+          return preamble:Check(state.npcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
-        enable = function(trigger)
-            return not trigger.use_inverse
-        end,
+        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."]
       },
       {
         name = "attackable",
@@ -2095,17 +2092,14 @@ Private.event_prototypes = {
         preamble = "local npcIdChecker = Private.ExecEnv.ParseStringCheck(%q)",
         test = "npcIdChecker:Check(npcId)",
         conditionPreamble = function(input)
-            return Private.ExecEnv.ParseStringCheck(input)
+          return Private.ExecEnv.ParseStringCheck(input)
         end,
         conditionTest = function(state, needle, op, preamble)
-            return preamble:Check(state.npcId)
+          return preamble:Check(state.npcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
-        enable = function(trigger)
-            return not trigger.use_inverse
-        end,
-      },
+        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."]
+       },
       {
         name = "class",
         display = L["Class"],
@@ -2519,16 +2513,13 @@ Private.event_prototypes = {
         preamble = "local npcIdChecker = Private.ExecEnv.ParseStringCheck(%q)",
         test = "npcIdChecker:Check(npcId)",
         conditionPreamble = function(input)
-            return Private.ExecEnv.ParseStringCheck(input)
+          return Private.ExecEnv.ParseStringCheck(input)
         end,
         conditionTest = function(state, needle, op, preamble)
-            return preamble:Check(state.npcId)
+          return preamble:Check(state.npcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
-        enable = function(trigger)
-            return not trigger.use_inverse
-        end,
+        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."]
       },
       {
         name = "class",
@@ -2645,6 +2636,7 @@ Private.event_prototypes = {
       {
         name = "inRange",
         display = L["In Range"],
+        desc = L["Uses UnitInRange() to check if in range. Matches default raid frames out of range behavior, which is between 25 to 40 yards depending on your class and spec."],
         type = "toggle",
         width = WeakAuras.doubleWidth,
         enable = function(trigger)
@@ -2733,7 +2725,7 @@ Private.event_prototypes = {
         conditionType = "string",
         preamble = "local sourceNameChecker = Private.ExecEnv.ParseStringCheck(%q)",
         test = "sourceNameChecker:Check(sourceName)",
-        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
+        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."],
       },
       {
         name = "sourceNpcId",
@@ -2746,13 +2738,13 @@ Private.event_prototypes = {
         preamble = "local sourceNpcIdChecker = Private.ExecEnv.ParseStringCheck(%q)",
         test = "sourceNpcIdChecker:Check(sourceNpcId)",
         conditionPreamble = function(input)
-            return Private.ExecEnv.ParseStringCheck(input)
+          return Private.ExecEnv.ParseStringCheck(input)
         end,
         conditionTest = function(state, needle, op, preamble)
-            return preamble:Check(state.sourceNpcId)
+          return preamble:Check(state.sourceNpcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
+        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."],
         enable = function(trigger)
           return not (trigger.subeventPrefix == "ENVIRONMENTAL")
         end,
@@ -2870,7 +2862,7 @@ Private.event_prototypes = {
         conditionType = "string",
         preamble = "local destNameChecker = Private.ExecEnv.ParseStringCheck(%q)",
         test = "destNameChecker:Check(destName)",
-        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
+        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."],
         enable = function(trigger)
           return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
         end,
@@ -2886,10 +2878,10 @@ Private.event_prototypes = {
         preamble = "local destNpcIdChecker = Private.ExecEnv.ParseStringCheck(%q)",
         test = "destNpcIdChecker:Check(destNpcId)",
         conditionPreamble = function(input)
-            return Private.ExecEnv.ParseStringCheck(input)
+          return Private.ExecEnv.ParseStringCheck(input)
         end,
         conditionTest = function(state, needle, op, preamble)
-            return preamble:Check(state.destNpcId)
+          return preamble:Check(state.destNpcId)
         end,
         operator_types = "none",
         desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
@@ -3381,7 +3373,8 @@ Private.event_prototypes = {
         local genericShowOn = %s
         local expirationTime = startTime and duration and startTime + duration
         state.spellname = spellname;
-      ]=]):format(spellName,
+      ]=]):format(
+        spellName,
         (trigger.use_matchedRune and "true" or "false"),
         (trigger.use_showgcd and "true" or "false"),
         showOnCheck
@@ -3430,7 +3423,7 @@ Private.event_prototypes = {
         display = L["Spell"],
         type = "spell",
         test = "true",
-        forceExactOption = true,
+        showExactOption = true,
       },
       {
         name = "extra Cooldown Progress (Spell)",
@@ -3836,14 +3829,14 @@ Private.event_prototypes = {
         state.itemname = itemname;
       ]=];
       if(trigger.use_remaining and trigger.genericShowOn ~= "showOnReady") then
-        local ret2 = [=[
+        local ret2 = [[
           local remaining = expirationTime > 0 and (expirationTime - GetTime()) or 0;
           local remainingCheck = %s;
           if(remaining >= remainingCheck and remaining > 0) then
             local event = "COOLDOWN_REMAINING_CHECK:" .. %s
             Private.ExecEnv.ScheduleScan(expirationTime - remainingCheck, event);
           end
-        ]=];
+        ]];
         ret = ret..ret2:format(tonumber(trigger.remaining or 0) or 0, itemName);
       end
       return ret:format(itemName,
@@ -4289,6 +4282,7 @@ Private.event_prototypes = {
         end
         local icon = GetInventoryItemTexture("player", itemSlot)
       ]]
+
       return ret:format(trigger.itemSlot or 0)
     end,
     GetNameAndIcon = function(trigger)
@@ -4471,6 +4465,14 @@ Private.event_prototypes = {
       );
     end,
     args = {
+      {
+        name = "note",
+        type = "description",
+        display = "",
+        text = function()
+          return L["Note: Due to how complicated the swing timer behavior is and the lack of APIs from Blizzard, results are inaccurate in edge cases."]
+        end,
+      },
       {
         name = "hand",
         required = true,
@@ -6064,8 +6066,8 @@ Private.event_prototypes = {
         display = L["Name"],
         hidden = true,
         init = "name",
-        store = true,
         test = "true",
+        store = true,
         conditionType = "string"
       },
       {
@@ -6099,7 +6101,7 @@ Private.event_prototypes = {
       {
         hidden = true,
         test = "(inverse and itemSetName == nil) or (not inverse and itemSetName)"
-      },
+      }
     },
     hasItemID = true,
     automaticrequired = true,
@@ -6218,6 +6220,11 @@ Private.event_prototypes = {
           operator = "and",
           limit = 2
         },
+      },
+      {
+        type = "header",
+        name = "unitCharacteristicsHeader",
+        display = L["Unit Characteristics"],
       },
       {
         name = "name",
@@ -6407,6 +6414,7 @@ Private.event_prototypes = {
             return Private.actual_unit_types_cast
           end
         end,
+        desc = Private.actual_unit_types_cast_tooltip,
         test = "true",
         store = true
       },
@@ -6470,8 +6478,9 @@ Private.event_prototypes = {
         type = "tristate",
         enable = function(trigger) return not trigger.use_inverse end,
         store = true,
-        conditionType = "bool"
+        conditionType = "bool",
       },
+
       {
         name = "remaining",
         display = L["Remaining Time"],
@@ -6543,15 +6552,15 @@ Private.event_prototypes = {
         preamble = "local npcIdChecker = Private.ExecEnv.ParseStringCheck(%q)",
         test = "npcIdChecker:Check(npcId)",
         conditionPreamble = function(input)
-            return Private.ExecEnv.ParseStringCheck(input)
+          return Private.ExecEnv.ParseStringCheck(input)
         end,
         conditionTest = function(state, needle, op, preamble)
-            return preamble:Check(state.npcId)
+          return preamble:Check(state.npcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
+        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."],
         enable = function(trigger)
-            return not trigger.use_inverse
+          return not trigger.use_inverse
         end,
       },
       {
@@ -6576,6 +6585,7 @@ Private.event_prototypes = {
         conditionType = "select",
         enable = function(trigger)
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+                 and not trigger.use_inverse
         end
       },
       {
@@ -7187,7 +7197,7 @@ Private.event_prototypes = {
       },
       {
         name = "movespeedpercent",
-        display = L["Movement Speed (%)"],
+        display = L["Current Movement Speed (%)"],
         type = "number",
         init = "GetUnitSpeed('player') / 7 * 100",
         store = true,
@@ -7966,7 +7976,7 @@ Private.event_prototypes = {
         "ZONE_CHANGED_INDOORS",
         "ZONE_CHANGED_NEW_AREA",
         "PLAYER_DIFFICULTY_CHANGED",
-        "WA_DELAYED_PLAYER_ENTERING_WORLD",
+        "WA_DELAYED_PLAYER_ENTERING_WORLD"
       }
     },
     internal_events = {"INSTANCE_LOCATION_CHECK"},
