@@ -703,7 +703,7 @@ function Private.regionPrototype.create(region)
   region.RunCode = RunCode;
   region.GlowExternal = GlowExternal;
 
-  region.ReAnchor = UpdatePosition;
+  --region.ReAnchor = UpdatePosition; https://github.com/WeakAuras/WeakAuras2/commit/7859d5e
   region.SetAnchor = SetAnchor;
   region.SetOffset = SetOffset;
   region.SetXOffset = SetXOffset;

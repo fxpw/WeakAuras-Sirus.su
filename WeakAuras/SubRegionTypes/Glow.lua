@@ -307,9 +307,6 @@ end
 
 local function onRelease(subRegion)
   subRegion.glowType = nil
-  if subRegion.glow then
-    subRegion:SetVisible(false)
-  end
   subRegion:Hide()
   subRegion:ClearAllPoints()
   subRegion:SetParent(UIParent)

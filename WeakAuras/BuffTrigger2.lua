@@ -112,7 +112,7 @@ local function UnitExistsFixed(unit)
   if #unit > 9 and unit:sub(1, 9) == "nameplate" then
     return nameplateExists[unit] or false
   end
-  return UnitExists(unit) and UnitGUID(unit) or false
+  return UnitExists(unit) or UnitGUID(unit) or false
 end
 
 local function UnitIsVisibleFixed(unit)
@@ -1266,7 +1266,7 @@ local function UpdateTriggerState(time, id, triggernum)
     local cloneId = ""
 
     local useMatch = true
-    if triggerInfo.unitExists ~= nil and not UnitExistsFixed(triggerInfo.unit) then
+    if triggerInfo.unitExists ~= nil and not existingUnits[triggerInfo.unit] then
       useMatch = triggerInfo.unitExists
     else
       useMatch = SatisfiesGroupMatchCount(triggerInfo, unitCount, maxUnitCount, matchCount)
@@ -1322,7 +1322,7 @@ local function UpdateTriggerState(time, id, triggernum)
     end
 
     local useMatches = true
-    if triggerInfo.unitExists ~= nil and not UnitExistsFixed(triggerInfo.unit) then
+    if triggerInfo.unitExists ~= nil and not existingUnits[triggerInfo.unit] then
       useMatches = triggerInfo.unitExists
     else
       useMatches = SatisfiesGroupMatchCount(triggerInfo, unitCount, maxUnitCount, matchCount)
@@ -1661,7 +1661,7 @@ local function ScanRaidMarkScanFunc(matchDataChanged)
 end
 
 local function ScanGroupUnit(time, matchDataChanged, unitType, unit)
-  local unitExists = UnitExistsFixed(unit)
+  local unitExists = UnitExistsFixed(unit) == 1 and true or false
   if existingUnits[unit] ~= unitExists then
     existingUnits[unit] = unitExists
 
@@ -1787,7 +1787,7 @@ end
 
 local function RecheckActive(triggerInfo, unit, unitsToRemoveScan)
   local isSelf, role, inParty, class
-  local unitExists = UnitExistsFixed(unit)
+  local unitExists = UnitExistsFixed(unit) == 1 and true or false
   if unitExists and TriggerInfoApplies(triggerInfo, unit) then
     if (not activeGroupScanFuncs[unit] or not activeGroupScanFuncs[unit][triggerInfo]) then
       triggerInfo.maxUnitCount = triggerInfo.maxUnitCount + 1

@@ -97,7 +97,7 @@ end
 
 local function releaseControlPoint(self, controlPoint)
   controlPoint:Hide()
-  controlPoint:SetAnchorPoint(self.parent.selfPoint)
+  controlPoint:ClearAnchorPoint()
   local regionData = controlPoint.regionData
   if regionData then
     if self.parent.anchorPerUnit == "UNITFRAME" then
