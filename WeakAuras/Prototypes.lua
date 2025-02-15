@@ -928,7 +928,7 @@ Private.load_prototype = {
       display = L["Never"],
       type = "toggle",
       width = WeakAuras.normalWidth,
-      init = "false",
+      test = "false",
     },
     {
       name = "alive",
@@ -966,6 +966,7 @@ Private.load_prototype = {
       optional = true,
       events = {"VEHICLE_UPDATE", "UNIT_ENTERED_VEHICLE", "UNIT_EXITED_VEHICLE"}
     },
+    --[[
     { -- broken, fix later COMPANION_UPDATE fires too early for an check, needs some custom stuff
       name = "mounted",
       display = L["Mounted"],
@@ -975,6 +976,7 @@ Private.load_prototype = {
       optional = true,
       --events = {"PLAYER_MOUNT_DISPLAY_CHANGED"}
     },
+    ]]
     {
       name ="playerTitle",
       display = L["Player"],
@@ -1099,6 +1101,14 @@ Private.load_prototype = {
       display = L["Spec Role"],
       type = "multiselect",
       values = "role_types",
+      init = "arg",
+      events = {"PLAYER_TALENT_UPDATE", "PLAYER_ROLES_ASSIGNED", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"}
+    },
+    {
+      name = "spec_position",
+      display = WeakAuras.newFeatureString .. L["Spec Position"],
+      type = "multiselect",
+      values = "spec_position_types",
       init = "arg",
       events = {"PLAYER_TALENT_UPDATE", "PLAYER_ROLES_ASSIGNED", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"}
     },
@@ -5050,10 +5060,8 @@ Private.event_prototypes = {
       local ret = [[
         local itemName = %s
         local exactSpellMatch = %s
-        local name = GetItemInfo(itemName) or "Invalid"
-        local icon = GetItemIcon(itemName) or ""
         if not exactSpellMatch and tonumber(itemName) then
-          itemName = name
+          itemName = GetItemInfo(itemName)
         end
         local count = GetItemCount(itemName or "", %s, %s);
       ]];
@@ -5148,14 +5156,14 @@ Private.event_prototypes = {
       },
       {
         name = "icon",
-        init = "icon or ''",
+        init = "GetItemIcon(itemName or '')",
         hidden = true,
         store = true,
         test = "true"
       },
       {
         name = "name",
-        init = "name or itemName",
+        init = "itemName and itemName ~= '' and GetItemInfo(itemName) or itemName",
         hidden = true,
         store = true,
         test = "true"
