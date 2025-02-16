@@ -4434,9 +4434,6 @@ Private.event_prototypes = {
     type = "unit",
     events = {},
     internal_events = {
-      "SWING_TIMER_START",
-      "SWING_TIMER_CHANGE",
-      "SWING_TIMER_END",
       "SWING_TIMER_UPDATE"
     },
     force_events = "SWING_TIMER_UPDATE",
@@ -4532,6 +4529,10 @@ Private.event_prototypes = {
       {
         hidden = true,
         test = "(inverse and duration == 0) or (not inverse and duration > 0)"
+      },
+      {
+        hidden = true,
+        test = "remainingCheck"
       }
     },
     automaticrequired = true,

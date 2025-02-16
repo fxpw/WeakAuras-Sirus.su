@@ -3208,12 +3208,48 @@ Private.reset_swing_spells = {
   [GetSpellInfo(20549)] = true, -- War Stomp
   [GetSpellInfo(56815)] = true, -- Rune Strike
   [GetSpellInfo(5384)] = true, -- Feign Death
+  [GetSpellInfo(2764)] = true, -- Throw
+  [GetSpellInfo(5019)] = true, -- Shoot
 }
+
 Private.reset_ranged_swing_spells = {
   [GetSpellInfo(2764)] = true, -- Throw
   [GetSpellInfo(5019)] = true, -- Shoot Wands
   [GetSpellInfo(75)] = true, -- Auto Shot
   [GetSpellInfo(5384)] = true, -- Feign Death
+}
+
+Private.noreset_swing_spells = {
+  [GetSpellInfo(23063)] = true, -- Dense Dynamite
+  [GetSpellInfo(4054)] = true, -- Rough Dynamite
+  [GetSpellInfo(4064)] = true, -- Rough Copper Bomb
+  [GetSpellInfo(4061)] = true, -- Coarse Dynamite
+  [GetSpellInfo(8331)] = true, -- Ez-Thro Dynamite
+  [GetSpellInfo(4065)] = true, -- Large Copper Bomb
+  [GetSpellInfo(4066)] = true, -- Small Bronze Bomb
+  [GetSpellInfo(4062)] = true, -- Heavy Dynamite
+  [GetSpellInfo(4067)] = true, -- Big Bronze Bomb
+  [GetSpellInfo(4068)] = true, -- Iron Grenade
+  [GetSpellInfo(23000)] = true, -- Ez-Thro Dynamite II
+  [GetSpellInfo(12421)] = true, -- Mithril Frag Bomb
+  [GetSpellInfo(4069)] = true, -- Big Iron Bomb
+  [GetSpellInfo(12562)] = true, -- The Big One
+  [GetSpellInfo(12543)] = true, -- Hi-Explosive Bomb
+  [GetSpellInfo(19769)] = true, -- Thorium Grenade
+  [GetSpellInfo(19784)] = true, -- Dark Iron Bomb
+  [GetSpellInfo(30216)] = true, -- Fel Iron Bomb
+  [GetSpellInfo(19821)] = true, -- Arcane Bomb
+  [GetSpellInfo(39965)] = true, -- Frost Grenade
+  [GetSpellInfo(30461)] = true, -- The Bigger One
+  [GetSpellInfo(30217)] = true, -- Adamantite Grenade
+  [GetSpellInfo(35476)] = true, -- Drums of Battle
+  [GetSpellInfo(35475)] = true, -- Drums of War
+  [GetSpellInfo(35477)] = true, -- Drums of Speed
+  [GetSpellInfo(35478)] = true, -- Drums of Restoration
+  [GetSpellInfo(34120)] = true, -- Steady Shot (rank 1)
+  [GetSpellInfo(19434)] = true, -- Aimed Shot (rank 1)
+  [GetSpellInfo(1464)] = true, -- Slam (rank 1)
+  --35474 Drums of Panic DO reset the swing timer, do not add
 }
 
 WeakAuras.StopMotion = WeakAuras.StopMotion or {}
