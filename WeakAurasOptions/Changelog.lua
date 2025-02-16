@@ -10,80 +10,44 @@ local AddonName = ...
 ---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 OptionsPrivate.changelog = {
-  versionString = '5.19.0',
-  dateString = '2025-01-20',
-  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.18.1...5.19.0',
+  versionString = '5.19.1',
+  dateString = '2025-01-30',
+  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.19.0...5.19.1',
   highlightText = [==[
-- Some Important changes:
-  - 🚨🚨 WeakAuras no longer dispatches COMBAT_LOG_EVENT_UNFILTERED to custom triggers, unless the event list specifies at least one subevent. 🚨🚨 You will need to make changes to these auras to get them to function properly.
-  - Actions: For performance reasons, "On Init" custom code for auras with an encounter ID load option is not as eager to load as previous. We don't anticipate this should cause any problems, but if it does please get in touch!
-- Many new features:
-  - This changelog is now viewable in game, via the changelog button (if you're reading this from the in game changelog, hi!)
-  - New Region Type: Empty region is now available, for "displays" which either don't need a visual component (e.g. 'play a sound when i get 5 buffs from roll the bones'), and for wacky custom designs.
-  - New Trigger: Player Money can now be tracked in the builtins, & a coin string formatting option is avaialable for text patterns. (thanks Boneshock!)
-  - New sub element: Stop Motion is now available as a subregion to add to texture, progress texture, icon, progress bar, text, & empty retion types.
-  - Linear/Circular Progress elements now support min/max progress properties.
-  - Classic (Cataclysm): Spell Power is now tracked in the Character Stats trigger.
-  - Chat Message Events: sourceGUID is now exposed in Other Events - Chat Message triggers. Note that some message types don't have a source & thuse don't provide sourceGUID either.
-  - New Media: "Heartbeat Single" (try playing it on a loop) is now provided in the builtin media. (thanks Jake!)
-  - Aura Trigger: new match selectors based on spell ID are now avaialble.]==],  commitText = [==[Boneshock (1):
+This is mainly a release to bump the TOC version for classic.
 
-- Add Money Formatting Option and Add Player Money to Currency Trigger (#5586)
+Some minor features:
 
-InfusOnWoW (23):
+- Empty region learned how to take an icon to display in the left side options pane (no more transparent squares!)
+- Circular & Linear Progress Texture subregions learned the inverse option
+- Unit Characteristics Trigger now allows "Assigned Role" for non-group units
+- In game changelog (hi again!) is less prone to producing text boxes that tower over the edge of your screen
 
-- Update Atlas File List from wago.tools
-- Update Discord List
-- Templates Classic: Fix Paladin templates
-- Classic: Enable UnitGroupRoleAssigned options
-- Bufftrigger 2: Add match selectors that work on spell ids
-- Make StopMotion sub elements's color work
-- Update Discord List
-- Texture Sub Element: Fix ordering of input and browse button
-- Stop Motion: Properly fix GetColor function
-- Fix description of Stop Motion sub element
-- Add Thank you Role to allowed roles
-- Add a Changelog button
-- Add an Empty RegionType
-- Fix lua error for color animation on Stop Motion
-- Add min/max progress for Linear/CircularProgress and StopMotion sub elements
-- Remove left over TODOs that are actually done
-- Fix regressions in Textures refactor
-- Cata: Add Spell Power to Character Stats
-- Introduce sub elements for circular/linear Textures
-- Texture Sub Element
-- StopMotion: Introduce a StopMotion sub element
-- Update Atlas File List from wago.tools
-- Update Discord List
+And some bug fiixes:
 
-Jake G (1):
+- Expanding the options for Glow/Border subregions should no longer produce errors
+- Classic: "Clipped Progress" option for model subregions should function identically to retail now
+- WeakAuras.ScanEvents is less prone to vomiting if called with garbage data
+- Designing a TSU trigger to populate state with garbage timed progress data should no longer brick Options]==],  commitText = [==[InfusOnWoW (10):
 
-- Add Sound Heartbeat Single (#5600)
+- Tweak Changelog display
+- Modernize: Fix lua error if there are no authorOptions
+- Also remove "Clipped Progress" on Classic
+- Empty Base Region: Add a thumbnail icon
+- Sanity check WeakAuras.ScanEvents event's type
+- CircularProgressTexture: Add inverse option
+- Linear Progress Texture: Add an inverse setting
+- Fix Glow/Border anchor_area lua error in Options
+- Guard against expirationTime/duration being strings in various places
+- Unit Characteristics: Allow "Assigned Role" check for non-group units
 
-Stanzilla (4):
+Stanzilla (1):
 
 - Update WeakAurasModelPaths from wago.tools
-- Update bug_report.yml
-- Update WeakAurasModelPaths from wago.tools
-- Update WeakAurasModelPaths from wago.tools
 
-emptyrivers (2):
+mrbuds (1):
 
-- drop nomerge headers
-- add sourceGUID to chat msg trigger state
-
-github-actions[bot] (1):
-
-- Update Atlas File List from wago.tools (#5618)
-
-mrbuds (2):
-
-- Don't pre-load in raid init scripts for auras with an encounterId load option
-- Disable CLEU triggers without filters
-
-nullKomplex (1):
-
-- Default discord-update to not run on forks
+- classic_era toc update
 
 ]==]
 }

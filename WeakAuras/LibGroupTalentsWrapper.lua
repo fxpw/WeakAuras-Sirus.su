@@ -3,7 +3,7 @@ if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 -- Lua APIs
-local unpack = unpack
+local unpack, wipe = unpack, wipe
 
 -- WoW APIs
 local UnitName, UnitIsUnit, UnitClass, GetNumGroupMembers = UnitName, UnitIsUnit, UnitClass, GetNumGroupMembers
@@ -39,23 +39,15 @@ if LibGroupTalents then
     local ownName = UnitName("player")
 
     local numMembers = GetNumGroupMembers()
-    local units
-    if IsInRaid() then
-      units = WeakAuras.raidUnits
-    else
-      units = WeakAuras.partyUnits
-    end
+    local units = IsInRaid() and WeakAuras.raidUnits or WeakAuras.partyUnits
 
+    nameToUnitMap = { [ownName] = "player" }
     for i = 1, numMembers do
-      local groupUnit = units[i]
-      if groupUnit then
-        local groupUnitName = UnitName(groupUnit)
-        if groupUnitName then
-          nameToUnitMap[groupUnitName] = groupUnit
-        end
+      local groupUnitName = UnitName(units[i])
+      if groupUnitName then
+        nameToUnitMap[groupUnitName] = groupUnit
       end
     end
-    nameToUnitMap[ownName] = "player"
 
     for storedName in pairs(nameToSpecMap) do
       if not nameToUnitMap[storedName] then
@@ -66,21 +58,18 @@ if LibGroupTalents then
     end
 
     local specInfo = { LibGroupTalents:GetUnitTalentSpec(unit) }
-    if specInfo and #specInfo > 0 then
-      local class = select(2, UnitClass(unit))
-      if specInfo and #specInfo > 0 and class then
-        nameToSpecMap[unitName] = {
-          class .. specInfo[1], unpack(specInfo)
-        }
-      end
+    local class = select(2, UnitClass(unit))
+    if specInfo and #specInfo > 0 and class then
+      nameToSpecMap[unitName] = {
+        class .. specInfo[1], unpack(specInfo)
+      }
     end
 
     nameToUnitRole[unitName] = LibGroupTalents:GetUnitRole(unit)
 
-    local glyphs = { LibGroupTalents:GetUnitGlyphs(unit) }
-    if glyphs and #glyphs > 0 then
-      nameToGlyphs[unitName] = {}
-      for _, glyphId in ipairs(glyphs) do
+    nameToGlyphs[unitName] = {}
+    for _, glyphId in ipairs({ LibGroupTalents:GetUnitGlyphs(unit) }) do
+      if glyphId then
         nameToGlyphs[unitName][glyphId] = true
       end
     end
@@ -153,9 +142,9 @@ if LibGroupTalents then
       local glyphs = { LibGroupTalents:GetUnitGlyphs(unit) }
       if glyphs then
         for _, id in ipairs(glyphs) do
-            if id == glyphId then
-              return true
-            end
+          if id == glyphId then
+            return true
+          end
         end
       end
     end

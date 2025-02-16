@@ -237,10 +237,8 @@ function CacheMonitorMixin:CalcRemoved()
   end
 end
 function CacheMonitorMixin:WriteCache()
-  local tmp = self.data
-  self.data = self.cache
-  self.cache = tmp
-  wipe(self.cache)
+  wipe(self.data)
+  self.data, self.cache = self.cache, {}
 end
 function CacheMonitorMixin:Reset()
   if self.makeDiff then
@@ -693,7 +691,6 @@ function lib.GetUnitNameplate(unit)
       return nameplate.UnitFrame.Name
       -- elvui someday
     elseif nameplate.unitFrame and nameplate.unitFrame.Health and nameplate.unitFrame.Health:IsShown() then
-
       return nameplate.unitFrame.Health
     elseif nameplate.unitFrame and nameplate.unitFrame.Name and nameplate.unitFrame.Name:IsShown() then
       return nameplate.unitFrame.Name

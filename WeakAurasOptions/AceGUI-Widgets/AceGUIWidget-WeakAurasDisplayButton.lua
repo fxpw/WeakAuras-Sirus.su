@@ -1381,10 +1381,7 @@ local methods = {
       iconButton:SetSize(16, 16)
     end
     iconButton.prio = prio
-    iconButton:SetNormalTexture(icon.path)
-    if icon.texCoords then
-      iconButton:GetNormalTexture():SetTexCoord(unpack(icon.texCoords))
-    end
+    iconButton:SetNormalTexture(icon)
     if title then
       iconButton:SetScript("OnEnter", function()
         Show_Tooltip(
@@ -1510,7 +1507,7 @@ local methods = {
     self:SortStatusIcons()
   end,
   ["SetLoaded"] = function(self, prio, color, title, description)
-    self:UpdateStatusIcon("load", prio, {path="Interface\\AddOns\\WeakAuras\\Media\\Textures\\loaded"}, title, description, nil, color)
+    self:UpdateStatusIcon("load", prio, "Interface\\AddOns\\WeakAuras\\Media\\Textures\\loaded", title, description, nil, color)
     self:SortStatusIcons()
   end,
   ["IsLoaded"] = function(self)
