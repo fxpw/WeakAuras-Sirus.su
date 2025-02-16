@@ -1661,7 +1661,7 @@ local function ScanRaidMarkScanFunc(matchDataChanged)
 end
 
 local function ScanGroupUnit(time, matchDataChanged, unitType, unit)
-  local unitExists = UnitExistsFixed(unit) == 1 and true or false
+  local unitExists = UnitExistsFixed(unit)
   if existingUnits[unit] ~= unitExists then
     existingUnits[unit] = unitExists
 
@@ -1787,7 +1787,7 @@ end
 
 local function RecheckActive(triggerInfo, unit, unitsToRemoveScan)
   local isSelf, role, inParty, class
-  local unitExists = UnitExistsFixed(unit) == 1 and true or false
+  local unitExists = UnitExistsFixed(unit)
   if unitExists and TriggerInfoApplies(triggerInfo, unit) then
     if (not activeGroupScanFuncs[unit] or not activeGroupScanFuncs[unit][triggerInfo]) then
       triggerInfo.maxUnitCount = triggerInfo.maxUnitCount + 1

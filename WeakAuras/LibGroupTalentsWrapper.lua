@@ -93,7 +93,6 @@ if LibGroupTalents then
   end
 
   LibGroupTalents.RegisterCallback(Private.LibGroupTalentsWrapper, "LibGroupTalents_Update", "LibGroupTalentsCallback")
-  LibGroupTalents.RegisterCallback(Private.LibGroupTalentsWrapper, "LibGroupTalents_RoleChange", "LibGroupTalentsCallback")
   LibGroupTalents.RegisterCallback(Private.LibGroupTalentsWrapper, "LibGroupTalents_GlyphUpdate", "LibGroupTalentsCallback")
 
   function Private.LibGroupTalentsWrapper.Register(f)
