@@ -68,9 +68,9 @@ function spellCache.Build()
           cache[name].spells = cache[name].spells .. "," .. id .. "=" .. icon
         end
         misses = 0
-        if holes and holes[id] then
-          id = holes[id]
-        end
+        --if holes and holes[id] then
+        --  id = holes[id]
+        --end
       else
         misses = misses + 1
       end

@@ -50,17 +50,17 @@ local function CreateDispatcher(argCount)
 		local xpcall, eh = ...
 		local method, ARGS
 		local function call() return method(ARGS) end
-	
+
 		local function dispatch(func, ...)
 			 method = func
 			 if not method then return end
 			 ARGS = ...
 			 return xpcall(call, eh)
 		end
-	
+
 		return dispatch
 	]]
-	
+
 	local ARGS = {}
 	for i = 1, argCount do ARGS[i] = "arg"..i end
 	code = code:gsub("ARGS", tconcat(ARGS, ", "))
@@ -75,7 +75,7 @@ end})
 Dispatchers[0] = function(func)
 	return xpcall(func, errorhandler)
 end
- 
+
 local function safecall(func, ...)
 	return Dispatchers[select("#", ...)](func, ...)
 end
@@ -539,14 +539,14 @@ local function OptionOnMouseOver(widget, event)
 	local desc = GetOptionsMemberValue("desc", opt, options, path, appName)
 	local usage = GetOptionsMemberValue("usage", opt, options, path, appName)
 	local descStyle = opt.descStyle
-	
+
 	if descStyle and descStyle ~= "tooltip" then return end
-	
+
 	GameTooltip:SetText(name, 1, .82, 0, 1)
-	
+
 	if opt.type == "multiselect" then
 		GameTooltip:AddLine(user.text,0.5, 0.5, 0.8, 1)
-	end	
+	end
 	if type(desc) == "string" then
 		GameTooltip:AddLine(desc, 1, 1, 1, 1)
 	end
@@ -1388,7 +1388,7 @@ local function FeedOptions(appName, options,container,rootframe,path,group,inlin
 
 					local imageCoords = GetOptionsMemberValue("imageCoords",v, options, path, appName)
 					local image, width, height = GetOptionsMemberValue("image",v, options, path, appName)
-					
+
 					if type(image) == "string" then
 						if not width then
 							width = GetOptionsMemberValue("imageWidth",v, options, path, appName)
@@ -1462,7 +1462,7 @@ local function TreeOnButtonEnter(widget, event, uniquevalue, button)
 	local option = user.option
 	local path = user.path
 	local appName = user.appName
-	
+
 	local feedpath = new()
 	for i = 1, #path do
 		feedpath[i] = path[i]
@@ -1477,7 +1477,7 @@ local function TreeOnButtonEnter(widget, event, uniquevalue, button)
 
 	local name = GetOptionsMemberValue("name", group, options, feedpath, appName)
 	local desc = GetOptionsMemberValue("desc", group, options, feedpath, appName)
-	
+
 	GameTooltip:SetOwner(button, "ANCHOR_NONE")
 	if widget.type == "TabGroup" then
 		GameTooltip:SetPoint("BOTTOM",button,"TOP")
@@ -1486,11 +1486,11 @@ local function TreeOnButtonEnter(widget, event, uniquevalue, button)
 	end
 
 	GameTooltip:SetText(name, 1, .82, 0, 1)
-	
+
 	if type(desc) == "string" then
 		GameTooltip:AddLine(desc, 1, 1, 1, 1)
 	end
-	
+
 	GameTooltip:Show()
 end
 

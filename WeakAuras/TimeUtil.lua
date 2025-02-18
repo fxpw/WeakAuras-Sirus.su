@@ -40,7 +40,7 @@ SecondsFormatterConstants =
   DontRoundUpLastUnit = false,
 }
 
-SecondsFormatter.Abbreviation = 
+SecondsFormatter.Abbreviation =
 {
   None = 1, -- seconds, minutes, hours...
   Truncate = 2, -- sec, min, hr...
@@ -190,7 +190,7 @@ function SecondsFormatterMixin:Format(seconds, abbreviation)
   if (self:CanApproximate(seconds)) then
       local interval = math.max(minInterval, SecondsFormatter.Interval.Minutes);
       while (interval < maxInterval) do
-          local nextInterval = interval + 1; 
+          local nextInterval = interval + 1;
           if (seconds > self:GetIntervalSeconds(nextInterval)) then
               interval = nextInterval;
           else

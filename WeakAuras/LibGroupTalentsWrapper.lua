@@ -45,7 +45,7 @@ if LibGroupTalents then
     for i = 1, numMembers do
       local groupUnitName = UnitName(units[i])
       if groupUnitName then
-        nameToUnitMap[groupUnitName] = groupUnit
+        nameToUnitMap[groupUnitName] = groupUnitName
       end
     end
 

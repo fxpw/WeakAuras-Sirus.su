@@ -1089,10 +1089,11 @@ local function update_forms()
       Private.form_types[i] = i.." - "..name
     end
   end
+  if Private.OptionsFrame and not tCompare(oldForms, Private.form_types) then
+    Private.OptionsFrame():ReloadOptions()
+  end
 end
-if Private.OptionsFrame and not tCompare(oldForms, Private.form_types) then
-  Private.OptionsFrame():ReloadOptions()
-end
+
 local form_frame = CreateFrame("Frame");
 form_frame:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 form_frame:RegisterEvent("PLAYER_LOGIN")
