@@ -21,7 +21,7 @@ jobs:
       uses: actions/cache@v3
       id: luacache
       with:
-        path: ~/.lua
+        path: .lua
         key: ${{ runner.os }}-lua-${{ env.LUA_VERSION }}
         restore-keys: |
           ${{ runner.os }}-lua-${{ env.LUA_VERSION }}
@@ -30,7 +30,7 @@ jobs:
       uses: actions/cache@v3
       id: luarockscache
       with:
-        path: ~/.luarocks
+        path: .luarocks
         key: ${{ runner.os }}-luarocks-${{ env.LUAROCKS_VERSION }}
         restore-keys: |
           ${{ runner.os }}-luarocks-${{ env.LUAROCKS_VERSION }}
@@ -38,23 +38,25 @@ jobs:
     - name: Install Lua
       if: steps.luacache.outputs.cache-hit != 'true'
       run: |
-        sudo apt-get update
-        sudo apt-get install -y lua5.1 liblua5.1-0-dev
-        mkdir -p ~/.lua/bin
-        ln -s /usr/bin/lua5.1 ~/.lua/bin/lua
+        sudo apt-get install libreadline-dev libncurses-dev
+        wget https://www.lua.org/ftp/lua-${{ env.LUA_VERSION }}.tar.gz -O - | tar -xzf -
+        cd lua-${{ env.LUA_VERSION }}
+        make linux
+        make -j INSTALL_TOP=$GITHUB_WORKSPACE/.lua install
+        rm -rf $GITHUB_WORKSPACE/lua-${{ env.LUA_VERSION }}
 
     - name: Install LuaRocks and Luacheck
       if: steps.luarockscache.outputs.cache-hit != 'true'
       run: |
-        wget https://luarocks.org/releases/luarocks-${{ env.LUAROCKS_VERSION }}.tar.gz
-        tar -xzf luarocks-${{ env.LUAROCKS_VERSION }}.tar.gz
+        wget https://luarocks.org/releases/luarocks-${{ env.LUAROCKS_VERSION }}.tar.gz -O - | tar -xzf -
         cd luarocks-${{ env.LUAROCKS_VERSION }}
-        ./configure --prefix=$HOME/.luarocks --with-lua-include=/usr/include/lua5.1
-        make
+        ./configure --with-lua-bin=$GITHUB_WORKSPACE/.lua/bin --prefix=$GITHUB_WORKSPACE/.luarocks
+        make build
         make install
-        echo "export PATH=\$HOME/.luarocks/bin:\$PATH" >> ~/.bashrc
-        source ~/.bashrc
+        PATH=$PATH:$GITHUB_WORKSPACE/.luarocks/bin
         luarocks install luacheck
+        luarocks install lanes
+        rm -rf $GITHUB_WORKSPACE/luarocks-${{ env.LUAROCKS_VERSION }}
 
-    - name: Run Luacheck
-      run: ~/.luarocks/bin/luacheck . -q
+    - name: Luacheck
+      run: .luarocks/bin/luacheck . -q
