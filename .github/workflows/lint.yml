@@ -12,7 +12,7 @@ jobs:
 
     env:
       LUA_VERSION: 5.1.5
-      LUAROCKS_VERSION: 3.9.2
+      LUAROCKS_VERSION: 3.11.1
 
     steps:
     - name: Checkout
