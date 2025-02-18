@@ -1151,6 +1151,15 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
   end
 end
 
+function Private.SetTextureOrSpellTexture(texture, path)
+  local spellID = tonumber(path)
+  if spellID then
+    return texture:SetTexture(select(3, GetSpellInfo(spellID)) or spellID)
+  else
+    return texture:SetTexture(path)
+  end
+end
+
 do
   local function move_condition_subregions(data, offset, afterPos)
     if data.conditions then

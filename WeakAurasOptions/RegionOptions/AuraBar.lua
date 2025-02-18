@@ -663,7 +663,8 @@ local function modifyThumbnail(parent, borderframe, data, fullModify, width, hei
         iconPath = path or data.displayIcon
       end
 
-      icon:SetTexture(iconPath and iconPath ~= "" and iconPath or "Interface\\Icons\\INV_Misc_QuestionMark")
+      OptionsPrivate.Private.SetTextureOrSpellTexture(icon,
+        iconPath and iconPath ~= "" and iconPath or "Interface\\Icons\\INV_Misc_QuestionMark")
     end
 
     if data then

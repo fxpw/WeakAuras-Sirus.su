@@ -557,7 +557,7 @@ local function modify(parent, region, data)
     end
 
     iconPath = iconPath or self.displayIcon or "Interface\\Icons\\INV_Misc_QuestionMark"
-    icon:SetTexture(iconPath)
+    Private.SetTextureOrSpellTexture(icon, iconPath)
   end
 
   function region:Scale(scalex, scaley)

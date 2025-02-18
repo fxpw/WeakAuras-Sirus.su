@@ -161,7 +161,7 @@ local blockedTables = {
   MailFrameTab2 = true,
   DEFAULT_CHAT_FRAME = true,
   ChatFrame1 = true,
-  --WeakAurasSaved = true,
+  WeakAurasSaved = true,
   WeakAurasOptions = true,
   WeakAurasOptionsSaved = true
 }

@@ -74,7 +74,7 @@ local function createThumbnail()
 end
 
 local function modifyThumbnail(parent, frame, data)
-  frame.icon:SetTexture(data.thumbnailIcon)
+  OptionsPrivate.Private.SetTextureOrSpellTexture(frame.icon, data.thumbnailIcon)
   if frame.icon:GetTexture() then
     frame.icon:Show()
   else
