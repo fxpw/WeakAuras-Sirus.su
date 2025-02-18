@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local WeakAuras = WeakAuras;
@@ -11,7 +11,7 @@ local GetNumShapeshiftForms, GetShapeshiftFormInfo = GetNumShapeshiftForms, GetS
 
 local function WA_GetClassColor(classFilename)
   local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[classFilename]
-  if color and color.colorStr then
+  if color then
     return color.colorStr
   end
 
@@ -25,13 +25,15 @@ Private.glow_action_types = {
 
 Private.glow_frame_types = {
   UNITFRAME = L["Unit Frame"],
-  FRAMESELECTOR = L["Frame Selector"]
+  FRAMESELECTOR = L["Frame Selector"],
+  PARENTFRAME = L["Parent Frame"]
 }
 if WeakAuras.isAwesomeEnabled() then
   Private.glow_frame_types.NAMEPLATE = L["Nameplate"]
 end
 
 Private.circular_group_constant_factor_types = {
+  ANGLE = L["Angle and Radius"],
   RADIUS = L["Radius"],
   SPACING = L["Spacing"]
 }
@@ -58,6 +60,11 @@ Private.character_types = {
   npc = L["Non-player Character"]
 }
 
+Private.spec_position_types = {
+  caster = L["Ranged"],
+  melee = L["Melee"]
+}
+
 Private.group_sort_types = {
   ascending = L["Ascending"],
   descending = L["Descending"],
@@ -78,7 +85,8 @@ Private.group_hybrid_sort_types = {
 
 Private.time_format_types = {
   [0] = L["WeakAuras Built-In (63:42 | 3:07 | 10 | 2.4)"],
-  [1] = L["Blizzard (2h | 3m | 10s | 2.4)"],
+  [1] = L["Old Blizzard (2h | 3m | 10s | 2.4)"],
+  [2] = L["Modern Blizzard (1h 3m | 3m 7s | 10s | 2.4)"],
 }
 
 Private.time_precision_types = {
@@ -96,8 +104,12 @@ Private.precision_types = {
 
 Private.big_number_types = {
   ["AbbreviateNumbers"] = L["AbbreviateNumbers (Blizzard)"],
-  ["AbbreviateLargeNumbers"] = L["AbbreviateLargeNumbers (Blizzard)"]
+  ["AbbreviateLargeNumbers"] = L["AbbreviateLargeNumbers (Blizzard)"],
+  ["BreakUpLargeNumbers"] = L["BreakUpLargeNumbers (Blizzard)"],
 }
+
+Private.big_number_types_with_disable = CopyTable(Private.big_number_types)
+Private.big_number_types_with_disable["disable"] = L["Disabled"]
 
 Private.round_types = {
   floor = L["Floor"],
@@ -118,31 +130,101 @@ Private.unit_realm_name_types = {
 }
 
 local timeFormatter = {}
+WeakAuras.Mixin(timeFormatter, SecondsFormatterMixin)
+timeFormatter:Init(0, SecondsFormatter.Abbreviation.OneLetter)
+
+-- The default time formatter adds a space between the value and the unit
+-- While there is a API to strip it, that API does not work on all locales, e.g. german
+-- Thus, copy the interval descriptions, strip the whitespace from them
+-- and hack the timeFormatter to use our interval descriptions
+local timeFormatIntervalDescriptionFixed = {}
+timeFormatIntervalDescriptionFixed = CopyTable(SecondsFormatter.IntervalDescription)
+for i, interval in ipairs(timeFormatIntervalDescriptionFixed) do
+  interval.formatString = CopyTable(SecondsFormatter.IntervalDescription[i].formatString)
+  for j, formatString in ipairs(interval.formatString) do
+    interval.formatString[j] = formatString:gsub(" ", "")
+  end
+end
+
+timeFormatter.GetIntervalDescription = function(self, interval)
+  return timeFormatIntervalDescriptionFixed[interval]
+end
+
+timeFormatter.GetMaxInterval = function(self)
+  return #timeFormatIntervalDescriptionFixed
+end
+
+local AbbreviateNumbers = AbbreviateNumbers
+local gameLocale = GetLocale()
+if gameLocale == "koKR" or gameLocale == "zhCN" or gameLocale == "zhTW" then
+  -- Work around https://github.com/Stanzilla/WoWUIBugs/issues/515
+  --
+  local NUMBER_ABBREVIATION_DATA_FIXED={
+    [1]={
+      breakpoint = 10000 * 10000,
+      significandDivisor = 10000 * 10000,
+      abbreviation = L["SECOND_NUMBER_CAP_NO_SPACE"],
+      fractionDivisor = 1
+    },
+    [2]={
+      breakpoint = 1000 * 10000,
+      significandDivisor = 1000 * 10000,
+      abbreviation = L["SECOND_NUMBER_CAP_NO_SPACE"],
+      fractionDivisor = 10
+    },
+    [3]={
+      breakpoint = 10000,
+      significandDivisor = 1000,
+      abbreviation = L["FIRST_NUMBER_CAP_NO_SPACE"],
+      fractionDivisor = 10
+    }
+  }
+
+  AbbreviateNumbers = function(value)
+    for i, data in ipairs(NUMBER_ABBREVIATION_DATA_FIXED) do
+      if value >= data.breakpoint then
+              local finalValue = math.floor(value / data.significandDivisor) / data.fractionDivisor;
+              return finalValue .. data.abbreviation;
+      end
+    end
+    return tostring(value);
+  end
+end
 
 local simpleFormatters = {
---[[
-  AbbreviateNumbers = function(value, state)
+  AbbreviateNumbers = function(value)
+    if type(value) == "string" then value = tonumber(value) end
     return (type(value) == "number") and AbbreviateNumbers(value) or value
   end,
-  AbbreviateLargeNumbers = function(value, state)
+  AbbreviateLargeNumbers = function(value)
+    if type(value) == "string" then value = tonumber(value) end
     return (type(value) == "number") and AbbreviateLargeNumbers(Round(value)) or value
   end,
-]]
+  BreakUpLargeNumbers = function(value)
+    if type(value) == "string" then value = tonumber(value) end
+    return (type(value) == "number") and BreakUpLargeNumbers(value) or value
+  end,
   floor = function(value)
+    if type(value) == "string" then value = tonumber(value) end
     return (type(value) == "number") and floor(value) or value
   end,
   ceil = function(value)
+    if type(value) == "string" then value = tonumber(value) end
     return (type(value) == "number") and ceil(value) or value
   end,
   round = function(value)
+    if type(value) == "string" then value = tonumber(value) end
     return (type(value) == "number") and Round(value) or value
   end,
   time = {
     [0] = function(value)
-      if value > 60 then
-        return string.format("%i:", math.floor(value / 60)) .. string.format("%02i", value % 60)
-      else
-        return string.format("%d", value)
+      if type(value) == "string" then value = tonumber(value) end
+      if type(value) == "number" then
+        if value > 60 then
+          return string.format("%i:", math.floor(value / 60)) .. string.format("%02i", value % 60)
+        else
+          return string.format("%d", value)
+        end
       end
     end,
     -- Old Blizzard
@@ -150,15 +232,31 @@ local simpleFormatters = {
       local fmt, time = SecondsToTimeAbbrev(value)
       -- Remove the space between the value and unit
       return fmt:gsub(" ", ""):format(time)
-    end
-  }
+    end,
+    -- Modern Blizzard
+    [2] = function(value)
+      return timeFormatter:Format(value)
+    end,
+    -- Fixed built-in formatter
+    [99] = function(value)
+      if type(value) == "string" then value = tonumber(value) end
+      if type(value) == "number" then
+        value = ceil(value)
+        if value > 60 then
+          return string.format("%i:", math.floor(value / 60)) .. string.format("%02i", value % 60)
+        else
+          return string.format("%d", value)
+        end
+      end
+    end,
+  },
 }
 
 Private.format_types = {
   none = {
     display = L["None"],
     AddOptions = function() end,
-    CreateFormatter = function() end
+    CreateFormatter = function() return nil end
   },
   string = {
     display = L["String"],
@@ -224,22 +322,75 @@ Private.format_types = {
         hidden = hidden,
         disabled = function() return get(symbol .. "_time_dynamic_threshold") == 0 end
       })
+
+      addOption(symbol .. "_time_legacy_floor", {
+        type = "toggle",
+        name = L["Use Legacy floor rounding"],
+        desc = L["Enables (incorrect) round down of seconds, which was the previous default behavior."],
+        width = WeakAuras.normalWidth,
+        hidden = hidden,
+        disabled = function() return get(symbol .. "_time_format", 0) ~= 0 end
+      })
     end,
-    CreateFormatter = function(symbol, get)
+    CreateFormatter = function(symbol, get, wihoutColor, data)
       local format = get(symbol .. "_time_format", 0)
       local threshold = get(symbol .. "_time_dynamic_threshold", 60)
       local precision = get(symbol .. "_time_precision", 1)
+      local legacyRoundingMode = get(symbol .. "_time_legacy_floor", false)
 
-      local mainFormater = simpleFormatters.time[format]
-      if not mainFormater then
-        mainFormater = simpleFormatters.time[0]
+      if format == 0 and not legacyRoundingMode then
+        format = 99
       end
+      if not simpleFormatters.time[format] then
+        format = 99
+      end
+      local mainFormater = simpleFormatters.time[format]
+
+      local timePointProperty = {}
+
+      -- For the mod rate support, we need to know which state member is the modRate, as
+      -- different progressSources can have different modRates
+      -- Here, we only collect the names, so that the actual formatter can quickly lookup
+      -- the property
+      -- This is somewhat complicated by legacy behaviour (for %p, %t) and that %foo, can
+      -- be the foo of different triggers that might use different modRate properties
+      -- Similarly to distinguish between time formaters for durations and timepoints,
+      -- we maintain a lookup table for time points
+      -- Timepoint formatters need to run every frame, so we rturn true if we
+      -- are formatting a timepoint
+      local triggerNum, sym = string.match(symbol, "(.+)%.(.+)")
+      triggerNum = triggerNum and tonumber(triggerNum)
+      sym = sym or symbol
+
+      if triggerNum then
+        local progressSource = Private.GetProgressSourceFor(data, triggerNum, sym)
+        if progressSource then
+          if progressSource[2] == "timer" or progressSource[2] == "elapsedTimer" then
+            timePointProperty[triggerNum] = true
+          end
+        end
+      else
+        for i = 1, #data.triggers do
+          local progressSource = Private.GetProgressSourceFor(data, i, symbol)
+          if progressSource then
+            if progressSource[2] == "timer" or progressSource[2] == "elapsedTimer" then
+              timePointProperty[i] = true
+            end
+          end
+        end
+      end
+
       local formatter
       if threshold == 0 then
-        formatter = function(value, state)
+        formatter = function(value, state, trigger)
           if type(value) ~= 'number' or value == math.huge then
             return ""
           end
+
+          if timePointProperty[trigger] then
+            value = abs(GetTime() - value)
+          end
+
           if value <= 0 then
             return ""
           end
@@ -247,39 +398,93 @@ Private.format_types = {
         end
       else
         local formatString = "%." .. precision .. "f"
-        formatter = function(value, state)
+        formatter = function(value, state, trigger)
           if type(value) ~= 'number' or value == math.huge then
             return ""
           end
+
+          if timePointProperty[trigger] then
+            value = abs(GetTime() - value)
+          end
+
           if value <= 0 then
             return ""
           end
           if value < threshold then
             return string.format(formatString, value)
           else
-            return mainFormater(value, state)
+            return mainFormater(value)
           end
         end
       end
 
-      local triggerNum, sym = string.match(symbol, "(.+)%.(.+)")
-      sym = sym or symbol
       if sym == "p" or sym == "t" then
         -- Special case %p and %t. Since due to how the formatting
         -- work previously, the time formatter only formats %p and %t
         -- if the progress type is timed!
-        return function(value, state)
+        return function(value, state, trigger)
           if not state or state.progressType ~= "timed" then
             return value
           end
-          return formatter(value, state)
-        end
+          return formatter(value, state, trigger)
+        end, next(timePointProperty) ~= nil
       else
-        return formatter
+        return formatter, next(timePointProperty) ~= nil
       end
     end
   },
---[[
+  Money = {
+    display = L["Money"],
+    AddOptions = function(symbol, hidden, addOption)
+      addOption(symbol .. "_money_format", {
+        type = "select",
+        name = L["Format Gold"],
+        width = WeakAuras.normalWidth,
+        values = Private.big_number_types_with_disable,
+        hidden = hidden
+      })
+      addOption(symbol .. "_money_precision", {
+        type = "select",
+        name = L["Coin Precision"],
+        width = WeakAuras.normalWidth,
+        values = Private.money_precision_types,
+        hidden = hidden
+      })
+    end,
+    CreateFormatter = function(symbol, get)
+      local format = get(symbol .. "_money_format", "AbbreviateNumbers")
+      local precision = get(symbol .. "_money_precision", 3)
+
+      return function(value)
+        local gold = floor(value / 1e4)
+        local silver = floor(value / 100 % 100)
+        local copper = value % 100
+
+        if (format == "AbbreviateNumbers") then
+          gold = simpleFormatters.AbbreviateNumbers(gold)
+        elseif (format == "BreakUpLargeNumbers") then
+          gold = simpleFormatters.BreakUpLargeNumbers(gold)
+        elseif (format == "AbbreviateLargeNumbers") then
+          gold = simpleFormatters.AbbreviateLargeNumbers(gold)
+        end
+
+        local formatCode
+        if precision == 1 then
+          formatCode = "%s%s"
+        elseif precision == 2 then
+          formatCode = "%s%s %d%s"
+        else
+          formatCode = "%s%s %d%s %d%s"
+        end
+
+        return string.format(formatCode,
+          tostring(gold), Private.coin_icons.gold,
+          silver, Private.coin_icons.silver,
+          copper, Private.coin_icons.copper
+        )
+      end
+    end
+  },
   BigNumber = {
     display = L["Big Number"],
     AddOptions = function(symbol, hidden, addOption)
@@ -290,22 +495,23 @@ Private.format_types = {
         values = Private.big_number_types,
         hidden = hidden
       })
-    end,
       addOption(symbol .. "_big_number_space", {
         type = "description",
         name = "",
         width = WeakAuras.normalWidth,
         hidden = hidden
       })
+    end,
     CreateFormatter = function(symbol, get)
       local format = get(symbol .. "_big_number_format", "AbbreviateNumbers")
       if (format == "AbbreviateNumbers") then
         return simpleFormatters.AbbreviateNumbers
+      elseif (format == "BreakUpLargeNumbers") then
+        return simpleFormatters.BreakUpLargeNumbers
       end
       return simpleFormatters.AbbreviateLargeNumbers
     end
   },
-]]
   Number = {
     display = L["Number"],
     AddOptions = function(symbol, hidden, addOption, get)
@@ -341,7 +547,7 @@ Private.format_types = {
     end
   },
   Unit = {
-    display = L["Formats |cFFFF0000%unit|r"],
+    display = L["Formats |cFFFFCC00%unit|r"],
     AddOptions = function(symbol, hidden, addOption, get, withoutColor)
       if not withoutColor then
         addOption(symbol .. "_color", {
@@ -402,14 +608,14 @@ Private.format_types = {
 
       if realm == "never" then
         nameFunc = function(unit)
-          return unit and UnitName(unit)
+          return unit and WeakAuras.UnitName(unit)
         end
       elseif realm == "star" then
         nameFunc = function(unit)
           if not unit then
             return ""
           end
-          local name, realm = UnitName(unit)
+          local name, realm = WeakAuras.UnitName(unit)
           if realm then
             return name .. "*"
           end
@@ -420,7 +626,7 @@ Private.format_types = {
           if not unit then
             return ""
           end
-          local name, realm = UnitName(unit)
+          local name, realm = WeakAuras.UnitName(unit)
           if realm then
             return name .. "-" .. realm
           end
@@ -431,7 +637,7 @@ Private.format_types = {
           if not unit then
             return ""
           end
-          local name, realm = WeakAuras.UnitNameWithRealm(unit)
+          local name, realm = WeakAuras.UnitNameWithRealmCustomName(unit)
           return name .. "-" .. realm
         end
       end
@@ -469,7 +675,7 @@ Private.format_types = {
     end
   },
   guid = {
-    display = L["Formats Player's |cFFFF0000%guid|r"],
+    display = L["Formats Player's |cFFFFCC00%guid|r"],
     AddOptions = function(symbol, hidden, addOption, get, withoutColor)
       if not withoutColor then
         addOption(symbol .. "_color", {
@@ -527,10 +733,11 @@ Private.format_types = {
 
       if realm == "never" then
         nameFunc = function(name, realm)
-          return name
+          return WeakAuras.GetName(name)
         end
       elseif realm == "star" then
         nameFunc = function(name, realm)
+          name = WeakAuras.GetName(name)
           if realm ~= "" then
             return name .. "*"
           end
@@ -538,6 +745,7 @@ Private.format_types = {
         end
       elseif realm == "differentServer" then
         nameFunc = function(name, realm)
+          name = WeakAuras.GetName(name)
           if realm ~= "" then
             return name .. "-" .. realm
           end
@@ -545,6 +753,7 @@ Private.format_types = {
         end
       elseif realm == "always" then
         nameFunc = function(name, realm)
+          name = WeakAuras.GetName(name)
           if realm == "" then
             realm = select(2, WeakAuras.UnitNameWithRealm("player"))
           end
@@ -564,7 +773,7 @@ Private.format_types = {
         if abbreviateFunc then
           return function(guid)
             local ok, _, class, _, _, _, name, realm = pcall(GetPlayerInfoByGUID, guid)
-            if ok then
+            if ok and name then
               local name = abbreviateFunc(nameFunc(name, realm))
               return colorFunc(class, name)
             end
@@ -572,7 +781,7 @@ Private.format_types = {
         else
           return function(guid)
             local ok, _, class, _, _, _, name, realm = pcall(GetPlayerInfoByGUID, guid)
-            if ok then
+            if ok and name then
               return colorFunc(class, nameFunc(name, realm))
             end
           end
@@ -581,14 +790,14 @@ Private.format_types = {
         if abbreviateFunc then
           return function(guid)
             local ok, _, class, _, _, _, name, realm = pcall(GetPlayerInfoByGUID, guid)
-            if ok then
+            if ok and name then
               return abbreviateFunc(nameFunc(name, realm))
             end
           end
         else
           return function(guid)
             local ok, _, class, _, _, _, name, realm = pcall(GetPlayerInfoByGUID, guid)
-            if ok then
+            if ok and name then
               return nameFunc(name, realm)
             end
           end
@@ -787,12 +996,18 @@ if WeakAuras.isAwesomeEnabled() then
   Private.unit_types_bufftrigger_2.nameplate = L["Nameplate"]
 end
 
+Private.actual_unit_types = {
+  player = L["Player"],
+  pet = L["Pet"],
+  target = L["Target"],
+}
+
 Private.actual_unit_types_with_specific = {
   player = L["Player"],
   target = L["Target"],
   focus = L["Focus"],
   pet = L["Pet"],
-  member = L["Specific Unit"]
+  member = L["Specific Unit"],
 }
 
 Private.actual_unit_types_cast = {
@@ -865,8 +1080,9 @@ Private.faction_group = {
 
 Private.form_types = {};
 local function update_forms()
-  wipe(Private.form_types);
-  Private.form_types[0] = "0 - "..L["Humanoid"]
+  local oldForms = Private.form_types
+  Private.form_types = {}
+  Private.form_types[0] = "0 - " .. L["Humanoid"]
   for i = 1, GetNumShapeshiftForms() do
     local _, name = GetShapeshiftFormInfo(i);
     if(name) then
@@ -874,7 +1090,10 @@ local function update_forms()
     end
   end
 end
-local form_frame = CreateFrame("frame");
+if Private.OptionsFrame and not tCompare(oldForms, Private.form_types) then
+  Private.OptionsFrame():ReloadOptions()
+end
+local form_frame = CreateFrame("Frame");
 form_frame:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 form_frame:RegisterEvent("PLAYER_LOGIN")
 form_frame:SetScript("OnEvent", update_forms);
@@ -920,15 +1139,13 @@ for k, v in pairs(Private.point_types) do
 end
 
 Private.default_types_for_anchor["ALL"] = {
-  display = L["Whole Area"],
+  display = L["Full Region"],
   type = "area"
 }
 
-Private.aurabar_anchor_areas = {
-  icon = L["Icon"],
-  fg = L["Foreground"],
-  bg = L["Background"],
-  bar = L["Full Bar"],
+Private.anchor_mode = {
+  area = L["Fill Area"],
+  point = L["Attach to Point"]
 }
 
 Private.inverse_point_types = {
@@ -945,6 +1162,7 @@ Private.inverse_point_types = {
 
 Private.anchor_frame_types = {
   SCREEN = L["Screen/Parent Group"],
+  UIPARENT = L["Screen"],
   MOUSE = L["Mouse Cursor"],
   SELECTFRAME = L["Select Frame"],
   UNITFRAME = L["Unit Frames"],
@@ -956,6 +1174,7 @@ end
 
 Private.anchor_frame_types_group = {
   SCREEN = L["Screen/Parent Group"],
+  UIPARENT = L["Screen"],
   MOUSE = L["Mouse Cursor"],
   SELECTFRAME = L["Select Frame"],
   CUSTOM = L["Custom"]
@@ -1155,6 +1374,112 @@ for id, str in pairs(Private.combatlog_spell_school_types) do
   Private.combatlog_spell_school_types_for_ui[id] = ("%.3d - %s"):format(id, str)
 end
 
+Private.money_icons = {
+  ["gold"] = "interface/moneyframe/ui-goldicon",
+  ["silver"] = "interface/moneyframe/ui-silvericon",
+  ["copper"] = "interface/moneyframe/ui-coppericon"
+}
+
+Private.coin_icons = {
+  ["gold"] = "|Tinterface/moneyframe/ui-goldicon:0|t",
+  ["silver"] = "|Tinterface/moneyframe/ui-silvericon:0|t",
+  ["copper"] = "|Tinterface/moneyframe/ui-coppericon:0|t"
+}
+
+Private.money_precision_types = {
+  [1] = "123 " .. Private.coin_icons.gold,
+  [2] = "123 " .. Private.coin_icons.gold .. " 45 " .. Private.coin_icons.silver,
+  [3] = "123 " .. Private.coin_icons.gold .. " 45 " .. Private.coin_icons.silver .. " 67 " .. Private.coin_icons.copper
+}
+
+Private.item_quality_types = {
+  [0] = ITEM_QUALITY0_DESC,
+  [1] = ITEM_QUALITY1_DESC,
+  [2] = ITEM_QUALITY2_DESC,
+  [3] = ITEM_QUALITY3_DESC,
+  [4] = ITEM_QUALITY4_DESC,
+  [5] = ITEM_QUALITY5_DESC,
+  [6] = ITEM_QUALITY6_DESC,
+  [7] = ITEM_QUALITY7_DESC,
+  [8] = ITEM_QUALITY8_DESC,
+}
+
+Private.totalcount_currencies = {
+  [45624] = 3018, -- Emblems of Conquest
+  [40753] = 1465, -- Emblems of Valor
+  [29434] = 1462, -- Badges of Justice
+  [40752] = 1464, -- Emblems of Heroism
+  [47241] = 4729, -- Emblems of Triumph
+  [49426] = 4730, -- Emblems of Frost
+}
+
+function Private.ExecEnv.GetTotalCountCurrencies(currencyID)
+  local achievementID = Private.totalcount_currencies[currencyID]
+  if achievementID then
+      local totalEarned = GetStatistic(achievementID)
+      return tonumber(totalEarned) or 0
+  end
+  return 0
+end
+
+local function InitializeCurrencies()
+  if Private.discovered_currencies then
+    return
+  end
+  Private.discovered_currencies = {}
+  Private.discovered_currencies_sorted = {}
+  Private.discovered_currencies_headers = {}
+
+  local expanded = {}
+  for index = GetCurrencyListSize(), 1, -1 do
+  local name, isHeader, isExpanded, _, _, _, _, _, _ = GetCurrencyListInfo(index)
+    if isHeader and not isExpanded then
+      ExpandCurrencyList(index, true)
+      expanded[name] = true
+    end
+  end
+
+  for index = 1, GetCurrencyListSize() do
+    local name, isHeader, _, _, _, _, _, iconFileID, itemID = GetCurrencyListInfo(index)
+    local currencyLink = tonumber(itemID) and GetItemInfo(itemID)
+
+    if currencyLink then
+      local icon = iconFileID or "Interface\\Icons\\INV_Misc_QuestionMark" --iconFileID not available on first login
+      Private.discovered_currencies[itemID] = "|T" .. icon .. ":0|t" .. name
+      Private.discovered_currencies_sorted[itemID] = index
+    elseif isHeader then
+      Private.discovered_currencies[name] = name
+      Private.discovered_currencies_sorted[name] = index
+      Private.discovered_currencies_headers[name] = true
+    end
+  end
+
+  for index = GetCurrencyListSize(), 1, -1 do
+    local name, isHeader = GetCurrencyListInfo(index)
+    if isHeader and expanded[name] then
+      ExpandCurrencyList(index, false)
+    end
+  end
+
+  Private.discovered_currencies["member"] = "|Tinterface\\common\\ui-searchbox-icon:0:0:0:-2|t"..L["Specific Currency"];
+  Private.discovered_currencies_sorted["member"] = -1;
+end
+
+Private.ExecEnv.GetDiscoveredCurrencies = function()
+  InitializeCurrencies()
+  return Private.discovered_currencies
+end
+
+Private.GetDiscoveredCurrenciesSorted  = function()
+  InitializeCurrencies()
+  return Private.discovered_currencies_sorted
+end
+
+Private.GetDiscoveredCurrenciesHeaders  = function()
+  InitializeCurrencies()
+  return Private.discovered_currencies_headers
+end
+
 Private.combatlog_raid_mark_check_type = {
   [0] = RAID_TARGET_NONE,
   "|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcon_1:14|t " .. RAID_TARGET_1, -- Star
@@ -1166,6 +1491,18 @@ Private.combatlog_raid_mark_check_type = {
   "|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcon_7:14|t " .. RAID_TARGET_7, -- Cross
   "|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcon_8:14|t " .. RAID_TARGET_8, -- Skull
   L["Any"]
+}
+
+Private.combatlog_raidFlags = {
+  [0] = 0,
+  [1] = 1,
+  [2] = 2,
+  [4] = 3,
+  [8] = 4,
+  [16] = 5,
+  [32] = 6,
+  [64] = 7,
+  [128] = 8,
 }
 
 Private.raid_mark_check_type = CopyTable(Private.combatlog_raid_mark_check_type)
@@ -1185,6 +1522,11 @@ Private.orientation_with_circle_types = {
   VERTICAL_INVERSE = L["Top to Bottom"],
   CLOCKWISE = L["Clockwise"],
   ANTICLOCKWISE = L["Anticlockwise"]
+}
+
+Private.gradient_orientations = {
+  HORIZONTAL = L["Horizontal"],
+  VERTICAL = L["Vertical"]
 }
 
 Private.talent_types = {}
@@ -1679,7 +2021,7 @@ Private.texture_types["PowerAuras Separated"] = {
   [PowerAurasPath.."Aura104"] = "Shield Center",
   [PowerAurasPath.."Aura105"] = "Shield Full",
   [PowerAurasPath.."Aura106"] = "Shield Top Right",
-  [PowerAurasPath.."Aura107"] = "Shiled Top Left",
+  [PowerAurasPath.."Aura107"] = "Shield Top Left",
   [PowerAurasPath.."Aura108"] = "Shield Bottom Right",
   [PowerAurasPath.."Aura109"] = "Shield Bottom Left",
   [PowerAurasPath.."Aura121"] = "Vine Top Right Leaf",
@@ -1741,7 +2083,8 @@ Private.string_operator_types = {
 
 Private.weapon_types = {
   ["main"] = MAINHANDSLOT,
-  ["off"] = SECONDARYHANDSLOT
+  ["off"] = SECONDARYHANDSLOT,
+  ["ranged"] = RANGEDSLOT,
 }
 
 Private.swing_types = {
@@ -1756,7 +2099,7 @@ Private.rune_specific_types = {
   [3] = L["Unholy Rune #1"],
   [4] = L["Unholy Rune #2"],
   [5] = L["Frost Rune #1"],
-  [6] = L["Frost Rune #2"]
+  [6] = L["Frost Rune #2"],
 }
 
 Private.custom_trigger_types = {
@@ -1809,6 +2152,30 @@ Private.grid_types = {
   DR = L["Down, then Right"],
   LD = L["Left, then Down"],
   DL = L["Down, then Left"],
+  HD = L["Centered Horizontal, then Down"],
+  HU = L["Centered Horizontal, then Up"],
+  VR = L["Centered Vertical, then Right"],
+  VL = L["Centered Vertical, then Left"],
+  DH = L["Down, then Centered Horizontal"],
+  UH = L["Up, then Centered Horizontal"],
+  LV = L["Left, then Centered Vertical"],
+  RV = L["Right, then Centered Vertical"],
+  HV = L["Centered Horizontal, then Centered Vertical"],
+  VH = L["Centered Vertical, then Centered Horizontal"],
+}
+
+Private.centered_types_h = {
+  LR = L["Left to Right"],
+  RL = L["Right to Left"],
+  CLR =L["Center, then alternating left and right"],
+  CRL = L["Center, then alternating right and left"]
+}
+
+Private.centered_types_v = {
+  LR = L["Bottom to Top"],
+  RL = L["Top to Bottom"],
+  CLR =L["Center, then alternating bottom and top"],
+  CRL = L["Center, then alternating top and bottom"]
 }
 
 Private.text_rotate_types = {
@@ -1930,8 +2297,10 @@ Private.TocToExpansion = {
    [7] = L["Legion"],
    [8] = L["Battle for Azeroth"],
    [9] = L["Shadowlands"],
-  [10] = L["Dragonflight"]
+  [10] = L["Dragonflight"],
+  [11] = L["The War Within"]
 }
+
 
 Private.group_types = {
   solo = L["Not in Group"],
@@ -1949,6 +2318,13 @@ Private.raid_role_types = {
   MAINTANK = "|TInterface\\GroupFrame\\UI-Group-maintankIcon:16:16|t "..MAINTANK,
   MAINASSIST = "|TInterface\\GroupFrame\\UI-Group-mainassistIcon:16:16|t "..MAINASSIST,
   NONE = L["Other"]
+}
+
+Private.role_types = {
+  tank = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:0:19:22:41|t "..TANK,
+  melee = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:22:41|t "..L["Melee"],
+  caster = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:22:41|t "..L["Ranged"],
+  healer = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:1:20|t "..HEALER,
 }
 
 Private.group_member_types = {
@@ -2007,7 +2383,7 @@ Private.anim_finish_preset_types = {
   spiral = L["Spiral"],
   bounceDecay = L["Bounce"],
   starShakeDecay = L["Star Shake"],
-};
+}
 
 Private.chat_message_types = {
   CHAT_MSG_BATTLEGROUND = L["Battleground"],
@@ -2032,7 +2408,14 @@ Private.chat_message_types = {
   CHAT_MSG_SAY = L["Say"],
   CHAT_MSG_WHISPER = L["Whisper"],
   CHAT_MSG_YELL = L["Yell"],
-  CHAT_MSG_SYSTEM = L["System"]
+  CHAT_MSG_SYSTEM = L["System"],
+  CHAT_MSG_LOOT = L["Loot"],
+}
+
+Private.chat_message_leader_event = {
+  CHAT_MSG_BATTLEGROUND = "CHAT_MSG_BATTLEGROUND_LEADER",
+  CHAT_MSG_PARTY = "CHAT_MSG_PARTY_LEADER",
+  CHAT_MSG_RAID = "CHAT_MSG_RAID_LEADER"
 }
 
 Private.send_chat_message_types = {
@@ -2070,6 +2453,7 @@ Private.cast_types = {
 }
 
 -- register sounds
+LSM:Register("sound", "Heartbeat Single", "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\HeartbeatSingle.ogg")
 LSM:Register("sound", "Batman Punch", "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\BatmanPunch.ogg")
 LSM:Register("sound", "Bike Horn", "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\BikeHorn.ogg")
 LSM:Register("sound", "Boxing Arena Gong", "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\BoxingArenaSound.ogg")
@@ -2138,7 +2522,6 @@ LSM:Register("sound", "Voice: Switch", "Interface\\AddOns\\WeakAuras\\Media\\Sou
 LSM:Register("sound", "Voice: Taunt", "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\Taunt.ogg")
 LSM:Register("sound", "Voice: Triangle", "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\Triangle.ogg")
 
-
 local PowerAurasSoundPath = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Sounds\\"
 LSM:Register("sound", "Aggro", PowerAurasSoundPath.."aggro.ogg")
 LSM:Register("sound", "Arrow Swoosh", PowerAurasSoundPath.."Arrow_swoosh.ogg")
@@ -2188,8 +2571,11 @@ Private.sound_types = {
   [" KitID"] = " " .. L["Sound by Kit ID"]
 }
 
+Private.sound_file_types = {}
+
 for name, path in next, LSM:HashTable("sound") do
   Private.sound_types[path] = name
+  Private.sound_file_types[path] = name
 end
 
 LSM.RegisterCallback(WeakAuras, "LibSharedMedia_Registered", function(_, mediatype, key)
@@ -2197,17 +2583,39 @@ LSM.RegisterCallback(WeakAuras, "LibSharedMedia_Registered", function(_, mediaty
     local path = LSM:Fetch(mediatype, key)
     if path then
       Private.sound_types[path] = key
+      Private.sound_file_types[path] = key
+    end
+  elseif mediatype == "statusbar" then
+    local path = LSM:Fetch(mediatype, key)
+    if path then
+      Private.texture_types["LibSharedMedia Textures"][path] = key
     end
   end
 end)
 
+Private.texture_types["LibSharedMedia Textures"] = {}
+for _, mediaType in ipairs{"statusbar"} do
+  local mediaTable = LSM:HashTable(mediaType)
+  if mediaTable then
+    for name, path in pairs(mediaTable) do
+      Private.texture_types["LibSharedMedia Textures"][path] = name
+    end
+  end
+end
+
 -- register options font
 LSM:Register("font", "Fira Mono Medium", "Interface\\Addons\\WeakAuras\\Media\\Fonts\\FiraMono-Medium.ttf", LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU)
+-- Other Fira fonts
+LSM:Register("font", "Fira Sans Black", "Interface\\Addons\\WeakAuras\\Media\\Fonts\\FiraSans-Heavy.ttf", LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU)
+LSM:Register("font", "Fira Sans Condensed Black", "Interface\\Addons\\WeakAuras\\Media\\Fonts\\FiraSansCondensed-Heavy.ttf", LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU)
+LSM:Register("font", "Fira Sans Condensed Medium", "Interface\\Addons\\WeakAuras\\Media\\Fonts\\FiraSansCondensed-Medium.ttf", LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU)
+LSM:Register("font", "Fira Sans Medium", "Interface\\Addons\\WeakAuras\\Media\\Fonts\\FiraSans-Medium.ttf", LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU)
+LSM:Register("font", "PT Sans Narrow Regular", "Interface\\Addons\\WeakAuras\\Media\\Fonts\\PTSansNarrow-Regular.ttf", LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU)
+LSM:Register("font", "PT Sans Narrow Bold", "Interface\\Addons\\WeakAuras\\Media\\Fonts\\PTSansNarrow-Bold.ttf", LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU)
 
 -- register plain white border
 LSM:Register("border", "Square Full White", [[Interface\AddOns\WeakAuras\Media\Textures\Square_FullWhite.tga]])
 
---
 LSM:Register("statusbar", "Clean", [[Interface\AddOns\WeakAuras\Media\Textures\Statusbar_Clean]])
 LSM:Register("statusbar", "Stripes", [[Interface\AddOns\WeakAuras\Media\Textures\Statusbar_Stripes]])
 LSM:Register("statusbar", "Thick Stripes", [[Interface\AddOns\WeakAuras\Media\Textures\Statusbar_Stripes_Thick]])
@@ -2263,7 +2671,9 @@ Private.bufftrigger_2_progress_behavior_types = {
 
 Private.bufftrigger_2_preferred_match_types = {
   showLowest = L["Least remaining time"],
-  showHighest = L["Most remaining time"]
+  showHighest = L["Most remaining time"],
+  showLowestSpellId = L["Lowest Spell Id"],
+  showHighestSpellId = L["Highest Spell Id"],
 }
 
 Private.bufftrigger_2_per_unit_mode = {
@@ -2318,7 +2728,7 @@ Private.bool_types = {
 Private.update_categories = {
   {
     name = "anchor",
-    -- Note, these are special cased for child auras and considered arrangment
+    -- Note, these are special cased for child auras and considered arrangement
     fields = {
       "xOffset",
       "yOffset",
@@ -2426,6 +2836,8 @@ Private.update_categories = {
       "url",
       "desc",
       "version",
+      "semver",
+      "wagoID", -- i don't *love* that we're so closely tied to wago, but eh
     },
     default = true,
     label = L["Meta Data"],
@@ -2454,6 +2866,9 @@ Private.non_transmissable_fields = {
   skipWagoUpdate = true,
   ignoreWagoUpdate = true,
   preferToUpdate = true,
+  information = {
+    saved = true
+  }
 }
 
 -- For nested groups, we do transmit parent + controlledChildren
@@ -2462,9 +2877,12 @@ Private.non_transmissable_fields_v2000 = {
   skipWagoUpdate = true,
   ignoreWagoUpdate = true,
   preferToUpdate = true,
+  information = {
+    saved = true
+  }
 }
 
-WeakAuras.data_stub = {
+Private.data_stub = {
   -- note: this is the minimal data stub which prevents false positives in diff upon reimporting an aura.
   -- pending a refactor of other code which adds unnecessary fields, it is possible to shrink it
   triggers = {
@@ -2534,6 +2952,7 @@ Private.author_option_classes = {
   range = "simple",
   color = "simple",
   select = "simple",
+  media = "simple",
   multiselect = "simple",
   description = "noninteractive",
   space = "noninteractive",
@@ -2551,6 +2970,7 @@ Private.author_option_types = {
   select = L["Dropdown Menu"],
   space = L["Space"],
   multiselect = L["Toggle List"],
+  media = L["Media"],
   header = L["Separator"],
   group = L["Option Group"],
 }
@@ -2601,6 +3021,10 @@ Private.author_option_fields = {
     useHeight = false,
     height = 1,
   },
+  media = {
+    mediaType = "sound",
+    media = "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\AirHorn.ogg"
+  },
   multiselect = {
     default = {true},
     values = {"val1"},
@@ -2608,7 +3032,6 @@ Private.author_option_fields = {
   header = {
     useName = false,
     text = "",
-    noMerge = false
   },
   group = {
     groupType = "simple",
@@ -2620,7 +3043,35 @@ Private.author_option_fields = {
     hideReorder = true,
     entryNames = nil, -- handled as a special case in code
     subOptions = {},
+    noMerge = false,
   }
+}
+
+Private.shared_media_types = {
+  sound = L["Sound"],
+  font = L["Font"],
+  border = L["Border"],
+  background = L["Background"],
+  statusbar = L["Status Bar"]
+}
+
+Private.author_option_media_defaults = {
+  sound = "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\AirHorn.ogg",
+  font = "Friz Quadrata TT",
+  border = "1 Pixel",
+  background = "None",
+  statusbar = "Blizzard",
+}
+
+Private.author_option_media_controls = {
+  statusbar = "LSM30_Statusbar",
+  border = "LSM30_Border",
+  background = "LSM30_Background",
+  font = "LSM30_Font"
+}
+
+Private.author_option_media_itemControls = {
+  sound = "WeakAurasMediaSound"
 }
 
 Private.array_entry_name_types = {
@@ -2679,9 +3130,9 @@ Private.multiUnitId = {
   ["partypetsonly"] = true,
   ["raid"] = true,
 }
---if WeakAuras.isAwesomeEnabled() then
---  Private.multiUnitId["nameplate"] = true
---end
+if WeakAuras.isAwesomeEnabled() then
+  Private.multiUnitId["nameplate"] = true
+end
 
 Private.multiUnitUnits = {
   ["boss"] = {},
@@ -2722,12 +3173,15 @@ end
 for i = 1, 40 do
   Private.baseUnitId["raid"..i] = true
   Private.baseUnitId["raidpet"..i] = true
-  -- Private.baseUnitId["nameplate"..i] = true -- no need to restrict it, blizzard only allows 40 nameplates, we can get all.
-  -- Private.multiUnitUnits.nameplate["nameplate"..i] = true -- no need to restrict it, blizzard only allows 40 nameplates, we can get all.
   Private.multiUnitUnits.group["raid"..i] = true
   Private.multiUnitUnits.raid["raid"..i] = true
   Private.multiUnitUnits.group["raidpet"..i] = true
   Private.multiUnitUnits.raid["raidpet"..i] = true
+end
+
+for i = 1, 100 do
+  Private.baseUnitId["nameplate"..i] = true
+  Private.multiUnitUnits.nameplate["nameplate"..i] = true
 end
 
 Private.dbm_types = {
@@ -2753,133 +3207,77 @@ Private.reset_swing_spells = {
   [GetSpellInfo(6807)] = true, -- Maul
   [GetSpellInfo(20549)] = true, -- War Stomp
   [GetSpellInfo(56815)] = true, -- Rune Strike
+  [GetSpellInfo(5384)] = true, -- Feign Death
+  [GetSpellInfo(2764)] = true, -- Throw
+  [GetSpellInfo(5019)] = true, -- Shoot
 }
+
 Private.reset_ranged_swing_spells = {
   [GetSpellInfo(2764)] = true, -- Throw
   [GetSpellInfo(5019)] = true, -- Shoot Wands
   [GetSpellInfo(75)] = true, -- Auto Shot
+  [GetSpellInfo(5384)] = true, -- Feign Death
 }
 
-WeakAuras.StopMotion = {}
-WeakAuras.StopMotion.texture_types = {
+Private.noreset_swing_spells = {
+  [GetSpellInfo(23063)] = true, -- Dense Dynamite
+  [GetSpellInfo(4054)] = true, -- Rough Dynamite
+  [GetSpellInfo(4064)] = true, -- Rough Copper Bomb
+  [GetSpellInfo(4061)] = true, -- Coarse Dynamite
+  [GetSpellInfo(8331)] = true, -- Ez-Thro Dynamite
+  [GetSpellInfo(4065)] = true, -- Large Copper Bomb
+  [GetSpellInfo(4066)] = true, -- Small Bronze Bomb
+  [GetSpellInfo(4062)] = true, -- Heavy Dynamite
+  [GetSpellInfo(4067)] = true, -- Big Bronze Bomb
+  [GetSpellInfo(4068)] = true, -- Iron Grenade
+  [GetSpellInfo(23000)] = true, -- Ez-Thro Dynamite II
+  [GetSpellInfo(12421)] = true, -- Mithril Frag Bomb
+  [GetSpellInfo(4069)] = true, -- Big Iron Bomb
+  [GetSpellInfo(12562)] = true, -- The Big One
+  [GetSpellInfo(12543)] = true, -- Hi-Explosive Bomb
+  [GetSpellInfo(19769)] = true, -- Thorium Grenade
+  [GetSpellInfo(19784)] = true, -- Dark Iron Bomb
+  [GetSpellInfo(30216)] = true, -- Fel Iron Bomb
+  [GetSpellInfo(19821)] = true, -- Arcane Bomb
+  [GetSpellInfo(39965)] = true, -- Frost Grenade
+  [GetSpellInfo(30461)] = true, -- The Bigger One
+  [GetSpellInfo(30217)] = true, -- Adamantite Grenade
+  [GetSpellInfo(35476)] = true, -- Drums of Battle
+  [GetSpellInfo(35475)] = true, -- Drums of War
+  [GetSpellInfo(35477)] = true, -- Drums of Speed
+  [GetSpellInfo(35478)] = true, -- Drums of Restoration
+  [GetSpellInfo(34120)] = true, -- Steady Shot (rank 1)
+  [GetSpellInfo(19434)] = true, -- Aimed Shot (rank 1)
+  [GetSpellInfo(1464)] = true, -- Slam (rank 1)
+  --35474 Drums of Panic DO reset the swing timer, do not add
 }
+
+WeakAuras.StopMotion = WeakAuras.StopMotion or {}
+WeakAuras.StopMotion.texture_types = WeakAuras.StopMotion.texture_types or {}
+WeakAuras.StopMotion.texture_data = WeakAuras.StopMotion.texture_data or {}
 
 WeakAuras.StopMotion.texture_types.Basic = {
-  ["Interface\\AddOns\\WeakAuras\\Media\\Textures\\StopMotion"] = "Example",
+  ["Interface\\AddOns\\WeakAuras\\Media\\Textures\\stopmotion"] = "Example",
 }
 
-WeakAuras.StopMotion.texture_data = {
-}
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAuras\\Media\\Textures\\StopMotion"] = {
-  ["count"] = 64,
-  ["rows"] = 8,
-  ["columns"] = 8
-}
-
-  WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\circle"] = {
-     ["count"] = 256,
-     ["rows"] = 16,
-     ["columns"] = 16
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\checkmark"] = {
-     ["count"] = 64,
-     ["rows"] = 8,
-     ["columns"] = 8
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\redx"] = {
-     ["count"] = 64,
-     ["rows"] = 8,
-     ["columns"] = 8
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\leftarc"] = {
-     ["count"] = 256,
-     ["rows"] = 16,
-     ["columns"] = 16
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\rightarc"] = {
-     ["count"] = 256,
-     ["rows"] = 16,
-     ["columns"] = 16
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\fireball"] = {
-     ["count"] = 7,
-     ["rows"] = 5,
-     ["columns"] = 5
-  }
-
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Runes\\AURARUNE8"] = {
-     ["count"] = 256,
-     ["rows"] = 16,
-     ["columns"] = 16
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Runes\\legionv"] = {
-     ["count"] = 64,
-     ["rows"] = 8,
-     ["columns"] = 8
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Runes\\legionw"] = {
-     ["count"] = 64,
-     ["rows"] = 8,
-     ["columns"] = 8
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Runes\\legionf"] = {
-     ["count"] = 64,
-     ["rows"] = 8,
-     ["columns"] = 8
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Runes\\legionword"] = {
-     ["count"] = 64,
-     ["rows"] = 8,
-     ["columns"] = 8
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\CellRing"] = {
-      ["count"] = 32,
-      ["rows"] = 8,
-      ["columns"] = 4
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\Gadget"] = {
-     ["count"] = 32,
-     ["rows"] = 8,
-     ["columns"] = 4
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\Radar"] = {
-     ["count"] = 32,
-     ["rows"] = 8,
-     ["columns"] = 4
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\RadarComplex"] = {
-     ["count"] = 32,
-     ["rows"] = 8,
-     ["columns"] = 4
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\Saber"] = {
-     ["count"] = 32,
-     ["rows"] = 8,
-     ["columns"] = 4
-  }
-
-WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\Waveform"] = {
-     ["count"] = 32,
-     ["rows"] = 8,
-     ["columns"] = 4
-  }
-
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAuras\\Media\\Textures\\stopmotion"] = { count = 64, rows = 8, columns = 8 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\circle"] = { count = 256, rows = 16, columns = 16 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\checkmark"] = { count = 64, rows = 8, columns = 8 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\redx"] = { count = 64, rows = 8, columns = 8 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\leftarc"] = { count = 256, rows = 16, columns = 16 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\rightarc"] = { count = 256, rows = 16, columns = 16 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Basic\\fireball"] = { count = 7, rows = 5, columns = 5 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Runes\\AURARUNE8"] = { count = 256, rows = 16, columns = 16 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Runes\\legionv"] = { count = 64, rows = 8, columns = 8 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Runes\\legionw"] = { count = 64, rows = 8, columns = 8 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Runes\\legionf"] = { count = 64, rows = 8, columns = 8 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Runes\\legionword"] = { count = 64, rows = 8, columns = 8 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\CellRing"] = { count = 32, rows = 8, columns = 4 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\Gadget"] = { count = 32, rows = 8, columns = 4 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\Radar"] = { count = 32, rows = 8, columns = 4 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\RadarComplex"] = { count = 32, rows = 8, columns = 4 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\Saber"] = { count = 32, rows = 8, columns = 4 }
+WeakAuras.StopMotion.texture_data["Interface\\AddOns\\WeakAurasStopMotion\\Textures\\Kaitan\\Waveform"] = { count = 32, rows = 8, columns = 4 }
 
 WeakAuras.StopMotion.animation_types = {
   loop = L["Loop"],
@@ -2887,6 +3285,40 @@ WeakAuras.StopMotion.animation_types = {
   once = L["Forward"],
   progress = L["Progress"]
 }
+
+local classIcons = {
+  DRUID = "Interface\\Icons\\Ability_Druid_Maul",
+  HUNTER = "Interface\\Icons\\INV_Weapon_Bow_07",
+  MAGE = "Interface\\Icons\\INV_Staff_13",
+  PALADIN = "Interface\\Icons\\INV_Hammer_01",
+  PRIEST = "Interface\\Icons\\INV_Staff_30",
+  ROGUE = "Interface\\Icons\\INV_ThrowingKnife_04",
+  SHAMAN = "Interface\\Icons\\Spell_Nature_BloodLust",
+  WARLOCK = "Interface\\Icons\\Spell_Nature_FaerieFire",
+  WARRIOR = "Interface\\Icons\\INV_Sword_27",
+  DEATHKNIGHT = "Interface\\Icons\\Spell_Deathknight_ClassIcon",
+}
+
+local specs = {
+  DEATHKNIGHT = { L["Blood"], L["Frost"], L["Unholy"] },
+  DRUID = { L["Balance"], L["Feral Combat"], L["Guardian"], L["Restoration"] },
+  HUNTER = { L["Beast Mastery"], L["Marksmanship"], L["Survival"] },
+  MAGE = { L["Arcane"], L["Fire"], L["Frost"] },
+  PALADIN = { L["Holy"], L["Protection"], L["Retribution"] },
+  PRIEST = { L["Discipline"], L["Holy"], L["Shadow"] },
+  ROGUE = { L["Assassination"], L["Combat"], L["Subtlety"] },
+  SHAMAN = { L["Elemental"], L["Enhancement"], L["Restoration"] },
+  WARLOCK = { L["Affliction"], L["Demonology"], L["Destruction"] },
+  WARRIOR = { L["Arms"], L["Fury"], L["Protection"] }
+}
+
+Private.spec_types_all = {}
+for class, specList in pairs(specs) do
+  for _, specName in ipairs(specList) do
+    Private.spec_types_all[class .. specName] = "|T" .. classIcons[class] .. ":0|t |c" ..
+                                      WA_GetClassColor(class) .. specName .. "|r"
+  end
+end
 
 Private.talent_types_specific = {}
 Private.talents_ids = {

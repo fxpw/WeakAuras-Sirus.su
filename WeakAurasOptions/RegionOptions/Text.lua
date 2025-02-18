@@ -1,26 +1,53 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local SharedMedia = LibStub("LibSharedMedia-3.0");
 local L = WeakAuras.L;
 
-local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
+local screenWidth = math.ceil(GetScreenWidth() / 20) * 20
 
 local indentWidth = 0.15
 local hiddenFontExtra = function()
   return OptionsPrivate.IsCollapsed("text", "text", "fontflags", true)
 end
 
+local dynamicTextInputs = {}
+
 local function createOptions(id, data)
+  local function hideCustomTextOption()
+    if OptionsPrivate.Private.ContainsCustomPlaceHolder(data.displayText) then
+      return false
+    end
+
+    if type(data.conditions) == "table" then
+      for _, condition in ipairs(data.conditions) do
+        if type(condition.changes) == "table" then
+          for _, change in ipairs(condition.changes) do
+            if type(change.property) == "string"
+            and change.property == "displayText"
+            and type(change.value) == "string"
+            and OptionsPrivate.Private.ContainsCustomPlaceHolder(change.value)
+            then
+              return false
+            end
+          end
+        end
+      end
+    end
+
+    return true
+  end
+
   local options = {
     __title = L["Text Settings"],
     __order = 1,
+    __dynamicTextCodes = function()
+      local widget = dynamicTextInputs["displayText"]
+      OptionsPrivate.ToggleTextReplacements(data, widget, "ToggleButton")
+    end,
     displayText = {
       type = "input",
       width = WeakAuras.doubleWidth,
-      desc = function()
-        return L["Dynamic text tooltip"] .. OptionsPrivate.Private.GetAdditionalProperties(data)
-      end,
       multiline = true,
       name = L["Display Text"],
       order = 10,
@@ -34,11 +61,24 @@ local function createOptions(id, data)
         WeakAuras.UpdateThumbnail(data);
         OptionsPrivate.ResetMoverSizer();
       end,
+      control = "WeakAurasMultiLineEditBox",
+      callbacks = {
+        OnEditFocusGained = function(self)
+          local widget = dynamicTextInputs["displayText"]
+          OptionsPrivate.ToggleTextReplacements(data, widget, "OnEditFocusGained")
+        end,
+        OnEditFocusLost = function(self)
+          OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEditFocusLost")
+        end,
+        OnShow = function(self)
+          dynamicTextInputs["displayText"] = self
+        end,
+      }
     },
     customTextUpdate = {
       type = "select",
       width = WeakAuras.doubleWidth,
-      hidden = function() return not OptionsPrivate.Private.ContainsCustomPlaceHolder(data.displayText); end,
+      hidden = hideCustomTextOption,
       name = L["Update Custom Text On..."],
       values = OptionsPrivate.Private.text_check_types,
       order = 36
@@ -267,7 +307,7 @@ local function createOptions(id, data)
   };
 
   OptionsPrivate.commonOptions.AddCodeOption(options, data, L["Custom Function"], "customText", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-text",
-                          37, function() return not OptionsPrivate.Private.ContainsCustomPlaceHolder(data.displayText) end, {"customText"}, false);
+                          37, hideCustomTextOption, {"customText"}, false);
 
   -- Add Text Format Options
   local hidden = function()
@@ -294,16 +334,34 @@ local function createOptions(id, data)
   end
 
   local total, index = 0, 1
-  for child in OptionsPrivate.Private.TraverseLeafsOrAura(data) do
+  for _ in OptionsPrivate.Private.TraverseLeafsOrAura(data) do
     total = total + 1
   end
 
   for child in OptionsPrivate.Private.TraverseLeafsOrAura(data) do
+    local texts = {}
+    if child.displayText ~= "" then
+      tinsert(texts, child.displayText)
+    end
+    for _, condition in ipairs(child.conditions) do
+      if type(condition.changes) == "table" then
+        for _, change in ipairs(condition.changes) do
+          if type(change.property) == "string"
+          and change.property == "displayText"
+          and type(change.value) == "string"
+          and change.value ~= ""
+          then
+            tinsert(texts, change.value)
+          end
+        end
+      end
+    end
+
     local get = function(key)
       return child["displayText_format_" .. key]
     end
-    local input = child.displayText
-    OptionsPrivate.AddTextFormatOption(input, true, get, addOption, hidden, setHidden, false, index, total)
+
+    OptionsPrivate.AddTextFormatOption(texts, true, get, addOption, hidden, setHidden, false, index, total)
     index = index + 1
   end
 
@@ -321,7 +379,7 @@ local function createOptions(id, data)
 end
 
 local function createThumbnail()
-  local borderframe = CreateFrame("FRAME", nil, UIParent);
+  local borderframe = CreateFrame("Frame", nil, UIParent);
   borderframe:SetWidth(32);
   borderframe:SetHeight(32);
 
@@ -414,7 +472,7 @@ local function createIcon()
     displayText = "World\nof\nWarcraft";
   };
 
-  local thumbnail = createThumbnail(UIParent);
+  local thumbnail = createThumbnail();
   modifyThumbnail(UIParent, thumbnail, data);
   thumbnail.mask:SetPoint("BOTTOMLEFT", thumbnail, "BOTTOMLEFT", 3, 3);
   thumbnail.mask:SetPoint("TOPRIGHT", thumbnail, "TOPRIGHT", -3, -3);
@@ -431,4 +489,7 @@ local templates = {
   }
 }
 
-WeakAuras.RegisterRegionOptions("text", createOptions, createIcon, L["Text"], createThumbnail, modifyThumbnail, L["Shows one or more lines of text, which can include dynamic information such as progress or stacks"], templates);
+OptionsPrivate.registerRegions = OptionsPrivate.registerRegions or {}
+table.insert(OptionsPrivate.registerRegions, function()
+  OptionsPrivate.Private.RegisterRegionOptions("text", createOptions, createIcon, L["Text"], createThumbnail, modifyThumbnail, L["Shows one or more lines of text, which can include dynamic information such as progress or stacks"], templates);
+end)

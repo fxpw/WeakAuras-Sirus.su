@@ -1,8 +1,9 @@
+if not WeakAuras.IsLibsOK() then return end
 --[[-----------------------------------------------------------------------------
 SnippetButton Widget, based on AceGUI Button (and WA ToolbarButton)
 Graphical Button.
 -------------------------------------------------------------------------------]]
-local Type, Version = "WeakAurasSnippetButton", 1
+local Type, Version = "WeakAurasSnippetButton", 3
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then
   return
@@ -26,7 +27,6 @@ local function Button_OnClick(frame, ...)
     PlaySound(852) -- SOUNDKIT.IG_MAINMENU_OPTION
     frame.title:Hide()
     frame.renameEditBox:Show()
-    frame.renameEditBox:Enable()
     frame.renameEditBox:SetText(frame.title:GetText())
     frame.renameEditBox:HighlightText()
     frame.renameEditBox:SetFocus()
@@ -58,9 +58,6 @@ local function Control_OnLeave(frame)
 end
 
 local function rename_complete(self, ...)
-  self:ClearFocus()
-  AceGUI:ClearFocus()
-  self:EnableMouse(false)
   self:Hide()
   self:GetParent().obj:Fire("OnEnterPressed", ...)
 end
@@ -73,6 +70,12 @@ local methods = {
     self:SetDisabled(false)
     self:SetTitle()
     self:SetEditable(false)
+
+    self.ntex:SetTexture("Interface\\BUTTONS\\UI-Listbox-Highlight2.blp")
+    self.ntex:SetVertexColor(0.8, 0.8, 0.8, 0.25)
+    self.htex:SetTexture("Interface\\BUTTONS\\UI-Listbox-Highlight2.blp")
+    self.htex:SetVertexColor(0.3, 0.5, 1, 0.5)
+    self.ptex:SetTexture(1, 1, 1, 0.2)
   end,
   -- ["OnRelease"] = nil,
 
@@ -113,11 +116,18 @@ local methods = {
       AceGUI:ClearFocus()
       self.title:Hide()
       self.renameEditBox:Show()
-      self.renameEditBox:EnableMouse(true)
       self.renameEditBox:SetText(self.title:GetText())
       self.renameEditBox:HighlightText()
       self.renameEditBox:SetFocus()
     end
+  end,
+  ["SetDynamicTextStyle"] = function(self)
+    self.ntex:SetTexture(nil)
+    self.htex:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\Options")
+    self.htex:SetTexCoord(0.774414, 0.957031, 0.000976562, 0.0214844)
+    self.htex:SetVertexColor(1, 1, 1, 1)
+    self.ptex:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\Options")
+    self.ptex:SetTexCoord(0.589844, 0.772461, 0.000976562, 0.0214844)
   end
 }
 
@@ -137,7 +147,7 @@ local function Constructor()
   button:SetHeight(24)
   button:SetWidth(170)
 
-  local deleteButton = CreateFrame("BUTTON", nil, button)
+  local deleteButton = CreateFrame("Button", nil, button)
   deleteButton:SetPoint("RIGHT", button, "RIGHT", -3, 0)
   deleteButton:SetSize(20, 20)
   local deleteTex = deleteButton:CreateTexture()
@@ -157,25 +167,20 @@ local function Constructor()
   button.title = title
 
   local ntex = button:CreateTexture()
-  ntex:SetTexture("Interface\\BUTTONS\\UI-Listbox-Highlight2.blp")
-  ntex:SetVertexColor(0.8, 0.8, 0.8, 0.25)
   ntex:SetPoint("TOPLEFT", 0, -1)
   ntex:SetPoint("BOTTOMRIGHT", 0, 1)
   button:SetNormalTexture(ntex)
 
   local htex = button:CreateTexture()
-  htex:SetTexture("Interface\\BUTTONS\\UI-Listbox-Highlight2.blp")
-  htex:SetVertexColor(0.3, 0.5, 1, 0.5)
   htex:SetBlendMode("ADD")
   htex:SetAllPoints(ntex)
   button:SetHighlightTexture(htex)
   button.htex = htex
 
   local ptex = button:CreateTexture()
-  ptex:SetTexture(1, 1, 1, 0.2)
-  htex:SetAllPoints(ntex)
+  ptex:SetAllPoints(ntex)
   button:SetPushedTexture(ptex)
-  button.ptext = ptex
+  button.ptex = ptex
 
   local delHighlight = deleteButton:CreateTexture()
   delHighlight:SetTexture([[Interface\Buttons\CancelButton-Highlight]])
@@ -193,14 +198,12 @@ local function Constructor()
   renameEditBox:SetHeight(14)
   renameEditBox:SetPoint("TOPLEFT", title, "TOPLEFT")
   renameEditBox:SetPoint("BOTTOMRIGHT", title, "BOTTOMRIGHT")
-  renameEditBox:EnableMouse(false)
   renameEditBox:Hide()
   renameEditBox:SetScript(
     "OnEscapePressed",
     function(self)
       self:ClearFocus()
       AceGUI:ClearFocus()
-      self:EnableMouse(false)
       self:Hide()
       title:Show()
     end
@@ -208,9 +211,6 @@ local function Constructor()
   renameEditBox:SetScript(
     "OnEditFocusLost",
     function(self)
-      self:ClearFocus()
-      AceGUI:ClearFocus()
-      self:EnableMouse(false)
       self:Hide()
       title:Show()
     end
@@ -222,6 +222,7 @@ local function Constructor()
     title = title,
     frame = button,
     type = Type,
+    ntex = ntex,
     htex = htex,
     ptex = ptex,
     deleteButton = deleteButton,

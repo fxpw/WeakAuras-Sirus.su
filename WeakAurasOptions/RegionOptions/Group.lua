@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local L = WeakAuras.L;
@@ -413,7 +413,7 @@ local function createDistributeAlignOptions(id, data)
           local childData = WeakAuras.GetData(childId);
           local childRegion = WeakAuras.GetRegion(childId)
           if(childData and childRegion) then
-            if(v > 0) then
+            if(v >= 0) then
               if(childData.selfPoint:find("LEFT")) then
                 childData.xOffset = xOffset;
               elseif(childData.selfPoint:find("RIGHT")) then
@@ -455,7 +455,7 @@ local function createDistributeAlignOptions(id, data)
         end
         local spaced;
         local previousData;
-        for index, childId in pairs(data.controlledChildren) do
+        for _, childId in pairs(data.controlledChildren) do
           local childData = WeakAuras.GetData(childId);
           if(childData) then
             local _, bottom, _, top = getRect(childData);
@@ -497,7 +497,7 @@ local function createDistributeAlignOptions(id, data)
           local childData = WeakAuras.GetData(childId);
           local childRegion = WeakAuras.GetRegion(childId)
           if(childData and childRegion) then
-            if(v > 0) then
+            if(v >= 0) then
               if(childData.selfPoint:find("BOTTOM")) then
                 childData.yOffset = yOffset;
               elseif(childData.selfPoint:find("TOP")) then
@@ -585,6 +585,31 @@ local function createOptions(id, data)
         OptionsPrivate.ResetMoverSizer();
       end
     },
+    alpha = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = L["Group Alpha"],
+      order = 46,
+      min = 0,
+      max = 1,
+      bigStep = 0.01,
+      isPercent = true
+    },
+    sharedFrameLevel = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Flat Framelevels"],
+      desc = L["The group and all direct children will share the same base frame level."],
+      order = 47,
+      set = function(info, v)
+        data.sharedFrameLevel = v
+        WeakAuras.Add(data)
+        for parent in OptionsPrivate.Private.TraverseParents(data) do
+          WeakAuras.Add(parent)
+        end
+      end
+    },
     endHeader = {
       type = "header",
       order = 100,
@@ -629,7 +654,7 @@ end
 
 local function createThumbnail()
   -- frame
-  local thumbnail = CreateFrame("FRAME", nil, UIParent);
+  local thumbnail = CreateFrame("Frame", nil, UIParent);
   thumbnail:SetWidth(32);
   thumbnail:SetHeight(32);
 
@@ -648,7 +673,7 @@ end
 
 local function createDefaultIcon(parent)
   -- default Icon
-  local defaultIcon = CreateFrame("FRAME", nil, parent);
+  local defaultIcon = CreateFrame("Frame", nil, parent);
   parent.defaultIcon = defaultIcon;
 
   local t1 = defaultIcon:CreateTexture(nil, "ARTWORK");
@@ -672,7 +697,7 @@ end
 
 -- Modify preview thumbnail
 local function modifyThumbnail(parent, frame, data)
-  function frame:SetIcon(path)
+  function frame:SetIcon()
     if data.groupIcon then
       local success = frame.icon:SetTexture(data.groupIcon)
       if success then
@@ -693,15 +718,19 @@ local function modifyThumbnail(parent, frame, data)
     frame.defaultIcon:Show()
   end
 
-  frame:SetIcon(nil)
+  frame:SetIcon()
 end
 
 -- Create "new region" preview
 local function createIcon()
-  local thumbnail = createThumbnail(UIParent)
+  local thumbnail = createThumbnail()
   thumbnail.defaultIcon = createDefaultIcon(thumbnail)
   return thumbnail
 end
 
 -- Register new region type options with WeakAuras
-WeakAuras.RegisterRegionOptions("group", createOptions, createIcon, L["Group"], createThumbnail, modifyThumbnail, L["Controls the positioning and configuration of multiple displays at the same time"]);
+OptionsPrivate.registerRegions = OptionsPrivate.registerRegions or {}
+table.insert(OptionsPrivate.registerRegions, function()
+  OptionsPrivate.Private.RegisterRegionOptions("group", createOptions, createIcon, L["Group"], createThumbnail, modifyThumbnail,
+                                              L["Controls the positioning and configuration of multiple displays at the same time"])
+end)

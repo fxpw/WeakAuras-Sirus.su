@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
@@ -7,18 +7,18 @@ local pairs, type, error = pairs, type, error
 local _G = _G
 
 -- WoW APIs
-local GetScreenWidth, GetScreenHeight, CreateFrame, GetAddOnInfo, PlaySound, IsAddOnLoaded, LoadAddOn, UnitName
-  = GetScreenWidth, GetScreenHeight, CreateFrame, GetAddOnInfo, PlaySound, IsAddOnLoaded, LoadAddOn, UnitName
+local GetScreenWidth, GetScreenHeight, CreateFrame, GetAddOnInfo, UnitName
+  = GetScreenWidth, GetScreenHeight, CreateFrame, GetAddOnInfo, UnitName
 
 local AceGUI = LibStub("AceGUI-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
+local SharedMedia = LibStub("LibSharedMedia-3.0")
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
-local displayButtons = WeakAuras.displayButtons
-local regionOptions = WeakAuras.regionOptions
+local displayButtons = OptionsPrivate.displayButtons
 local tempGroup = OptionsPrivate.tempGroup
 local aceOptions = {}
 
@@ -44,7 +44,7 @@ local function CreateFrameSizer(frame, callback, position)
     xOffset2, yOffset2 = -1, -1
   end
 
-  local handle = CreateFrame("BUTTON", nil, frame)
+  local handle = CreateFrame("Button", nil, frame)
   handle:SetPoint(position, frame)
   handle:SetSize(25, 25)
   handle:EnableMouse()
@@ -88,7 +88,7 @@ local minWidth = 750
 local minHeight = 240
 
 function OptionsPrivate.CreateFrame()
-  CreateFrame("frame", "WeakAuras_DropDownMenu", nil, "UIDropDownMenuTemplate")
+  CreateFrame("Frame", "WeakAuras_DropDownMenu", nil, "UIDropDownMenuTemplate")
   local frame
   local db = OptionsPrivate.savedVars.db
   local odb = OptionsPrivate.savedVars.odb
@@ -141,14 +141,15 @@ function OptionsPrivate.CreateFrame()
 
     OptionsPrivate.Private.ClearFakeStates()
 
-
-    for id, data in pairs(WeakAuras.regions) do
-      data.region:Collapse()
-      data.region:OptionsClosed()
-      if WeakAuras.clones[id] then
-        for cloneId, cloneRegion in pairs(WeakAuras.clones[id]) do
-          cloneRegion:Collapse()
-          cloneRegion:OptionsClosed()
+    for id, data in pairs(OptionsPrivate.Private.regions) do
+      if data.region then
+        data.region:Collapse()
+        data.region:OptionsClosed()
+        if OptionsPrivate.Private.clones[id] then
+          for _, cloneRegion in pairs(OptionsPrivate.Private.clones[id]) do
+            cloneRegion:Collapse()
+            cloneRegion:OptionsClosed()
+          end
         end
       end
     end
@@ -162,6 +163,10 @@ function OptionsPrivate.CreateFrame()
 
     if OptionsPrivate.Private.personalRessourceDisplayFrame then
       OptionsPrivate.Private.personalRessourceDisplayFrame:OptionsClosed()
+    end
+
+    if frame.dynamicTextCodesFrame  then
+      frame.dynamicTextCodesFrame:Hide()
     end
   end)
 
@@ -179,6 +184,7 @@ function OptionsPrivate.CreateFrame()
   height = max(height, minHeight)
   frame:SetWidth(width)
   frame:SetHeight(height)
+
 
   OptionsPrivate.SetTitle()
 
@@ -202,6 +208,7 @@ function OptionsPrivate.CreateFrame()
     commitWindowChanges()
   end)
 
+
   frame.bottomRightResizer = CreateFrameSizer(frame, commitWindowChanges, "BOTTOMRIGHT")
 
   frame.UpdateFrameVisible = function(self)
@@ -209,13 +216,12 @@ function OptionsPrivate.CreateFrame()
     if self.minimized then
       WeakAurasOptionsTitleText:Hide()
       self.buttonsContainer.frame:Hide()
-      self.texturePicker.frame:Hide()
-      self.iconPicker.frame:Hide()
-      self.modelPicker.frame:Hide()
-      self.importexport.frame:Hide()
-      self.update.frame:Hide()
-      self.texteditor.frame:Hide()
-      self.codereview.frame:Hide()
+      for _, fn in ipairs({"TexturePicker", "IconPicker", "ModelPicker", "ImportExport", "TextEditor", "CodeReview", "UpdateFrame", "DebugLog"}) do
+        local obj = OptionsPrivate[fn](self, true)
+        if obj then
+          obj.frame:Hide()
+        end
+      end
       if self.newView then
         self.newView.frame:Hide()
       end
@@ -227,6 +233,7 @@ function OptionsPrivate.CreateFrame()
       self.tipFrame:Hide()
       self:HideTip()
       self.bottomRightResizer:Hide()
+      self.dynamicTextCodesFrame:Hide()
     else
       WeakAurasOptionsTitleText:Show()
       self.bottomRightResizer:Show()
@@ -238,50 +245,34 @@ function OptionsPrivate.CreateFrame()
       else
         self.buttonsContainer.frame:Hide()
         self.container.frame:Hide()
+        self.dynamicTextCodesFrame:Hide()
         self:HideTip()
       end
+      local widgets = {
+        { window = "texture",      title = L["Texture Picker"],       fn = "TexturePicker" },
+        { window = "icon",         title = L["Icon Picker"],          fn = "IconPicker" },
+        { window = "model",        title = L["Model Picker"],         fn = "ModelPicker" },
+        { window = "importexport", title = L["Import / Export"],      fn = "ImportExport" },
+        { window = "texteditor",   title = L["Code Editor"],          fn = "TextEditor" },
+        { window = "codereview",   title = L["Custom Code Viewer"],   fn = "CodeReview" },
+        { window = "debuglog",     title = L["Debug Log"],            fn = "DebugLog" },
+        { window = "update",       title = L["Update"],               fn = "UpdateFrame" },
+      }
 
-      if self.window == "texture" then
-        OptionsPrivate.SetTitle(L["Texture Picker"])
-        self.texturePicker.frame:Show()
-      else
-        self.texturePicker.frame:Hide()
+      for _, widget in ipairs(widgets) do
+        local obj = OptionsPrivate[widget.fn](self, true)
+        if self.window == widget.window then
+          OptionsPrivate.SetTitle(widget.title)
+          if obj then
+            obj.frame:Show()
+          end
+        else
+          if obj then
+            obj.frame:Hide()
+          end
+        end
       end
 
-      if self.window == "icon" then
-        OptionsPrivate.SetTitle(L["Icon Picker"])
-        self.iconPicker.frame:Show()
-      else
-        self.iconPicker.frame:Hide()
-      end
-
-      if self.window == "model" then
-        OptionsPrivate.SetTitle(L["Model Picker"])
-        self.modelPicker.frame:Show()
-      else
-        self.modelPicker.frame:Hide()
-      end
-
-      if self.window == "importexport" then
-        OptionsPrivate.SetTitle(L["Import / Export"])
-        self.importexport.frame:Show()
-      else
-        self.importexport.frame:Hide()
-      end
-
-      if self.window == "texteditor" then
-        OptionsPrivate.SetTitle(L["Code Editor"])
-        self.texteditor.frame:Show()
-      else
-        self.texteditor.frame:Hide()
-      end
-
-      if self.window == "codereview" then
-        OptionsPrivate.SetTitle(L["Custom Code Viewer"])
-        self.codereview.frame:Show()
-      else
-        self.codereview.frame:Hide()
-      end
       if self.window == "newView" then
         OptionsPrivate.SetTitle(L["New Template"])
         self.newView.frame:Show()
@@ -289,12 +280,6 @@ function OptionsPrivate.CreateFrame()
         if self.newView then
           self.newView.frame:Hide()
         end
-      end
-      if self.window == "update" then
-        OptionsPrivate.SetTitle(L["Update"])
-        self.update.frame:Show()
-      else
-        self.update.frame:Hide()
       end
       if self.window == "default" then
         if self.loadProgessVisible then
@@ -366,15 +351,33 @@ function OptionsPrivate.CreateFrame()
   tipPopupTitle:SetJustifyV("TOP")
 
   local tipPopupLabel = tipPopup:CreateFontString(nil, "BACKGROUND", "GameFontWhite")
+  local fontPath = SharedMedia:Fetch("font", "Fira Sans Medium")
+  if (fontPath) then
+    tipPopupLabel:SetFont(fontPath, 12)
+  end
   tipPopupLabel:SetPoint("TOPLEFT", tipPopupTitle, "BOTTOMLEFT", 0, -6)
   tipPopupLabel:SetPoint("TOPRIGHT", tipPopupTitle, "BOTTOMRIGHT", 0, -6)
   tipPopupLabel:SetJustifyH("LEFT")
   tipPopupLabel:SetJustifyV("TOP")
 
-  local urlWidget = CreateFrame("EDITBOX", nil, tipPopup, "WA_InputBoxTemplate")
+  local tipPopupLabelCJ = tipPopup:CreateFontString(nil, "BACKGROUND", "GameFontWhite")
+  tipPopupLabelCJ:SetFont("Fonts\\ARKai_T.ttf", 12)
+  tipPopupLabelCJ:SetPoint("TOPLEFT", tipPopupLabel, "BOTTOMLEFT", 0, 0)
+  tipPopupLabelCJ:SetPoint("TOPRIGHT", tipPopupLabel, "BOTTOMRIGHT", 0, 0)
+  tipPopupLabelCJ:SetJustifyH("LEFT")
+  tipPopupLabelCJ:SetJustifyV("TOP")
+
+  local tipPopupLabelK = tipPopup:CreateFontString(nil, "BACKGROUND", "GameFontWhite")
+  tipPopupLabelK:SetFont("Fonts\\K_Pagetext.TTF", 12)
+  tipPopupLabelK:SetPoint("TOPLEFT", tipPopupLabelCJ, "BOTTOMLEFT", 0, 0)
+  tipPopupLabelK:SetPoint("TOPRIGHT", tipPopupLabelCJ, "BOTTOMRIGHT", 0, 0)
+  tipPopupLabelK:SetJustifyH("LEFT")
+  tipPopupLabelK:SetJustifyV("TOP")
+
+  local urlWidget = CreateFrame("EditBox", nil, tipPopup, "WA_InputBoxTemplate")
   urlWidget:SetFont(STANDARD_TEXT_FONT, 12)
-  urlWidget:SetPoint("TOPLEFT", tipPopupLabel, "BOTTOMLEFT", 6, 0)
-  urlWidget:SetPoint("TOPRIGHT", tipPopupLabel, "BOTTOMRIGHT", 0, 0)
+  urlWidget:SetPoint("TOPLEFT", tipPopupLabelK, "BOTTOMLEFT", 6, 0)
+  urlWidget:SetPoint("TOPRIGHT", tipPopupLabelK, "BOTTOMRIGHT", 0, 0)
   urlWidget:SetScript("OnChar", function() urlWidget:SetText(urlWidget.text); urlWidget:HighlightText(); end);
   urlWidget:SetScript("OnMouseUp", function() urlWidget:HighlightText(); end);
   urlWidget:SetScript("OnEscapePressed", function() tipPopup:Hide() end)
@@ -387,7 +390,8 @@ function OptionsPrivate.CreateFrame()
   tipPopupCtrlC:SetJustifyV("TOP")
   tipPopupCtrlC:SetText(L["Press Ctrl+C to copy the URL"])
 
-  local function ToggleTip(referenceWidget, url, title, description, rightAligned)
+  local function ToggleTip(referenceWidget, url, title, description, descriptionCJ, descriptionK, rightAligned, width)
+    width = width or 400
     if tipPopup:IsVisible() and urlWidget.text == url then
       tipPopup:Hide()
       return
@@ -396,10 +400,9 @@ function OptionsPrivate.CreateFrame()
     urlWidget:SetText(url)
     tipPopupTitle:SetText(title)
     tipPopupLabel:SetText(description)
+    tipPopupLabelCJ:SetText(descriptionCJ)
+    tipPopupLabelK:SetText(descriptionK)
     urlWidget:HighlightText()
-
-    tipPopup:SetWidth(400)
-    tipPopup:SetHeight(26 + tipPopupTitle:GetHeight() + tipPopupLabel:GetHeight() + urlWidget:GetHeight() + tipPopupCtrlC:GetHeight())
 
     tipPopup:ClearAllPoints();
     if rightAligned then
@@ -407,23 +410,72 @@ function OptionsPrivate.CreateFrame()
     else
       tipPopup:SetPoint("BOTTOMLEFT", referenceWidget, "TOPLEFT", -6, 4)
     end
+
+    tipPopup:SetWidth(width)
     tipPopup:Show()
+    tipPopup:SetHeight(26 + tipPopupTitle:GetHeight() + tipPopupLabel:GetHeight() + tipPopupLabelCJ:GetHeight() + tipPopupLabelK:GetHeight()
+                       + urlWidget:GetHeight() + tipPopupCtrlC:GetHeight())
+    -- This does somehow fix an issue where the first popup after a game restart doesn't show up.
+    -- This isn't reproducable after a simple ui reload, so no idea what goes wrong, but with this line here,
+    -- it seems to work.
+    tipPopupLabel:GetRect()
+    tipPopupLabelCJ:GetRect()
+    tipPopupLabelK:GetRect()
   end
+
   OptionsPrivate.ToggleTip = ToggleTip
 
-  local addFooter = function(title, texture, url, description, rightAligned)
+  local addFooter = function(title, texture, url, description, descriptionCJ, descriptionK, rightAligned, width)
     local button = AceGUI:Create("WeakAurasToolbarButton")
     button:SetText(title)
     button:SetTexture(texture)
     button:SetCallback("OnClick", function()
-      ToggleTip(button.frame, url, title, description, rightAligned)
+      ToggleTip(button.frame, url, title, description, descriptionCJ, descriptionK, rightAligned, width)
     end)
     button.frame:Show()
     return button.frame
   end
 
+  local function lineWrapDiscordList(list)
+    local patreonLines = {}
+    local lineLength = 0
+    local currentLine = {}
+    for _, patreon in ipairs(list) do
+      if lineLength + #patreon + 2 * #currentLine > 130 then
+        tinsert(patreonLines, table.concat(currentLine, ", ") .. ", ")
+        currentLine = {}
+        tinsert(currentLine, patreon)
+        lineLength = #patreon
+      else
+        lineLength = lineLength + #patreon
+        tinsert(currentLine, patreon)
+      end
+    end
+    if #currentLine > 0 then
+      tinsert(patreonLines, table.concat(currentLine, ", "))
+    end
+    return table.concat(patreonLines, "\n")
+  end
+
+  local thanksList = L["We thank"] .. "\n"
+                     .. L["All maintainers of the libraries we use, especially:"] .. "\n"
+                     .. "• " .. L["Ace: Funkeh, Nevcairiel"] .. "\n"
+                     .. "• " .. L["LibCompress: Galmok"]  .. "\n"
+                     .. "• " .. L["LibCustomGlow: Dooez"] .. "\n"
+                     .. "• " .. L["LibDeflate: Yoursafety"] .. "\n"
+                     .. "• " .. L["LibDispel: Simpy"] .. "\n"
+                     .. "• " .. L["LibSerialize: Sanjo"] .. "\n"
+                     .. "• " .. L["Our translators (too many to name)"] .. "\n"
+                     .. "• " .. L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] .. "\n"
+
+  thanksList = thanksList .. lineWrapDiscordList(OptionsPrivate.Private.DiscordList)
+
+  local thanksListCJ = lineWrapDiscordList(OptionsPrivate.Private.DiscordListCJ)
+  local thanksListK = lineWrapDiscordList(OptionsPrivate.Private.DiscordListK)
+
+
   local discordButton = addFooter(L["Join Discord"], [[Interface\AddOns\WeakAuras\Media\Textures\discord.tga]], "https://discord.gg/UXSc7nt",
-            L["Chat with WeakAuras experts on our Discord server."])
+                                  L["Chat with WeakAuras experts on our Discord server."])
   discordButton:SetParent(tipFrame)
   discordButton:SetPoint("LEFT", tipFrame, "LEFT")
 
@@ -432,21 +484,41 @@ function OptionsPrivate.CreateFrame()
   documentationButton:SetParent(tipFrame)
   documentationButton:SetPoint("LEFT", discordButton, "RIGHT", 10, 0)
 
-  local awesomeWotlkButton
-  if not WeakAuras.isAwesomeEnabled() then
-    awesomeWotlkButton = addFooter("Awesome WotLK", [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/FrostAtom/awesome_wotlk",
-              L["Unlock Nameplate units in WeakAuras with awesome_wotlk binary patch!"])
-    awesomeWotlkButton:SetParent(tipFrame)
-    awesomeWotlkButton:SetPoint("LEFT", documentationButton, "RIGHT", 10, 0)
+  local thanksButton = addFooter(L["Thanks"], [[Interface\AddOns\WeakAuras\Media\Textures\waheart.tga]],
+                                 "https://www.patreon.com/WeakAuras", thanksList, thanksListCJ, thanksListK, nil, 800)
+  thanksButton:SetParent(tipFrame)
+  thanksButton:SetPoint("LEFT", documentationButton, "RIGHT", 10, 0)
+
+  local changelogButton
+  if OptionsPrivate.changelog then
+    local changelog
+    if OptionsPrivate.changelog.highlightText then
+      changelog = L["Highlights"] .. "\n" .. OptionsPrivate.changelog.highlightText
+    else
+      changelog = OptionsPrivate.changelog.commitText
+    end
+
+    changelogButton = addFooter(L["Changelog"], "", OptionsPrivate.changelog.fullChangeLogUrl,
+                                      changelog, nil, nil, false, 800)
+    changelogButton:SetParent(tipFrame)
+    changelogButton:SetPoint("LEFT", thanksButton, "RIGHT", 10, 0)
   end
 
-  local reportbugButton = addFooter(L["Found a Bug?"], [[Interface\AddOns\WeakAuras\Media\Textures\bug_report.tga]], "https://github.com/Bunny67/WeakAuras-WotLK/issues/new?assignees=&labels=bug&template=bug_report.md&title=",
-  L["Report bugs on our issue tracker."], true)
+  local awesomeWotlkButton
+  if not WeakAuras.isAwesomeEnabled() then
+    awesomeWotlkButton = addFooter("Awesome WotLK", [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/FrostAtom/awesome_wotlk/releases",
+                                    L["Unlock nameplate anchoring & units in WeakAuras with the Awesome WotLK client patch"])
+    awesomeWotlkButton:SetParent(tipFrame)
+    awesomeWotlkButton:SetPoint("LEFT", changelogButton or thanksButton, "RIGHT", 10, 0)
+  end
+
+  local reportbugButton = addFooter(L["Found a Bug?"], [[Interface\AddOns\WeakAuras\Media\Textures\bug_report.tga]], "https://github.com/NoM0Re/WeakAuras-WotLK/issues",
+                                    L["Report bugs on our issue tracker."], nil, nil, true)
   reportbugButton:SetParent(tipFrame)
   reportbugButton:SetPoint("RIGHT", tipFrame, "RIGHT")
 
-  local wagoButton = addFooter(L["Find Auras"], [[Interface\AddOns\WeakAuras\Media\Textures\wago.tga]], "https://wago.io",
-            L["Browse Wago, the largest collection of auras."], true)
+  local wagoButton = addFooter(L["Find Auras"], [[Interface\AddOns\WeakAuras\Media\Textures\wago.tga]], "https://wago.io/search/imports/wow/all?q=3.3.5",
+                                L["Browse Wago, the largest collection of auras."], nil, nil, true)
   wagoButton:SetParent(tipFrame)
   wagoButton:SetPoint("RIGHT", reportbugButton, "LEFT", -10, 0)
 
@@ -482,19 +554,10 @@ function OptionsPrivate.CreateFrame()
   container.content:SetPoint("TOPLEFT", 0, -28)
   container.content:SetPoint("BOTTOMRIGHT", 0, 0)
   frame.container = container
-
-  frame.texturePicker = OptionsPrivate.TexturePicker(frame)
-  frame.iconPicker = OptionsPrivate.IconPicker(frame)
-  frame.modelPicker = OptionsPrivate.ModelPicker(frame)
-  frame.importexport = OptionsPrivate.ImportExport(frame)
-  frame.texteditor = OptionsPrivate.TextEditor(frame)
-  frame.codereview = OptionsPrivate.CodeReview(frame)
-  frame.update = OptionsPrivate.UpdateFrame(frame)
-
   frame.moversizer, frame.mover = OptionsPrivate.MoverSizer(frame)
 
   -- filter line
-  local filterInput = CreateFrame("editbox", "WeakAurasFilterInput", frame, "WA_InputBoxTemplate")
+  local filterInput = CreateFrame("EditBox", "WeakAurasFilterInput", frame, "WA_InputBoxTemplate")
   filterInput:SetAutoFocus(false)
   filterInput:SetTextInsets(16, 20, 0, 0)
 
@@ -652,6 +715,7 @@ function OptionsPrivate.CreateFrame()
     self.loadProgessVisible = visible
     self:UpdateFrameVisible()
   end
+
 
   local buttonsScroll = AceGUI:Create("ScrollFrame")
   buttonsScroll:SetLayout("ButtonsScrollLayout")
@@ -882,6 +946,115 @@ function OptionsPrivate.CreateFrame()
   unloadedButton.childButtons = {}
   frame.unloadedButton = unloadedButton
 
+  -- Sidebar used for Dynamic Text Replacements
+  local sidegroup = AceGUI:Create("WeakAurasInlineGroup")
+  sidegroup.frame:SetParent(frame)
+  sidegroup.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
+  sidegroup.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
+  sidegroup.frame:Show()
+  sidegroup:SetLayout("flow")
+
+  local dynamicTextCodesFrame = CreateFrame("Frame", "WeakAurasTextReplacements", sidegroup.frame, "WA_PortraitFrameTemplate")
+  dynamicTextCodesFrame:HidePortrait()
+  dynamicTextCodesFrame:SetPoint("TOPLEFT", sidegroup.frame, "TOPRIGHT", 20, 0)
+  dynamicTextCodesFrame:SetPoint("BOTTOMLEFT", sidegroup.frame, "BOTTOMRIGHT", 20, 0)
+  dynamicTextCodesFrame:SetWidth(250)
+  dynamicTextCodesFrame:SetScript("OnHide", function()
+    OptionsPrivate.currentDynamicTextInput = nil
+  end)
+  frame.dynamicTextCodesFrame = dynamicTextCodesFrame
+
+  local dynamicTextCodesFrameTitle
+  if dynamicTextCodesFrame.TitleContainer and dynamicTextCodesFrame.TitleContainer.TitleText then
+    dynamicTextCodesFrameTitle = dynamicTextCodesFrame.TitleContainer.TitleText
+  elseif dynamicTextCodesFrame.TitleText then
+    dynamicTextCodesFrameTitle = dynamicTextCodesFrame.TitleText
+  end
+  if dynamicTextCodesFrameTitle then
+    dynamicTextCodesFrameTitle:SetText("Dynamic Text Replacements")
+    dynamicTextCodesFrameTitle:SetJustifyH("CENTER")
+    dynamicTextCodesFrameTitle:SetPoint("LEFT", dynamicTextCodesFrame, "TOPLEFT")
+    dynamicTextCodesFrameTitle:SetPoint("RIGHT", dynamicTextCodesFrame, "TOPRIGHT", -10, 0)
+  end
+
+  local dynamicTextCodesLabel = AceGUI:Create("Label")
+  dynamicTextCodesLabel:SetText(L["Insert text replacement codes to make text dynamic."])
+  dynamicTextCodesLabel:SetFontObject(GameFontNormal)
+  dynamicTextCodesLabel:SetPoint("TOP", dynamicTextCodesFrame, "TOP", 0, -35)
+  dynamicTextCodesLabel:SetFontObject(GameFontNormalSmall)
+  dynamicTextCodesLabel.frame:SetParent(dynamicTextCodesFrame)
+  dynamicTextCodesLabel.frame:Show()
+
+  local dynamicTextCodesScrollContainer = AceGUI:Create("SimpleGroup")
+  dynamicTextCodesScrollContainer.frame:SetParent(dynamicTextCodesFrame)
+  dynamicTextCodesScrollContainer.frame:SetPoint("TOP", dynamicTextCodesLabel.frame, "BOTTOM", 0, -15)
+  dynamicTextCodesScrollContainer.frame:SetPoint("LEFT", dynamicTextCodesFrame, "LEFT", 15, 0)
+  dynamicTextCodesScrollContainer.frame:SetPoint("BOTTOMRIGHT", dynamicTextCodesFrame, "BOTTOMRIGHT", -15, 5)
+  dynamicTextCodesScrollContainer:SetFullWidth(true)
+  dynamicTextCodesScrollContainer:SetFullHeight(true)
+  dynamicTextCodesScrollContainer:SetLayout("Fill")
+
+
+  local dynamicTextCodesScrollList = AceGUI:Create("ScrollFrame")
+  dynamicTextCodesScrollList:SetLayout("List")
+  dynamicTextCodesScrollList:SetPoint("TOPLEFT", dynamicTextCodesScrollContainer.frame, "TOPLEFT")
+  dynamicTextCodesScrollList:SetPoint("BOTTOMRIGHT", dynamicTextCodesScrollContainer.frame, "BOTTOMRIGHT")
+  dynamicTextCodesScrollList.frame:SetParent(dynamicTextCodesFrame)
+  dynamicTextCodesScrollList:FixScroll()
+  dynamicTextCodesScrollList.scrollframe:SetScript(
+    "OnScrollRangeChanged",
+    function(frame)
+      frame.obj:DoLayout()
+    end
+  )
+
+  dynamicTextCodesScrollList.scrollframe:SetScript(
+    "OnSizeChanged",
+    function(frame)
+      if frame.obj.scrollBarShown then
+        frame.obj.content.width = frame.obj.content.original_width - 10
+        frame.obj.scrollframe:SetPoint("BOTTOMRIGHT", -10, 0)
+      end
+    end
+  )
+
+
+  dynamicTextCodesFrame.scrollList = dynamicTextCodesScrollList
+  dynamicTextCodesFrame.label = dynamicTextCodesLabel
+  dynamicTextCodesFrame:Hide()
+
+  function OptionsPrivate.ToggleTextReplacements(data, widget, event)
+    -- If the text edit has focus when the user clicks on the button, we'll get two events:
+    -- a) The OnEditFocusLost
+    -- b) The ToggleButton OnClick event
+    -- Since we want to hide the text replacement window in that case,
+    -- ignore the ToggleButton if it is directly after the  OnEditFocusLost
+    local currentTime = GetTime()
+    if event == "ToggleButton"
+      and dynamicTextCodesFrame.lastCaller
+      and dynamicTextCodesFrame.lastCaller.event == "OnEditFocusLost"
+      and currentTime - dynamicTextCodesFrame.lastCaller.time < 0.2
+    then
+      return
+    end
+
+    dynamicTextCodesFrame.lastCaller = {
+      event = event,
+      time = currentTime,
+    }
+
+    if event == "OnEnterPressed" then
+      dynamicTextCodesFrame:Hide()
+    elseif event == "OnEditFocusGained" or not dynamicTextCodesFrame:IsShown() then
+      dynamicTextCodesFrame:Show()
+      if OptionsPrivate.currentDynamicTextInput ~= widget then
+        OptionsPrivate.UpdateTextReplacements(dynamicTextCodesFrame, data)
+      end
+      OptionsPrivate.currentDynamicTextInput = widget
+    elseif not dynamicTextCodesFrame:IsMouseOver() then -- Prevents hiding when clicking inside the frame
+      dynamicTextCodesFrame:Hide()
+    end
+  end
 
   frame.ClearOptions = function(self, id)
     aceOptions[id] = nil
@@ -896,6 +1069,13 @@ function OptionsPrivate.CreateFrame()
           frame:ClearOptions(tempGroup.id)
         end
       end
+    end
+  end
+
+  frame.ReloadOptions = function(self)
+    if self.pickedDisplay then
+      self:ClearAndUpdateOptions(self.pickedDisplay, true)
+      self:FillOptions()
     end
   end
 
@@ -1032,6 +1212,10 @@ function OptionsPrivate.CreateFrame()
     if data.controlledChildren and #data.controlledChildren == 0 then
       WeakAurasOptions:NewAura()
     end
+
+    if frame.dynamicTextCodesFrame then
+      frame.dynamicTextCodesFrame:Hide()
+    end
   end
 
   frame.ClearPick = function(self, id)
@@ -1122,7 +1306,7 @@ function OptionsPrivate.CreateFrame()
     end
 
     if targetId then
-      local pickedButton = WeakAuras.GetDisplayButton(targetId)
+      local pickedButton = OptionsPrivate.GetDisplayButton(targetId)
       if pickedButton.data.controlledChildren then
         targetIsDynamicGroup = pickedButton.data.regionType == "dynamicgroup"
       else
@@ -1131,6 +1315,7 @@ function OptionsPrivate.CreateFrame()
         targetIsDynamicGroup = parentData and parentData.regionType == "dynamicgroup"
       end
     end
+    self.dynamicTextCodesFrame:Hide()
     self.moversizer:Hide()
     self.pickedOption = "New"
 
@@ -1155,9 +1340,9 @@ function OptionsPrivate.CreateFrame()
       containerScroll:AddChild(simpleLabel)
 
       local button = AceGUI:Create("WeakAurasNewButton")
-      button:SetTitle(L["From Template"])
+      button:SetTitle(L["Premade Auras"])
       button:SetDescription(L["Offer a guided way to create auras for your character"])
-      button:SetIcon("Interface\\Icons\\INV_Misc_Book_06")
+      button:SetIcon("Interface\\Icons\\Inv_misc_book_09")
       button:SetClick(function()
         OptionsPrivate.OpenTriggerTemplate(nil, self:GetTargetAura())
       end)
@@ -1176,11 +1361,11 @@ function OptionsPrivate.CreateFrame()
     end
 
     local regionTypesSorted = {}
-    for regionType, regionData in pairs(regionOptions) do
+    for regionType, regionData in pairs(OptionsPrivate.Private.regionOptions) do
       tinsert(regionTypesSorted, regionType)
     end
 
-    -- Sort group + dynamic group first, then the others alphabeticaly
+    -- Sort group + dynamic group first, then the others alphabetically
     table.sort(regionTypesSorted, function(a, b)
       if (a == "group") then
         return true
@@ -1197,14 +1382,14 @@ function OptionsPrivate.CreateFrame()
         return false
       end
 
-      return regionOptions[a].displayName < regionOptions[b].displayName
+      return OptionsPrivate.Private.regionOptions[a].displayName < OptionsPrivate.Private.regionOptions[b].displayName
     end)
 
     for index, regionType in ipairs(regionTypesSorted) do
       if (targetIsDynamicGroup and (regionType == "group" or regionType == "dynamicgroup")) then
         -- Dynamic groups can't contain group/dynamic groups
       else
-        local regionData = regionOptions[regionType]
+        local regionData = OptionsPrivate.Private.regionOptions[regionType]
         local button = AceGUI:Create("WeakAurasNewButton")
         button:SetTitle(regionData.displayName)
         if(type(regionData.icon) == "string" or type(regionData.icon) == "table") then
@@ -1258,8 +1443,8 @@ function OptionsPrivate.CreateFrame()
     }
 
     if not frame.importThumbnail then
-      local thumbnail = regionOptions["text"].createThumbnail(UIParent)
-      regionOptions["text"].modifyThumbnail(UIParent, thumbnail, data)
+      local thumbnail = OptionsPrivate.Private.regionOptions["text"].createThumbnail(UIParent)
+      OptionsPrivate.Private.regionOptions["text"].modifyThumbnail(UIParent, thumbnail, data)
       thumbnail.mask:SetPoint("BOTTOMLEFT", thumbnail, "BOTTOMLEFT", 3, 3)
       thumbnail.mask:SetPoint("TOPRIGHT", thumbnail, "TOPRIGHT", -3, -3)
       frame.importThumbnail = thumbnail
@@ -1379,7 +1564,7 @@ function OptionsPrivate.CreateFrame()
       alreadySelected[child.id] = true
     end
 
-    for index, id in ipairs(batchSelection) do
+    for _, id in ipairs(batchSelection) do
       if not alreadySelected[id] then
         displayButtons[id]:Pick()
         tinsert(tempGroup.controlledChildren, id)

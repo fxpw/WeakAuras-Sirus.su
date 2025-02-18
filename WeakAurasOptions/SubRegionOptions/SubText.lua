@@ -1,7 +1,6 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
-local SharedMedia = LibStub("LibSharedMedia-3.0")
 local L = WeakAuras.L
 
 local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20
@@ -18,6 +17,8 @@ local self_point_types = {
   CENTER = L["Center"],
   AUTO = L["Automatic"]
 }
+
+local dynamicTextInputs = {}
 
 local function createOptions(parentData, data, index, subIndex)
   -- The toggles for font flags is intentionally not keyed on the id
@@ -46,17 +47,45 @@ local function createOptions(parentData, data, index, subIndex)
     },
     text_text = {
       type = "input",
-      width = WeakAuras.normalWidth,
-      desc = function()
-        return L["Dynamic text tooltip"] .. OptionsPrivate.Private.GetAdditionalProperties(parentData)
-      end,
+      width = WeakAuras.normalWidth - 0.15,
       name = L["Display Text"],
       order = 11,
       set = function(info, v)
         data.text_text = OptionsPrivate.Private.ReplaceLocalizedRaidMarkers(v)
         WeakAuras.Add(parentData)
         WeakAuras.ClearAndUpdateOptions(parentData.id)
-      end
+      end,
+      control = "WeakAurasInput",
+      callbacks = {
+        OnEditFocusGained = function(self)
+          local widget = dynamicTextInputs[subIndex]
+          OptionsPrivate.ToggleTextReplacements(parentData, widget, "OnEditFocusGained")
+        end,
+        OnEditFocusLost = function(self)
+          OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEditFocusLost")
+        end,
+        OnEnterPressed = function(self)
+          OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEnterPressed")
+        end,
+        OnShow = function(self)
+          dynamicTextInputs[subIndex] = self
+        end,
+      }
+    },
+    text_replacements_button = {
+      type = "execute",
+      width = 0.15,
+      name = L["Dynamic Text Replacements"],
+      desc = L["There are several special codes available to make this text dynamic. Click to view a list with all dynamic text codes."],
+      order = 11.1,
+      func = function()
+        local widget = dynamicTextInputs[subIndex]
+        OptionsPrivate.ToggleTextReplacements(parentData, widget, "ToggleButton")
+      end,
+      imageWidth = 24,
+      imageHeight = 24,
+      control = "WeakAurasIcon",
+      image = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\sidebar",
     },
     text_font = {
       type = "select",
@@ -273,7 +302,7 @@ local function createOptions(parentData, data, index, subIndex)
     control = "WeakAurasExpandSmall",
     name = function()
       local selfPoint = data.text_selfPoint ~= "AUTO" and self_point_types[data.text_selfPoint]
-      local anchorPoint = anchors[data.text_anchorPoint or "CENTER"] or anchors["CENTER"]
+      local anchorPoint = anchors[data.anchor_point or "CENTER"] or anchors["CENTER"]
 
       local xOffset = data.text_anchorXOffset or 0
       local yOffset = data.text_anchorYOffset or 0
@@ -335,7 +364,7 @@ local function createOptions(parentData, data, index, subIndex)
     hidden = hiddenFunction
   }
 
-  options.text_anchorPoint = {
+  options.anchor_point = {
     type = "select",
     width = WeakAuras.normalWidth,
     name = function()
@@ -395,11 +424,28 @@ local function createOptions(parentData, data, index, subIndex)
       return true
     end
 
-    for index, subRegion in ipairs(parentData.subRegions) do
+    for _, subRegion in ipairs(parentData.subRegions) do
       if subRegion.type == "subtext" and OptionsPrivate.Private.ContainsCustomPlaceHolder(subRegion.text_text) then
         return false
       end
     end
+
+    if type(parentData.conditions) == "table" then
+      for _, condition in ipairs(parentData.conditions) do
+        if type(condition.changes) == "table" then
+          for _, change in ipairs(condition.changes) do
+            if type(change.property) == "string"
+            and change.property:match("sub%.%d+%.text_text")
+            and type(change.value) == "string"
+            and OptionsPrivate.Private.ContainsCustomPlaceHolder(change.value)
+            then
+              return false
+            end
+          end
+        end
+      end
+    end
+
     return true
   end
 
@@ -449,30 +495,42 @@ local function createOptions(parentData, data, index, subIndex)
     options["text_text_format_" .. key] = option
   end
 
-  if parentData.controlledChildren then
-    local list = {}
-    for child in OptionsPrivate.Private.TraverseLeafs(parentData) do
-      if child.subRegions then
-        local childSubRegion = child.subRegions[index]
-        if childSubRegion then
-          tinsert(list, childSubRegion)
+  local list = {}
+  for child in OptionsPrivate.Private.TraverseLeafsOrAura(parentData) do
+    if child.subRegions then
+      local childSubRegion = child.subRegions[index]
+      if childSubRegion then
+        tinsert(list, child)
+      end
+    end
+  end
+
+  for listIndex, child in ipairs(list) do
+    local childSubRegion = child.subRegions[index]
+    local get = function(key)
+      return childSubRegion["text_text_format_" .. key]
+    end
+    local texts = {}
+    if type(childSubRegion.text_text) == "string" and childSubRegion.text_text ~= "" then
+      -- found text of subregion
+      tinsert(texts, childSubRegion.text_text)
+    end
+
+    for _, condition in ipairs(child.conditions) do
+      if type(condition.changes) == "table" then
+        for _, change in ipairs(condition.changes) do
+          if change.property == "sub."..index..".text_text"
+            and type(change.value) == "string"
+            and change.value ~= ""
+          then
+            -- found a condition editing text of that subregion
+            tinsert(texts, change.value)
+          end
         end
       end
     end
 
-    for listIndex, childSubRegion in ipairs(list) do
-      local get = function(key)
-        return childSubRegion["text_text_format_" .. key]
-      end
-      local input = childSubRegion["text_text"]
-      OptionsPrivate.AddTextFormatOption(input, true, get, addOption, hidden, setHidden, false, listIndex, #list)
-    end
-  else
-    local get = function(key)
-      return data["text_text_format_" .. key]
-    end
-    local input = data["text_text"]
-    OptionsPrivate.AddTextFormatOption(input, true, get, addOption, hidden, setHidden, false)
+    OptionsPrivate.AddTextFormatOption(texts, true, get, addOption, hidden, setHidden, false, listIndex, #list)
   end
 
   addOption("footer", {

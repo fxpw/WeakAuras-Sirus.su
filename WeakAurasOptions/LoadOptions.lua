@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local L = WeakAuras.L
@@ -17,14 +17,9 @@ local ValidateNumeric = WeakAuras.ValidateNumeric;
 local spellCache = WeakAuras.spellCache;
 
 local function CorrectSpellName(input)
-  local inputId = tonumber(input);
+  local inputId = tonumber(input)
   if(inputId) then
-    local name = GetSpellInfo(inputId);
-    if(name) then
-      return inputId;
-    else
-      return nil;
-    end
+    return inputId
   elseif(input) then
     local link;
     if(input:sub(1,1) == "\124") then
@@ -35,6 +30,16 @@ local function CorrectSpellName(input)
     if(link) and link ~= "" then
       local itemId = link:match("spell:(%d+)");
       return tonumber(itemId);
+    else
+      local spells = spellCache.GetSpellsMatching(input)
+      if type(spells) == "table" then
+        for id in pairs(spells) do
+          if id and tonumber(id) and id > 0 and IsSpellKnown(tonumber(id)) then
+            return id
+          end
+        end
+        return next(spells)
+      end
     end
   end
 end
@@ -48,8 +53,6 @@ local function CorrectItemName(input)
     if(link) then
       local itemId = link:match("item:(%d+)");
       return tonumber(itemId);
-    else
-      return nil;
     end
   end
 end
@@ -361,7 +364,11 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
         options["use_"..name].desc = arg.desc;
       end
       if(arg.required) then
-        trigger["use_"..realname] = true;
+        if arg.type == "multiselect" and arg.multiNoSingle then
+          trigger["use_"..realname] = false
+        else
+          trigger["use_"..realname] = true
+        end
         if not(triggertype) then
           options["use_"..name].disabled = true;
         else
@@ -432,7 +439,10 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
               name = L["Operator"],
               order = order,
               hidden = disabled or hidden,
-              values = arg.operator_types == "without_equal" and OptionsPrivate.Private.operator_types_without_equal or OptionsPrivate.Private.operator_types,
+              values = arg.operator_types == "without_equal" and OptionsPrivate.Private.operator_types_without_equal
+                       or arg.operator_types == "only_equal" and OptionsPrivate.Private.equality_operator_types
+                       or OptionsPrivate.Private.operator_types,
+
               get = function()
                 return getValue(trigger, "use_"..realname, realname.."_operator", multiEntry, entryNumber)
               end,
@@ -633,7 +643,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
             hidden = disabled or hidden,
             image = function()
               local value = getValue(trigger, "use_"..realname, realname, multiEntry, entryNumber)
-              if value then
+              if type(value) == "number" or type(value) == "string" then
                 if(arg.type == "aura") then
                   local icon = spellCache.GetIcon(value);
                   return icon and tostring(icon) or "", 18, 18;
@@ -650,6 +660,9 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
             end,
             disabled = function()
               local value = getValue(trigger, nil, realname, multiEntry, entryNumber)
+              if type(value) ~= "number" and type(value) ~= "string" then
+                return true
+              end
               return not ((arg.type == "aura" and value and spellCache.GetIcon(value)) or (arg.type == "spell" and value and GetSpellInfo(value)) or (arg.type == "item" and value and GetItemIcon(value)))
             end
           };
@@ -687,13 +700,14 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
                 end
               elseif(arg.type == "spell") then
                 local useExactSpellId = (arg.showExactOption and getValue(trigger, nil, "use_exact_"..realname, multiEntry, entryNumber))
-                if value and value ~= "" then
+                if value and value ~= "" and (type(value) == "number" or type(value) == "string") then
                   local spellID = WeakAuras.SafeToNumber(value)
                   if spellID then
                     local spellName = GetSpellInfo(WeakAuras.SafeToNumber(value))
                     if spellName then
                       return ("%s (%s)"):format(spellID, spellName) .. "\0" .. value
                     end
+                    return ("%s (%s)"):format(spellID, L["Unknown Spell"]) .. "\0" .. value
                   elseif not useExactSpellId and not arg.noValidation then
                     local spellName = GetSpellInfo(value)
                     if spellName then
@@ -874,7 +888,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
               values = WeakAuras[arg.values];
             end
           end
-          local sortOrder = arg.sorted and OptionsPrivate.Private.SortOrderForValues(values) or nil
+          local sortOrder = arg.sorted and (arg.sortOrder or OptionsPrivate.Private.SortOrderForValues(values)) or nil
           options[name..suffix] = {
             type = "select",
             width = WeakAuras.normalWidth,
@@ -946,6 +960,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
                 v = arg.multiConvertKey(trigger, v)
               end
               if v then
+                trigger[realname] = trigger[realname] or {}
                 trigger[realname].multi = trigger[realname].multi or {};
                 if (calledFromSetAll or arg.multiTristate) then
                   trigger[realname].multi[v] = calledFromSetAll;

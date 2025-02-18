@@ -1,3 +1,4 @@
+if not WeakAuras.IsLibsOK() then return end
 --[[-----------------------------------------------------------------------------
 ToolbarButton Widget, based on AceGUI Button
 Graphical Button.

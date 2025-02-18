@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: WeakAuras
 ## Author: The WeakAuras Team
-## Version: 4.1.2
+## Version: 5.19.1
 ## Notes: A powerful, comprehensive utility for displaying graphics and information based on buffs, debuffs, and other triggers.
 ## Notes-esES: Potente y completa aplicación que te permitirá mostrar por pantalla múltiples diseños, basados en beneficios, perjuicios y otros activadores.
 ## Notes-deDE: Ein leistungsfähiges, umfassendes Addon zur grafischen Darstellung von Informationen von Auren, Cooldowns, Timern und vielem mehr.
@@ -15,22 +15,24 @@
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
 ## SavedVariables: WeakAurasSaved
-## OptionalDeps: Ace3, LibCompress, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Masque, GTFO, LibButtonGlow-1.0, LibSpellRange-1.0, LibRangeCheck-2.0, LibDBIcon-1.0, LibClassicDurations, LibClassicCasterino, LibGetFrame-1.0
+## OptionalDeps: Ace3, LibCompress, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Masque, GTFO, LibButtonGlow-1.0, LibSpellRange-1.0, LibRangeCheck-2.0, LibDBIcon-1.0, LibClassicDurations, LibClassicCasterino, LibGetFrame-1.0, !!AddonLocale, DBM-Core, BigWigs
 
 Templates.lua
 Templates.xml
-compat.lua
+Compatibility.lua
 Pools.lua
 
 # External code + initialization
 embeds.xml
 Init.lua
 locales.xml
+TimeUtil.lua
 ArchiveTypes\Repository.lua
 DefaultOptions.lua
 
 # Core files
 Types.lua
+LibGroupTalentsWrapper.lua
 Prototypes.lua
 Profiling.lua
 WeakAuras.lua
@@ -39,23 +41,32 @@ Transmission.lua
 Modernize.lua
 Animations.lua
 Conditions.lua
+AnchorToWeakAuras.lua
 
 # Trigger systems
-BuffTrigger.lua
 BuffTrigger2.lua
 GenericTrigger.lua
+BossMods.lua
+
+# Helper Systems
 AuraWarnings.lua
 AuraEnvironment.lua
+DebugLog.lua
+SubscribableObject.lua
 
 # Region support
+RegionTypes\SmoothStatusBarMixin.lua
 RegionTypes\RegionPrototype.lua
+RegionTypes\Empty.lua
 RegionTypes\ProgressTexture.lua
+BaseRegions\Texture.lua
 RegionTypes\Texture.lua
 RegionTypes\AuraBar.lua
 RegionTypes\Icon.lua
 RegionTypes\Text.lua
 RegionTypes\Group.lua
 RegionTypes\DynamicGroup.lua
+BaseRegions\StopMotion.lua
 RegionTypes\StopMotion.lua
 RegionTypes\Model.lua
 
@@ -66,3 +77,8 @@ SubRegionTypes\Border.lua
 SubRegionTypes\Glow.lua
 SubRegionTypes\Tick.lua
 SubRegionTypes\Model.lua
+SubRegionTypes\StopMotion.lua
+SubRegionTypes\Texture.lua
+
+#Misc
+DiscordList.lua

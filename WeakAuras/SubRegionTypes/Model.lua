@@ -1,7 +1,6 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
-local SharedMedia = LibStub("LibSharedMedia-3.0");
 local L = WeakAuras.L;
 
 Private.barmodels = {}
@@ -155,7 +154,7 @@ local funcs = {
 }
 
 local function create()
-  local subRegion = CreateFrame("FRAME", nil, UIParent)
+  local subRegion = CreateFrame("Frame", nil, UIParent)
   --subRegion:SetClipsChildren(true)
 
   for k, v in pairs(funcs) do
@@ -173,8 +172,6 @@ end
 local function onRelease(subRegion)
   subRegion:Hide()
 end
-
-
 
 local function modify(parent, region, parentData, data, first)
   if region.model then
@@ -205,6 +202,7 @@ local function modify(parent, region, parentData, data, first)
     extra_height = data.extra_height or 0
   end
 
+  region:ClearAllPoints()
   region:SetPoint("TOPLEFT", anchor ,"TOPLEFT", -extra_width/2, extra_height/2)
   region:SetPoint("BOTTOMRIGHT", anchor ,"BOTTOMRIGHT", extra_width/2, -extra_height/2)
 
@@ -222,6 +220,7 @@ local function supports(regionType)
          or regionType == "icon"
          or regionType == "aurabar"
          or regionType == "text"
+         or regionType == "empty"
 end
 
 WeakAuras.RegisterSubRegionType("submodel", L["Model"], supports, create, modify, onAcquire, onRelease, default, nil, properties);

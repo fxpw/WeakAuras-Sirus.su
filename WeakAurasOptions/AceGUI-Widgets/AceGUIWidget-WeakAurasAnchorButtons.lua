@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 
 local Type, Version = "WeakAurasAnchorButtons", 2
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)

@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local SharedMedia = LibStub("LibSharedMedia-3.0");
@@ -22,20 +22,22 @@ local default = {
   scale = 1,
 };
 
+Private.regionPrototype.AddAlphaToDefault(default);
+
 -- Called when first creating a new region/display
 local function create(parent)
   -- Main region
-  local region = CreateFrame("FRAME", nil, parent);
+  local region = CreateFrame("Frame", nil, parent);
   region.regionType = "group"
   region:SetMovable(true);
   region:SetWidth(2);
   region:SetHeight(2);
 
   -- Border region
-  local border = CreateFrame("frame", nil, region);
+  local border = CreateFrame("Frame", nil, region);
   region.border = border;
 
-  WeakAuras.regionPrototype.create(region);
+  Private.regionPrototype.create(region);
 
   local oldSetFrameLevel = region.SetFrameLevel
   region.SetFrameLevel = function(self, level)
@@ -90,7 +92,7 @@ local function modify(parent, region, data)
   else
     data.selfPoint = "CENTER";
   end
-  WeakAuras.regionPrototype.modify(parent, region, data);
+  Private.regionPrototype.modify(parent, region, data);
   -- Localize
   local border = region.border;
 
@@ -138,7 +140,7 @@ local function modify(parent, region, data)
         -- Scan children for visibility
         if not childVisible then
           for child in Private.TraverseLeafs(data) do
-            local childRegion = WeakAuras.regions[child.id] and WeakAuras.regions[child.id].region;
+            local childRegion = Private.regions[child.id] and Private.regions[child.id].region;
             if childRegion and childRegion.toShow then
               childVisible = true;
               break;
@@ -179,8 +181,8 @@ local function modify(parent, region, data)
     region.border:Hide()
   end
 
-  WeakAuras.regionPrototype.modifyFinish(parent, region, data);
+  Private.regionPrototype.modifyFinish(parent, region, data);
 end
 
 -- Register new region type with WeakAuras
-WeakAuras.RegisterRegionType("group", create, modify, default);
+Private.RegisterRegionType("group", create, modify, default);

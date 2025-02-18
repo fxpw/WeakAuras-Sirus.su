@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local L = WeakAuras.L;
@@ -19,7 +19,12 @@ local function createOptions(id, data)
       width = 0.15,
       order = 2,
       func = function()
-        OptionsPrivate.OpenTexturePicker(data, {}, {
+        local path = {}
+        local paths = {}
+        for child in OptionsPrivate.Private.TraverseLeafsOrAura(data) do
+          paths[child.id] = path
+        end
+        OptionsPrivate.OpenTexturePicker(data, paths, {
           texture = "foregroundTexture",
           color = "foregroundColor",
           rotation = "rotation",
@@ -46,7 +51,12 @@ local function createOptions(id, data)
       width = 0.15,
       order = 6,
       func = function()
-        OptionsPrivate.OpenTexturePicker(data, {}, {
+        local path = {}
+        local paths = {}
+        for child in OptionsPrivate.Private.TraverseLeafsOrAura(data) do
+          paths[child.id] = path
+        end
+        OptionsPrivate.OpenTexturePicker(data, paths, {
           texture = "backgroundTexture",
           color = "backgroundColor",
           rotation = "rotation",
@@ -277,18 +287,12 @@ local function createOptions(id, data)
       hidden = function() return not data.slanted or data.orientation == "CLOCKWISE" or data.orientation == "ANTICLOCKWISE" end,
       values = OptionsPrivate.Private.slant_mode
     },
-    spacer = {
-      type = "header",
-      name = "",
-      order = 56
-    },
     endHeader = {
       type = "header",
       order = 100,
       name = "",
     },
   };
-  options = WeakAuras.regionPrototype.AddAdjustedDurationOptions(options, data, 57);
 
   local overlayInfo = OptionsPrivate.Private.GetOverlayInfo(data);
   if (overlayInfo and next(overlayInfo)) then
@@ -332,6 +336,7 @@ local function createOptions(id, data)
 
   return {
     progresstexture = options,
+    progressOptions = OptionsPrivate.commonOptions.ProgressOptions(data),
     position = OptionsPrivate.commonOptions.PositionOptions(id, data),
   };
 end
@@ -401,7 +406,7 @@ local function Transform(tx, x, y, angle, aspect) -- Translates texture to x, y 
 end
 
 local function createThumbnail()
-  local borderframe = CreateFrame("FRAME", nil, UIParent);
+  local borderframe = CreateFrame("Frame", nil, UIParent);
   borderframe:SetWidth(32);
   borderframe:SetHeight(32);
 
@@ -410,7 +415,7 @@ local function createThumbnail()
   border:SetTexture("Interface\\BUTTONS\\UI-Quickslot2.blp");
   border:SetTexCoord(0.2, 0.8, 0.2, 0.8);
 
-  local region = CreateFrame("FRAME", nil, borderframe);
+  local region = CreateFrame("Frame", nil, borderframe);
   borderframe.region = region;
   region:SetWidth(32);
   region:SetHeight(32);
@@ -713,7 +718,7 @@ local function createIcon()
     backgroundColor = {0.5, 0.5, 0.5, 0.5}
   };
 
-  local thumbnail = createThumbnail(UIParent);
+  local thumbnail = createThumbnail();
   modifyThumbnail(UIParent, thumbnail, data, nil, 32);
 
   thumbnail.elapsed = 0;
@@ -797,4 +802,7 @@ local templates = {
   },
 }
 
-WeakAuras.RegisterRegionOptions("progresstexture", createOptions, createIcon, L["Progress Texture"], createThumbnail, modifyThumbnail, L["Shows a texture that changes based on duration"], templates);
+OptionsPrivate.registerRegions = OptionsPrivate.registerRegions or {}
+table.insert(OptionsPrivate.registerRegions, function()
+  OptionsPrivate.Private.RegisterRegionOptions("progresstexture", createOptions, createIcon, L["Progress Texture"], createThumbnail, modifyThumbnail, L["Shows a texture that changes based on duration"], templates);
+end)

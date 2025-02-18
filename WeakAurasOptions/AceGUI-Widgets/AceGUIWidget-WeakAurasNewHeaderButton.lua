@@ -1,6 +1,6 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 
-local Type, Version = "WeakAurasNewHeaderButton", 20
+local Type, Version = "WeakAurasNewHeaderButton", 21
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -56,7 +56,7 @@ Constructor
 
 local function Constructor()
   local name = Type..AceGUI:GetNextWidgetNum(Type)
-  local button = CreateFrame("BUTTON", name, UIParent, "OptionsListButtonTemplate");
+  local button = CreateFrame("Button", name, UIParent, "OptionsListButtonTemplate");
   button:SetHeight(20);
   button:SetWidth(1000);
   button:SetDisabledFontObject("GameFontNormal");

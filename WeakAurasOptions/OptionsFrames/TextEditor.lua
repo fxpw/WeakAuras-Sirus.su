@@ -1,9 +1,8 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
 local pairs, type, ipairs = pairs, type, ipairs
-local loadstring = loadstring
 local gsub = gsub
 
 -- WoW APIs
@@ -55,6 +54,7 @@ local editor_themes = {
 }
 
 if not WeakAurasSaved.editor_tab_spaces then WeakAurasSaved.editor_tab_spaces = 4 end
+if not WeakAurasSaved.editor_font_size then WeakAurasSaved.editor_font_size = 12 end -- set default font size if missing
 local color_scheme = {[0] = "|r"}
 local function set_scheme()
   if not WeakAurasSaved.editor_theme then
@@ -162,7 +162,7 @@ local function ConstructTextEditor(frame)
   editor:DisableButton(true)
   local fontPath = SharedMedia:Fetch("font", "Fira Mono Medium")
   if (fontPath) then
-    editor.editBox:SetFont(fontPath, 12)
+    editor.editBox:SetFont(fontPath, WeakAurasSaved.editor_font_size)
   end
   group:AddChild(editor)
 
@@ -181,6 +181,7 @@ local function ConstructTextEditor(frame)
   -- The indention lib overrides GetText, but for the line number
   -- display we ned the original, so save it here.
   local originalGetText = editor.editBox.GetText
+  local originalSetText = editor.editBox.SetText
   set_scheme()
   IndentationLib.enable(editor.editBox, color_scheme, WeakAurasSaved.editor_tab_spaces)
 
@@ -263,6 +264,14 @@ local function ConstructTextEditor(frame)
           menuList = "spaces"
         },
       level)
+      UIDropDownMenu_AddButton(
+        {
+          text = WeakAuras.newFeatureString .. L["Font Size"],
+          hasArrow = true,
+          notCheckable = true,
+          menuList = "sizes"
+        },
+      level)
     elseif menu == "spaces" then
       local spaces = {2,4}
       for _, i in pairs(spaces) do
@@ -278,6 +287,23 @@ local function ConstructTextEditor(frame)
               IndentationLib.enable(editor.editBox, color_scheme, WeakAurasSaved.editor_tab_spaces)
               editor.editBox:SetText(editor.editBox:GetText().."\n")
               IndentationLib.indentEditbox(editor.editBox)
+            end
+          },
+        level)
+      end
+    elseif menu == "sizes" then
+      local sizes = {10, 12, 14, 16}
+      for _, i in pairs(sizes) do
+        UIDropDownMenu_AddButton(
+          {
+            text = i,
+            isNotRadio = false,
+            checked = function()
+              return WeakAurasSaved.editor_font_size == i
+            end,
+            func = function()
+              WeakAurasSaved.editor_font_size = i
+              editor.editBox:SetFont(fontPath, WeakAurasSaved.editor_font_size)
             end
           },
         level)
@@ -475,16 +501,72 @@ local function ConstructTextEditor(frame)
       end
   )
 
-  -- CTRL + S saves and closes, ESC cancels and closes
+  editor.editBox.timeMachine = {}
+  editor.editBox.timeMachinePos = 1
+  local TimeMachineMaximumRollback = 10
+
   editor.editBox:HookScript(
     "OnKeyDown",
-    function(_, key)
+    function(self, key)
+      -- CTRL + S saves and closes
       if IsControlKeyDown() and key == "S" then
         group:Close()
+      elseif IsControlKeyDown() and key == "Z" then
+        self.ignoreNextKeyPress = true
+        if self.timeMachine[self.timeMachinePos + 1] then
+          self.timeMachinePos = self.timeMachinePos + 1
+          self.skipOnTextChanged = true
+          originalSetText(self, self.timeMachine[self.timeMachinePos][1])
+          self:SetCursorPosition(self.timeMachine[self.timeMachinePos][2])
+        end
+      elseif IsControlKeyDown() and key == "Y" then
+        self.ignoreNextKeyPress = true
+        if self.timeMachine[self.timeMachinePos - 1] then
+          self.timeMachinePos = self.timeMachinePos - 1
+          self.skipOnTextChanged = true
+          originalSetText(self, self.timeMachine[self.timeMachinePos][1])
+          self:SetCursorPosition(self.timeMachine[self.timeMachinePos][2])
+        end
       end
-      if key == "ESCAPE" then
-        group:CancelClose()
+    end
+  )
+
+  editor.editBox:HookScript(
+    "OnKeyUp",
+    function(self, key)
+      if self.ignoreNextKeyPress then
+        self.ignoreNextKeyPress = false -- Reset
       end
+    end
+  )
+
+  editor.editBox:HookScript(
+    "OnTextChanged",
+    function(self, userInput)
+      if not userInput then return end
+      if self.skipOnTextChanged then
+        self.skipOnTextChanged = false
+        return
+      end
+      local cursorPosition = self:GetCursorPosition()
+      local text = originalGetText(self)
+      if IndentationLib then
+        text, cursorPosition = IndentationLib.stripWowColorsWithPos(text, cursorPosition)
+      end
+      if self.timeMachine[1] and text == self.timeMachine[1][1] then
+        return
+      end
+      -- if cursor is not at position 1, remove elements before cursor
+      for i = 2, self.timeMachinePos do
+        table.remove(self.timeMachine, 1)
+      end
+      -- insert current text
+      table.insert(self.timeMachine, 1, {text, cursorPosition - 1})
+      -- timeMachine is limited to a number of TimeMachineMaximumRollback elements
+      for i = #self.timeMachine, TimeMachineMaximumRollback + 1, -1 do
+        table.remove(self.timeMachine, i)
+      end
+      self.timeMachinePos = 1
     end
   )
 
@@ -582,9 +664,15 @@ local function ConstructTextEditor(frame)
       helpButton:Hide()
     end
     if (frame.window == "texture") then
-      frame.texturePicker:CancelClose()
+      local texturepicker = OptionsPrivate.TexturePicker(frame, true)
+      if texturepicker then
+        texturepicker:CancelClose()
+      end
     elseif (frame.window == "icon") then
-      frame.iconPicker:CancelClose()
+      local iconpicker = OptionsPrivate.IconPicker(frame, true)
+      if iconpicker then
+        iconpicker:CancelClose()
+      end
     end
     frame.window = "texteditor"
     frame:UpdateFrameVisible()
@@ -598,10 +686,12 @@ local function ConstructTextEditor(frame)
       end
     end
     editor:SetLabel(title)
+    editor.editBox.timeMachine = {}
+    editor.editBox.timeMachinePos = 1
     editor.editBox:SetScript(
       "OnEscapePressed",
       function()
-        group:CancelClose()
+        -- catch it so that escape doesn't default to losing focus (after which another escape would close config)
       end
     )
     self.oldOnTextChanged = editor.editBox:GetScript("OnTextChanged")
@@ -614,15 +704,12 @@ local function ConstructTextEditor(frame)
         else
           local func, errorString
           if (enclose) then
-            func, errorString = loadstring("return function() " .. str .. "\n end")
+            func, errorString = OptionsPrivate.Private.LoadFunction("return function() " .. str .. "\n end", true)
           else
-            func, errorString = loadstring("return " .. str)
+            func, errorString = OptionsPrivate.Private.LoadFunction("return " .. str, true)
           end
           if not errorString and validator then
-            local ok, validate = xpcall(func, function(err) errorString = err end)
-            if ok then
-              errorString = validator(validate)
-            end
+            errorString = validator(func)
           end
           if errorString then
             if self.url then
@@ -742,6 +829,7 @@ local function ConstructTextEditor(frame)
 
     editor.editBox:SetScript("OnTextChanged", self.oldOnTextChanged)
     editor:ClearFocus()
+
     frame.window = "default"
     frame:UpdateFrameVisible()
     WeakAuras.FillOptions()
@@ -750,7 +838,7 @@ local function ConstructTextEditor(frame)
   return group
 end
 
-function OptionsPrivate.TextEditor(frame)
-  textEditor = textEditor or ConstructTextEditor(frame)
+function OptionsPrivate.TextEditor(frame, noConstruct)
+  textEditor = textEditor or (not noConstruct and ConstructTextEditor(frame))
   return textEditor
 end

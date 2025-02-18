@@ -44,13 +44,13 @@
 --   - setter: The setter function, called both on activating and deactivating a property change
 ---  - action: The action function, called on activating a condition
 --   - type: The type
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local WeakAuras = WeakAuras;
 local L = WeakAuras.L;
 
-local debug = false;
+local SharedMedia = LibStub("LibSharedMedia-3.0");
 
 local function addSpace(args, order)
   args["space" .. order] = {
@@ -59,18 +59,6 @@ local function addSpace(args, order)
     image = function() return "", 0, 0 end,
     order = order,
     width = WeakAuras.normalWidth
-  }
-  order = order + 1;
-  return order;
-end
-
-local function addHalfSpace(args, order)
-  args["space" .. order] = {
-    type = "description",
-    name = "",
-    image = function() return "", 0, 0 end,
-    order = order,
-    width = WeakAuras.halfWidth
   }
   order = order + 1;
   return order;
@@ -85,6 +73,17 @@ local function compareValues(a, b, propertytype)
       and a[2] == b[2]
       and a[3] == b[3]
       and a[4] == b[4];
+  elseif propertytype == "progressSource" then
+    if type(a) == "table" and type(b) == "table" then
+      local triggerA, propertyA, triggerB, propertyB = a[1], a[2], b[1], b[2]
+      if triggerA ~= triggerB or propertyA ~= propertyB then
+        return false
+      end
+      if triggerA == 0 then
+        return a[3] == b[3] and a[4] == b[4]
+      end
+      return true
+    end
   end
   return a == b;
 end
@@ -92,8 +91,8 @@ end
 local function valueToString(a, propertytype)
   if (propertytype == "color") then
     if (type(a) == "table") then
-      local r, g, b, a = floor((a[1] or 0) * 255), floor((a[2] or 0) * 255), floor((a[3] or 0) * 255), floor((a[4] or 0) * 255)
-      return string.format("|c%02X%02X%02X%02X", a, r, g, b) .. L["color"];
+      local r, g, b, alpha = floor((a[1] or 0) * 255), floor((a[2] or 0) * 255), floor((a[3] or 0) * 255), floor((a[4] or 0) * 255)
+      return string.format("|c%02X%02X%02X%02X", alpha, r, g, b) .. L["color"];
     else
       return "";
     end
@@ -153,15 +152,36 @@ local function descIfSubset(data, reference, totalAuraCount)
   return "";
 end
 
-local function descIfNoValue(data, object, variable, type, values)
+local function descIfNoValue(data, object, variable, propertyType, values)
   if (data.controlledChildren) then
     if (object["same" .. variable] == false) then
       local desc = "";
       for id, reference in pairs(object.references) do
-        if (type == "list" and values) then
+        if propertyType == "list" and values then
           desc = desc .."|cFFE0E000".. id .. ": |r" .. (values[reference[variable]] or "") .. "\n";
+        elseif propertyType == "progressSource" then
+          desc = desc .."|cFFE0E000".. id .. ": |r"
+          local progressSource = reference[variable]
+          if type(progressSource) == "table" then
+            local trigger = progressSource[1]
+            if trigger == 0 then
+              desc = desc .. L["Manual with %i/%i"]:format(progressSource[3] or 0, progressSource[4] or 100)
+            else
+              local p = OptionsPrivate.Private.GetProgressValueConstant(progressSource)
+              local description = values[p] or ""
+              if type(description) == "string" then
+                desc = desc .. description
+              elseif type(description) == "table"
+                      and type(description[1]) == "string"
+                      and type(description[2])  == "string"
+              then
+                desc = desc .. description[1] .. " " .. description[2]
+              end
+            end
+          end
+          desc = desc .."\n"
         else
-          desc = desc .."|cFFE0E000".. id .. ": |r" .. (valueToString(reference[variable], type) or "") .. "\n";
+          desc = desc .."|cFFE0E000".. id .. ": |r" .. (valueToString(reference[variable], propertyType) or "") .. "\n";
         end
       end
       return desc;
@@ -201,16 +221,26 @@ local function filterUsedProperties(indexToProperty, allDisplays, usedProperties
   return filtered;
 end
 
+---  a sound from each setter
+local lastPlayedSoundFromSet
 local function wrapWithPlaySound(func, kit)
   return function(info, v)
     func(info, v);
     if (tonumber(v)) then
-      pcall(PlaySound, tonumber(v), "Master");
+      if lastPlayedSoundFromSet ~= GetTime() then
+        pcall(PlaySound, tonumber(v), "Master")
+        lastPlayedSoundFromSet = GetTime()
+      end
     else
-      pcall(PlaySoundFile, v, "Master");
+      if lastPlayedSoundFromSet ~= GetTime() then
+        pcall(PlaySoundFile, v, "Master")
+        lastPlayedSoundFromSet = GetTime()
+      end
     end
   end
 end
+
+local dynamicTextInputs = {}
 
 local function addControlsForChange(args, order, data, conditionVariable, totalAuraCount, conditions, i, j, allProperties, usedProperties)
   local thenText = (j == 1) and L["Then "] or L["And "];
@@ -303,6 +333,7 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
   order = order + 1;
 
   local setValue;
+  local setValueTable
   local setValueColor;
   local setValueComplex;
   local setValueColorComplex;
@@ -316,6 +347,17 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
         OptionsPrivate.ClearOptions(auraData.id)
       end
       conditions[i].changes[j].value = v;
+      WeakAuras.ClearAndUpdateOptions(data.id)
+    end
+    setValueTable = function(info, v)
+      for id, reference in pairs(conditions[i].changes[j].references) do
+        local auraData = WeakAuras.GetData(id)
+        local conditionIndex = conditions[i].check.references[id].conditionIndex
+        auraData[conditionVariable][conditionIndex].changes[reference.changeIndex].value = CopyTable(v)
+        WeakAuras.Add(auraData)
+        OptionsPrivate.ClearOptions(auraData.id)
+      end
+      conditions[i].changes[j].value = CopyTable(v)
       WeakAuras.ClearAndUpdateOptions(data.id)
     end
     setValueColor = function(info, r, g, b, a)
@@ -354,8 +396,6 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
           conditions[i].changes[j].value = {};
         end
         conditions[i].changes[j].value[property] = v;
-
-        WeakAuras.Add(data)
         WeakAuras.ClearAndUpdateOptions(data.id)
       end
     end
@@ -395,6 +435,11 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
     setValue = function(info, v)
       conditions[i].changes[j].value = v;
       WeakAuras.Add(data);
+      WeakAuras.ClearAndUpdateOptions(data.id)
+    end
+    setValueTable = function(info, v)
+      conditions[i].changes[j].value = CopyTable(v)
+      WeakAuras.Add(data)
       WeakAuras.ClearAndUpdateOptions(data.id)
     end
     setValueColor = function(info, r, g, b, a)
@@ -445,7 +490,6 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
     args["condition" .. i .. "value" .. j] = {
       type = "toggle",
       width = WeakAuras.normalWidth,
-      name = blueIfNoValue(data, conditions[i].changes[j], "value", L["Differences"]),
       desc = descIfNoValue(data, conditions[i].changes[j], "value", propertyType),
       order = order,
       get = function()
@@ -455,6 +499,7 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
     }
     order = order + 1;
     if (propertyType == "number") then
+      args["condition" .. i .. "value" .. j].name = blueIfNoValue(data, conditions[i].changes[j], "value", L["Differences"])
       local properties = allProperties.propertyMap[property];
       if (properties.min or properties.softMin) and (properties.max or properties.softMax) then
         args["condition" .. i .. "value" .. j].type = "range";
@@ -470,6 +515,53 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
         args["condition" .. i .. "value" .. j].type = "input";
         args["condition" .. i .. "value" .. j].validate = WeakAuras.ValidateNumeric;
       end
+    else
+      args["condition" .. i .. "value" .. j].name = function()
+        local value = conditions[i].changes[j].value
+        return blueIfNoValue(data, conditions[i].changes[j], "value", L["Differences"], value and L["ON"] or L["OFF"])
+      end
+    end
+  elseif (propertyType == "string" or propertyType == "texture") then
+    args["condition" .. i .. "value" .. j] = {
+      type = "input",
+      width = WeakAuras.normalWidth,
+      name = blueIfNoValue(data, conditions[i].changes[j], "value", L["Text"]),
+      desc = descIfNoValue(data, conditions[i].changes[j], "value", propertyType),
+      order = order,
+      get = function()
+        return conditions[i].changes[j].value;
+      end,
+      set = setValue
+    }
+    order = order + 1;
+    if propertyType == "texture" then
+      args["condition" .. i .. "value" .. j].width =  WeakAuras.normalWidth - 0.15
+      args["condition" .. i .. "value_browse" .. j] = {
+        type = "execute",
+        name = L["Choose"],
+        width = 0.15,
+        order = order,
+        func = function()
+          if data.controlledChildren then
+            local paths = {}
+            for id, reference in pairs(conditions[i].changes[j].references) do
+              paths[id] = {"conditions", conditions[i].check.references[id].conditionIndex, "changes", reference.changeIndex}
+            end
+            OptionsPrivate.OpenTexturePicker(data, paths,
+                                             {texture = "value"},
+                                             OptionsPrivate.Private.texture_types)
+          else
+            OptionsPrivate.OpenTexturePicker(data, {[data.id] = { "conditions", i, "changes", j } },
+                                             {texture = "value"},
+                                             OptionsPrivate.Private.texture_types)
+          end
+        end,
+        imageWidth = 24,
+        imageHeight = 24,
+        control = "WeakAurasIcon",
+        image = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\browse",
+      }
+      order = order + 1;
     end
   elseif (propertyType == "icon") then
     args["condition" .. i .. "value" .. j] = {
@@ -523,21 +615,102 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       set = setValueColor
     }
     order = order + 1;
-  elseif (propertyType == "list") then
+  elseif (propertyType == "list" or propertyType == "progressSource" or propertyType == "textureLSM") then
     local values = property and allProperties.propertyMap[property] and allProperties.propertyMap[property].values;
+    local dialogControl
+
+    if propertyType == "textureLSM" then
+      dialogControl = "WA_LSM30_StatusbarAtlas"
+      local statusbarList = {}
+      WeakAuras.Mixin(statusbarList, SharedMedia:HashTable("statusbar"))
+      values = statusbarList
+    end
+
     args["condition" .. i .. "value" .. j] = {
       type = "select",
       width = WeakAuras.normalWidth,
       values = values,
-      name = blueIfNoValue(data, conditions[i].changes[j], "value", L["Differences"]),
-      desc = descIfNoValue(data, conditions[i].changes[j], "value", propertyType, values),
+      dialogControl = dialogControl,
+      name =  blueIfNoValue(data, conditions[i].changes[j], "value", L["Differences"], ""),
+      desc =  descIfNoValue(data, conditions[i].changes[j], "value", propertyType, values),
       order = order,
       get = function()
         return conditions[i].changes[j].value;
       end,
-      set = setValue
+      set = setValue,
     }
-    order = order + 1;
+    order = order + 1
+
+    if propertyType == "progressSource" then
+      args["condition" .. i .. "value" .. j].control = "WeakAurasTwoColumnDropdown"
+      args["condition" .. i .. "value" .. j].set = setValueTable
+      args["condition" .. i .. "value" .. j].get = function()
+        local v = conditions[i].changes[j].value
+        return OptionsPrivate.Private.GetProgressValueConstant(v)
+      end
+
+      args["condition" .. i .. "progressSourceWarning" .. j] = {
+        type = "description",
+        width = WeakAuras.doubleWidth,
+        name = L["Note: This progress source does not provide a total value/duration. A total value/duration must be set via \"Set Maximum Progress\""],
+        order = order,
+        hidden = function()
+          local v = conditions[i].changes[j].value
+          local progressSource = OptionsPrivate.Private.AddProgressSourceMetaData(data, v)
+          -- Auto progress, Manual Progress or the progress source has a total property
+          if progressSource and (progressSource[2] == "auto" or progressSource[1] == 0 or progressSource[4] ~= nil) then
+            return true
+          end
+          return false
+        end
+      }
+      order = order + 1
+
+      local function hiddenManual()
+        local v = conditions[i].changes[j].value
+        local progressSource = OptionsPrivate.Private.AddProgressSourceMetaData(data, v)
+        if progressSource and progressSource[1] == 0 then
+          return false
+        end
+        return true
+      end
+
+      args["condition" .. i .. "progressSourceManualValue" .. j] = {
+        type = "range",
+        control = "WeakAurasSpinBox",
+        width = WeakAuras.normalWidth,
+        name = L["Value"],
+        order = order,
+        min = 0,
+        softMax = 100,
+        bigStep = 1,
+        hidden = hiddenManual,
+        get = function()
+          local v = conditions[i].changes[j].value
+          return v and type(v[3]) == "number" and v[3] or 0
+        end,
+        set = setValueComplex(3)
+      }
+      order = order + 1
+
+      args["condition" .. i .. "progressSourceManualTotal" .. j] = {
+        type = "range",
+        control = "WeakAurasSpinBox",
+        width = WeakAuras.normalWidth,
+        name = L["Total"],
+        order = order,
+        min = 0,
+        softMax = 100,
+        bigStep = 1,
+        hidden = hiddenManual,
+        get = function()
+          local v = conditions[i].changes[j].value
+          return v and type(v[4]) == "number" and v[4] or 100
+        end,
+        set = setValueComplex(4)
+      }
+      order = order + 1
+    end
   elseif (propertyType == "sound") then
     args["condition" .. i .. "value" .. j .. "sound_type"] = {
       type = "select",
@@ -573,6 +746,7 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       width = WeakAuras.normalWidth,
       values = OptionsPrivate.Private.sound_types,
       sorting = OptionsPrivate.Private.SortOrderForValues(OptionsPrivate.Private.sound_types),
+      itemControl = "WeakAurasMediaSound",
       name = blueIfNoValue2(data, conditions[i].changes[j], "value", "sound", L["Differences"]),
       desc = descIfNoValue2(data, conditions[i].changes[j], "value", "sound", propertyType, OptionsPrivate.Private.sound_types),
       order = order,
@@ -744,16 +918,10 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
     }
     order = order + 1;
 
-    local descMessage = descIfNoValue2(data, conditions[i].changes[j], "value", "message", propertyType);
-    if (not descMessage and data ~= OptionsPrivate.tempGroup) then
-      descMessage = L["Dynamic text tooltip"] .. OptionsPrivate.Private.GetAdditionalProperties(data)
-    end
-
     args["condition" .. i .. "value" .. j .. "message dest"] = {
       type = "input",
-      width = WeakAuras.normalWidth,
+      width = WeakAuras.normalWidth - 0.15,
       name = blueIfNoValue2(data, conditions[i].changes[j], "value", "message_dest", L["Send To"], L["Send To"]),
-      desc = descMessage,
       order = order,
       get = function()
         return type(conditions[i].changes[j].value) == "table" and conditions[i].changes[j].value.message_dest;
@@ -761,14 +929,50 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       set = setValueComplex("message_dest"),
       hidden = function()
         return not anyMessageType("WHISPER");
-      end
+      end,
+      control = "WeakAurasInput",
+      callbacks = {
+        OnEditFocusGained = function(self)
+          local widget = dynamicTextInputs["condition" .. i .. "value" .. j .. "message dest"]
+          OptionsPrivate.ToggleTextReplacements(data, widget, "OnEditFocusGained")
+        end,
+        OnEditFocusLost = function(self)
+          OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEditFocusLost")
+        end,
+        OnEnterPressed = function(self)
+          OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEnterPressed")
+        end,
+        OnShow = function(self)
+          dynamicTextInputs["condition" .. i .. "value" .. j .. "message dest"] = self
+        end,
+      }
+    }
+    order = order + 1;
+
+    args["condition" .. i .. "value" .. j .. "message dest_text_replacements_button"] = {
+      type = "execute",
+      width = 0.15,
+      name = L["Dynamic Text Replacements"],
+      desc = L["There are several special codes available to make this text dynamic. Click to view a list with all dynamic text codes."],
+      order = order,
+      hidden = function()
+        return not anyMessageType("WHISPER");
+      end,
+      func = function()
+        local widget = dynamicTextInputs["condition" .. i .. "value" .. j .. "message dest"]
+        OptionsPrivate.ToggleTextReplacements(data, widget, "ToggleButton")
+      end,
+      imageWidth = 24,
+      imageHeight = 24,
+      control = "WeakAurasIcon",
+      image = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\sidebar",
     }
     order = order + 1;
 
     args["condition" .. i .. "value" .. j] = {
       type = "toggle",
       width = WeakAuras.normalWidth,
-      name = blueIfNoValue(data, conditions[i].changes[j], "value", "message_dest_isunit", L["Is Unit"], L["Is Unit"]),
+      name = blueIfNoValue(data, conditions[i].changes[j], "value", "message_dest_isunit", L["Is Unit"]),
       desc = descIfNoValue(data, conditions[i].changes[j], "value", "message_dest_isunit", propertyType),
       order = order,
       get = function()
@@ -787,12 +991,44 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
 
     args["condition" .. i .. "value" .. j .. "message"] = {
       type = "input",
-      width = WeakAuras.doubleWidth,
+      width = WeakAuras.doubleWidth - 0.15,
       name = blueIfNoValue2(data, conditions[i].changes[j], "value", "message", L["Message"], L["Message"]),
-      desc = descMessage,
       order = order,
       get = message_getter,
-      set = setValueComplex("message", true)
+      set = setValueComplex("message"),
+      control = "WeakAurasInput",
+      callbacks = {
+        OnEditFocusGained = function(self)
+          local widget = dynamicTextInputs["condition" .. i .. "value" .. j .. "message"]
+          OptionsPrivate.ToggleTextReplacements(data, widget, "OnEditFocusGained")
+        end,
+        OnEditFocusLost = function(self)
+          OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEditFocusLost")
+        end,
+        OnEnterPressed = function(self)
+          OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEnterPressed")
+        end,
+        OnShow = function(self)
+          dynamicTextInputs["condition" .. i .. "value" .. j .. "message"] = self
+        end,
+      }
+    }
+    order = order + 1;
+
+    args["condition" .. i .. "value" .. j .. "message_text_replacements_button"] = {
+      type = "execute",
+      width = 0.15,
+      name = L["Dynamic Text Replacements"],
+      desc = L["There are several special codes available to make this text dynamic. Click to view a list with all dynamic text codes."],
+      order = order,
+      func = function()
+        local widget = dynamicTextInputs["condition" .. i .. "value" .. j .. "message"]
+        OptionsPrivate.ToggleTextReplacements(data, widget, "ToggleButton")
+      end,
+      imageWidth = 24,
+      imageHeight = 24,
+      control = "WeakAurasIcon",
+      image = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\sidebar",
     }
     order = order + 1;
 
@@ -836,7 +1072,7 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
 
     if data.controlledChildren then
       local ordered = {}
-      for id, reference in pairs(conditions[i].changes[j].references) do
+      for _, reference in pairs(conditions[i].changes[j].references) do
         tinsert(ordered, reference)
       end
       for index, reference in ipairs(ordered) do
@@ -1370,14 +1606,14 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
     local isFirst = path[#path] == 1;
     if (isFirst) then
       if (needsTriggerName) then
-        optionsName = optionsName .. string.format(L["Trigger %s"], check.trigger);
+        optionsName = optionsName .. OptionsPrivate.GetTriggerTitle(data, check.trigger)
       end
     else
       if (needsTriggerName) then
         if (parentType == "AND") then
-          optionsName = optionsName .. string.format(L["and Trigger %s"], check.trigger);
+          optionsName = optionsName .. string.format(L["and %s"], OptionsPrivate.GetTriggerTitle(data, check.trigger));
         else
-          optionsName = optionsName .. string.format(L["or Trigger %s"], check.trigger);
+          optionsName = optionsName .. string.format(L["or %s"], OptionsPrivate.GetTriggerTitle(data, check.trigger));
         end
       end
     end
@@ -1385,9 +1621,9 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
     local isLinked = conditions[i].linked and i > 1
     if (needsTriggerName) then
       if isLinked then
-        optionsName = optionsName .. string.format(L["Else If Trigger %s"], check.trigger);
+        optionsName = optionsName .. string.format(L["Else If %s"], OptionsPrivate.GetTriggerTitle(data, check.trigger));
       else
-        optionsName = optionsName .. string.format(L["If Trigger %s"], check.trigger);
+        optionsName = optionsName .. string.format(L["If %s"], OptionsPrivate.GetTriggerTitle(data, check.trigger));
       end
     else
         optionsName = optionsName .. (isLinked and L["Else If"] or L["If"])
@@ -1857,8 +2093,6 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
       }
       order = order + 1;
 
-      local multipath = {}
-
       args["condition" .. i .. tostring(path) .. "_value"] = {
         type = "input",
         width = WeakAuras.doubleWidth,
@@ -1879,10 +2113,10 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
                 if (data.controlledChildren) then
                   -- Collect multi paths
                   local multipath = {};
-                  for id, reference in pairs(conditions[i].check.references) do
+                  for id in pairs(conditions[i].check.references) do
                     local conditionIndex = conditions[i].check.references[id].conditionIndex;
                     multipath[id] ={ "conditions", conditionIndex, "check" }
-                    for i, v in ipairs(path) do
+                    for _, v in ipairs(path) do
                       tinsert(multipath[id], "checks")
                       tinsert(multipath[id], v)
                     end
@@ -1891,7 +2125,7 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
                   OptionsPrivate.OpenTextEditor(data, multipath, nil, true, nil, nil, "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-check");
                 else
                   local fullPath = { "conditions", i, "check" }
-                  for i, v in ipairs(path) do
+                  for _, v in ipairs(path) do
                     tinsert(fullPath, "checks")
                     tinsert(fullPath, v)
                   end
@@ -1948,6 +2182,49 @@ local function fixUpLinkedInFirstCondition(conditions)
   end
 end
 
+local function formatConditionTitle(text, propertyType, value)
+  if propertyType == "color" and type(value) == "table" then
+    local r, g, b = unpack(value)
+    r, g, b = r or 1, g or 1, b or 1
+    return ("|cFF%2x%2x%2x%s|r"):format(r * 220 + 35, g * 220 + 35, b * 220 + 35, text)
+  elseif propertyType == "bool" then
+    return ("%s: %s"):format(text, value and L["ON"] or L["OFF"])
+  elseif propertyType == "sound" and type(value) == "table" and type(value.sound) == "string" and value.sound ~= "" then
+    if OptionsPrivate.Private.sound_types[value.sound] then
+      return ("%s: %s"):format(text, OptionsPrivate.Private.sound_types[value.sound])
+    end
+  elseif value ~= nil and type(value) ~= "table" then
+    return ("%s: %s"):format(text, value)
+  end
+  return text
+end
+
+local function GetConditionTitle(changes, conditionnum, allProperties)
+  if type(changes) == "table" and #changes > 0 then
+    local outs = {}
+    for i, change in ipairs(changes) do
+      local property = change.property
+      if property and allProperties.propertyMap[property] then
+        local display = allProperties.propertyMap[property].display
+        local propertyType = allProperties.propertyMap[property].type
+        local title
+        if type(display) == "string" then
+          title = display
+        elseif type(display) == "table" then
+          title = ("%s %s"):format(display[1], display[2])
+        end
+        if title then
+          tinsert(outs, formatConditionTitle(title, propertyType, change.value))
+        end
+      end
+    end
+    if #outs > 0 then
+      return L["%i. %s"]:format(conditionnum, table.concat(outs, ", "))
+    end
+  end
+  return L["%i."]:format(conditionnum)
+end
+
 local function addControlsForCondition(args, order, data, conditionVariable, totalAuraCount, conditions, i, conditionTemplates, conditionTemplateWithoutCombinations, allProperties)
   if (not conditions[i].check) then
     return order;
@@ -1969,7 +2246,7 @@ local function addControlsForCondition(args, order, data, conditionVariable, tot
 
   args["condition" .. i .. "header"] = {
     type = "execute",
-    name = L["Condition %i"]:format(i),
+    name = GetConditionTitle(conditions[i].changes, i, allProperties),
     order = order,
     width = WeakAuras.doubleWidth - 0.6,
     func = function()
@@ -1987,7 +2264,8 @@ local function addControlsForCondition(args, order, data, conditionVariable, tot
     image = collapsed and "Interface\\AddOns\\WeakAuras\\Media\\Textures\\expand" or "Interface\\AddOns\\WeakAuras\\Media\\Textures\\collapse" ,
     imageWidth = 18,
     imageHeight = 18,
-    control = "WeakAurasExpand"
+    control = "WeakAurasExpand",
+    fontObject = GameFontHighlight
   };
   order = order + 1;
 
@@ -1997,7 +2275,7 @@ local function addControlsForCondition(args, order, data, conditionVariable, tot
     order = order,
     disabled = function()
       if (data.controlledChildren) then
-        for id, reference in pairs(conditions[i].check.references) do
+        for _, reference in pairs(conditions[i].check.references) do
           local index = reference.conditionIndex;
           if (index > 1) then
             return false;
@@ -2286,7 +2564,7 @@ local function mergeConditionTemplates(allConditionTemplates, auraConditionsTemp
   end
 end
 
-local function createConditionTemplatesValueList(allConditionTemplates, numTriggers, excludeCombinations)
+local function createConditionTemplatesValueList(allConditionTemplates, numTriggers, excludeCombinations, data)
   local conditionTemplates = {};
   conditionTemplates.all = allConditionTemplates;
   conditionTemplates.indexToTrigger = {};
@@ -2316,7 +2594,7 @@ local function createConditionTemplatesValueList(allConditionTemplates, numTrigg
           elseif (triggernum == -1) then
             conditionTemplates.display[index]  = string.format(L["Global Conditions"]);
           else
-            conditionTemplates.display[index]  = string.format(L["Trigger %d"], triggernum);
+            conditionTemplates.display[index]  = OptionsPrivate.GetTriggerTitle(data, triggernum)
           end
           index = index + 1;
 
@@ -2375,7 +2653,7 @@ local function createConditionTemplates(data)
   }
   allConditionTemplates[-1] = OptionsPrivate.Private.GetGlobalConditions();
 
-  local conditionTemplates = createConditionTemplatesValueList(allConditionTemplates, numTriggers);
+  local conditionTemplates = createConditionTemplatesValueList(allConditionTemplates, numTriggers, nil, data);
 
   if (data.controlledChildren) then
     conditionTemplates.displayWithCopy = CopyTable(conditionTemplates.display);
@@ -2385,7 +2663,7 @@ local function createConditionTemplates(data)
     conditionTemplates.indexToVariable[9998] = "COPY";
   end
 
-  local conditionTemplateWithoutCombinations = createConditionTemplatesValueList(allConditionTemplates, numTriggers, true);
+  local conditionTemplateWithoutCombinations = createConditionTemplatesValueList(allConditionTemplates, numTriggers, true, data);
 
   return conditionTemplates, conditionTemplateWithoutCombinations;
 end
@@ -2404,7 +2682,7 @@ local function buildAllPotentialProperties(data, category)
               allProperties.propertyMap[k].type = "incompatible";
             end
 
-            if (allProperties.propertyMap[k].type == "list") then
+            if (allProperties.propertyMap[k].type == "list" or allProperties.propertyMap[k].type == "progressSource" ) then
               -- Merge value lists
               for key, value in pairs(v.values) do
                 if (allProperties.propertyMap[k].values[key] == nil) then
@@ -2540,7 +2818,6 @@ local function findMatchingProperty(all, change, id)
   return nil;
 end
 
-local noop = function() end
 local function SubPropertiesForChange(change)
   if change.property == "sound" then
     return { "sound", "sound_channel", "sound_path", "sound_kit_id", "sound_repeat", "sound_type"}
@@ -2719,7 +2996,7 @@ local function mergeConditions(all, aura, id, allConditionTemplates, propertyTyp
 end
 
 local fixupConditions = function(conditions)
-  for index, condition in ipairs(conditions) do
+  for _, condition in ipairs(conditions) do
     condition.check = condition.check or {}
     condition.changes = condition.changes or {}
   end

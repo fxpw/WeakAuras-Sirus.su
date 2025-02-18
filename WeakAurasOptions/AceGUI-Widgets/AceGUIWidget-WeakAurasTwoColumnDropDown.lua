@@ -1,95 +1,66 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 
-local Type, Version = "WeakAurasTwoColumnDropdown", 3
+local Type, Version = "WeakAurasTwoColumnDropdown", 6
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
-local tconcat = table.concat
-local select = select
-local assert, loadstring = assert, loadstring
-local setmetatable, rawset = setmetatable, rawset
-local xpcall = xpcall
-
-local function errorhandler(err)
-	return geterrorhandler()(err)
+local secondLevelMt = {} -- Tag for our tables
+local function CreateSecondLevelTable()
+  local t = {}
+  setmetatable(t, secondLevelMt)
+  return t
 end
 
-local function CreateDispatcher(argCount)
-	local code = [[
-		local xpcall, eh = ...
-		local method, ARGS
-		local function call() return method(ARGS) end
-
-		local function dispatch(func, ...)
-			method = func
-			if not method then return end
-			ARGS = ...
-			return xpcall(call, eh)
-		end
-
-		return dispatch
-	]]
-
-	local ARGS = {}
-	for i = 1, argCount do ARGS[i] = "arg"..i end
-	code = code:gsub("ARGS", tconcat(ARGS, ", "))
-	return assert(loadstring(code, "safecall Dispatcher["..argCount.."]"))(xpcall, errorhandler)
+local function IsSecondLevelTable(t)
+  return getmetatable(t) == secondLevelMt
 end
 
-local Dispatchers = setmetatable({}, {__index=function(self, argCount)
-	local dispatcher = CreateDispatcher(argCount)
-	rawset(self, argCount, dispatcher)
-	return dispatcher
-end})
-Dispatchers[0] = function(func)
-	return xpcall(func, errorhandler)
-end
-
-local function safecall(func, ...)
-	return Dispatchers[select("#", ...)](func, ...)
-end
-
-AceGUI:RegisterLayout("TwoColumn",
-  function(content, children)
-    local height = 0
-    local width = content.width or content:GetWidth() or 0
-    for i = 1, #children do
-      local child = children[i]
-
-      local frame = child.frame
-      frame:ClearAllPoints()
-      if child.userdata.hideMe then
-        frame:Hide()
-      else
-        frame:Show()
+local function CompareValues(a, b)
+  if type(a) == "table" and type(b) == "table" then
+    for ak, av in pairs(a) do
+      if b[ak] ~= av then
+        return false
       end
-      if i == 1 then
-        frame:SetPoint("TOPLEFT", content)
-      else
-        frame:SetPoint("TOPLEFT", children[i-1].frame, "TOPRIGHT")
-      end
-
-      if child.width == "relative" then
-        child:SetWidth(width * child.relWidth)
-
-        if child.DoLayout then
-          child:DoLayout()
-        end
-      end
-
-      height = max(height, frame.height or frame:GetHeight() or 0)
     end
-    safecall(content.obj.LayoutFinished, content.obj, nil, height)
-  end)
+    for bk, bv in pairs(b) do
+      if a[bk] ~= bv then
+        return false
+      end
+    end
+    return true
+  else
+    return a == b
+  end
+end
 
 local methods = {
+  ["DoLayout"] = function(self, mode)
+    self.mode = mode
+    if mode == "one" then
+      self.firstDropdown.frame:Show()
+      self.secondDropDown.frame:Hide()
+      self.firstDropdown.frame:ClearAllPoints()
+      self.firstDropdown.frame:SetPoint("TOPLEFT", self.frame)
+      self.firstDropdown.frame:SetPoint("TOPRIGHT", self.frame)
+    else
+      local halfWidth = self.frame:GetWidth() / 2
+      self.firstDropdown.frame:Show()
+      self.secondDropDown.frame:Show()
+      self.firstDropdown.frame:ClearAllPoints()
+      self.firstDropdown.frame:SetPoint("TOPLEFT", self.frame)
+      self.firstDropdown.frame:SetPoint("TOPRIGHT", self.frame, "TOPLEFT", halfWidth, 0)
+      self.secondDropDown.frame:SetPoint("TOPLEFT", self.frame, halfWidth, 0)
+      self.secondDropDown.frame:SetPoint("TOPRIGHT", self.frame, "TOPRIGHT")
+    end
+  end,
   ["OnAcquire"] = function(widget)
     local firstDropdown = AceGUI:Create("Dropdown")
     local secondDropDown = AceGUI:Create("Dropdown")
 
-    firstDropdown:SetRelativeWidth(0.5)
+    firstDropdown:SetParent(widget)
+    secondDropDown:SetParent(widget)
     firstDropdown:SetPulloutWidth(200)
-    secondDropDown:SetRelativeWidth(0.5)
+
     secondDropDown:SetLabel(" ")
     secondDropDown:SetPulloutWidth(200)
     secondDropDown.userdata.defaultSelection = {}
@@ -97,18 +68,10 @@ local methods = {
     widget.firstDropdown = firstDropdown
     widget.secondDropDown = secondDropDown
 
-    widget:SetLayout("TwoColumn")
-    widget.SetLayout = function()
-      -- AceGui wants to set a default layout, but we don't want that
-    end
-
-    widget:AddChild(firstDropdown)
-    widget:AddChild(secondDropDown)
-
     local OnFirstDropdownValueChanged = function(self, event, value)
       local displayName = widget.userdata.firstList[value]
       local treeValue = widget.userdata.tree[displayName]
-      if type(treeValue) == "table" then
+      if IsSecondLevelTable(treeValue) then
         local oldValue
         if widget.userdata.secondList then
           local v = widget.secondDropDown:GetValue()
@@ -125,10 +88,7 @@ local methods = {
         local oldValueIndex = tIndexOf(secondList, oldValue)
         widget.userdata.secondList = secondList
         widget.secondDropDown:SetList(secondList)
-        widget.firstDropdown:SetRelativeWidth(0.5)
-        widget.secondDropDown:SetRelativeWidth(0.5)
-        widget.secondDropDown.userdata.hideMe = false
-        widget:DoLayout()
+        widget:DoLayout("two")
 
         if (oldValueIndex) then
           widget.secondDropDown:SetValue(oldValueIndex)
@@ -151,10 +111,8 @@ local methods = {
           end
         end
       else
-        widget.firstDropdown:SetRelativeWidth(1)
-        widget.secondDropDown.userdata.hideMe = true
         widget.userdata.secondList = nil
-        widget:DoLayout()
+        widget:DoLayout("one")
         widget:Fire("OnValueChanged", treeValue)
       end
     end
@@ -180,27 +138,40 @@ local methods = {
     firstDropdown:SetCallback("OnLeave", FireOnLeave)
     secondDropDown:SetCallback("OnEnter", FireOnEnter)
     secondDropDown:SetCallback("OnLeave", FireOnLeave)
+
+
+    widget:DoLayout("two")
   end,
   ["OnRelease"] = function(self)
+    self.firstDropdown:SetCallback("OnValueChanged", nil)
+    self.secondDropDown:SetCallback("OnValueChanged", nil)
+    self.firstDropdown:SetCallback("OnEnter", nil)
+    self.firstDropdown:SetCallback("OnLeave", nil)
+    self.secondDropDown:SetCallback("OnEnter", nil)
+    self.secondDropDown:SetCallback("OnLeave", nil)
+
+    AceGUI:Release(self.firstDropdown)
+    AceGUI:Release(self.secondDropDown)
+
+    self.firstDropdown = nil
+    self.secondDropDown = nil
   end,
-  ["SetLabel"] = function(self, ...)
-    self.firstDropdown:SetLabel(...)
+  ["SetLabel"] = function(self, v)
+    if v == "" then
+      v = " "
+    end
+    self.firstDropdown:SetLabel(v)
   end,
   ["SetValue"] = function(self, value)
     for displayName, treeValue in pairs(self.userdata.tree) do
-      if treeValue == value then
-        self.firstDropdown:SetRelativeWidth(1)
-        self.secondDropDown.userdata.hideMe = true
-        self:DoLayout()
+      if CompareValues(treeValue, value) then
+        self:DoLayout("one")
         self.firstDropdown:SetValue(tIndexOf(self.userdata.firstList, displayName))
         return
-      elseif type(treeValue) == "table" then
+      elseif IsSecondLevelTable(treeValue) then
         for displayName2, key in pairs(treeValue) do
-          if (key == value) then
-            self.firstDropdown:SetRelativeWidth(0.5)
-            self.secondDropDown:SetRelativeWidth(0.5)
-            self.secondDropDown.userdata.hideMe = false
-            self:DoLayout()
+          if CompareValues(key, value) then
+            self:DoLayout("two")
             local index = tIndexOf(self.userdata.firstList, displayName);
             self.firstDropdown:SetValue(index)
             self.firstDropdown:OnFirstDropdownValueChanged("", index)
@@ -210,9 +181,7 @@ local methods = {
         end
       end
     end
-    self.firstDropdown:SetRelativeWidth(1)
-    self.secondDropDown.userdata.hideMe = true
-    self:DoLayout()
+    self:DoLayout("one")
     self.firstDropdown:SetValue(nil)
   end,
   ["GetValue"] = function(self)
@@ -222,7 +191,7 @@ local methods = {
     if not treeValue then
       return nil
     end
-    if type(treeValue) ~= "table" then
+    if not IsSecondLevelTable(treeValue) then
       return treeValue
     end
 
@@ -239,7 +208,7 @@ local methods = {
       if type(displayName) == "table" then
         local base = displayName[1]
         local suffix = displayName[2]
-        tree[base] = tree[base] or {}
+        tree[base] = tree[base] or CreateSecondLevelTable()
         tree[base][suffix] = key
         if displayName[3] == true then
           self.secondDropDown.userdata.defaultSelection[base] = suffix
@@ -257,6 +226,9 @@ local methods = {
     table.sort(firstList)
     self.userdata.firstList = firstList
     self.firstDropdown:SetList(firstList, order, itemType)
+  end,
+  ["OnWidthSet"] = function(self)
+    self:DoLayout(self.mode)
   end
 }
 
@@ -277,7 +249,7 @@ local function Constructor()
   for method, func in pairs(methods) do
     widget[method] = func
   end
-  return AceGUI:RegisterAsContainer(widget)
+  return AceGUI:RegisterAsWidget(widget)
 end
 
 AceGUI:RegisterWidgetType(Type, Constructor, Version)

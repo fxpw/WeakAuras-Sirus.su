@@ -1,16 +1,15 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
-local SharedMedia = LibStub("LibSharedMedia-3.0");
 local L = WeakAuras.L;
-
-local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
-
 
 local indentWidth = 0.15
 
-
 local function createOptions(parentData, data, index, subIndex)
+  local areaAnchors = {}
+  for child in OptionsPrivate.Private.TraverseLeafsOrAura(parentData) do
+    WeakAuras.Mixin(areaAnchors, OptionsPrivate.Private.GetAnchorsForData(child, "area"))
+  end
 
   local hiddenGlowExtra = function()
     return OptionsPrivate.IsCollapsed("glow", "glow", "glowextra" .. index, true);
@@ -32,12 +31,12 @@ local function createOptions(parentData, data, index, subIndex)
       order = 2,
       values = OptionsPrivate.Private.glow_types,
     },
-    glow_anchor = {
+    anchor_area = {
       type = "select",
       width = WeakAuras.normalWidth,
       name = L["Glow Anchor"],
       order = 3,
-      values = OptionsPrivate.Private.aurabar_anchor_areas,
+      values = areaAnchors,
       hidden = function() return parentData.regionType ~= "aurabar" end
     },
     glowExtraDescription = {

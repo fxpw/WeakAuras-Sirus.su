@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local L = WeakAuras.L
@@ -29,7 +29,6 @@ end
 
 local function GetGlobalOptions(data)
 
-  local triggerCount = 0
   local globalTriggerOptions = {
     __title = L["Trigger Combination"],
     __order = 1,
@@ -109,7 +108,7 @@ local function AddOptions(allOptions, data)
       -- Unknown trigger system, empty options
       local options = {};
       OptionsPrivate.commonOptions.AddCommonTriggerOptions(options, data, index)
-      OptionsPrivate.AddTriggerMetaFunctions(options, data, index, true)
+      OptionsPrivate.AddTriggerMetaFunctions(options, data, index)
       triggerOptions = union(triggerOptions, {
           ["trigger." .. index .. ".unknown"] = options
       })
@@ -200,8 +199,8 @@ local function DeleteConditionsForTriggerHandleSubChecks(checks, triggernum)
       check.trigger = check.trigger - 1;
     end
 
-    if (checks.checks) then
-      DeleteConditionsForTriggerHandleSubChecks(checks.checks, triggernum);
+    if (check.checks) then
+      DeleteConditionsForTriggerHandleSubChecks(check.checks, triggernum);
     end
   end
 end
@@ -254,10 +253,30 @@ function OptionsPrivate.ClearTriggerExpandState()
   maxTriggerNumForExpand = 0
 end
 
+function OptionsPrivate.GetTriggerTitle(data, triggernum)
+  if data.triggers[triggernum] then
+    local trigger = data.triggers[triggernum].trigger
+    if trigger then
+      local event_prototype = OptionsPrivate.Private.event_prototypes[trigger.event]
+      local triggerType = trigger.type
+      local name
+      if triggerType == "aura2" then
+        name = L["Aura"]
+      elseif triggerType == "custom" then
+        name = L["Custom"]
+      else
+        name = event_prototype.name
+      end
+      return L["Trigger %i: %s"]:format(triggernum, name)
+    end
+  end
+  return L["Trigger %i"]:format(triggernum)
+end
+
 local triggerDeleteDialogOpen = false
 
 function OptionsPrivate.AddTriggerMetaFunctions(options, data, triggernum)
-  options.__title = L["Trigger %s"]:format(triggernum)
+  options.__title = OptionsPrivate.GetTriggerTitle(data, triggernum)
   options.__order = triggernum * 10
   options.__collapsed = #data.triggers > 1
   options.__isCollapsed = function()

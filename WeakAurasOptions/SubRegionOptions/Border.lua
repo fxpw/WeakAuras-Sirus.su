@@ -1,12 +1,13 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
-local SharedMedia = LibStub("LibSharedMedia-3.0");
 local L = WeakAuras.L;
 
-local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
-
 local function createOptions(parentData, data, index, subIndex)
+  local areaAnchors = {}
+  for child in OptionsPrivate.Private.TraverseLeafsOrAura(parentData) do
+    WeakAuras.Mixin(areaAnchors, OptionsPrivate.Private.GetAnchorsForData(child, "area"))
+  end
   local options = {
     __title = L["Border %s"]:format(subIndex),
     __order = 1,
@@ -51,12 +52,12 @@ local function createOptions(parentData, data, index, subIndex)
       softMax = 64,
       bigStep = 1,
     },
-    border_anchor = {
+    anchor_area = {
       type = "select",
       width = WeakAuras.normalWidth,
       name = L["Border Anchor"],
       order = 7,
-      values = OptionsPrivate.Private.aurabar_anchor_areas,
+      values = areaAnchors,
       hidden = function() return parentData.regionType ~= "aurabar" end
     }
   }

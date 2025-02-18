@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
@@ -8,7 +8,6 @@ local rad = rad
 local CreateFrame = CreateFrame
 
 local AceGUI = LibStub("AceGUI-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
@@ -57,7 +56,7 @@ local function ConstructModelPicker(frame)
   group.frame:Hide();
   group:SetLayout("flow");
 
-  local filterInput = CreateFrame("editbox", "WeakAurasModelFilterInput", group.frame, "WA_InputBoxTemplate")
+  local filterInput = CreateFrame("EditBox", "WeakAurasModelFilterInput", group.frame, "WA_InputBoxTemplate")
   filterInput:SetAutoFocus(false)
   filterInput:SetTextInsets(16, 20, 0, 0)
 
@@ -369,7 +368,7 @@ local function ConstructModelPicker(frame)
   return group
 end
 
-function OptionsPrivate.ModelPicker(frame)
-  modelPicker = modelPicker or ConstructModelPicker(frame)
+function OptionsPrivate.ModelPicker(frame, noConstruct)
+  modelPicker = modelPicker or (not noConstruct and ConstructModelPicker(frame))
   return modelPicker
 end
