@@ -48,8 +48,4 @@ For some examples of what WeakAuras can do, take a look at [wago.io](https://wag
 * You're a programmer yourself and want to contribute? Check out our [contributing guidelines](CONTRIBUTING.md) to get started!
 * Feel free to join our [Discord Community](https://discord.gg/UXSc7nt) to talk, get help and discuss everything WeakAuras!
 
-## Support
 
-If you want to help out with development without providing code yourself, you can always donate to the WeakAuras project maintainers using PayPal or become a Patreon:
-
-[![WeakAuras on PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://paypal.me/WeakAuras)  [![Become a Patreon!](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/bePatron?u=3216523)
