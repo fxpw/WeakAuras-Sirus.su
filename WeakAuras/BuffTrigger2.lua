@@ -1110,8 +1110,7 @@ local function TriggerInfoApplies(triggerInfo, unit)
     return false
   end
 
-  local unitRole = WeakAuras.GetUnitRole(controllingUnit)
-  if triggerInfo.groupRole and unitRole and not triggerInfo.groupRole[unitRole or ""] then
+  if triggerInfo.groupRole and not triggerInfo.groupRole[WeakAuras.LGT:GetUnitRole(controllingUnit) or ""] then
     return false
   end
 
@@ -1120,8 +1119,9 @@ local function TriggerInfoApplies(triggerInfo, unit)
   end
 
   if triggerInfo.specId then
-    local spec = Private.LibGroupTalentsWrapper.SpecForUnit(controllingUnit)
-    if not triggerInfo.specId[spec] then
+    local spec = WeakAuras.LGT:GetUnitTalentSpec(controllingUnit)
+    local class = select(2, UnitClass(controllingUnit))
+    if not (spec and class and triggerInfo.specId[class .. spec]) then
       return false
     end
   end

@@ -3053,7 +3053,7 @@ function WeakAuras.WatchUnitChange(unit)
         watchUnitChange.unitRaidRole[unit] = newRaidRole
       end
       local oldRole = watchUnitChange.unitRoles[unit]
-      local newRole = WeakAuras.GetUnitRole(unit)
+      local newRole = WeakAuras.LGT:GetUnitRole(unit)
       if oldRole ~= newRole then
         eventsToSend["UNIT_ROLE_CHANGED_" .. unit] = unit
         watchUnitChange.unitRoles[unit] = newRole

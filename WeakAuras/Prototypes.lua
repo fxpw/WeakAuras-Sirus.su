@@ -18,6 +18,8 @@ local MONEY = MONEY
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
+local LibGroupTalents = LibStub("LibGroupTalents-1.0")
+
 local SpellRange = LibStub("SpellRange-1.0")
 function WeakAuras.IsSpellInRange(spellId, unit)
   return SpellRange.IsSpellInRange(spellId, unit)
@@ -794,6 +796,12 @@ function WeakAuras.GetSpellCritChance()
     spellCrit = min(spellCrit, GetSpellCritChance(i))
   end
   return spellCrit
+end
+
+function WeakAuras.GetSpecString(unit)
+  local spec = WeakAuras.LGT:GetUnitTalentSpec(unit)
+  local class = select(2, UnitClass(unit))
+  return spec and class and (class .. spec)
 end
 
 function WeakAuras.IsSpellKnownForLoad(spell, exact)
@@ -1589,7 +1597,7 @@ Private.event_prototypes = {
         name = "specId",
         display = L["Specialization"],
         type = "multiselect",
-        init = "WeakAuras.SpecForUnit(unit)",
+        init = "WeakAuras.LGT:GetUnitTalentSpec(unit)",
         values = "spec_types_all",
         store = true,
         conditionType = "select",
@@ -1608,7 +1616,7 @@ Private.event_prototypes = {
         name = "role",
         display = L["Spec Role"],
         type = "select",
-        init = "WeakAuras.GetUnitRole(unit)",
+        init = "WeakAuras.LGT:GetUnitRole(unit)",
         values = "role_types",
         store = true,
         conditionType = "select",
@@ -2113,7 +2121,7 @@ Private.event_prototypes = {
         name = "specId",
         display = L["Specialization"],
         type = "multiselect",
-        init = "WeakAuras.SpecForUnit(unit)",
+        init = "WeakAuras.GetSpecString(unit)",
         values = "spec_types_all",
         store = true,
         conditionType = "select",
@@ -2126,7 +2134,7 @@ Private.event_prototypes = {
         name = "role",
         display = L["Spec Role"],
         type = "select",
-        init = "WeakAuras.GetUnitRole(unit)",
+        init = "WeakAuras.LGT:GetUnitRole(unit)",
         values = "role_types",
         store = true,
         conditionType = "select",
@@ -2534,7 +2542,7 @@ Private.event_prototypes = {
         name = "specId",
         display = L["Specialization"],
         type = "multiselect",
-        init = "WeakAuras.SpecForUnit(unit)",
+        init = "WeakAuras.GetSpecString(unit)",
         values = "spec_types_all",
         store = true,
         conditionType = "select",
@@ -2547,7 +2555,7 @@ Private.event_prototypes = {
         name = "role",
         display = L["Spec Role"],
         type = "select",
-        init = "WeakAuras.GetUnitRole(unit)",
+        init = "WeakAuras.LGT:GetUnitRole(unit)",
         values = "role_types",
         store = true,
         conditionType = "select",
@@ -6580,7 +6588,7 @@ Private.event_prototypes = {
         name = "role",
         display = L["Spec Role"],
         type = "select",
-        init = "WeakAuras.GetUnitRole(unit)",
+        init = "WeakAuras.LGT:GetUnitRole(unit)",
         values = "role_types",
         store = true,
         conditionType = "select",

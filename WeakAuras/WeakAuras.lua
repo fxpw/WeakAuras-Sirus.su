@@ -28,6 +28,11 @@ local prettyPrint = WeakAuras.prettyPrint
 WeakAurasTimers = setmetatable({}, {__tostring=function() return "WeakAuras" end})
 LibStub("AceTimer-3.0"):Embed(WeakAurasTimers)
 
+WeakAuras.LGT = LibStub("LibGroupTalents-1.0") or {
+  GetUnitTalentSpec = function() end,
+  GetUnitRole = function() end
+}
+
 Private.watched_trigger_events = {}
 
 -- The worlds simplest callback system.
@@ -1381,7 +1386,7 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   local _, race = UnitRace("player")
   local faction = UnitFactionGroup("player")
   local zoneId = GetCurrentMapAreaID()
-  local role = WeakAuras.GetUnitRole("player")
+  local role = WeakAuras.LGT:GetUnitRole("player")
   local raidRole = false;
   local raidID = UnitInRaid("player")
   if raidID then
