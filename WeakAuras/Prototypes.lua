@@ -778,18 +778,6 @@ function Private.ExecEnv.CheckCombatLogFlagsObjectType(flags, flagToCheck)
   return bit.band(flags, bitToCheck) ~= 0;
 end
 
-function Private.ExecEnv.CheckRaidFlags(flags, flagToCheck)
-  flagToCheck = tonumber(flagToCheck)
-  if not flagToCheck or not flags then return end --bailout
-  if flagToCheck == 0 then --no raid mark
-    return bit.band(flags, COMBATLOG_OBJECT_RAIDTARGET_MASK) == 0
-  elseif flagToCheck == 9 then --any raid mark
-    return bit.band(flags, COMBATLOG_OBJECT_RAIDTARGET_MASK) > 0
-  else -- specific raid mark
-    return bit.band(flags, _G['COMBATLOG_OBJECT_RAIDTARGET'..flagToCheck]) > 0
-  end
-end
-
 function WeakAuras.GetSpellCritChance()
   local spellCrit = GetSpellCritChance(2)
   for i = 3, MAX_SPELL_SCHOOLS do
@@ -2799,37 +2787,6 @@ Private.event_prototypes = {
         end
       },
       {
-        name = "sourceRaidFlags",
-        display = L["Source Raid Mark"],
-        type = "select",
-        values = "combatlog_raid_mark_check_type",
-        init = "arg",
-        store = true,
-        test = "Private.ExecEnv.CheckRaidFlags(sourceRaidFlags, %q)",
-        conditionType = "select",
-        conditionTest = function(state, needle, op)
-          if state and state.show then
-            return Private.ExecEnv.CheckRaidFlags(state.sourceRaidFlags, needle) == (op == "==")
-          end
-        end
-      },
-      {
-        name = "sourceRaidMarkIndex",
-        display = WeakAuras.newFeatureString .. L["Source unit's raid mark index"],
-        init = "WeakAuras.RaidFlagToIndex(sourceRaidFlags)",
-        test = "true",
-        store = true,
-        hidden = true,
-      },
-      {
-        name = "sourceRaidMark",
-        display = WeakAuras.newFeatureString .. L["Source unit's raid mark texture"],
-        test = "true",
-        init = "sourceRaidMarkIndex > 0 and '{rt'..sourceRaidMarkIndex..'}' or ''",
-        store = true,
-        hidden = true,
-      },
-      {
         type = "header",
         name = "destHeader",
         display = L["Destination Info"],
@@ -2958,56 +2915,6 @@ Private.event_prototypes = {
         end,
       },
       {
-        name = "destRaidFlags",
-        display = L["Dest Raid Mark"],
-        type = "select",
-        values = "combatlog_raid_mark_check_type",
-        init = "arg",
-        store = true,
-        test = "Private.ExecEnv.CheckRaidFlags(destRaidFlags, %q)",
-        conditionType = "select",
-        conditionTest = function(state, needle, op)
-          if state and state.show then
-            return Private.ExecEnv.CheckRaidFlags(state.destRaidFlags, needle) == (op == "==")
-          end
-        end,
-        enable = function(trigger)
-          return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
-        end,
-      },
-      { -- destRaidFlags ignore for SPELL_CAST_START
-        enable = function(trigger)
-          return (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
-        end
-      },
-      {
-        name = "destRaidMarkIndex",
-        display = WeakAuras.newFeatureString .. L["Destination unit's raid mark index"],
-        init = "WeakAuras.RaidFlagToIndex(destRaidFlags)",
-        test = "true",
-        store = true,
-        hidden = true,
-        enable = function(trigger)
-          return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
-        end,
-      },
-      {
-        name = "destRaidMark",
-        display = WeakAuras.newFeatureString .. L["Destination unit's raid mark texture"],
-        test = "true",
-        init = "destRaidMarkIndex > 0 and '{rt'..destRaidMarkIndex..'}' or ''",
-        store = true,
-        hidden = true,
-        enable = function(trigger)
-          return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
-        end,
-      },
-      {-- destFlags ignore for SPELL_CAST_START
-        enable = function(trigger)
-          return (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
-        end,
-      },
-      {
         type = "header",
         name = "subeventHeader",
         display = L["Subevent Info"],
@@ -3019,8 +2926,7 @@ Private.event_prototypes = {
             or trigger.subeventPrefix:find("SPELL"))
 
             or trigger.subeventSuffix and (
-              trigger.subeventSuffix == "_ABSORBED"
-              or trigger.subeventSuffix == "_INTERRUPT"
+              trigger.subeventSuffix == "_INTERRUPT"
               or trigger.subeventSuffix == "_DISPEL"
               or trigger.subeventSuffix == "_DISPEL_FAILED"
               or trigger.subeventSuffix == "_STOLEN"
@@ -3120,8 +3026,9 @@ Private.event_prototypes = {
         display = WeakAuras.newFeatureString .. L["Extra Spell Id"],
         init = "arg",
         enable = function(trigger)
-          return trigger.subeventSuffix and (trigger.subeventSuffix == "_ABSORBED" or trigger.subeventSuffix == "_INTERRUPT" or trigger.subeventSuffix == "_DISPEL" or trigger.subeventSuffix == "_DISPEL_FAILED" or trigger.subeventSuffix == "_STOLEN" or trigger.subeventSuffix == "_AURA_BROKEN_SPELL")
+          return trigger.subeventSuffix and (trigger.subeventSuffix == "_INTERRUPT" or trigger.subeventSuffix == "_DISPEL" or trigger.subeventSuffix == "_DISPEL_FAILED" or trigger.subeventSuffix == "_STOLEN" or trigger.subeventSuffix == "_AURA_BROKEN_SPELL")
         end,
+        test = "GetSpellInfo(%q or '') == extraSpellName",
         type = "spell",
         showExactOption = false,
         store = true,
@@ -3131,7 +3038,7 @@ Private.event_prototypes = {
       {
         name = "extraSpellName",
         display = L["Extra Spell Name"],
-        type = "string",
+        type = "spell",
         noValidation = true,
         init = "arg",
         enable = function(trigger)
