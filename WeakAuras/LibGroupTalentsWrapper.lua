@@ -12,7 +12,6 @@ Private.LibGroupTalentsWrapper = {
 if LibGroupTalents then
   function Private.LibGroupTalentsWrapper.CallbackHandler(_, _, _, unit)
     if unit then
-      print(unit)
       for _, f in ipairs(subscribers) do
         f(unit)
       end
