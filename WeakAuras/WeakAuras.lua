@@ -1155,9 +1155,10 @@ loadedFrame:RegisterEvent("ADDON_LOADED");
 loadedFrame:RegisterEvent("PLAYER_LOGIN");
 loadedFrame:RegisterEvent("PLAYER_LOGOUT")
 loadedFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
-loadedFrame:SetScript("OnEvent", function(self, event, addon)
+local isInitialLogin
+loadedFrame:SetScript("OnEvent", function(self, event, ...)
   if(event == "ADDON_LOADED") then
-    if(addon == ADDON_NAME) then
+    if(... == ADDON_NAME) then
       WeakAurasSaved = WeakAurasSaved or {};
       db = WeakAurasSaved;
       Private.db = db
@@ -1226,7 +1227,10 @@ loadedFrame:SetScript("OnEvent", function(self, event, addon)
           timer:ScheduleTimer(function() squelch_actions = false; end, remainingSquelch); -- No sounds while loading
         end
       end
-      Private.PostAddCompanion()
+      if not isInitialLogin then
+        isInitialLogin = true
+        Private.PostAddCompanion()
+      end
     elseif(event == "PLAYER_REGEN_ENABLED") then
       callback = function()
         if (queueshowooc) then
