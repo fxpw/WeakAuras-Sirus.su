@@ -2892,7 +2892,7 @@ Private.event_prototypes = {
           return preamble:Check(state.destNpcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."],
+        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."],
         enable = function(trigger)
           return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
         end,
@@ -2952,10 +2952,10 @@ Private.event_prototypes = {
           return not (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
         end,
       },
-      { -- destFlags ignore for SPELL_CAST_START
-      enable = function(trigger)
-        return (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
-      end,
+      {-- destFlags ignore for SPELL_CAST_START
+        enable = function(trigger)
+          return (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
+        end,
       },
       {
         name = "destRaidFlags",
@@ -2976,9 +2976,9 @@ Private.event_prototypes = {
         end,
       },
       { -- destRaidFlags ignore for SPELL_CAST_START
-      enable = function(trigger)
-        return (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
-      end
+        enable = function(trigger)
+          return (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
+        end
       },
       {
         name = "destRaidMarkIndex",
@@ -3079,7 +3079,7 @@ Private.event_prototypes = {
       },
       {
         name = "spellSchool",
-        display = L["Spell School"],
+        display = WeakAuras.newFeatureString .. L["Spell School"],
         type = "select",
         values = "combatlog_spell_school_types_for_ui",
         sorted = true,
@@ -3320,7 +3320,7 @@ Private.event_prototypes = {
       {
         hidden = true,
         name = "icon",
-        init = "spellId and select(3, GetSpellInfo(spellId)) or 'Interface\\\\Icons\\\\INV_Misc_QuestionMark'",
+        init = "(spellId and select(3, GetSpellInfo(spellId))) or 'Interface\\\\Icons\\\\INV_Misc_QuestionMark'",
         store = true,
         test = "true"
       },
