@@ -3417,6 +3417,7 @@ Private.event_prototypes = {
       return table.concat(ret)
     end,
     GetNameAndIcon = function(trigger)
+      if type(trigger.spellName) == "table" then return end
       local name, _, icon = GetSpellInfo(trigger.spellName or 0)
       return name or "Invalid", icon
     end,
@@ -3646,6 +3647,7 @@ Private.event_prototypes = {
       return ret:format(spellName);
     end,
     GetNameAndIcon = function(trigger)
+      if type(trigger.spellName) == "table" then return end
       local spellName
       if (trigger.use_exact_spellName) then
         spellName = tonumber(trigger.spellName)
@@ -3733,6 +3735,7 @@ Private.event_prototypes = {
     end,
     statesParameter = "one",
     GetNameAndIcon = function(trigger)
+      if type(trigger.spellName) == "table" then return end
       local spellName
       if (trigger.use_exact_spellName) then
         spellName = tonumber(trigger.spellName)
@@ -4623,6 +4626,7 @@ Private.event_prototypes = {
       return ret:format(spellName)
     end,
     GetNameAndIcon = function(trigger)
+      if type(trigger.spellName) == "table" then return end
       local spellName
       if (trigger.use_exact_spellName) then
         spellName = tonumber(trigger.spellName)
