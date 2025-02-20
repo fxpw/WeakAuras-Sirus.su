@@ -1,14 +1,8 @@
 if not WeakAuras.IsLibsOK() then return end
----@type string
+
 local AddonName = ...
----@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
-if not WeakAuras.IsLibsOK() then return end
----@type string
-local AddonName = ...
----@class OptionsPrivate
-local OptionsPrivate = select(2, ...)
 OptionsPrivate.changelog = {
   versionString = '5.19.1',
   dateString = '2025-01-30',

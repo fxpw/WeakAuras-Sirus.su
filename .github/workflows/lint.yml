@@ -5,6 +5,9 @@ on:
     paths:
       - '.github/workflows/**.yml'
       - '**.lua'
+  pull_request:
+    paths:
+      - '**.lua'
 
 jobs:
   lint:
@@ -60,4 +63,4 @@ jobs:
         rm -rf $GITHUB_WORKSPACE/luarocks-${{ env.LUAROCKS_VERSION }}
 
     - name: Luacheck
-      run: .luarocks/bin/luacheck . -q
+      run: .luarocks/bin/luacheck .

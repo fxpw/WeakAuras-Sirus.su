@@ -2,14 +2,13 @@ if not WeakAuras.IsLibsOK() then return end
 
 local AddonName, Private = ...
 
-local LibGroupTalents = LibStub:GetLibrary("LibGroupTalents-1.0", true)
 local subscribers = {}
 
 Private.LibGroupTalentsWrapper = {
   Register = function(f) end,
 }
 
-if LibGroupTalents then
+if WeakAuras.LGT and WeakAuras.LGT.RegisterCallback then
   function Private.LibGroupTalentsWrapper.CallbackHandler(_, _, _, unit)
     if unit then
       for _, f in ipairs(subscribers) do

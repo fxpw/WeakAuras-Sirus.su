@@ -1,12 +1,15 @@
 std = "lua51"
 max_line_length = false
 exclude_files = {
-	"babelfish.lua",
 	"WeakAuras_Main.lua",
 	"WeakAuras_Options.lua",
 	"WeakAuras_Templates.lua",
 	"WeakAuras/Libs/",
-	".luacheckrc"
+	"WeakAurasOptions/Libs/",
+	"WeakAuras/Locales",
+	"WeakAurasOptions/Locales",
+	".luacheckrc",
+	".luarocks",
 }
 ignore = {
 	"11./SLASH_.*", -- Setting an undefined (Slash handler) global variable
@@ -27,6 +30,7 @@ ignore = {
 	"542", -- An empty if branch
 	"581", --  error-prone operator orders
 	"582", --  error-prone operator orders
+	"512", -- loop is executed at most once (Retail function)
 }
 globals = {
 	"_G",
@@ -19545,4 +19549,24 @@ globals = {
 	"ZOOM_OUT",
 	"ZOOM_OUT_BUTTON_TEXT",
 	"_RECORDING_WARNING_CORRUPTED",
+
+	"GetNumPartyMembers", "GetNumRaidMembers", "noop", "tInvert", "DeltaLerp",
+	"GetNumEquipmentSets", "GetEquipmentSetInfo", "CR_HASTE_MELEE", "CR_HASTE_RANGED",
+	"CR_CRIT_TAKEN_MELEE", "CR_CRIT_TAKEN_RANGED", "CR_CRIT_TAKEN_SPELL",
+	"BNGetNumFriendToons", "BNGetFriendToonInfo", "KuiNameplates", "TidyPlatesThreat",
+	"UnitIsPartyLeader", "EasyMenu", "SELECTED_CHAT_FRAME", "handler", "InterfaceOptions_AddCategory",
+	"PanelTemplates_SetDisabledTabState", "PanelTemplates_SelectTab", "PanelTemplates_DeselectTab",
+	"PanelTemplates_TabResize", "GameFontNormalSmall", "ColorPickerFrame", "OpacitySliderFrame",
+	"AceGUIEditBoxInsertLink", "AceGUIMultiLineEditBoxInsertLink",
+	"ObjectPoolMixin", "FramePoolMixin", "FramePool_Hide", "FramePool_HideAndClearAnchors",
+	"TexturePoolMixin", "TexturePool_Hide", "TexturePool_HideAndClearAnchors", "CreateTexturePool",
+	"FontStringPoolMixin", "FontStringPool_Hide", "FontStringPool_HideAndClearAnchors",
+	"CreateFontStringPool", "ActorPoolMixin", "ActorPool_Hide", "ActorPool_HideAndClearModel",
+	"CreateActorPool", "FramePoolCollectionMixin", "CreateFramePoolCollection",
+	"FixedSizeFramePoolCollectionMixin", "CreateFixedSizeFramePoolCollection",
+	"WA_MaximizeMinimizeButtonFrame_Mixin", "WA_PortraitFrameTemplate_Mixin",
+	"WA_UpdateNineSliceBorders", "SecondsToMinutes", "MinutesToSeconds", "HasTimePassed",
+	"SecondsFormatterConstants", "ConvertSecondsToUnits", "SecondsToClock",
+	"MinutesToTime", "FormatShortDate", "NUMBER_ABBREVIATION_DATA", "WeakAurasProfilingReportTitleText",
+	"WeakAurasRealTimeProfiling", "WeakAurasRealTimeProfilingTitleText", "seconds"
 }
