@@ -1711,7 +1711,7 @@ Private.category_event_prototype.addons["Boss Mod Timer"] = L["Boss Mod Timer"]
 -- References:
 -- Commit: https://github.com/Zidras/DBM-Warmane/commit/5791dac460a07225c5d617d0252a88ce1e210618
 -- Download: https://github.com/Zidras/DBM-Warmane/archive/refs/heads/main.zip
-if not (DBM and DBM.Revision >= 20250209000000) then
+if not (DBM and type(DBM.Revision) == "number" and DBM.Revision >= 20250209000000) then
   local dbm_trigger = {
     "DBM Stage",
     "DBM Announce",
