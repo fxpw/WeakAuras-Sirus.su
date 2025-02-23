@@ -1273,6 +1273,10 @@ function Private.Modernize(data, oldSnapshot)
     end
   end
 
+  if data.internalVersion < 55 then
+    data.forceEvents = true
+  end
+
   -- Internal version 55 contained a incorrect Modernize
   if data.internalVersion < 56 then
     data.information.forceEvents = data.forceEvents

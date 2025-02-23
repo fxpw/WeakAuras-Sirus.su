@@ -1196,6 +1196,8 @@ L["Item Slot String"] = "Item Slot String"
 L["Item Type"] = "Item Type"
 L["Item Type Equipped"] = "Tipo de Item Equipado"
 --[[Translation missing --]]
+L["ItemId"] = "ItemId"
+--[[Translation missing --]]
 L["Jin'do the Hexxer"] = "Jin'do the Hexxer"
 --[[Translation missing --]]
 L["Journal Stage"] = "Journal Stage"

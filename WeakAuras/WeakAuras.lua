@@ -888,6 +888,23 @@ local function LoadCustomActionFunctions(data)
   end
 end
 
+Private.talent_types_specific = {}
+local function CreateTalentCache()
+  local _, player_class = UnitClass("player")
+
+  Private.talent_types_specific[player_class] = Private.talent_types_specific[player_class] or {};
+
+  for tab = 1, GetNumTalentTabs() do
+    for num_talent = 1, GetNumTalents(tab) do
+      local talentName, talentIcon = GetTalentInfo(tab, num_talent);
+      local talentId = (tab - 1) * MAX_NUM_TALENTS + num_talent
+      if (talentName and talentIcon) then
+        Private.talent_types_specific[player_class][talentId] = "|T"..talentIcon..":0|t "..talentName
+      end
+    end
+  end
+end
+
 Private.CompanionData = {}
 -- use this function to not overwrite data from other companion compatible addons
 -- when using this function, do not name your global data table "WeakAurasCompanion"
@@ -1230,6 +1247,7 @@ loadedFrame:SetScript("OnEvent", function(self, event, ...)
       if not isInitialLogin then
         isInitialLogin = true
         Private.PostAddCompanion()
+        CreateTalentCache()
       end
     elseif(event == "PLAYER_REGEN_ENABLED") then
       callback = function()

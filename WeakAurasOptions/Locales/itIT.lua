@@ -154,8 +154,8 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["Anchor Mode"] = "Anchor Mode"
 	L["Anchor Point"] = "Punto di ancoraggio"
 	L["Anchored To"] = "Ancorato a"
-	L["and"] = "e"
 	L["And "] = "E"
+	L["and"] = "e"
 	L["and %s"] = "e %s"
 	L["and aligned left"] = "e allineato a sinistra"
 	L["and aligned right"] = "e allineato a destra"
@@ -261,8 +261,6 @@ Off Screen]=] ] = "L'aura è fuori dallo schermo"
 	--[[Translation missing --]]
 	L["Clipped by Foreground"] = "Clipped by Foreground"
 	--[[Translation missing --]]
-	L["Clipped by Progress"] = "Clipped by Progress"
-	--[[Translation missing --]]
 	L["Clockwise"] = "Clockwise"
 	L["Close"] = "Chiudi"
 	L["Code Editor"] = "Editore di codice"
@@ -271,16 +269,14 @@ Off Screen]=] ] = "L'aura è fuori dallo schermo"
 	L["Collapse all non-loaded displays"] = "Comprimi tutti i display non caricati"
 	L["Collapse all pending Import"] = "Comprimi tutto in attesa di importazione"
 	L["Collapsible Group"] = "Comprimi Gruppo"
-	L["color"] = "Colore"
 	L["Color"] = "Colore"
+	L["color"] = "Colore"
 	L["Column Height"] = "Altezza Colonna"
 	L["Column Space"] = "Spazio colonna"
 	L["Columns"] = "Colonne"
 	L["COMBAT_LOG_EVENT_UNFILTERED with no filter can trigger frame drops in raid environment."] = "COMBAT_LOG_EVENT_UNFILTERED senza filtro può attivare cadute di frame nell'ambiente raid."
 	L["Combinations"] = "Combinazioni"
 	L["Combine Matches Per Unit"] = "Combina partite per unità"
-	--[[Translation missing --]]
-	L["Commits"] = "Commits"
 	L["Common Text"] = "Testo Comune"
 	L["Compare against the number of units affected."] = "Confrontare con il numero di unità interessate."
 	L["Compatibility Options"] = "Opzioni di compatibilità"
@@ -1548,6 +1544,8 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	--[[Translation missing --]]
 	L["This setting controls what widget is generated in user mode."] = "This setting controls what widget is generated in user mode."
 	--[[Translation missing --]]
+	L["Thumbnail Icon"] = "Thumbnail Icon"
+	--[[Translation missing --]]
 	L["Tick %s"] = "Tick %s"
 	--[[Translation missing --]]
 	L["Tick Area %s"] = "Tick Area %s"
@@ -1714,9 +1712,9 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	--[[Translation missing --]]
 	L["X Scale"] = "X Scale"
 	--[[Translation missing --]]
-	L["x-Offset"] = "x-Offset"
-	--[[Translation missing --]]
 	L["X-Offset"] = "X-Offset"
+	--[[Translation missing --]]
+	L["x-Offset"] = "x-Offset"
 	--[[Translation missing --]]
 	L["Y Offset"] = "Y Offset"
 	--[[Translation missing --]]

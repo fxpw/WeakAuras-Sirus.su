@@ -10,35 +10,26 @@ local L = WeakAuras.L
 	L[" and |cFFFF0000mirrored|r"] = "et  |cFFFF0000mirrored|r"
 	L["-- Do not remove this comment, it is part of this aura: "] = "-- Ne supprimez pas ce commentaire, il fait partie de cette aura :"
 	L[" rotated |cFFFF0000%s|r degrees"] = "degrés de |cFFFF0000%s|r  rotation"
-	--[[Translation missing --]]
-	L["% - To show a percent sign"] = "% - To show a percent sign"
+	L["% - To show a percent sign"] = "% - Pour afficher un symbole de pourcentage"
 	L["% of Progress"] = "% de progression"
 	L["%d |4aura:auras; added"] = "%d |4aura:auras; ajoutée(s)"
 	L["%d |4aura:auras; deleted"] = "%d |4aura:auras; supprimée(s)"
 	L["%d |4aura:auras; modified"] = "%d |4aura:auras; modifiée(s)"
-	--[[Translation missing --]]
-	L["%d |4aura:auras; with meta data modified"] = "%d |4aura:auras; with meta data modified"
-	--[[Translation missing --]]
-	L["%d displays loaded"] = "%d displays loaded"
-	--[[Translation missing --]]
-	L["%d displays not loaded"] = "%d displays not loaded"
-	--[[Translation missing --]]
-	L["%d displays on standby"] = "%d displays on standby"
+	L["%d |4aura:auras; with meta data modified"] = "%d |4aura:auras; avec métadonnées modifiées"
+	L["%d displays loaded"] = "%d affichages chargés"
+	L["%d displays not loaded"] = "%d affichages non chargés"
+	L["%d displays on standby"] = "%d affichages en attente"
 	L["%i auras selected"] = "%i auras sélectionnées"
 	L["%i."] = "%i."
-	--[[Translation missing --]]
 	L["%i. %s"] = "%i. %s"
-	--[[Translation missing --]]
-	L["%s - %i. Trigger"] = "%s - %i. Trigger"
-	--[[Translation missing --]]
-	L["%s - Alpha Animation"] = "%s - Alpha Animation"
+	L["%s - %i. Trigger"] = "%s - %i. Déclencheur"
+	L["%s - Alpha Animation"] = "%s - Opacité de l'animation"
 	L["%s - Color Animation"] = "%s - Couleur de l'animation"
 	L["%s - Condition Custom Chat %s"] = "%s - Condition personnalisée du chat %s"
 	L["%s - Condition Custom Check %s"] = "%s - Condition vérifiée du chat %s"
 	L["%s - Condition Custom Code %s"] = "%s - Code de condition personnalisé %s"
 	L["%s - Custom Anchor"] = "%s - Ancre personnalisée"
-	--[[Translation missing --]]
-	L["%s - Custom Grow"] = "%s - Custom Grow"
+	L["%s - Custom Grow"] = "%s - Surbrillance personnalisée"
 	L["%s - Custom Sort"] = "%s - Sort personnalisé"
 	L["%s - Custom Text"] = "%s - Texte personnalisé"
 	L["%s - Finish"] = "%s - Terminer"
@@ -53,8 +44,7 @@ local L = WeakAuras.L
 	L["%s - Start Action"] = "%s - Démarrer une action"
 	L["%s - Start Custom Text"] = "%s - Démarrer un texte personnalisé"
 	L["%s - Translate Animation"] = "%s - Traduire l'animation"
-	--[[Translation missing --]]
-	L["%s - Trigger Logic"] = "%s - Trigger Logic"
+	L["%s - Trigger Logic"] = "%s - Logique du déclencheur"
 	L["%s %s, Lines: %d, Frequency: %0.2f, Length: %d, Thickness: %d"] = "%s %s, Lignes : %d, Fréquence : %0.2f, Longueur : %d, Épaisseur : %d"
 	L["%s %s, Particles: %d, Frequency: %0.2f, Scale: %0.2f"] = "%s %s, Particules : %d, Fréquence : %0.2f, Échelle : %0.2f"
 	L["%s %u. Overlay Function"] = "%s %u. Fonction de superposition"
@@ -185,8 +175,8 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["Anchor Mode"] = "Anchor Mode"
 	L["Anchor Point"] = "Point d'ancrage"
 	L["Anchored To"] = "Ancré à"
-	L["And "] = "Et"
 	L["and"] = "et"
+	L["And "] = "Et"
 	--[[Translation missing --]]
 	L["and %s"] = "and %s"
 	L["and aligned left"] = "et aligné à gauche"
@@ -316,8 +306,6 @@ Off Screen]=]
 	--[[Translation missing --]]
 	L["Clipped by Foreground"] = "Clipped by Foreground"
 	--[[Translation missing --]]
-	L["Clipped by Progress"] = "Clipped by Progress"
-	--[[Translation missing --]]
 	L["Clockwise"] = "Clockwise"
 	L["Close"] = "Fermer"
 	--[[Translation missing --]]
@@ -338,8 +326,6 @@ Off Screen]=]
 	L["COMBAT_LOG_EVENT_UNFILTERED with no filter can trigger frame drops in raid environment."] = "COMBAT_LOG_EVENT_UNFILTERED with no filter can trigger frame drops in raid environment."
 	L["Combinations"] = "Combinaisons"
 	L["Combine Matches Per Unit"] = "Combiner toutes les Correspondances Par Unité"
-	--[[Translation missing --]]
-	L["Commits"] = "Commits"
 	L["Common Text"] = "Texte commun"
 	L["Compare against the number of units affected."] = "Comparer contre le nombre d'unités affectées."
 	--[[Translation missing --]]
@@ -1291,6 +1277,8 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["This is a modified version of your group: |cff9900FF%s|r"] = "This is a modified version of your group: |cff9900FF%s|r"
 	L["This region of type \"%s\" is not supported."] = "Cette région de type \"%s\" n'est pas supportée."
 	L["This setting controls what widget is generated in user mode."] = "Ce paramètre contrôle le widget généré en mode utilisateur."
+	--[[Translation missing --]]
+	L["Thumbnail Icon"] = "Thumbnail Icon"
 	L["Tick %s"] = "Coche %s"
 	--[[Translation missing --]]
 	L["Tick Area %s"] = "Tick Area %s"

@@ -558,11 +558,20 @@ Private.anim_presets = {
   }
 };
 
-function WeakAuras.CheckTalentByIndex(index)
+function WeakAuras.CheckTalentByIndex(index, extraOption)
   local tab = ceil(index / MAX_NUM_TALENTS)
   local num_talent = (index - 1) % MAX_NUM_TALENTS + 1
-  local _, _, _, _, rank  = GetTalentInfo(tab, num_talent)
-  return rank and rank > 0;
+  local name, _, _, _, rank  = GetTalentInfo(tab, num_talent)
+  if name == nil then
+    return nil
+  end
+  local result = rank and rank > 0
+  if extraOption == 4 then
+    return result
+  elseif extraOption == 5 then
+    return not result
+  end
+  return result;
 end
 
 function WeakAuras.CheckNumericIds(loadids, currentId)
@@ -848,44 +857,40 @@ end
 
 local function valuesForTalentFunction(trigger)
   return function()
-    local single_class;
-    -- First check to use if the class load is on multi-select with only one class selected
-    if(trigger.use_class == false and trigger.class and trigger.class.multi) then
-      local num_classes = 0;
-      for class in pairs(trigger.class.multi) do
-        single_class = class;
-        num_classes = num_classes + 1;
-      end
-      if(num_classes ~= 1) then
-        single_class = nil;
-      end
-    end
-    -- If that is not the case, see if it is on single-select
-    if((not single_class) and trigger.use_class and trigger.class and trigger.class.single) then
-      single_class = trigger.class.single
-    end
-
-    if (trigger.use_class == nil) then -- no class selected, fallback to current class
+    local single_class = Private.checkForSingleLoadCondition(trigger, "class")
+    if not single_class then
       single_class = select(2, UnitClass("player"));
     end
 
-    -- If a single specific class was found, load the specific list for it
-    if single_class and Private.talents_ids[single_class] then
-      if not Private.talent_types_specific[single_class] then
-        Private.talent_types_specific[single_class] = {}
-        for tab = 1, #Private.talents_ids[single_class] do
-          for num_talent = 1, #Private.talents_ids[single_class][tab] do
-            local spellName, _, spellIcon = GetSpellInfo(Private.talents_ids[single_class][tab][num_talent])
-            local talentId = (tab - 1) * MAX_NUM_TALENTS + num_talent
-            if spellName and spellIcon then
-              Private.talent_types_specific[single_class][talentId] = ("|T%s:24|t %s"):format(spellIcon, spellName)
-            end
-          end
-        end
+    return Private.talentInfo[single_class]
+  end
+end
+
+---helper to check if a condition is checked and have a single value, and return it
+function Private.checkForSingleLoadCondition(trigger, name, validateFn)
+  local use_name = "use_"..name
+  local trigger_use_name = trigger[use_name]
+  local trigger_name = trigger[name]
+  if trigger_use_name == true
+  and trigger_name
+  and trigger_name.single ~= nil
+  and (validateFn == nil or validateFn(trigger_name.single))
+  then
+    return trigger_name.single
+  end
+  if trigger_use_name == false and trigger_name and trigger_name.multi ~= nil then
+    local count = 0
+    local key
+    for k, v in pairs(trigger_name.multi) do
+      if v ~= nil
+      and (validateFn == nil or validateFn(k))
+      then
+        count = count + 1
+        key = k
       end
-      return Private.talent_types_specific[single_class];
-    else
-      return Private.talent_types;
+    end
+    if count == 1 then
+      return key
     end
   end
 end
@@ -1020,36 +1025,86 @@ Private.load_prototype = {
       display = L["Talent"],
       type = "multiselect",
       values = valuesForTalentFunction,
-      test = "WeakAuras.CheckTalentByIndex(%d)",
-      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"}
+      test = "WeakAuras.CheckTalentByIndex(%d, %d)",
+      enableTest = function(trigger, talent, arg)
+        return WeakAuras.CheckTalentByIndex(talent, arg) ~= nil
+      end,
+      multiConvertKey = nil,
+      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"},
+      inverse = nil,
+      extraOption = nil,
+      control = "WeakAurasMiniTalent",
+      multiNoSingle = true, -- no single mode
+      multiTristate = true, -- values can be true/false/nil
+      multiAll = true, -- require all tests
+      orConjunctionGroup = "talent",
+      multiUseControlWhenFalse = true,
+      enable = function(trigger)
+        return (Private.checkForSingleLoadCondition(trigger, "class") ~= nil)
+      end,
+      hidden = function(trigger)
+        return not (Private.checkForSingleLoadCondition(trigger, "class") ~= nil)
+      end,
     },
     {
       name = "talent2",
-      display = L["And Talent"],
+      display = L["Or Talent"],
       type = "multiselect",
       values = valuesForTalentFunction,
-      test = "WeakAuras.CheckTalentByIndex(%d)",
+      test = "WeakAuras.CheckTalentByIndex(%d, %d)",
+      enableTest = function(trigger, talent, arg)
+        return WeakAuras.CheckTalentByIndex(talent, arg) ~= nil
+      end,
+      multiConvertKey = nil,
+      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"},
+      inverse = nil,
+      extraOption = nil,
+      control = "WeakAurasMiniTalent",
+      multiNoSingle = true, -- no single mode
+      multiTristate = true, -- values can be true/false/nil
+      multiAll = true, -- require all tests
+      orConjunctionGroup = "talent",
+      multiUseControlWhenFalse = true,
       enable = function(trigger)
-        return trigger.use_talent ~= nil or trigger.use_talent2 ~= nil
+        return (trigger.use_talent ~= nil or trigger.use_talent2 ~= nil) and (
+          (Private.checkForSingleLoadCondition(trigger, "class") ~= nil)
+        )
       end,
       hidden = function(trigger)
-        return not (trigger.use_talent ~= nil or trigger.use_talent2 ~= nil)
+        return not((trigger.use_talent ~= nil or trigger.use_talent2 ~= nil) and (
+          (Private.checkForSingleLoadCondition(trigger, "class") ~= nil))
+        )
       end,
-      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"}
     },
     {
       name = "talent3",
-      display = L["And Talent"],
+      display = L["Or Talent"],
       type = "multiselect",
       values = valuesForTalentFunction,
-      test = "WeakAuras.CheckTalentByIndex(%d)",
+      test = "WeakAuras.CheckTalentByIndex(%d, %d)",
+      enableTest = function(trigger, talent, arg)
+        return WeakAuras.CheckTalentByIndex(talent, arg) ~= nil
+      end,
+      multiConvertKey = nil,
+      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"},
+      inverse = nil,
+      extraOption = nil,
+      control = "WeakAurasMiniTalent",
+      multiNoSingle = true, -- no single mode
+      multiTristate = true, -- values can be true/false/nil
+      multiAll = true, -- require all tests
+      orConjunctionGroup = "talent",
+      multiUseControlWhenFalse = true,
       enable = function(trigger)
-        return (trigger.use_talent ~= nil and trigger.use_talent2 ~= nil) or trigger.use_talent3 ~= nil
+        return ((trigger.use_talent ~= nil and trigger.use_talent2 ~= nil) or trigger.use_talent3 ~= nil) and (
+          (Private.checkForSingleLoadCondition(trigger, "class") ~= nil)
+        )
       end,
       hidden = function(trigger)
-        return not ((trigger.use_talent ~= nil and trigger.use_talent2 ~= nil) or trigger.use_talent3 ~= nil)
-      end,
-      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"}
+        return not(((trigger.use_talent ~= nil and trigger.use_talent2 ~= nil) or trigger.use_talent3 ~= nil) and (
+          (Private.checkForSingleLoadCondition(trigger, "class") ~= nil)
+        ))
+      end
     },
     {
       name = "spellknown",
@@ -4660,90 +4715,89 @@ Private.event_prototypes = {
   },
   ["Talent Known"] = {
     type = "unit",
-    events = function()
-      return {
-        ["events"] = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"}
-      }
-    end,
+    events = {
+      ["events"] = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"}
+    },
     force_events = "PLAYER_TALENT_UPDATE",
-    name = L["Talent Selected"],
+    name = L["Talent Known"],
     init = function(trigger)
-      local inverse = trigger.use_inverse;
+      local inverse = trigger.use_inverse
+      local ret = {}
       if (trigger.use_talent) then
         -- Single selection
         local index = trigger.talent and trigger.talent.single;
         local tier = index and ceil(index / MAX_NUM_TALENTS)
         local column = index and ((index - 1) % MAX_NUM_TALENTS + 1)
-
-        local ret = [[
+        table.insert(ret, ([[
           local tier = %s;
           local column = %s;
-          local active, _, rank
-          _, _, _, _, rank  = GetTalentInfo(tier, column)
-          active = rank > 0
-        ]]
+          local active = false
+          local name, icon, _, _, rank = GetTalentInfo(tier, column)
+          if rank and rank > 0 then
+            active = true;
+            activeName = name;
+            activeIcon = icon;
+          end
+        ]]):format(tier or 0, column or 0))
         if (inverse) then
-          ret = ret .. [[
-          active = not (active);
-          ]]
+          table.insert(ret, [[
+            active = not (active);
+          ]])
         end
-        return ret:format(tier or 0, column or 0)
       elseif (trigger.use_talent == false) then
         if (trigger.talent.multi) then
-          local ret = [[
+          table.insert(ret, [[
+            local active = true
+            local activeIcon, activeName, _
+          ]])
+          table.insert(ret, [[
             local tier
             local column
-            local active = false;
-            local activeIcon;
-            local activeName;
-          ]]
-          for index in pairs(trigger.talent.multi) do
+          ]])
+          for index, value in pairs(trigger.talent.multi) do
             local tier = index and ceil(index / MAX_NUM_TALENTS)
             local column = index and ((index - 1) % MAX_NUM_TALENTS + 1)
-            local ret2 = [[
+            table.insert(ret, ([[
               if (not active) then
                 tier = %s
                 column = %s
-                local name, icon, _, _, rank  = GetTalentInfo(tier, column)
-                if rank and rank > 0 then
+                local name, icon, _, _, rank = GetTalentInfo(tier, column)
+                if rank > 0 then
                   active = true;
                   activeName = name;
                   activeIcon = icon;
                 end
               end
-            ]]
-            ret = ret .. ret2:format(tier, column);
+            ]]):format(tier, column))
           end
           if (inverse) then
-            ret = ret .. [[
-            active = not (active);
-            ]]
+            table.insert(ret, [[
+              active = not (active);
+            ]])
           end
-          return ret;
         end
       end
-      return "";
+      return table.concat(ret)
     end,
     args = {
       {
         name = "talent",
-        display = L["Talent selected"],
+        display = L["Talent"],
         type = "multiselect",
-        values = function()
+        values = function(trigger)
           local class = select(2, UnitClass("player"));
-          if Private.talent_types_specific[class] then
+          if Private.talent_types_specific and Private.talent_types_specific[class] then
             return Private.talent_types_specific[class];
-          else
-            return Private.talent_types;
           end
         end,
         test = "active",
+        reloadOptions = true,
       },
       {
         name = "inverse",
         display = L["Inverse"],
         type = "toggle",
-        test = "true"
+        test = "true",
       },
       {
         hidden = true,

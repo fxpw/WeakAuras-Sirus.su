@@ -944,9 +944,9 @@ L["Install the addons BugSack and BugGrabber for detailed error logs."] = "Insta
 L["Instance"] = "Instance"
 L["Instance Difficulty"] = "Difficulté de l'Instance"
 --[[Translation missing --]]
-L["Instance Id"] = "Instance Id"
---[[Translation missing --]]
 L["Instance ID"] = "Instance ID"
+--[[Translation missing --]]
+L["Instance Id"] = "Instance Id"
 --[[Translation missing --]]
 L["Instance Info"] = "Instance Info"
 --[[Translation missing --]]
@@ -1007,6 +1007,8 @@ L["Item Slot"] = "Item Slot"
 L["Item Slot String"] = "Item Slot String"
 L["Item Type"] = "Type d'objet"
 L["Item Type Equipped"] = "Type d'objet équipé"
+--[[Translation missing --]]
+L["ItemId"] = "ItemId"
 --[[Translation missing --]]
 L["Jin'do the Hexxer"] = "Jin'do the Hexxer"
 --[[Translation missing --]]
@@ -1817,8 +1819,8 @@ L["Talent |cFFFF0000Not|r Known"] = "Talent |cFFFF0000Not|r Known"
 L["Talent |cFFFF0000Not|r Selected"] = "Talent |cFFFF0000Not|r Selected"
 --[[Translation missing --]]
 L["Talent Known"] = "Talent Known"
-L["Talent Selected"] = "Talent sélectionné"
 L["Talent selected"] = "Talent sélectionné"
+L["Talent Selected"] = "Talent sélectionné"
 L["Talent Specialization"] = "Spécialisation"
 L["Tanking And Highest"] = "Tank et le plus haut"
 L["Tanking But Not Highest"] = "Tank mais pas le plus haut"
