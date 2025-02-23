@@ -29,8 +29,8 @@ WeakAurasTimers = setmetatable({}, {__tostring=function() return "WeakAuras" end
 LibStub("AceTimer-3.0"):Embed(WeakAurasTimers)
 
 WeakAuras.LGT = LibStub("LibGroupTalents-1.0") or {
-  GetUnitTalentSpec = function() end,
-  GetUnitRole = function() end
+  GetUnitTalentSpec = function(_) end,
+  GetUnitRole = function(_) end
 }
 
 Private.watched_trigger_events = {}

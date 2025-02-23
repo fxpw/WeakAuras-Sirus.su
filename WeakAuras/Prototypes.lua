@@ -574,6 +574,14 @@ function WeakAuras.CheckTalentByIndex(index, extraOption)
   return result;
 end
 
+function WeakAuras.CheckClassSpec(class, test)
+  if type(class) == "string" or type(test) == "string" then
+    local spec = WeakAuras.LGT:GetUnitTalentSpec('player') or ""
+    return (class .. spec) == test
+  end
+  return false
+end
+
 function WeakAuras.CheckNumericIds(loadids, currentId)
   if (not loadids or not currentId) then
     return false;
@@ -657,6 +665,10 @@ Private.tinySecondFormat = function(value)
         return negSign .. ret
      end
   end
+end
+
+function Private.ExecEnv.GetSpecIcon(classspec)
+  return Private.spec[classspec] or ""
 end
 
 function Private.ExecEnv.ParseStringCheck(input)
@@ -1019,6 +1031,14 @@ Private.load_prototype = {
       type = "multiselect",
       values = "class_types",
       init = "arg"
+    },
+    {
+      name = "class_and_spec",
+      display = L["Class and Specialization"],
+      type = "multiselect",
+      values = "spec_types_all",
+      test = "WeakAuras.CheckClassSpec(class, %s)",
+      events = {"UNIT_SPEC_CHANGED_player"},
     },
     {
       name = "talent",
@@ -4810,6 +4830,47 @@ Private.event_prototypes = {
         hidden = true,
         name = "name",
         init = "activeName",
+        store = "true",
+        test = "true"
+      },
+    },
+    automaticrequired = true,
+    statesParameter = "one",
+    progressType = "none"
+  },
+  ["Class/Spec"] = {
+    type = "unit",
+    events = {},
+    internal_events = { "UNIT_SPEC_CHANGED_player" },
+    name = L["Class and Specialization"],
+    init = function(trigger)
+      local class = select(2, UnitClass("player")) or "UNKNOWN"
+      return ([[
+        local specName = WeakAuras.LGT:GetUnitTalentSpec("player") or "Unknown"
+        local specId = "%s" .. specName
+        local specIcon = Private.ExecEnv.GetSpecIcon(specId)
+      ]]):format(class)
+    end,
+    args = {
+      {
+        name = "specId",
+        display = L["Class and Specialization"],
+        type = "multiselect",
+        values = "spec_types_all",
+        store = "true",
+        conditionType = "select",
+      },
+      {
+        hidden = true,
+        name = "icon",
+        init = "specIcon",
+        store = "true",
+        test = "true"
+      },
+      {
+        hidden = true,
+        name = "name",
+        init = "specName",
         store = "true",
         test = "true"
       },

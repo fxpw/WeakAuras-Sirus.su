@@ -3282,40 +3282,111 @@ WeakAuras.StopMotion.animation_types = {
   progress = L["Progress"]
 }
 
-local classIcons = {
-  DRUID = "Interface\\Icons\\Ability_Druid_Maul",
-  HUNTER = "Interface\\Icons\\INV_Weapon_Bow_07",
-  MAGE = "Interface\\Icons\\INV_Staff_13",
-  PALADIN = "Interface\\Icons\\INV_Hammer_01",
-  PRIEST = "Interface\\Icons\\INV_Staff_30",
-  ROGUE = "Interface\\Icons\\INV_ThrowingKnife_04",
-  SHAMAN = "Interface\\Icons\\Spell_Nature_BloodLust",
-  WARLOCK = "Interface\\Icons\\Spell_Nature_FaerieFire",
-  WARRIOR = "Interface\\Icons\\INV_Sword_27",
-  DEATHKNIGHT = "Interface\\Icons\\Spell_Deathknight_ClassIcon",
-}
+do
+  local classData = {
+    DEATHKNIGHT = {
+      icon = "Interface\\Icons\\Spell_Deathknight_ClassIcon",
+      specs = {
+        Unholy = "Interface\\Icons\\Spell_Deathknight_UnholyPresence",
+        Frost = "Interface\\Icons\\Spell_Deathknight_FrostPresence",
+        Blood = "Interface\\Icons\\Spell_Deathknight_BloodPresence",
+      }
+    },
+    DRUID = {
+      icon = "Interface\\Icons\\Ability_Druid_Maul",
+      specs = {
+        Balance = "Interface\\Icons\\Spell_Nature_StarFall",
+        Restoration = "Interface\\Icons\\Spell_Nature_HealingTouch",
+        ["Feral Combat"] = "Interface\\Icons\\Ability_Racial_BearForm",
+        Guardian = "Interface\\Icons\\Ability_Racial_BearForm",
+      }
+    },
+    HUNTER = {
+      icon = "Interface\\Icons\\INV_Weapon_Bow_07",
+      specs = {
+        Marksmanship = "Interface\\Icons\\Ability_Marksmanship",
+        ["Beast Mastery"] = "Interface\\Icons\\Ability_Hunter_BeastTaming",
+        Survival = "Interface\\Icons\\Ability_Hunter_SwiftStrike",
+      }
+    },
+    MAGE = {
+      icon = "Interface\\Icons\\INV_Staff_13",
+      specs = {
+        Fire = "Interface\\Icons\\Spell_Fire_FireBolt02",
+        Frost = "Interface\\Icons\\Spell_Frost_FrostBolt02",
+        Arcane = "Interface\\Icons\\Spell_Holy_MagicalSentry",
+      }
+    },
+    PALADIN = {
+      icon = "Interface\\Icons\\INV_Hammer_01",
+      specs = {
+        Protection = "Interface\\Icons\\Spell_Holy_DevotionAura",
+        Holy = "Interface\\Icons\\Spell_Holy_HolyBolt",
+        Retribution = "Interface\\Icons\\Spell_Holy_AuraOfLight",
+      }
+    },
+    PRIEST = {
+      icon = "Interface\\Icons\\INV_Staff_30",
+      specs = {
+        Discipline = "Interface\\Icons\\Spell_Holy_WordFortitude",
+        Holy = "Interface\\Icons\\Spell_Holy_GuardianSpirit",
+        Shadow = "Interface\\Icons\\Spell_Shadow_ShadowWordPain",
+      }
+    },
+    ROGUE = {
+      icon = "Interface\\Icons\\INV_ThrowingKnife_04",
+      specs = {
+        Subtlety = "Interface\\Icons\\Ability_Stealth",
+        Combat = "Interface\\Icons\\Ability_BackStab",
+        Assassination = "Interface\\Icons\\Ability_Rogue_Eviscerate",
+      }
+    },
+    SHAMAN = {
+      icon = "Interface\\Icons\\Spell_Nature_BloodLust",
+      specs = {
+        Enhancement = "Interface\\Icons\\Spell_Nature_LightningShield",
+        Elemental = "Interface\\Icons\\Spell_Nature_Lightning",
+        Restoration = "Interface\\Icons\\Spell_Nature_MagicImmunity",
+      }
+    },
+    WARLOCK = {
+      icon = "Interface\\Icons\\Spell_Nature_FaerieFire",
+      specs = {
+        Demonology = "Interface\\Icons\\Spell_Shadow_Metamorphosis",
+        Affliction = "Interface\\Icons\\Spell_Shadow_DeathCoil",
+        Destruction = "Interface\\Icons\\Spell_Shadow_RainOfFire",
+      }
+    },
+    WARRIOR = {
+      icon = "Interface\\Icons\\INV_Sword_27",
+      specs = {
+        Arms = "Interface\\Icons\\Ability_Rogue_Eviscerate",
+        Protection = "Interface\\Icons\\INV_Shield_06",
+        Fury = "Interface\\Icons\\Ability_Warrior_InnerRage",
+      }
+    },
+  }
 
-local specs = {
-  DEATHKNIGHT = { L["Blood"], L["Frost"], L["Unholy"] },
-  DRUID = { L["Balance"], L["Feral Combat"], L["Guardian"], L["Restoration"] },
-  HUNTER = { L["Beast Mastery"], L["Marksmanship"], L["Survival"] },
-  MAGE = { L["Arcane"], L["Fire"], L["Frost"] },
-  PALADIN = { L["Holy"], L["Protection"], L["Retribution"] },
-  PRIEST = { L["Discipline"], L["Holy"], L["Shadow"] },
-  ROGUE = { L["Assassination"], L["Combat"], L["Subtlety"] },
-  SHAMAN = { L["Elemental"], L["Enhancement"], L["Restoration"] },
-  WARLOCK = { L["Affliction"], L["Demonology"], L["Destruction"] },
-  WARRIOR = { L["Arms"], L["Fury"], L["Protection"] }
-}
+  local function createSpecString(class, spec)
+    local data = classData[class]
+    local classIcon = data.icon or "Interface\\Icons\\INV_Misc_QuestionMark"
+    local specIcon = data.specs[spec] or "Interface\\Icons\\INV_Misc_QuestionMark"
+    local color = WA_GetClassColor(class)
+    return ("|T%s:0|t |T%s:0|t |c%s%s|r"):format(classIcon, specIcon, color, spec)
+  end
 
-Private.spec_types_all = {}
-for class, specList in pairs(specs) do
-  for _, specName in ipairs(specList) do
-    Private.spec_types_all[class .. specName] = "|T" .. classIcons[class] .. ":0|t |c" ..
-                                      WA_GetClassColor(class) .. specName .. "|r"
+  Private.spec_types_all = {}
+  Private.spec = {}
+  for class, data in pairs(classData) do
+    for specName, specIcon in pairs(data.specs) do
+      local key = class .. specName
+      Private.spec_types_all[key] = createSpecString(class, specName)
+      Private.spec[key] = specIcon
+    end
   end
 end
 
+--[=[[ Old unused Talent List
 Private.talents_ids = {
   DEATHKNIGHT = {{48979,48997,49182,48978,49004,55107,48982,48987,49467,48985,49145,49015,48977,49006,49005,48988,53137,49027,49016,50365,62905,49018,55233,49189,55050,49023,61154,49028}, {49175,49455,49042,55061,49140,49226,50880,49039,51468,51123,49149,49137,49186,49471,49796,55610,49024,49188,50040,49203,50384,65661,54639,51271,49200,49143,50187,49202,49184}, {51745,48962,55129,49036,48963,49588,48965,49013,51459,49158,49146,49219,55620,49194,49220,49223,55666,49224,49208,52143,66799,51052,50391,63560,49032,49222,49217,51099,55090,50117,49206}},
   DRUID = {{16814,57810,16845,35363,16821,16836,16880,57865,16819,16909,16850,33589,5570,57849,33597,16896,33592,24858,48384,33600,48389,33603,48516,50516,33831,48488,48506,48505}, {16934,16858,16947,16998,16929,17002,61336,16942,16966,16972,37116,48409,16940,49377,33872,57878,17003,33853,17007,34297,33851,57873,33859,48483,48492,33917,48532,48432,63503,50334}, {17050,17063,17056,17069,17118,16833,17106,16864,48411,24968,17111,17116,17104,17123,33879,17074,34151,18562,33881,33886,48496,48539,65139,48535,63410,51179,48438}},
@@ -3328,3 +3399,4 @@ Private.talents_ids = {
   WARLOCK = {{18827,18174,17810,18179,18213,18182,17804,53754,17783,18288,18218,18094,32381,32385,63108,18223,54037,18271,47195,30060,18220,30054,32477,47198,30108,58435,47201,48181}, {18692,18694,18697,47230,18703,18705,18731,18754,19028,18708,30143,18769,18709,30326,18767,23785,47245,30319,47193,35691,30242,63156,54347,30146,63117,47236,59672}, {17793,17788,18119,63349,17778,18126,17877,17959,18135,17917,17927,34935,17815,18130,30299,17954,17962,30293,18096,30288,54117,47258,30283,47220,47266,50796}},
   WARRIOR = {{12282,16462,12286,12285,12300,12295,12290,12296,16493,12834,12163,56636,12700,12328,12284,12281,20504,12289,46854,29834,12294,46865,12862,64976,35446,46859,29723,29623,29836,46867,46924}, {61216,12321,12320,12324,12322,12329,12323,16487,12318,23584,20502,12317,29590,12292,29888,20500,12319,46908,23881,29721,46910,29759,60970,29801,46913,56927,46917}, {12301,12298,12287,50685,12297,12975,12797,29598,12299,59088,12313,12308,12312,12809,12311,16538,29593,50720,29787,29140,46945,57499,20243,47294,46951,58872,46968}}
 }
+]]=]
