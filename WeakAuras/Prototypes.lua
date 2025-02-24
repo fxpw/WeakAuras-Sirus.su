@@ -5606,7 +5606,7 @@ Private.event_prototypes = {
     timedrequired = true,
     progressType = "timed"
   },
-  --[[
+  --[==[
   ["Spell Cast Succeeded"] = {
     type = "event",
     events = function(trigger)
@@ -5616,11 +5616,13 @@ Private.event_prototypes = {
       return result
     end,
     init = function(trigger)
-      local ret =
+      local ret = [[
+        local _, rankId = GetSpellInfo(%d)
         local spellRank = %d
-        local rank = tonumber(spellRank:match("Rank (%d+)")) or nil
-      ;
-      return ret:format(trigger.spellRank or nil);
+        rankId = (rankId and tonumber(rankId:match("Rank (%d+)"))) or 0
+        local rank = (spellRank and tonumber(spellRank:match("Rank (%d+)"))) or 0
+      ]];
+      return ret:format(trigger.spellId or 0, trigger.spellRank or nil);
     end,
     name = L["Spell Cast Succeeded"],
     statesParameter = "unit",
@@ -5656,9 +5658,9 @@ Private.event_prototypes = {
         name = "spellRank",
         hidden = true,
         init = "arg",
-        type = "string",
+        type = "number",
         store = true,
-        test = "true"
+        test = "true",
       },
       {
         name = "rank",
@@ -5673,16 +5675,32 @@ Private.event_prototypes = {
         },
       },
       {
+        name = "spellId",
+        display = L["Exact Spell ID(s)"],
+        type = "spell",
+        init = "spellNames",
+        store = true,
+        multiEntry = {
+          operator = "preamble",
+          preambleAdd = "spellChecker:AddName(%q)"
+        },
+        preamble = "local spellChecker = Private.ExecEnv.CreateSpellChecker()",
+        preambleGroup = "spell",
+        test = "spellChecker:Check(spellId)",
+        conditionType = "number",
+        noProgressSource = true
+      },
+      {
         name = "icon",
         hidden = true,
-        init = "GetSpellIcon(spellNames or 0)",
+        init = "GetSpellInfo(spellId or spellNames or 0)",
         store = true,
         test = "true"
       },
       {
         name = "name",
         hidden = true,
-        init = "GetSpellInfo(spellNames or 0)",
+        init = "GetSpellInfo(spellId or spellNames or 0)",
         store = true,
         test = "true"
       },
@@ -5692,7 +5710,7 @@ Private.event_prototypes = {
     timedrequired = true,
     progressType = "timed"
   },
-  ]]
+  ]==]
   ["Ready Check"] = {
     type = "event",
     events = {
