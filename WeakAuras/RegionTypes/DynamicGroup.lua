@@ -97,7 +97,7 @@ end
 
 local function releaseControlPoint(self, controlPoint)
   controlPoint:Hide()
-  controlPoint:ClearAnchorPoint()
+  controlPoint:SetAnchorPoint(self.parent.selfPoint)
   local regionData = controlPoint.regionData
   if regionData then
     if self.parent.anchorPerUnit == "UNITFRAME" then
@@ -1391,9 +1391,11 @@ local function modify(parent, region, data)
         end
         if parent and parent.IsObjectType and parent:IsObjectType("Frame") then
           controlPoint:SetParent(parent)
+          controlPoint:SetScale(data.scale and data.scale > 0 and data.scale <= 10 and data.scale or 1)
         end
       else
         controlPoint:SetParent(self)
+        controlPoint:SetScale(1)
       end
 
       local childData = controlPoint.regionData.data
@@ -1536,7 +1538,7 @@ local function modify(parent, region, data)
       -- if self.dynamicAnchor then self:UpdateBorder(); return end
       Private.StartProfileSystem("dynamicgroup")
       Private.StartProfileAura(data.id)
-      local numVisible, minX, maxX, maxY, minY = 0
+      local numVisible, minX, maxX, maxY, minY = 0, nil, nil, nil, nil
       for active, regionData in ipairs(self.sortedChildren) do
         if regionData.shown then
           numVisible = numVisible + 1

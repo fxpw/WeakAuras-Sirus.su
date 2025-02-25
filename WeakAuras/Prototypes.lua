@@ -1038,7 +1038,7 @@ Private.load_prototype = {
       type = "multiselect",
       values = "spec_types_all",
       test = "WeakAuras.CheckClassSpec(class, %s)",
-      events = {"UNIT_SPEC_CHANGED_player"},
+      events = {"UNIT_SPEC_CHANGED_player", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
     },
     {
       name = "talent",
@@ -4841,7 +4841,7 @@ Private.event_prototypes = {
   ["Class/Spec"] = {
     type = "unit",
     events = {},
-    internal_events = { "UNIT_SPEC_CHANGED_player" },
+    internal_events = {"UNIT_SPEC_CHANGED_player", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
     name = L["Class and Specialization"],
     init = function(trigger)
       local class = select(2, UnitClass("player")) or "UNKNOWN"
@@ -7718,15 +7718,18 @@ Private.event_prototypes = {
       "ACTIONBAR_PAGE_CHANGED"
     },
     name = L["Queued Action"],
-    loadFunc = function()
-      WeakAuras.WatchQueuedAction()
-    end,
     init = function(trigger)
       trigger.spellName = trigger.spellName or 0
+      local spellName
+      if trigger.use_exact_spellName then
+        spellName = trigger.spellName
+      else
+        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName
+      end
       local ret = [=[
-        local button = WeakAuras.FindSpellActionButtons(%d)
+        local spellname = %q
       ]=]
-      return ret:format(trigger.spellName)
+      return ret:format(spellName)
     end,
     args = {
       {
@@ -7735,11 +7738,11 @@ Private.event_prototypes = {
         display = L["Spell"],
         type = "spell",
         test = "true",
-        forceExactOption = true,
+        showExactOption = true,
       },
       {
         hidden = true,
-        test = "button and IsCurrentAction(button)";
+        test = "spellname and IsCurrentSpell(spellname)";
       },
     },
     iconFunc = function(trigger)

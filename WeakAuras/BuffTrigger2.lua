@@ -112,7 +112,7 @@ local function UnitExistsFixed(unit)
   if #unit > 9 and unit:sub(1, 9) == "nameplate" then
     return nameplateExists[unit] or false
   end
-  return UnitExists(unit) or UnitGUID(unit) or false
+  return (UnitExists(unit) and UnitGUID(unit)) or false
 end
 
 local function UnitIsVisibleFixed(unit)
