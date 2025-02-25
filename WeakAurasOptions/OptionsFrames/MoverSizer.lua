@@ -516,8 +516,9 @@ local function ConstructMoverSizer(parent)
     mover:ClearAllPoints()
     frame:ClearAllPoints()
     if data.regionType == "group" then
-      mover:SetWidth((region.trx - region.blx) * scale)
-      mover:SetHeight((region.try - region.bly) * scale)
+      local blx, bly, trx, try = region:GetBoundingRect()
+      mover:SetWidth((trx - blx) * scale)
+      mover:SetHeight((try - bly) * scale)
       mover:SetPoint("BOTTOMLEFT", mover.anchor or UIParent, mover.anchorPoint or "CENTER", (xOff + region.blx) * scale, (yOff + region.bly) * scale)
     else
       mover:SetWidth(region:GetWidth() * scale)

@@ -1,6 +1,6 @@
 local AddonName, Private = ...
 
-local internalVersion = 82
+local internalVersion = 83
 
 -- Lua APIs
 local insert = table.insert
@@ -2935,8 +2935,9 @@ function Private.SetRegion(data, cloneId)
 
       local parent = WeakAurasFrame;
       if(data.parent) then
-        if WeakAuras.GetData(data.parent) then
-          parent = Private.EnsureRegion(data.parent)
+        local parentRegion = WeakAuras.GetRegion(data.parent)
+        if parentRegion then
+          parent = parentRegion
         else
           data.parent = nil;
         end
@@ -2998,6 +2999,10 @@ local function EnsureRegion(id)
       local data = WeakAuras.GetData(id)
       tinsert(aurasToCreate, data.id)
       id = data.parent
+
+      if WeakAuras.GetRegion(id) then
+        break
+      end
     end
 
     for _, toCreateId in ipairs_reverse(aurasToCreate) do
