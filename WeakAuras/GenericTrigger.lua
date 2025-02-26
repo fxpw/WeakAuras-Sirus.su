@@ -3690,66 +3690,14 @@ function WeakAuras.RegisterItemCountWatch()
   end
 end
 
--- Queued Action
-do
-  local GetActionInfo, GetMacroSpell, GetSpellLink = GetActionInfo, GetMacroSpell, GetSpellLink
-
-  local queuedActionFrame = nil
-  local buttonIDList = {}
-  local spellIDList = {}
-
-  local function GetActionSpellID(slot)
-    local actionType, id, _, spellId = GetActionInfo(slot)
-    if actionType == "spell" then
-      return spellId
-    elseif actionType == "macro" then
-      local name, rank = GetMacroSpell(id)
-      if name then
-        local spellLink = GetSpellLink(name, rank or "")
-        if spellLink then
-          return tonumber(spellLink:match("spell:(%d+)"))
-        end
-      end
-    end
-  end
-
-  function WeakAuras.WatchQueuedAction()
-    if not(queuedActionFrame) then
-      queuedActionFrame = CreateFrame("Frame");
-      Private.frames["Queued Action Frame"] = queuedActionFrame
-      for slotID = 1, 120 do
-        local spellID = GetActionSpellID(slotID)
-        if spellID then
-          buttonIDList[slotID] = spellID
-          spellIDList[spellID] = slotID
-        end
-      end
-    end
-    queuedActionFrame:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
-    queuedActionFrame:SetScript("OnEvent", function(_, _, slotID)
-      Private.StartProfileSystem("generictrigger queued action");
-      local spellID = GetActionSpellID(slotID)
-      if spellID then
-        buttonIDList[slotID] = spellID
-        spellIDList[spellID] = slotID
-      elseif buttonIDList[slotID] then
-        spellIDList[buttonIDList[slotID]] = nil
-        buttonIDList[slotID] = nil
-      end
-      Private.StopProfileSystem("generictrigger queued action");
-    end)
-  end
-
-  function WeakAuras.FindSpellActionButtons(spellID)
-    return spellIDList[spellID]
-  end
-end
-
 -- LibSpecWrapper
 -- We always register, because it's probably not that often called, and ScanEvents checks
 -- early if anyone wants the event
 Private.LibGroupTalentsWrapper.Register(function(unit)
   WeakAuras.ScanEvents("UNIT_SPEC_CHANGED_" .. unit, unit)
+  if unit == "player" then
+    Private.ScanForLoads(nil, "UNIT_SPEC_CHANGED_" .. unit)
+  end
 end)
 
 do
