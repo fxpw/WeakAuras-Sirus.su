@@ -5,20 +5,20 @@ local AddonName, Private = ...
 local tinsert, tsort = table.insert, table.sort
 local tostring = tostring
 local select, pairs, type = select, pairs, type
-local ceil, min = ceil, min
+local ceil = ceil
 
 -- WoW APIs
 local GetTalentInfo = GetTalentInfo
 local UnitClass = UnitClass
 local GetSpellInfo, GetItemInfo, GetItemCount, GetItemIcon = GetSpellInfo, GetItemInfo, GetItemCount, GetItemIcon
 local GetShapeshiftFormInfo, GetShapeshiftForm = GetShapeshiftFormInfo, GetShapeshiftForm
+local GetRuneCooldown, UnitCastingInfo, UnitChannelInfo = GetRuneCooldown, UnitCastingInfo, UnitChannelInfo
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation
+local MAX_NUM_TALENTS = MAX_NUM_TALENTS or 40
 local MONEY = MONEY
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
-
-local LibGroupTalents = LibStub("LibGroupTalents-1.0")
 
 local SpellRange = LibStub("SpellRange-1.0")
 function WeakAuras.IsSpellInRange(spellId, unit)
@@ -807,7 +807,7 @@ function WeakAuras.GetSpellCritChance()
   return spellCrit
 end
 
-function WeakAuras.GetSpecString(unit)
+function WeakAuras.SpecForUnit(unit)
   local spec = WeakAuras.LGT:GetUnitTalentSpec(unit)
   local class = select(2, UnitClass(unit))
   return spec and class and (class .. spec)
@@ -1050,7 +1050,7 @@ Private.load_prototype = {
         return WeakAuras.CheckTalentByIndex(talent, arg) ~= nil
       end,
       multiConvertKey = nil,
-      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"},
+      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
       inverse = nil,
       extraOption = nil,
       control = "WeakAurasMiniTalent",
@@ -1076,7 +1076,7 @@ Private.load_prototype = {
         return WeakAuras.CheckTalentByIndex(talent, arg) ~= nil
       end,
       multiConvertKey = nil,
-      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"},
+      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
       inverse = nil,
       extraOption = nil,
       control = "WeakAurasMiniTalent",
@@ -1106,7 +1106,7 @@ Private.load_prototype = {
         return WeakAuras.CheckTalentByIndex(talent, arg) ~= nil
       end,
       multiConvertKey = nil,
-      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"},
+      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
       inverse = nil,
       extraOption = nil,
       control = "WeakAurasMiniTalent",
@@ -1603,7 +1603,7 @@ Private.event_prototypes = {
         name = "unitisunit",
         display = L["Unit is Unit"],
         type = "unit",
-        init = "UnitIsUnit(unit, extraUnit) == 1 and true or false",
+        init = "UnitIsUnit(unit, extraUnit)",
         values = function(trigger)
           if Private.multiUnitUnits[trigger.unit] then
             return Private.actual_unit_types
@@ -1684,7 +1684,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "select",
         enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "player"
         end
       },
       {
@@ -1808,7 +1808,7 @@ Private.event_prototypes = {
         name = "attackable",
         display = L["Attackable"],
         type = "tristate",
-        init = "UnitCanAttack('player', unit) == 1 and true or false",
+        init = "UnitCanAttack('player', unit)",
         store = true,
         conditionType = "bool"
       },
@@ -1816,7 +1816,7 @@ Private.event_prototypes = {
         name = "inCombat",
         display = L["In Combat"],
         type = "tristate",
-        init = "UnitAffectingCombat(unit) == 1 and true or false",
+        init = "UnitAffectingCombat(unit)",
         store = true,
         conditionType = "bool"
       },
@@ -1824,7 +1824,7 @@ Private.event_prototypes = {
         name = "afk",
         display = L["Afk"],
         type = "tristate",
-        init = "UnitIsAFK(unit) == 1 and true or false",
+        init = "UnitIsAFK(unit)",
         store = true,
         conditionType = "bool"
       },
@@ -1832,7 +1832,7 @@ Private.event_prototypes = {
         name = "dnd",
         display = L["Do Not Disturb"],
         type = "tristate",
-        init = "UnitIsDND(unit) == 1 and true or false",
+        init = "UnitIsDND(unit)",
         store = true,
         conditionType = "bool"
       },
@@ -2170,7 +2170,7 @@ Private.event_prototypes = {
         end,
         operator_types = "none",
         desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."]
-       },
+      },
       {
         name = "class",
         display = L["Class"],
@@ -2184,7 +2184,7 @@ Private.event_prototypes = {
         name = "specId",
         display = L["Specialization"],
         type = "multiselect",
-        init = "WeakAuras.GetSpecString(unit)",
+        init = "WeakAuras.SpecForUnit(unit)",
         values = "spec_types_all",
         store = true,
         conditionType = "select",
@@ -2202,7 +2202,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "select",
         enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "player"
         end
       },
       {
@@ -2605,7 +2605,7 @@ Private.event_prototypes = {
         name = "specId",
         display = L["Specialization"],
         type = "multiselect",
-        init = "WeakAuras.GetSpecString(unit)",
+        init = "WeakAuras.SpecForUnit(unit)",
         values = "spec_types_all",
         store = true,
         conditionType = "select",
@@ -2623,7 +2623,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "select",
         enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "player"
         end
       },
       {
@@ -2707,7 +2707,6 @@ Private.event_prototypes = {
       {
         name = "inRange",
         display = L["In Range"],
-        desc = L["Uses UnitInRange() to check if in range. Matches default raid frames out of range behavior, which is between 25 to 40 yards depending on your class and spec."],
         type = "toggle",
         width = WeakAuras.doubleWidth,
         enable = function(trigger)
@@ -4462,6 +4461,7 @@ Private.event_prototypes = {
         text = function()
           return L["Note: Due to how complicated the swing timer behavior is and the lack of APIs from Blizzard, results are inaccurate in edge cases."]
         end,
+
       },
       {
         name = "hand",
@@ -4738,6 +4738,7 @@ Private.event_prototypes = {
     events = {
       ["events"] = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"}
     },
+    internal_events = {"WA_DELAYED_PLAYER_ENTERING_WORLD"},
     force_events = "PLAYER_TALENT_UPDATE",
     name = L["Talent Known"],
     init = function(trigger)
@@ -6638,7 +6639,7 @@ Private.event_prototypes = {
         conditionType = "select",
         enable = function(trigger)
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
-                 and not trigger.use_inverse
+                 or trigger.unit == "player" and not trigger.use_inverse
         end
       },
       {

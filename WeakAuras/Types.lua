@@ -972,6 +972,11 @@ Private.debuff_class_types = {
   none = L["None"]
 }
 
+Private.player_target_events = {
+  PLAYER_TARGET_CHANGED = "target",
+  PLAYER_FOCUS_CHANGED = "focus",
+}
+
 Private.unit_types = {
   player = L["Player"],
   target = L["Target"],
