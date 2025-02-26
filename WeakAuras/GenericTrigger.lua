@@ -3695,6 +3695,9 @@ end
 -- early if anyone wants the event
 Private.LibGroupTalentsWrapper.Register(function(unit)
   WeakAuras.ScanEvents("UNIT_SPEC_CHANGED_" .. unit, unit)
+  if unit == "player" then
+    Private.ScanForLoads(nil, "UNIT_SPEC_CHANGED_" .. unit)
+  end
 end)
 
 do

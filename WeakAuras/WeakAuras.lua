@@ -3287,7 +3287,6 @@ function Private.HandleGlowAction(actions, region)
       glow_frame = WeakAuras.GetUnitFrame(region.state.unit)
       should_glow_frame = true
     elseif actions.glow_frame_type == "NAMEPLATE" and region.state.unit then
-      if not(WeakAuras.isAwesomeEnabled()) then return end
       glow_frame = WeakAuras.GetNamePlateForUnit(region.state.unit)
       should_glow_frame = true
     elseif actions.glow_frame_type == "PARENTFRAME" then

@@ -87,6 +87,7 @@ end
 
 local constants = {
   nameRealmFilterDesc = L[" Filter formats: 'Name', 'Name-Realm', '-Realm'. \n\nSupports multiple entries, separated by commas\nCan use \\ to escape -."],
+  instanceFilterDeprecated = L["This filter has been moved to the Location trigger. Change your aura to use the new Location trigger or join the WeakAuras Discord server for help."],
 }
 
 WeakAuras.UnitRaidRole = function(unit)
@@ -799,14 +800,6 @@ function Private.ExecEnv.CheckCombatLogFlagsObjectType(flags, flagToCheck)
   return bit.band(flags, bitToCheck) ~= 0;
 end
 
-function WeakAuras.GetSpellCritChance()
-  local spellCrit = GetSpellCritChance(2)
-  for i = 3, MAX_SPELL_SCHOOLS do
-    spellCrit = min(spellCrit, GetSpellCritChance(i))
-  end
-  return spellCrit
-end
-
 function WeakAuras.SpecForUnit(unit)
   local spec = WeakAuras.LGT:GetUnitTalentSpec(unit)
   local class = select(2, UnitClass(unit))
@@ -979,17 +972,6 @@ Private.load_prototype = {
       optional = true,
       events = {"VEHICLE_UPDATE", "UNIT_ENTERED_VEHICLE", "UNIT_EXITED_VEHICLE"}
     },
-    --[[
-    { -- broken, fix later COMPANION_UPDATE fires too early for an check, needs some custom stuff
-      name = "mounted",
-      display = L["Mounted"],
-      type = "tristate",
-      init = "arg",
-      width = WeakAuras.normalWidth,
-      optional = true,
-      --events = {"PLAYER_MOUNT_DISPLAY_CHANGED"}
-    },
-    ]]
     {
       name ="playerTitle",
       display = L["Player"],
@@ -4842,7 +4824,8 @@ Private.event_prototypes = {
   ["Class/Spec"] = {
     type = "unit",
     events = {},
-    internal_events = {"UNIT_SPEC_CHANGED_player", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
+    internal_events = {"WA_DELAYED_PLAYER_ENTERING_WORLD"},
+    force_events = "UNIT_SPEC_CHANGED_player",
     name = L["Class and Specialization"],
     init = function(trigger)
       local class = select(2, UnitClass("player")) or "UNKNOWN"
@@ -7529,6 +7512,7 @@ Private.event_prototypes = {
       {
         name = "instance_size",
         display = L["Instance Type"].." "..L["|cffff0000deprecated|r"],
+        desc = constants.instanceFilterDeprecated,
         type = "multiselect",
         values = "instance_types",
         sorted = true,
@@ -7538,6 +7522,7 @@ Private.event_prototypes = {
       {
         name = "instance_difficulty",
         display = L["Instance Difficulty"].." "..L["|cffff0000deprecated|r"],
+        desc = constants.instanceFilterDeprecated,
         type = "multiselect",
         values = "difficulty_types",
         init = "WeakAuras.InstanceDifficulty()"
