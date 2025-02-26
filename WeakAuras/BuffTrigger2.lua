@@ -1518,7 +1518,7 @@ local function PrepareMatchData(unit, filter)
         break
       end
 
-      local debuffClass = FixDebuffClass(debuffClass)
+      debuffClass = FixDebuffClass(debuffClass)
       local updatedMatchData = UpdateMatchData(time, matchDataChanged, unit, index, filter, name, icon, stacks, debuffClass, duration, expirationTime, unitCaster, isStealable, _, spellId)
       index = index + 1
     end
