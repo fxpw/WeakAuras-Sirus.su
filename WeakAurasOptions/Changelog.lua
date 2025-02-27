@@ -4,31 +4,53 @@ local AddonName = ...
 local OptionsPrivate = select(2, ...)
 
 OptionsPrivate.changelog = {
-  versionString = '5.19.3',
-  dateString = '2025-02-24',
-  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.19.2...5.19.3',
+  versionString = '5.19.4',
+  dateString = '2025-02-26',
+  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.19.3...5.19.4',
   highlightText = [==[
-- Remove left-over debug output]==],  commitText = [==[InfusOnWoW (2):
+Update for The War Within 11.1
 
-- Update Discord List
-- Update Atlas File List from wago.tools
+New in this version:
+
+- models now have an alpha slider to set transparency
+- TSU-type custom triggers have some new convenience functions available. Documentation is avaliable at https://github.com/WeakAuras/WeakAuras2/wiki/Trigger-State-Updater-(TSU)#all-states-
+helper-methods
+  - this is unlikely to matter, but note that the choice of plumbing used means this is techni
+cally a breaking change if you ever created a state with the "__changed" key.
+
+Fixes:
+
+- x-realm transfer of auras should fail less often
+- improve performance
+cally a breaking change if you ever created a state with the "__changed" key.
+
+Fixes:
+
+- x-realm transfer of auras should fail less often
+- improve performance
+- large, deply nested groups should load significantly faster (i.e. https://wago.io/twwdungeons should be less prone to throw errors when you start an encounter)
+- "Hide Cooldown Text" condition property remembered how to function
+- x-realm data transfer (for sharing auras) should be more likely to actually succeed now]==],  commitText = [==[InfusOnWoW (6):
+
+- Use Chomp for cross-realm transfer
+- Fix EnsureRegion repeately creating parents
+- Group: Don't calculate group size if not needed
+- Fix Hide Cooldown Text condition
+- Models: Fix Alpha animations
+- Be extra picky on noValidation spell inputs
 
 Stanzilla (1):
 
-- Update WeakAurasModelPaths from wago.tools
-
-anon1231823 (1):
-
-- Add esMX to toc files
+- chore(toc): bump version for retail
 
 emptyrivers (1):
 
-- deduplicate localization phrases
+- put the mixins in private exec_env too
 
 mrbuds (2):
 
-- Allstates helper methods (#5195)
-- Cleanup leftover debug print in item in range condition
+- cache buildup optimization for 11.1
+- Add alpha setting for model region
 
 ]==]
 }

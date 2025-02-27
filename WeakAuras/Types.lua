@@ -3180,9 +3180,11 @@ for i = 1, 40 do
   Private.multiUnitUnits.raid["raidpet"..i] = true
 end
 
-for i = 1, 100 do
-  Private.baseUnitId["nameplate"..i] = true
-  Private.multiUnitUnits.nameplate["nameplate"..i] = true
+if WeakAuras.isAwesomeEnabled() then
+  for i = 1, 100 do
+    Private.baseUnitId["nameplate"..i] = true
+    Private.multiUnitUnits.nameplate["nameplate"..i] = true
+  end
 end
 
 Private.dbm_types = {

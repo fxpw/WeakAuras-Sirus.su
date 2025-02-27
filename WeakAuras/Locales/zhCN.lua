@@ -861,6 +861,8 @@ Note: This trigger will use BigWigs or DBM, in that order if both are installed.
 L["No Extend"] = "不伸展"
 L["No Instance"] = "野外"
 L["No Profiling information saved."] = "没有已保存的性能分析信息。"
+--[[Translation missing --]]
+L["No Progress Information available."] = "No Progress Information available."
 L["None"] = "无"
 L["Non-player Character"] = "NPC"
 L["Normal"] = "正常形态"
@@ -1081,6 +1083,8 @@ L["Reagent Quality Texture"] = "材料品质材质"
 L["Realm"] = "服务器"
 L["Realm Name"] = "服务器名称"
 L["Realm of Caster's Target"] = "施法者目标的服务器"
+--[[Translation missing --]]
+L["Receiving %s Bytes"] = "Receiving %s Bytes"
 L["Receiving display information"] = "从 %s 中接收图示信息"
 L["Reflect"] = "反射"
 L["Region type %s not supported"] = "不支持域类型 %s"
