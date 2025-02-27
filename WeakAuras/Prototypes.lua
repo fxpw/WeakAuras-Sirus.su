@@ -1028,11 +1028,8 @@ Private.load_prototype = {
       type = "multiselect",
       values = valuesForTalentFunction,
       test = "WeakAuras.CheckTalentByIndex(%d, %d)",
-      enableTest = function(trigger, talent, arg)
-        return WeakAuras.CheckTalentByIndex(talent, arg) ~= nil
-      end,
       multiConvertKey = nil,
-      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
+      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"},
       inverse = nil,
       extraOption = nil,
       control = "WeakAurasMiniTalent",
@@ -1054,11 +1051,8 @@ Private.load_prototype = {
       type = "multiselect",
       values = valuesForTalentFunction,
       test = "WeakAuras.CheckTalentByIndex(%d, %d)",
-      enableTest = function(trigger, talent, arg)
-        return WeakAuras.CheckTalentByIndex(talent, arg) ~= nil
-      end,
       multiConvertKey = nil,
-      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
+      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"},
       inverse = nil,
       extraOption = nil,
       control = "WeakAurasMiniTalent",
@@ -1084,9 +1078,6 @@ Private.load_prototype = {
       type = "multiselect",
       values = valuesForTalentFunction,
       test = "WeakAuras.CheckTalentByIndex(%d, %d)",
-      enableTest = function(trigger, talent, arg)
-        return WeakAuras.CheckTalentByIndex(talent, arg) ~= nil
-      end,
       multiConvertKey = nil,
       events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
       inverse = nil,
