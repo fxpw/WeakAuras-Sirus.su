@@ -1938,15 +1938,14 @@ local function EventHandler(frame, event, arg1, arg2, ...)
   Private.StopProfileSystem("bufftrigger2")
 end
 
-
 Private.LibGroupTalentsWrapper.Register(function(unit)
   Private.StartProfileSystem("bufftrigger2")
-
   local deactivatedTriggerInfos = {}
   RecheckActiveForUnitType("group", unit, deactivatedTriggerInfos)
-  RecheckActiveForUnitType("group", WeakAuras.unitToPetUnit[unit], deactivatedTriggerInfos)
+  if WeakAuras.unitToPetUnit[unit] then
+    RecheckActiveForUnitType("group", WeakAuras.unitToPetUnit[unit], deactivatedTriggerInfos)
+  end
   DeactivateScanFuncs(deactivatedTriggerInfos)
-
   Private.StopProfileSystem("bufftrigger2")
 end)
 
