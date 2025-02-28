@@ -1,8 +1,13 @@
 if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
--- Talent Data for normal Wrath Server
-if GetRealmName() == "Onyxia" then return end
+-- Talent Data for normal Wrath Realms
+if GetRealmName() == "Onyxia" or
+   GetRealmName() == "Kezan" or
+   (GetRealmName() == "Blackrock [PvP only]" and GetExpansionLevel() == 1)
+  then
+   return
+end
 
 Private.talentInfo = {
   ["HUNTER"] = {

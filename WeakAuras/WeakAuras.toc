@@ -34,6 +34,7 @@ ArchiveTypes\Repository.lua
 DefaultOptions.lua
 
 # Core files
+Types_ClassicPlus.lua
 Types_TBC.lua
 Types_Wrath.lua
 Types.lua

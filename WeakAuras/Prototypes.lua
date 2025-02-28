@@ -1079,7 +1079,7 @@ Private.load_prototype = {
       values = valuesForTalentFunction,
       test = "WeakAuras.CheckTalentByIndex(%d, %d)",
       multiConvertKey = nil,
-      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
+      events = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"},
       inverse = nil,
       extraOption = nil,
       control = "WeakAurasMiniTalent",
@@ -1349,6 +1349,10 @@ local function AddWatchedUnits(triggerUnit, includePets, unitisunit)
 end
 
 local function AddUnitSpecChangeInternalEvents(triggerUnit, t)
+  if (triggerUnit == nil) then
+    return
+  end
+
   if Private.multiUnitUnits[triggerUnit] then
     for unit in pairs(Private.multiUnitUnits[triggerUnit]) do
       local isPet = WeakAuras.UnitIsPet(unit)
@@ -1356,6 +1360,8 @@ local function AddUnitSpecChangeInternalEvents(triggerUnit, t)
         tinsert(t, "UNIT_SPEC_CHANGED_" .. string.lower(unit))
       end
     end
+  else
+    tinsert(t, "UNIT_SPEC_CHANGED_" .. string.lower(triggerUnit))
   end
 end
 
@@ -1637,6 +1643,9 @@ Private.event_prototypes = {
         values = "spec_types_all",
         store = true,
         conditionType = "select",
+        enable = function(trigger)
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "player"
+        end,
         desc = L["Requires syncing the specialization via LibGroupTalents."],
       },
       {
@@ -2162,7 +2171,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "select",
         enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "player"
         end,
         desc = L["Requires syncing the specialization via LibGroupTalents."],
       },
@@ -2583,7 +2592,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "select",
         enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
+          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "player"
         end,
         desc = L["Requires syncing the specialization via LibGroupTalents."],
       },
@@ -4711,7 +4720,6 @@ Private.event_prototypes = {
     events = {
       ["events"] = {"PLAYER_TALENT_UPDATE", "SPELL_UPDATE_USABLE"}
     },
-    internal_events = {"WA_DELAYED_PLAYER_ENTERING_WORLD"},
     force_events = "PLAYER_TALENT_UPDATE",
     name = L["Talent Known"],
     init = function(trigger)
@@ -4815,7 +4823,7 @@ Private.event_prototypes = {
   ["Class/Spec"] = {
     type = "unit",
     events = {},
-    internal_events = {"WA_DELAYED_PLAYER_ENTERING_WORLD"},
+    internal_events = {"UNIT_SPEC_CHANGED_player", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
     force_events = "UNIT_SPEC_CHANGED_player",
     name = L["Class and Specialization"],
     init = function(trigger)

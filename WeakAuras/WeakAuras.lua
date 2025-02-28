@@ -891,7 +891,7 @@ local function LoadCustomActionFunctions(data)
 end
 
 Private.talent_types_specific = {}
-local function CreateTalentCache()
+function Private.CreateTalentCache()
   local _, player_class = UnitClass("player")
 
   Private.talent_types_specific[player_class] = Private.talent_types_specific[player_class] or {};
@@ -1249,7 +1249,6 @@ loadedFrame:SetScript("OnEvent", function(self, event, ...)
       if not isInitialLogin then
         isInitialLogin = true
         Private.PostAddCompanion()
-        CreateTalentCache()
       end
     elseif(event == "PLAYER_REGEN_ENABLED") then
       callback = function()
