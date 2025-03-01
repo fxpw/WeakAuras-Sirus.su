@@ -1156,20 +1156,17 @@ local function create(parent)
   local bar = CreateFrame("Frame", nil, region);
   WeakAuras.Mixin(bar, Private.SmoothStatusBarMixin);
 
+  local fgMask = CreateFrame("Frame", nil, bar)
+  fgMask:SetAllPoints(bar)
+
+  local fg = fgMask:CreateTexture(nil, "BORDER");
+  fg:SetAllPoints(fgMask)
+
   -- Now create a bunch of textures
   local bg = region:CreateTexture(nil, "ARTWORK");
   bg:SetAllPoints(bar);
 
-  -- Workaround für Masking mit einer zusätzlichen Alpha-Textur
-  local fgMask = CreateFrame("Frame", nil, bar)
-  fgMask:SetAllPoints(bar)
-
-  local fg = fgMask:CreateTexture(nil, "ARTWORK");
-  fg:SetAllPoints(fgMask)
-
   local spark = bar:CreateTexture(nil, "ARTWORK");
-  fg:SetDrawLayer("ARTWORK", -1);
-  bg:SetDrawLayer("ARTWORK", -2);
   spark:SetDrawLayer("ARTWORK", 7);
   bar.fg = fg;
   bar.fgMask = fgMask
