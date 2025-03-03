@@ -1220,7 +1220,7 @@ Private.load_prototype = {
       test = "zoneChecker:Check(zone)",
       events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."])
+        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
       end,
       optional = true,
     },
@@ -1233,7 +1233,7 @@ Private.load_prototype = {
       test = "WeakAuras.CheckNumericIds(%q, zoneId)",
       events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-	    return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."])
+	    return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
 	    end,
       optional = true,
     },
@@ -1247,7 +1247,7 @@ Private.load_prototype = {
       test = "subzoneChecker:Check(subzone)",
       events = { "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetMinimapZoneText(), L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."])
+        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetMinimapZoneText(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
       end,
       optional = true,
     },
@@ -6287,7 +6287,7 @@ Private.event_prototypes = {
           return preamble:Check(state.name)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."]
+        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."]
       },
       {
         name = "npcId",
@@ -6306,7 +6306,7 @@ Private.event_prototypes = {
           return preamble:Check(state.npcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."]
+        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."]
       },
       {
         name = "value",
@@ -8044,7 +8044,7 @@ Private.event_prototypes = {
         name = "zoneIds",
         display = L["Player Location ID(s)"],
         desc = function()
-          return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."])
+          return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
         end,
         type = "string",
         multiline = true,
