@@ -1184,6 +1184,7 @@ function HandleEvent(frame, event, arg1, arg2, ...)
   if (event == "PLAYER_ENTERING_WORLD") then
     timer:ScheduleTimer(function()
       Private.CreateTalentCache()
+      WeakAuras.WatchForMounts()
       HandleEvent(frame, "WA_DELAYED_PLAYER_ENTERING_WORLD");
       Private.ScanForLoads(nil, "WA_DELAYED_PLAYER_ENTERING_WORLD")
       Private.StartProfileSystem("generictrigger WA_DELAYED_PLAYER_ENTERING_WORLD");
@@ -3542,27 +3543,30 @@ do
   local isMounted = IsMounted();
 
   local function checkForMounted(self, elaps)
-    Private.StartProfileSystem("generictrigger mounted");
+    Private.StartProfileSystem("generictrigger mounted")
     elapsed = elapsed + elaps
     if(isMounted ~= IsMounted()) then
-      isMounted = IsMounted();
-      Private.ScanEvents("MOUNTED_UPDATE");
-      mountedFrame:SetScript("OnUpdate", nil);
+      isMounted = IsMounted()
+      Private.ScanForLoads(nil, "MOUNTED_UPDATE")
+      Private.ScanEvents("MOUNTED_UPDATE")
+      mountedFrame:SetScript("OnUpdate", nil)
     end
     if(elapsed > delay) then
-      mountedFrame:SetScript("OnUpdate", nil);
+      mountedFrame:SetScript("OnUpdate", nil)
     end
-    Private.StopProfileSystem("generictrigger mounted");
+    Private.StopProfileSystem("generictrigger mounted")
   end
 
   function WeakAuras.WatchForMounts()
-    if not(mountedFrame) then
-      mountedFrame = CreateFrame("Frame");
-	  Private.frames["Mount Use Handler"] = mountedFrame;
-      mountedFrame:RegisterEvent("COMPANION_UPDATE");
-      mountedFrame:SetScript("OnEvent", function()
-       elapsed = 0;
-       mountedFrame:SetScript("OnUpdate", checkForMounted);
+    if not (mountedFrame) then
+      mountedFrame = CreateFrame("Frame")
+	  Private.frames["Mount Use Handler"] = mountedFrame
+      mountedFrame:RegisterEvent("COMPANION_UPDATE")
+      mountedFrame:SetScript("OnEvent", function(_, _, arg)
+        if arg == "MOUNT" then
+          elapsed = 0
+          mountedFrame:SetScript("OnUpdate", checkForMounted)
+        end
       end)
     end
   end
