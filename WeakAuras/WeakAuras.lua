@@ -6,20 +6,29 @@ local internalVersion = 83
 local insert = table.insert
 
 -- WoW APIs
-local IsAddOnLoaded, InCombatLockdown = IsAddOnLoaded, InCombatLockdown
-local LoadAddOn, UnitName, GetRealmName, UnitFactionGroup, IsInRaid
-  = LoadAddOn, UnitName, GetRealmName, UnitFactionGroup, IsInRaid
-local UnitClass, UnitExists, UnitGUID, UnitAffectingCombat, GetInstanceInfo, IsInInstance
-  = UnitClass, UnitExists, UnitGUID, UnitAffectingCombat, GetInstanceInfo, IsInInstance
-local UnitIsUnit, GetRaidRosterInfo, UnitInVehicle, UnitHasVehicleUI, GetSpellInfo
-  = UnitIsUnit, GetRaidRosterInfo, UnitInVehicle, UnitHasVehicleUI, GetSpellInfo
-local SendChatMessage, UnitInBattleground, UnitInRaid, UnitInParty, GetTime
-  = SendChatMessage, UnitInBattleground, UnitInRaid, UnitInParty, GetTime
-local CreateFrame, IsShiftKeyDown, GetScreenWidth, GetScreenHeight, GetCursorPosition, UpdateAddOnCPUUsage, GetFrameCPUUsage, debugprofilestop
-  = CreateFrame, IsShiftKeyDown, GetScreenWidth, GetScreenHeight, GetCursorPosition, UpdateAddOnCPUUsage, GetFrameCPUUsage, debugprofilestop
-local debugstack = debugstack
-local GetNumTalentTabs, GetNumTalents = GetNumTalentTabs, GetNumTalents
-local MAX_NUM_TALENTS = MAX_NUM_TALENTS or 40
+local IsAddOnLoaded, LoadAddOn
+  = IsAddOnLoaded, LoadAddOn
+local UnitName, GetRealmName, UnitRace, UnitFactionGroup, UnitClass
+  = UnitName, GetRealmName, UnitRace, UnitFactionGroup, UnitClass
+local IsInRaid, UnitIsPartyLeader, UnitIsRaidOfficer, GetRaidRosterInfo, UnitInRaid, UnitInParty
+  = IsInRaid, UnitIsPartyLeader, UnitIsRaidOfficer, GetRaidRosterInfo, UnitInRaid, UnitInParty
+local InCombatLockdown, UnitAffectingCombat, GetInstanceInfo, IsInInstance
+  = InCombatLockdown, UnitAffectingCombat, GetInstanceInfo, IsInInstance
+local GetCurrentMapAreaID, GetRealZoneText, GetSubZoneText
+  = GetCurrentMapAreaID, GetRealZoneText, GetSubZoneText
+local UnitIsPVPFreeForAll, UnitIsPVP, UnitOnTaxi, IsMounted
+  = UnitIsPVPFreeForAll, UnitIsPVP, UnitOnTaxi, IsMounted
+local UnitInVehicle, UnitHasVehicleUI, UnitIsUnit, UnitIsDeadOrGhost
+  = UnitInVehicle, UnitHasVehicleUI, UnitIsUnit, UnitIsDeadOrGhost
+local SendChatMessage, UnitInBattleground
+  = SendChatMessage, UnitInBattleground
+local GetTime, UpdateAddOnCPUUsage, GetFrameCPUUsage, debugprofilestop
+  = GetTime, UpdateAddOnCPUUsage, GetFrameCPUUsage, debugprofilestop
+local GetNumTalentTabs, GetNumTalents, MAX_NUM_TALENTS
+  = GetNumTalentTabs, GetNumTalents, MAX_NUM_TALENTS or 40
+local CreateFrame, IsShiftKeyDown, GetScreenWidth, GetScreenHeight, GetCursorPosition
+  = CreateFrame, IsShiftKeyDown, GetScreenWidth, GetScreenHeight, GetCursorPosition
+local debugstack, GetSpellInfo = debugstack, GetSpellInfo
 
 local ADDON_NAME = "WeakAuras"
 local WeakAuras = WeakAuras
@@ -1422,6 +1431,7 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   local pvp = UnitIsPVPFreeForAll("player") or UnitIsPVP("player")
   local vehicle = UnitInVehicle("player") or UnitOnTaxi("player") or false
   local vehicleUi = UnitHasVehicleUI("player") or false
+  local mounted = IsMounted() or false
 
   local raidMemberType = 0
 
@@ -1447,8 +1457,8 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
     if (data and not data.controlledChildren) then
       local loadFunc = loadFuncs[id];
       local loadOpt = loadFuncsForOptions[id];
-      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, player, realm, class, race, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
-      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, player, realm, class, race, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, mounted, player, realm, class, race, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, mounted, player, realm, class, race, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
 
       if(shouldBeLoaded and not loaded[id]) then
         changed = changed + 1;

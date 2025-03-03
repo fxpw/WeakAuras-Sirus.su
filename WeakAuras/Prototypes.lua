@@ -973,6 +973,15 @@ Private.load_prototype = {
       events = {"VEHICLE_UPDATE", "UNIT_ENTERED_VEHICLE", "UNIT_EXITED_VEHICLE"}
     },
     {
+      name = "mounted",
+      display = L["Mounted"],
+      type = "tristate",
+      init = "arg",
+      width = WeakAuras.normalWidth,
+      optional = true,
+      events = {"MOUNTED_UPDATE"}
+    },
+    {
       name ="playerTitle",
       display = L["Player"],
       type = "description",
@@ -7428,9 +7437,6 @@ Private.event_prototypes = {
     loadFunc = function(trigger)
       if (trigger.use_ismoving ~= nil) then
         WeakAuras.WatchPlayerMoveSpeed();
-      end
-      if (trigger.use_mounted ~= nil) then
-        WeakAuras.WatchForMounts();
       end
       if (trigger.use_HasPet ~= nil) then
         AddWatchedUnits("pet")
