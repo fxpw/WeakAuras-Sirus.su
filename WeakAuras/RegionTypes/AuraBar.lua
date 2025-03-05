@@ -1153,21 +1153,21 @@ local function create(parent)
   region:SetResizable(true);
   region:SetMinResize(1, 1);
 
+  local fgMask = CreateFrame("Frame", nil, region)
+
+  -- Create statusbar (inherit prototype)
   local bar = CreateFrame("Frame", nil, region);
   WeakAuras.Mixin(bar, Private.SmoothStatusBarMixin);
+  fgMask:SetAllPoints(bar);
 
-  local fgMask = CreateFrame("Frame", nil, bar)
-  fgMask:SetAllPoints(bar)
+  -- Now create a bunch of textures
+  local bg = region:CreateTexture(nil, "BACKGROUND");
+  bg:SetAllPoints(bar);
 
   local fg = fgMask:CreateTexture(nil, "BORDER");
   fg:SetAllPoints(fgMask)
 
-  -- Now create a bunch of textures
-  local bg = region:CreateTexture(nil, "ARTWORK");
-  bg:SetAllPoints(bar);
-
-  local spark = bar:CreateTexture(nil, "ARTWORK");
-  spark:SetDrawLayer("ARTWORK", 7);
+  local spark = fgMask:CreateTexture(nil, "ARTWORK");
   bar.fg = fg;
   bar.fgMask = fgMask
   bar.bg = bg;
