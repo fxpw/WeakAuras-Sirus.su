@@ -37,8 +37,8 @@ do
   end
 
   local function subSetFrameLevel(self, level)
-    if self.parent.fgFrame then
-      self.parent.fgFrame:SetFrameLevel(level)
+    if self.parent.fgMask then
+      self.parent.fgMask:SetFrameLevel(level)
     end
     if self.parent.bar then
       self.parent.bar:SetFrameLevel(level)
