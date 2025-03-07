@@ -1725,7 +1725,7 @@ local function UnitToUnitType(unit)
   end
 end
 
-local function ScanUnit(time, unit, unitAuraUpdateInfo)
+local function ScanUnit(time, unit)
   ScanGroupUnit(time, matchDataChanged, UnitToUnitType(unit), unit)
 end
 
@@ -1891,7 +1891,7 @@ local function EventHandler(frame, event, arg1, arg2, ...)
       if not exists then
         tinsert(unitsToRemove, unit)
       else
-        ScanGroupUnit(time, matchDataChanged, "group", unit, nil)
+        ScanGroupUnit(time, matchDataChanged, "group", unit)
       end
     end
     ScanGroupRoleScanFunc(matchDataChanged)
@@ -1903,7 +1903,7 @@ local function EventHandler(frame, event, arg1, arg2, ...)
     if arg1 == "player" then
       ScanGroupUnit(time, matchDataChanged, nil, "vehicle")
     end
-  elseif event == "UNIT_AURA" then
+  elseif event == "UNIT_AURA" and arg1 then
     ScanUnit(time, arg1)
   elseif event == "PLAYER_ENTERING_WORLD" then
     for unit in pairs(matchData) do
