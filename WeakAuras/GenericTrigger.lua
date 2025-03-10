@@ -4405,20 +4405,6 @@ WeakAuras.GetHitChance = function()
   return max(melee, ranged, spell)
 end
 
-WeakAuras.GetResilienceDamageReduction = function()
-  local ratings = {
-    {value = GetCombatRating(CR_CRIT_TAKEN_MELEE), type = CR_CRIT_TAKEN_MELEE},
-    {value = GetCombatRating(CR_CRIT_TAKEN_RANGED), type = CR_CRIT_TAKEN_RANGED},
-    {value = GetCombatRating(CR_CRIT_TAKEN_SPELL), type = CR_CRIT_TAKEN_SPELL},
-  }
-  local lowest = ratings[1]
-  for _, rating in ipairs(ratings) do
-    if rating.value < lowest.value then lowest = rating end
-  end
-  return GetCombatRatingBonus(lowest.type) * 2
-end
-
-
 local types = {}
 tinsert(types, "custom")
 for type in pairs(Private.category_event_prototype) do
