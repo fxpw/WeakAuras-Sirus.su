@@ -470,7 +470,7 @@ local function RunOverlayFuncs(event, state, id, errorHandler)
     local additionalProgress = state.additionalProgress[i];
     local ok, a, b, c = pcall(overlayFunc, event.trigger, state);
     if (not ok) then
-      (errorHandler or Private.GetErrorHandlerId(id, L["Overlay %s"]:format(i)))(a)
+      if errorHandler then errorHandler(a) else Private.GetErrorHandlerId(id, L["Overlay %s"]:format(i)) end
       additionalProgress.min = nil;
       additionalProgress.max = nil;
       additionalProgress.direction = nil;

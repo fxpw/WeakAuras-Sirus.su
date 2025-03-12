@@ -541,7 +541,7 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
 end
 
 local autoTimedProgressSource = {-1, "timer", "expirationTime", "duration", "inverse", "paused", "remaining", true}
-local autoStaticProgressSource = {-1, "number", "value", "total", nil, nil, nil, nil, true}
+local autoStaticProgressSource = {-1, "number", "value", "total", nil, nil, nil, true}
 local function UpdateProgressFromAuto(self, minMaxConfig, state)
   if state.progressType == "timed"  then
     UpdateProgressFromState(self, minMaxConfig, state, autoTimedProgressSource)
