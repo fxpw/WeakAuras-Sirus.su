@@ -34,7 +34,7 @@ local function CorrectSpellName(input)
       local spells = spellCache.GetSpellsMatching(input)
       if type(spells) == "table" then
         for id in pairs(spells) do
-          if id and tonumber(id) and id > 0 and IsSpellKnown(tonumber(id)) then
+          if tonumber(id) and id ~= 0 and IsSpellKnown(id) then
             return id
           end
         end
@@ -648,12 +648,12 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
                   local icon = spellCache.GetIcon(value);
                   return icon and tostring(icon) or "", 18, 18;
                 elseif(arg.type == "spell") then
-                  local spellName, _, icon = GetSpellInfo(value);
+                  local name, _, icon = GetSpellInfo(value);
                   if arg.noValidation then
                     -- GetSpellInfo and other wow apis are case insensitive, but the later matching we do
                     -- isn't. For validted inputs, we automatically correct the casing via GetSpellName
                     -- Since we don't do that for noValidation, we are extra picky on the input
-                    if type(value) == "string" and spellName ~= value then
+                    if type(value) == "string" and name ~= value then
                       return "", 18, 18
                     end
                   end

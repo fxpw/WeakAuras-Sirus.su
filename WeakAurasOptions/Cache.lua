@@ -19,7 +19,7 @@ local bestIcon = {}
 -- Builds a cache of name/icon pairs from existing spell data
 -- This is a rather slow operation, so it's only done once, and the result is subsequently saved
 function spellCache.Build()
-  if not cache  then
+  if not cache then
     error("spellCache has not been loaded. Call WeakAuras.spellCache.Load(...) first.")
   end
 
@@ -27,8 +27,8 @@ function spellCache.Build()
     return
   end
 
-  local holes
   --[[
+  local holes
   if WeakAuras.IsClassicEra() then
     holes = {}
     holes[63707] = 81743
@@ -57,7 +57,7 @@ function spellCache.Build()
       id = id + 1
       local name, _, icon = GetSpellInfo(id)
 
-      if(icon == 136243) then -- 136243 is the a gear icon, we can ignore those spells
+      if (icon and icon:lower() == "interface\\icons\\trade_engineering") then -- 136243 is the a gear icon, we can ignore those spells
         misses = 0;
       elseif name and name ~= "" and icon then
         cache[name] = cache[name] or {}
@@ -68,9 +68,11 @@ function spellCache.Build()
           cache[name].spells = cache[name].spells .. "," .. id .. "=" .. icon
         end
         misses = 0
-        --if holes and holes[id] then
-        --  id = holes[id]
-        --end
+        --[[
+        if holes and holes[id] then
+          id = holes[id]
+        end
+        ]]
       else
         misses = misses + 1
       end
@@ -110,7 +112,7 @@ while misses < 4000000 do
    id = id + 1
    local name = GetSpellInfo(id)
    local icon = GetSpellTexture(id)
-   if icon == 136243 then -- 136243 is the a gear icon, we can ignore those spells
+   if (icon == "Interface\\Icons\\trade_engineering") then -- 136243 is the a gear icon, we can ignore those spells
       misses = 0
    elseif name and name ~= "" and icon then
       if misses > 10000 then
@@ -138,11 +140,11 @@ function spellCache.GetIcon(name)
     local bestMatch = nil
     if (icons) then
       if (icons.spells) then
-        for spell, icon in icons.spells:gmatch("(%d+)=(%d+)") do
+        for spell, icon in icons.spells:gmatch("(%d+)=([%w_\\-]+),?") do
           local spellId = tonumber(spell)
 
           if not bestMatch or (spellId and spellId ~= 0 and IsSpellKnown(spellId)) then
-            bestMatch = tonumber(icon)
+            bestMatch = icon
           end
         end
       end
@@ -161,10 +163,11 @@ function spellCache.GetSpellsMatching(name)
   if cache[name] then
     if cache[name].spells then
       local result = {}
-      for spell, icon in cache[name].spells:gmatch("(%d+)=(%d+)") do
+      for spell, icon in cache[name].spells:gmatch("(%d+)=([%w_\\-]+),?") do
         local spellId = tonumber(spell)
-        local iconId = tonumber(icon)
-        result[spellId] = icon
+        if spellId then
+          result[spellId] = icon
+        end
       end
       return result
     end

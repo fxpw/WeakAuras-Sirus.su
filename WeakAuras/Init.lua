@@ -9,7 +9,7 @@ WeakAuras.doubleWidth = WeakAuras.normalWidth * 2
 
 local versionStringFromToc = GetAddOnMetadata("WeakAuras", "Version")
 local versionString = "5.19.5 Beta"
-local buildTime = "20250227215630"
+local buildTime = "20250314121155"
 local isAwesomeEnabled = C_NamePlate and C_NamePlate.GetNamePlateForUnit and true or false
 
 WeakAuras.versionString = versionString

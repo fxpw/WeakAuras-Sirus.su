@@ -2724,9 +2724,6 @@ function BuffTrigger.GetNameAndIconSimple(data, triggernum)
 end
 
 --- Returns the name and icon to show in the options.
---- @param data table
---- @param triggernum number
---- @return string|nil name, any icon
 function BuffTrigger.GetNameAndIcon(data, triggernum)
   local name, icon = BuffTrigger.GetNameAndIconSimple(data, triggernum)
   if (not name or not icon and WeakAuras.spellCache) then
