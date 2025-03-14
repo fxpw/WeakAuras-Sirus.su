@@ -116,10 +116,7 @@ local function CreateNameOptions(aura_options, data, trigger, size, isExactSpell
         return GetSpellInfo(WeakAuras.SafeToNumber(trigger[optionKey] and trigger[optionKey][i] or 0))
       end
       aura_options[iconOption].image = function()
-        local icon
-        if trigger.auraspellids and trigger.auraspellids[i] then
-          icon = select(3, GetSpellInfo(trigger.auraspellids[i]))
-        end
+        local icon = select(3, GetSpellInfo(trigger[optionKey] and trigger[optionKey][i] or ""))
         return icon and tostring(icon) or "", 18, 18
       end
       aura_options[iconOption].disabled = function()
@@ -957,7 +954,7 @@ local function GetBuffTriggerOptions(data, triggernum)
     ignoreInvisible = {
       type = "toggle",
       name = L["Ignore out of checking range"],
-      desc = L["Uses UnitIsVisible() to check if in range. This is polled every second."],
+      desc = L["Uses UnitIsVisible() to check if game client has loaded a object for this unit. This distance is around 100 yards. This is polled every second."],
       order = 69.9,
       width = WeakAuras.doubleWidth,
       hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party")) end
