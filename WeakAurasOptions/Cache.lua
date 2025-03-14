@@ -140,11 +140,11 @@ function spellCache.GetIcon(name)
     local bestMatch = nil
     if (icons) then
       if (icons.spells) then
-        for spell, icon in icons.spells:gmatch("(%d+)=(%d+)") do
+        for spell, icon in icons.spells:gmatch("(%d+)=([%w_\\-]+),?") do
           local spellId = tonumber(spell)
 
           if not bestMatch or (spellId and spellId ~= 0 and IsSpellKnown(spellId)) then
-            bestMatch = tonumber(icon)
+            bestMatch = icon
           end
         end
       end
@@ -163,10 +163,11 @@ function spellCache.GetSpellsMatching(name)
   if cache[name] then
     if cache[name].spells then
       local result = {}
-      for spell, icon in cache[name].spells:gmatch("(%d+)=(%d+)") do
+      for spell, icon in cache[name].spells:gmatch("(%d+)=([%w_\\-]+),?") do
         local spellId = tonumber(spell)
-        local iconId = tonumber(icon)
-        result[spellId] = icon
+        if spellId then
+          result[spellId] = icon
+        end
       end
       return result
     end
