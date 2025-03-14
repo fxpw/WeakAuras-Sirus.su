@@ -19,7 +19,7 @@ local bestIcon = {}
 -- Builds a cache of name/icon pairs from existing spell data
 -- This is a rather slow operation, so it's only done once, and the result is subsequently saved
 function spellCache.Build()
-  if not cache  then
+  if not cache then
     error("spellCache has not been loaded. Call WeakAuras.spellCache.Load(...) first.")
   end
 
@@ -57,7 +57,7 @@ function spellCache.Build()
       id = id + 1
       local name, _, icon = GetSpellInfo(id)
 
-      if (icon == "Interface\\Icons\\trade_engineering") then -- 136243 is the a gear icon, we can ignore those spells
+      if (icon and icon:lower() == "interface\\icons\\trade_engineering") then -- 136243 is the a gear icon, we can ignore those spells
         misses = 0;
       elseif name and name ~= "" and icon then
         cache[name] = cache[name] or {}
