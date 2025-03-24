@@ -1,6 +1,7 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
+local AddonName, OptionsPrivate = ...
 
-local Type, Version = "WeakAurasNewButton", 24
+local Type, Version = "WeakAurasNewButton", 27
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -55,7 +56,7 @@ local methods = {
     end
   end,
   ["SetThumbnail"] = function(self, regionType, data)
-    local regionData = WeakAuras.regionOptions[regionType]
+    local regionData = OptionsPrivate.Private.regionOptions[regionType]
     if regionData and regionData.acquireThumbnail then
       local thumbnail = regionData.acquireThumbnail(self.frame, data)
       self:SetIcon(thumbnail)
@@ -65,7 +66,7 @@ local methods = {
   end,
   ["ReleaseThumbnail"] = function(self)
     if self.thumbnail then
-      local regionData = WeakAuras.regionOptions[self.thumbnailType]
+      local regionData = OptionsPrivate.Private.regionOptions[self.thumbnailType]
       if regionData and regionData.releaseThumbnail then
         regionData.releaseThumbnail(self.thumbnail)
       end
@@ -90,7 +91,7 @@ Constructor
 
 local function Constructor()
   local name = "WeakAurasDisplayButton"..AceGUI:GetNextWidgetNum(Type);
-  local button = CreateFrame("BUTTON", name, UIParent, "OptionsListButtonTemplate");
+  local button = CreateFrame("Button", name, UIParent, "OptionsListButtonTemplate");
   button:SetHeight(40);
   button:SetWidth(380);
   button.dgroup = nil;

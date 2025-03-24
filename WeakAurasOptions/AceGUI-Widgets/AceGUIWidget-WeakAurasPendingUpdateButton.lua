@@ -1,13 +1,11 @@
-if not WeakAuras.IsCorrectVersion() then
-  return
-end
+if not WeakAuras.IsLibsOK() then return end
 
 local AddonName, OptionsPrivate = ...
 local L = WeakAuras.L
 
 local pairs, next, type, unpack = pairs, next, type, unpack
 
-local Type, Version = "WeakAurasPendingUpdateButton", 2
+local Type, Version = "WeakAurasPendingUpdateButton", 6
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then
@@ -59,7 +57,14 @@ local methods = {
     self.linkedChildren = {}
 
     function self.callbacks.OnUpdateClick()
-      WeakAuras.Import(self.companionData.encoded)
+      local linkedAuras = {}
+      for auraId in pairs(self.linkedAuras) do
+        if not self.linkedChildren[auraId] then
+          tinsert(linkedAuras, auraId)
+        end
+      end
+
+      WeakAuras.Import(self.companionData.encoded, nil, nil, linkedAuras)
     end
 
     self:SetTitle(self.companionData.name)
@@ -73,50 +78,11 @@ local methods = {
 
     self.menu = {}
 
-    self.frame:SetScript("OnMouseUp", function()
-      Hide_Tooltip()
-      self:SetMenu()
-      EasyMenu(self.menu, WeakAuras_DropDownMenu, self.frame, 0, 0, "MENU")
-    end)
-
     self.frame:SetScript("OnEnter", function()
       self:SetNormalTooltip()
       Show_Long_Tooltip(self.frame, self.frame.description)
     end)
     self.frame:SetScript("OnLeave", Hide_Tooltip)
-  end,
-  ["SetMenu"] = function(self)
-    wipe(self.menu)
-    for auraId in pairs(self.linkedAuras) do
-      if not self.linkedChildren[auraId] then
-        tinsert(self.menu,
-          {
-            text = auraId,
-            notCheckable = true,
-            hasArrow = true,
-            menuList = {
-              {
-                text = L["Update"],
-                notCheckable = true,
-                func = function()
-                  local auraData = WeakAuras.GetData(auraId)
-                  if auraData then
-                    WeakAuras.Import(self.companionData.encoded, auraData)
-                  end
-                end
-              },
-              {
-                text = L["Ignore updates"],
-                notCheckable = true,
-                func = function()
-                  StaticPopup_Show("WEAKAURAS_CONFIRM_IGNORE_UPDATES", "", "", auraId)
-                end
-              }
-            }
-          }
-        )
-      end
-    end
   end,
   ["SetLogo"] = function(self, path)
     self.frame.updateLogo.tex:SetTexture(path)
@@ -216,7 +182,7 @@ local methods = {
       self:ReleaseThumbnail()
       self:AcquireThumbnail()
     else
-      local option = WeakAuras.regionOptions[self.thumbnailType]
+      local option = OptionsPrivate.Private.regionOptions[self.thumbnailType]
       if option and option.modifyThumbnail then
         option.modifyThumbnail(self.frame, self.thumbnail, self.data)
       end
@@ -230,7 +196,7 @@ local methods = {
 
     if self.thumbnail then
       local regionType = self.thumbnailType
-      local option = WeakAuras.regionOptions[regionType]
+      local option = OptionsPrivate.Private.regionOptions[regionType]
       if self.thumbnail.icon then
         self.thumbnail.icon:SetDesaturated(false)
       end
@@ -253,7 +219,7 @@ local methods = {
     local regionType = self.data.regionType
     self.thumbnailType = regionType
 
-    local option = WeakAuras.regionOptions[regionType]
+    local option = OptionsPrivate.Private.regionOptions[regionType]
     if option and option.acquireThumbnail then
       self.thumbnail = option.acquireThumbnail(button, self.data)
       if self.thumbnail.icon then
@@ -289,7 +255,7 @@ Constructor
 
 local function Constructor()
   local name = "WeakAurasPendingUpdateButton" .. AceGUI:GetNextWidgetNum(Type)
-  local button = CreateFrame("BUTTON", name, UIParent)
+  local button = CreateFrame("Button", name, UIParent)
   button:SetHeight(32)
   button:SetWidth(1000)
   button.data = {}
@@ -320,7 +286,7 @@ local function Constructor()
 
   button.description = {}
 
-  local update = CreateFrame("BUTTON", nil, button)
+  local update = CreateFrame("Button", nil, button)
   button.update = update
   update.disabled = true
   update.func = function()

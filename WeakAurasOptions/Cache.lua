@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
@@ -19,7 +19,7 @@ local bestIcon = {}
 -- Builds a cache of name/icon pairs from existing spell data
 -- This is a rather slow operation, so it's only done once, and the result is subsequently saved
 function spellCache.Build()
-  if not cache  then
+  if not cache then
     error("spellCache has not been loaded. Call WeakAuras.spellCache.Load(...) first.")
   end
 
@@ -27,8 +27,29 @@ function spellCache.Build()
     return
   end
 
+  --[[
+  local holes
+  if WeakAuras.IsClassicEra() then
+    holes = {}
+    holes[63707] = 81743
+    holes[81748] = 219002
+    holes[219004] = 285223
+    holes[285224] = 301088
+    holes[301101] = 324269
+    holes[474742] = 1213143
+  elseif WeakAuras.IsCataClassic() then
+    holes = {}
+    holes[121820] = 158262
+    holes[158263] = 186402
+    holes[186403] = 219002
+    holes[219004] = 243805
+    holes[243806] = 261127
+    holes[262591] = 281624
+    holes[301101] = 324269
+  end]]
   wipe(cache)
   local co = coroutine.create(function()
+    metaData.rebuilding = true
     local id = 0
     local misses = 0
 
@@ -36,18 +57,26 @@ function spellCache.Build()
       id = id + 1
       local name, _, icon = GetSpellInfo(id)
 
-      if(icon == 136243) then -- 136243 is the a gear icon, we can ignore those spells
+      if (icon and icon:lower() == "interface\\icons\\trade_engineering") then -- 136243 is the a gear icon, we can ignore those spells
         misses = 0;
-      elseif name and name ~= "" then
+      elseif name and name ~= "" and icon then
         cache[name] = cache[name] or {}
-        cache[name].spells = cache[name].spells or {}
-        cache[name].spells[id] = icon
+
+        if not cache[name].spells or cache[name].spells == "" then
+          cache[name].spells = id .. "=" .. icon
+        else
+          cache[name].spells = cache[name].spells .. "," .. id .. "=" .. icon
+        end
         misses = 0
+        --[[
+        if holes and holes[id] then
+          id = holes[id]
+        end
+        ]]
       else
         misses = misses + 1
       end
-
-      coroutine.yield()
+      coroutine.yield(0.01, "spells")
     end
 
     for _, category in pairs(GetCategoryList()) do
@@ -56,27 +85,47 @@ function spellCache.Build()
         local id,name,_,_,_,_,_,_,_,iconID = GetAchievementInfo(category, i)
         if name and iconID then
           cache[name] = cache[name] or {}
-          cache[name].achievements = cache[name].achievements or {}
-          cache[name].achievements[id] = iconID
+          if not cache[name].achievements or cache[name].achievements == "" then
+            cache[name].achievements = id .. "=" .. iconID
+          else
+            cache[name].achievements = cache[name].achievements .. "," .. id .. "=" .. iconID
+          end
         end
+        coroutine.yield(0.1, "achievements")
       end
-      coroutine.yield()
-    end
-
-    -- Updates the icon cache with whatever icons WeakAuras core has actually used.
-    -- This helps keep name<->icon matches relevant.
-    for name, icons in pairs(WeakAurasSaved.dynamicIconCache) do
-      if WeakAurasSaved.dynamicIconCache[name] then
-        for spellId, icon in pairs(WeakAurasSaved.dynamicIconCache[name]) do
-          spellCache.AddIcon(name, spellId, icon)
-        end
-      end
+      coroutine.yield(0.1, "categories")
     end
 
     metaData.needsRebuild = false
+    metaData.rebuilding = false
   end)
-  OptionsPrivate.Private.dynFrame:AddAction("spellCache", co)
+  OptionsPrivate.Private.Threads:Add("spellCache", co, 'background')
 end
+
+--[[ function to help find big holes in spellIds to help speedup Build()
+
+local id = 0
+local misses = 0
+local lastId
+print("####")
+while misses < 4000000 do
+   id = id + 1
+   local name = GetSpellInfo(id)
+   local icon = GetSpellTexture(id)
+   if (icon == "Interface\\Icons\\trade_engineering") then -- 136243 is the a gear icon, we can ignore those spells
+      misses = 0
+   elseif name and name ~= "" and icon then
+      if misses > 10000 then
+         print(("holes[%s] = %s"):format(lastId, id - 1))
+      end
+      lastId = id
+      misses = 0
+   else
+      misses = misses + 1
+   end
+end
+print("lastId", lastId)
+]]
 
 function spellCache.GetIcon(name)
   if (name == nil) then
@@ -91,16 +140,20 @@ function spellCache.GetIcon(name)
     local bestMatch = nil
     if (icons) then
       if (icons.spells) then
-        for spellId, icon in pairs(icons.spells) do
-          if not bestMatch or (type(spellId) == "number" and IsSpellKnown(spellId)) then
-            bestMatch = spellId
+        for spell, icon in icons.spells:gmatch("(%d+)=([%w_\\-]+),?") do
+          local spellId = tonumber(spell)
+
+          if not bestMatch or (spellId and spellId ~= 0 and IsSpellKnown(spellId)) then
+            bestMatch = icon
           end
         end
       end
+    elseif metaData.rebuilding then
+      OptionsPrivate.Private.Threads:SetPriority('spellCache', 'normal')
     end
 
-    bestIcon[name] = bestMatch and icons.spells[bestMatch];
-    return bestIcon[name];
+    bestIcon[name] = bestMatch
+    return bestIcon[name]
   else
     error("spellCache has not been loaded. Call WeakAuras.spellCache.Load(...) first.")
   end
@@ -108,21 +161,34 @@ end
 
 function spellCache.GetSpellsMatching(name)
   if cache[name] then
-    return cache[name].spells
+    if cache[name].spells then
+      local result = {}
+      for spell, icon in cache[name].spells:gmatch("(%d+)=([%w_\\-]+),?") do
+        local spellId = tonumber(spell)
+        if spellId then
+          result[spellId] = icon
+        end
+      end
+      return result
+    end
+  elseif metaData.rebuilding then
+    OptionsPrivate.Private.Threads:SetPriority('spellCache', 'normal')
   end
 end
 
 function spellCache.AddIcon(name, id, icon)
-  if cache then
-    if name then
-      cache[name] = cache[name] or {}
-      cache[name].spells = cache[name].spells or {}
-      if id and icon then
-        cache[name].spells[id] = icon
-      end
-    end
-  else
+  if not cache then
     error("spellCache has not been loaded. Call WeakAuras.spellCache.Load(...) first.")
+    return
+  end
+
+  if name and id and icon then
+    cache[name] = cache[name] or {}
+    if not cache[name].spells or cache[name].spells == "" then
+      cache[name].spells = id .. "=" .. icon
+    else
+      cache[name].spells = cache[name].spells .. "," .. id .. "=" .. icon
+    end
   end
 end
 
@@ -147,11 +213,14 @@ function spellCache.Load(data)
     num = num + 1;
   end
 
-  if(num < 39000 or metaData.locale ~= locale or metaData.build ~= build or metaData.version ~= version or not metaData.spellCacheAchivements) then
+  if(num < 39000 or metaData.locale ~= locale or metaData.build ~= build
+     or metaData.version ~= version or not metaData.spellCacheStrings)
+  then
     metaData.build = build;
     metaData.locale = locale;
     metaData.version = version;
-    metaData.spellCacheAchivements = true
+    metaData.spellCacheAchievements = true
+    metaData.spellCacheStrings = true
     metaData.needsRebuild = true
     wipe(cache)
   end
@@ -212,14 +281,17 @@ function spellCache.CorrectAuraName(input)
     error("spellCache has not been loaded. Call WeakAuras.spellCache.Load(...) first.")
   end
 
-  local spellId = WeakAuras.SafeToNumber(input);
+  local spellId = WeakAuras.SafeToNumber(input)
+  if type(input) == "string" and input:find("|", nil, true) then
+    spellId = WeakAuras.SafeToNumber(input:match("|Hspell:(%d+)"))
+  end
   if(spellId) then
     local name, _, icon = GetSpellInfo(spellId);
     if(name) then
       spellCache.AddIcon(name, spellId, icon)
       return name, spellId;
     else
-      return "Invalid Spell ID";
+      return "Invalid Spell ID", spellId;
     end
   else
     local ret = spellCache.BestKeyMatch(input);

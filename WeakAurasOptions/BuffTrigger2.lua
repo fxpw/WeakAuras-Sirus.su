@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local L = WeakAuras.L
@@ -7,7 +7,7 @@ local function getAuraMatchesLabel(name)
   local ids = WeakAuras.spellCache.GetSpellsMatching(name)
   if ids then
     local numMatches = 0
-    for id, _ in pairs(ids) do
+    for _ in pairs(ids) do
       numMatches = numMatches + 1
     end
     return tostring(numMatches)
@@ -21,7 +21,7 @@ local function getAuraMatchesList(name)
   if ids then
     local descText = ""
     for id, _ in pairs(ids) do
-      local name, _, icon = GetSpellInfo(id)
+      local _, _, icon = GetSpellInfo(id)
       if icon then
         if descText == "" then
           descText = "|T"..icon..":0|t: "..id
@@ -55,7 +55,7 @@ end
 
 local function IsGroupTrigger(trigger)
   return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"
-         or trigger.unit == "boss" or trigger.unit == "arena" or trigger.unit == "multi"
+         or trigger.unit == "boss" or trigger.unit == "nameplate" or trigger.unit == "arena" or trigger.unit == "multi"
 end
 
 local function IsSingleMissing(trigger)
@@ -113,14 +113,10 @@ local function CreateNameOptions(aura_options, data, trigger, size, isExactSpell
 
     if isExactSpellId then
       aura_options[iconOption].name = function()
-        local name = GetSpellInfo(WeakAuras.SafeToNumber(trigger[optionKey] and trigger[optionKey][i] or 0))
-        return name
+        return GetSpellInfo(WeakAuras.SafeToNumber(trigger[optionKey] and trigger[optionKey][i] or 0))
       end
       aura_options[iconOption].image = function()
-        local icon
-        if trigger.auraspellids and trigger.auraspellids[i] then
-          icon = select(3, GetSpellInfo(trigger.auraspellids[i]))
-        end
+        local icon = select(3, GetSpellInfo(trigger[optionKey] and trigger[optionKey][i] or ""))
         return icon and tostring(icon) or "", 18, 18
       end
       aura_options[iconOption].disabled = function()
@@ -170,7 +166,19 @@ local function CreateNameOptions(aura_options, data, trigger, size, isExactSpell
       desc = desc,
       order = baseOrder + i / 100 + 0.0003,
       hidden = hiddenFunction,
-      get = function(info) return trigger[optionKey] and trigger[optionKey][i] end,
+      get = function(info)
+        local rawString = trigger[optionKey] and trigger[optionKey][i]
+        if not rawString then return "" end
+        local spellID = WeakAuras.SafeToNumber(rawString)
+        local spellName = spellID and GetSpellInfo(spellID)
+        if spellName and spellID then
+          return ("%s (%s)"):format(spellID, spellName) .. "\0" .. rawString
+        elseif spellID then
+          return ("%s (%s)"):format(rawString, L["Unknown Spell"]) .. "\0" .. rawString
+        else
+          return rawString .. "\0" .. rawString
+        end
+      end,
       set = function(info, v)
         trigger[optionKey] = trigger[optionKey] or {}
         if v == "" then
@@ -179,10 +187,9 @@ local function CreateNameOptions(aura_options, data, trigger, size, isExactSpell
           if isExactSpellId then
             trigger[optionKey][i] = v
           else
-            local spellId = tonumber(v)
+            local _, spellId = WeakAuras.spellCache.CorrectAuraName(v)
             if spellId then
-              WeakAuras.spellCache.CorrectAuraName(v)
-              trigger[optionKey][i] = v
+              trigger[optionKey][i] = tostring(spellId)
             else
               trigger[optionKey][i] = spellCache.BestKeyMatch(v)
             end
@@ -193,7 +200,8 @@ local function CreateNameOptions(aura_options, data, trigger, size, isExactSpell
         WeakAuras.UpdateThumbnail(data)
         WeakAuras.ClearAndUpdateOptions(data.id)
       end,
-      validate = isExactSpellId and WeakAuras.ValidateNumeric or nil
+      validate = isExactSpellId and WeakAuras.ValidateNumeric or nil,
+      control = "WeakAurasInputFocus",
     }
   end
   -- VALIDATE ?
@@ -226,7 +234,6 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = L["Unit"],
       order = 10,
       disabled = true,
-      hidden = function() return not trigger.type == "aura2" end,
       get = function() return true end
     },
     unit = {
@@ -237,8 +244,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       values = function()
         return OptionsPrivate.Private.unit_types_bufftrigger_2
       end,
-      hidden = function() return not trigger.type == "aura2" end,
-      desc = L["• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.\n• |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.\n|cffff0000Note|r: The game will not fire events for all valid unitIDs, making some untrackable by this trigger.\n• |cffffff00Party|r, |cffffff00Raid|r, |cffffff00Boss|r, |cffffff00Arena|r, and |cffffff00Nameplate|r can match multiple corresponding unitIDs.\n• |cffffff00Smart Group|r adjusts to your current group type, matching just the \"player\" when solo, \"party\" units (including \"player\") in a party or \"raid\" units in a raid.\n• |cffffff00Multi-target|r attempts to use the Combat Log events, rather than unitID, to track affected units.\n|cffff0000Note|r: Without a direct relationship to actual unitIDs, results may vary.\n\n|cffffff00*|r Yellow Unit settings can match multiple units and will default to being active even while no affected units are found without a Unit Count or Match Count setting."],
+      desc = L["â€¢ |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.\nâ€¢ |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.\n|cffff0000Note|r: The game will not fire events for all valid unitIDs, making some untrackable by this trigger.\nâ€¢ |cffffff00Party|r, |cffffff00Raid|r, |cffffff00Boss|r, |cffffff00Arena|r, and |cffffff00Nameplate|r can match multiple corresponding unitIDs.\nâ€¢ |cffffff00Smart Group|r adjusts to your current group type, matching just the \"player\" when solo, \"party\" units (including \"player\") in a party or \"raid\" units in a raid.\nâ€¢ |cffffff00Multi-target|r attempts to use the Combat Log events, rather than unitID, to track affected units.\n|cffff0000Note|r: Without a direct relationship to actual unitIDs, results may vary.\n\n|cffffff00*|r Yellow Unit settings can match multiple units and will default to being active even while no affected units are found without a Unit Count or Match Count setting."],
     },
     useSpecificUnit = {
       type = "toggle",
@@ -272,7 +278,6 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = L["Aura Type"],
       order = 11,
       disabled = true,
-      hidden = function() return not trigger.type == "aura2" end,
       get = function() return true end
     },
     debuffType = {
@@ -281,7 +286,6 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = L["Aura Type"],
       order = 11.1,
       values = OptionsPrivate.Private.debuff_types,
-      hidden = function() return not trigger.type == "aura2" end
     },
     spell_filters_header = {
       type = "header",
@@ -293,7 +297,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       width = WeakAuras.normalWidth,
       name = L["Debuff Type"],
       order = 11.2,
-      desc = L["Filter to only dispellable de/buffs of the given type(s)"],
+      desc = L["Filter to only dispellable de/buffs of the given type(s)\nBleed classification via LibDispel"],
       hidden = function() return not (trigger.type == "aura2" and trigger.unit ~= "multi" and CanHaveMatchCheck(trigger)) end
     },
     debuffClass = {
@@ -324,7 +328,6 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = L["Name(s)"],
       order = 12,
       width = WeakAuras.normalWidth - 0.2,
-      hidden = function() return not trigger.type == "aura2" end
     },
     useNameSpace = {
       type = "description",
@@ -338,7 +341,6 @@ local function GetBuffTriggerOptions(data, triggernum)
       name = L["Exact Spell ID(s)"],
       width = WeakAuras.normalWidth - 0.2,
       order = 22,
-      hidden = function() return not trigger.type == "aura2" end
     },
     useExactSpellIdSpace = {
       type = "description",
@@ -549,9 +551,9 @@ local function GetBuffTriggerOptions(data, triggernum)
       end,
       desc = function()
         local value = trigger.ownOnly
-        if value == nil then return L["Only match auras cast by the player or his pet"]
-        elseif value == false then return L["Only match auras cast by people other than the player or his pet"]
-        else return L["Only match auras cast by the player or his pet"] end
+        if value == nil then return L["Only match auras cast by the player or their pet"]
+        elseif value == false then return L["Only match auras cast by people other than the player or their pet"]
+        else return L["Only match auras cast by the player or their pet"] end
       end,
       get = function()
         local value = trigger.ownOnly
@@ -576,7 +578,7 @@ local function GetBuffTriggerOptions(data, triggernum)
     fetchTooltip = {
       type = "toggle",
       name = L["Fetch Tooltip Information"],
-      desc = L["This adds %tooltip, %tooltip1, %tooltip2, %tooltip3 as text replacements and also allows filtering based on the tooltip content/values."],
+      desc = L["This adds %tooltip, %tooltip1, %tooltip2, %tooltip3 and %tooltip4 as text replacements and also allows filtering based on the tooltip content/values."],
       order = 64.5,
       width = WeakAuras.doubleWidth,
       hidden = function() return not (trigger.type == "aura2" and trigger.unit ~= "multi" and not IsSingleMissing(trigger)) end
@@ -658,10 +660,20 @@ local function GetBuffTriggerOptions(data, triggernum)
     },
     useAffected = {
       type = "toggle",
-      name = L["Fetch Affected/Unaffected Names"],
+      name = L["Fetch Affected/Unaffected Names and Units"],
       width = WeakAuras.doubleWidth,
       order = 65.1,
       hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party")) end
+    },
+    fetchRole = {
+      type = "toggle",
+      name = L["Fetch Role Information"],
+      desc = L["This adds %role, %roleIcon as text replacements. Does nothing if the unit is not a group member."],
+      order = 65.2,
+      width = WeakAuras.doubleWidth,
+      hidden = function()
+        return not (trigger.type == "aura2" and trigger.unit ~= "multi")
+      end
     },
     fetchRaidMark = {
       type = "toggle",
@@ -676,7 +688,7 @@ local function GetBuffTriggerOptions(data, triggernum)
     use_includePets = {
       type = "toggle",
       width = WeakAuras.normalWidth,
-      name = WeakAuras.newFeatureString .. L["Include Pets"],
+      name = L["Include Pets"],
       order = 66.1,
       hidden = function() return
         not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"))
@@ -686,7 +698,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       type = "select",
       values = OptionsPrivate.Private.include_pets_types,
       width = WeakAuras.normalWidth,
-      name = WeakAuras.newFeatureString .. L["Include Pets"],
+      name = L["Include Pets"],
       order = 66.15,
       hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party") and trigger.use_includePets) end,
     },
@@ -701,6 +713,97 @@ local function GetBuffTriggerOptions(data, triggernum)
       end
     },
 
+    useActualSpec = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Filter by Specialization"],
+      desc = L["Requires LibGroupTalents, that is e.g. a up-to date WeakAuras version"],
+      order = 66.3,
+      hidden = function() return
+        not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"))
+      end,
+    },
+    actualSpec = {
+      type = "multiselect",
+      width = WeakAuras.normalWidth,
+      name = L["Actual Spec"],
+      desc = L["Requires syncing the specialization via LibGroupTalents."],
+      values = OptionsPrivate.Private.spec_types_all,
+      hidden = function()
+        return not (trigger.type == "aura2"
+                    and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party")
+                    and trigger.useActualSpec)
+      end,
+      order = 66.4
+    },
+    actualSpecSpace = {
+      type = "description",
+      name = "",
+      order = 66.5,
+      width = WeakAuras.normalWidth,
+      hidden = function()
+        return not (trigger.type == "aura2"
+                    and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party")
+                    and not trigger.useActualSpec)
+      end
+    },
+
+    useGroupRole = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Filter by Group Role"],
+      order = 67.1,
+      hidden = function() return
+        not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"))
+      end
+    },
+    group_role = {
+      type = "multiselect",
+      width = WeakAuras.normalWidth,
+      name = L["Group Role"],
+      values = OptionsPrivate.Private.role_types,
+      hidden = function() return
+        not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party") and trigger.useGroupRole)
+      end,
+      order = 67.2
+    },
+    group_roleSpace = {
+      type = "description",
+      name = "",
+      order = 67.3,
+      width = WeakAuras.normalWidth,
+      hidden = function() return
+        not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party") and not trigger.useGroupRole)
+      end
+    },
+    useRaidRole = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Filter by Raid Role"],
+      order = 67.4,
+      hidden = function() return
+        not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"))
+      end
+    },
+    raid_role = {
+      type = "multiselect",
+      width = WeakAuras.normalWidth,
+      name = L["Raid Role"],
+      values = OptionsPrivate.Private.raid_role_types,
+      hidden = function() return
+        not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party") and trigger.useRaidRole)
+      end,
+      order = 67.5
+    },
+    raid_roleSpace = {
+      type = "description",
+      name = "",
+      order = 67.6,
+      width = WeakAuras.normalWidth,
+      hidden = function() return
+        not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party") and not trigger.useRaidRole)
+      end
+    },
     useClass = {
       type = "toggle",
       width = WeakAuras.normalWidth,
@@ -757,12 +860,80 @@ local function GetBuffTriggerOptions(data, triggernum)
       end
     },
 
+    useHostility = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Filter by Hostility"],
+      order = 69.1,
+      hidden = function()
+        return not (trigger.type == "aura2"
+                    and (trigger.unit == "group"
+                         or trigger.unit == "raid"
+                         or trigger.unit == "party"
+                         or trigger.unit == "nameplate"))
+      end
+    },
+    hostility = {
+      type = "select",
+      width = WeakAuras.normalWidth,
+      name = L["Hostility"],
+      values = OptionsPrivate.Private.hostility_types,
+      hidden = function()
+        return not (trigger.type == "aura2"
+                    and trigger.useHostility
+                    and (trigger.unit == "group"
+                         or trigger.unit == "raid"
+                         or trigger.unit == "party"
+                         or trigger.unit == "nameplate"))
+      end,
+      order = 69.2
+    },
+    hostilitySpace = {
+      type = "description",
+      name = "",
+      order = 69.3,
+      width = WeakAuras.normalWidth,
+      hidden = function()
+        return not (trigger.type == "aura2"
+                    and not trigger.useHostility
+                    and (trigger.unit == "group"
+                         or trigger.unit == "raid"
+                         or trigger.unit == "party"
+                         or trigger.unit == "nameplate"))
+      end
+    },
+
+    useNpcId = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Filter by Npc ID"],
+      order = 69.31,
+      hidden = function() return
+        not (trigger.type == "aura2" and (trigger.unit == "nameplate" or trigger.unit == "boss"))
+      end
+    },
+    npcId = {
+      type = "input",
+      width = WeakAuras.normalWidth,
+      name = L["Npc ID"],
+      hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "nameplate" or trigger.unit == "boss") and trigger.useNpcId) end,
+      order = 69.32,
+      desc = L["Supports multiple entries, separated by commas"]
+    },
+    npcIdSpace = {
+      type = "description",
+      name = "",
+      order = 69.33,
+      width = WeakAuras.normalWidth,
+      hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "nameplate" or trigger.unit == "boss") and not trigger.useNpcId) end
+    },
+
     ignoreSelf = {
       type = "toggle",
       name = L["Ignore Self"],
       order = 69.35,
       width = WeakAuras.doubleWidth,
-      hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party")) end
+      hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "nameplate")) end
     },
 
     ignoreDead = {
@@ -783,7 +954,7 @@ local function GetBuffTriggerOptions(data, triggernum)
     ignoreInvisible = {
       type = "toggle",
       name = L["Ignore out of checking range"],
-      desc = L["Uses UnitIsVisible() to check if in range. This is polled every second."],
+      desc = L["Uses UnitIsVisible() to check if game client has loaded a object for this unit. This distance is around 100 yards. This is polled every second."],
       order = 69.9,
       width = WeakAuras.doubleWidth,
       hidden = function() return not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party")) end
@@ -1064,7 +1235,7 @@ local function GetBuffTriggerOptions(data, triggernum)
 
   CreateNameOptions(aura_options, data, trigger, spellOptionsSize,
                     true, false, "spellid", 22, "useExactSpellId", "auraspellids",
-                    L["Spell ID"], L["Enter a Spell ID"],
+                    L["Spell ID"], L["Enter a Spell ID. You can use the addon idTip to determine spell ids."],
                     IsSingleMissing(trigger))
 
   CreateNameOptions(aura_options, data, trigger, ignoreNameOptionSize,
@@ -1075,7 +1246,7 @@ local function GetBuffTriggerOptions(data, triggernum)
 
   CreateNameOptions(aura_options, data, trigger, ignoreSpellOptionsSize,
                     true, true, "ignorespellid", 42, "useIgnoreExactSpellId", "ignoreAuraSpellids",
-                    L["Ignored Spell ID"], L["Enter a Spell ID"],
+                    L["Ignored Spell ID"], L["Enter a Spell ID. You can use the addon idTip to determine spell ids."],
                     IsSingleMissing(trigger))
 
   OptionsPrivate.commonOptions.AddCommonTriggerOptions(aura_options, data, triggernum, true)

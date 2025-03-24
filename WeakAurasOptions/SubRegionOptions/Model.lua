@@ -1,7 +1,6 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
-local SharedMedia = LibStub("LibSharedMedia-3.0");
 local L = WeakAuras.L;
 
 local function createOptions(parentData, data, index, subIndex)
@@ -42,6 +41,7 @@ local function createOptions(parentData, data, index, subIndex)
     },
     extra_width = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Extra Width"],
       order = 12.1,
@@ -52,6 +52,7 @@ local function createOptions(parentData, data, index, subIndex)
     },
     extra_height = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Extra Height"],
       order = 12.2,
@@ -62,6 +63,7 @@ local function createOptions(parentData, data, index, subIndex)
     },
     model_alpha = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Alpha"],
       order = 13,
@@ -71,6 +73,7 @@ local function createOptions(parentData, data, index, subIndex)
     },
     model_z = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Z Offset"],
       softMin = -20,
@@ -81,6 +84,7 @@ local function createOptions(parentData, data, index, subIndex)
     },
     model_x = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["X Offset"],
       softMin = -20,
@@ -91,6 +95,7 @@ local function createOptions(parentData, data, index, subIndex)
     },
     model_y = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Y Offset"],
       softMin = -20,
@@ -101,6 +106,7 @@ local function createOptions(parentData, data, index, subIndex)
     },
     rotation = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Rotation"],
       min = 0,

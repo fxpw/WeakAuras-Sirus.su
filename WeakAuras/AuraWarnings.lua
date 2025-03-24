@@ -1,20 +1,21 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
--- keyed on uid, key, { severity, message }
 local warnings = {}
 local printedWarnings = {}
 
 local function OnDelete(event, uid)
   warnings[uid] = nil
+  printedWarnings[uid] = nil
 end
 
 Private.callbacks:RegisterCallback("Delete", OnDelete)
+Private.AuraWarnings = {}
 
-local function UpdateWarning(uid, key, severity, message, printOnConsole)
+function Private.AuraWarnings.UpdateWarning(uid, key, severity, message, printOnConsole)
   if not uid then
     WeakAuras.prettyPrint(L["Warning for unknown aura:"], message)
     return
@@ -37,6 +38,9 @@ local function UpdateWarning(uid, key, severity, message, printOnConsole)
   else
     if warnings[uid][key] then
       warnings[uid][key] = nil
+      if printedWarnings[uid] then
+        printedWarnings[uid][key] = nil
+      end
       Private.callbacks:Fire("AuraWarningsUpdated", uid)
     end
   end
@@ -50,17 +54,17 @@ local severityLevel = {
 }
 
 local icons = {
-  info = [[Interface/friendsframe/informationicon.blp]],
-  sound = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\voicechat",
-  warning = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\alert",
-  error =  [[Interface/DialogFrame/UI-Dialog-Icon-AlertNew]]
+  info = [[Interface\FriendsFrame\InformationIcon]],
+  sound = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\ChatFrame",
+  warning = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\ServicesAtlas",
+  error = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\HelpIcon-Bug",
 }
 
 local titles = {
   info = L["Information"],
   sound = L["Sound"],
   warning = L["Warning"],
-  error = L["Error"]
+  error = L["Error"],
 }
 
 local function AddMessages(result, messages, icon, mixedSeverity)
@@ -79,7 +83,7 @@ local function AddMessages(result, messages, icon, mixedSeverity)
   return result
 end
 
-local function FormatWarnings(uid)
+function Private.AuraWarnings.FormatWarnings(uid)
   if not warnings[uid] then
     return
   end
@@ -113,6 +117,44 @@ local function FormatWarnings(uid)
   return icons[maxSeverity], titles[maxSeverity], result
 end
 
-Private.AuraWarnings = {}
-Private.AuraWarnings.UpdateWarning = UpdateWarning
-Private.AuraWarnings.FormatWarnings = FormatWarnings
+function Private.AuraWarnings.GetAllWarnings(uid)
+  local results = {}
+  local thisWarnings
+  local data = Private.GetDataByUID(uid)
+  if data.regionType == "group" or data.regionType == "dynamicgroup" then
+    thisWarnings = {}
+    for child in Private.TraverseLeafs(data) do
+      local childWarnings = warnings[child.uid]
+      if childWarnings then
+        for key, warning in pairs(childWarnings) do
+          if not thisWarnings[key] then
+            thisWarnings[key] = {
+              severity = warning.severity,
+              message = warning.message,
+              auraId = child.id
+            }
+          end
+        end
+      end
+    end
+  else
+    thisWarnings = CopyTable(warnings[uid])
+    local auraId = Private.UIDtoID(uid)
+    for key in pairs(thisWarnings) do
+      thisWarnings[key].auraId = auraId
+    end
+  end
+
+  -- Order them by severity, keeping just one per severity
+  for key, warning in pairs(thisWarnings) do
+    results[warning.severity] = {
+      icon = icons[warning.severity],
+      prio = 5 + severityLevel[warning.severity],
+      title = titles[warning.severity] or warning.severity,
+      message = warning.message,
+      auraId = warning.auraId,
+      key = key
+    }
+  end
+  return results
+end

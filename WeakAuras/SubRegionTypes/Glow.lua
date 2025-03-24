@@ -1,15 +1,10 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
-local SharedMedia = LibStub("LibSharedMedia-3.0");
 local LCG = LibStub("LibCustomGlow-1.0")
-local MSQ, MSQ_Version = LibStub("Masque", true);
-if MSQ then
-  if MSQ_Version <= 80100 then
-    MSQ = nil
-  end
-end
-local L = WeakAuras.L;
+
+local MSQ = LibStub("Masque", true)
+local L = WeakAuras.L
 
 local default = function(parentType)
   local options = {
@@ -28,7 +23,7 @@ local default = function(parentType)
   }
   if parentType == "aurabar" then
     options["glowType"] = "Pixel"
-    options["glow_anchor"] = "bar"
+    options["anchor_area"] = "bar"
   end
   return options
 end
@@ -178,16 +173,16 @@ local funcs = {
       if (visible) then
         self.__MSQ_Shape = self:GetParent().button.__MSQ_Shape
         self:Show()
-        glowStart(self, self, color);
+        glowStart(self, self, color)
       else
-        self.glowStop(self);
+        self.glowStop(self)
         self:Hide()
       end
     elseif (visible) then
       self:Show()
-      glowStart(self, self, color);
+      glowStart(self, self, color)
     else
-      self.glowStop(self);
+      self.glowStop(self)
       self:Hide()
     end
   end,
@@ -297,7 +292,7 @@ local funcs = {
 }
 
 local function create()
-  local region = CreateFrame("FRAME", nil, UIParent)
+  local region = CreateFrame("Frame", nil, UIParent)
 
   for name, func  in pairs(funcs) do
     region[name] = func
@@ -320,12 +315,6 @@ end
 local function modify(parent, region, parentData, data, first)
   region:SetParent(parent)
   region.parentRegionType = parentData.regionType
-  if parentData.regionType == "aurabar" then
-    parent:AnchorSubRegion(region, "area", data.glow_anchor)
-  else
-    parent:AnchorSubRegion(region, "area", data.glowType == "buttonOverlay" and "region")
-  end
-
   region.parent = parent
 
   region.parentType = parentData.regionType
@@ -344,10 +333,18 @@ local function modify(parent, region, parentData, data, first)
   region:SetVisible(data.glow)
 
   region:SetScript("OnSizeChanged", region.UpdateSize)
+
+  region.Anchor = function()
+    if parentData.regionType == "aurabar" then
+      parent:AnchorSubRegion(region, "area", data.anchor_area)
+    else
+      parent:AnchorSubRegion(region, "area", (data.glowType == "buttonOverlay" or data.glowType == "Proc") and "region")
+    end
+  end
 end
 
 -- This is used by the templates to add glow
-function WeakAuras.getDefaultGlow(regionType)
+function Private.getDefaultGlow(regionType)
   if regionType == "aurabar" then
     return {
       ["type"] = "subglow",
@@ -363,9 +360,9 @@ function WeakAuras.getDefaultGlow(regionType)
       glowBorder = false,
       glowXOffset = 0,
       glowYOffset = 0,
-      glow_anchor = "bar"
+      anchor_area = "bar"
     }
-  elseif regionType == "icon" then
+  else
     return {
       ["type"] = "subglow",
       glow = false,
@@ -384,9 +381,15 @@ function WeakAuras.getDefaultGlow(regionType)
   end
 end
 
+local supportedRegion = {
+  icon = true,
+  aurabar = true,
+  texture = true,
+  progresstexture = true,
+  empty = true,
+}
 local function supports(regionType)
-  return regionType == "icon"
-         or regionType == "aurabar"
+  return supportedRegion[regionType]
 end
 
 local function addDefaultsForNewAura(data)
@@ -409,4 +412,5 @@ local function addDefaultsForNewAura(data)
   end
 end
 
-WeakAuras.RegisterSubRegionType("subglow", L["Glow"], supports, create, modify, onAcquire, onRelease, default, addDefaultsForNewAura, properties);
+WeakAuras.RegisterSubRegionType("subglow", L["Glow"], supports, create, modify, onAcquire, onRelease,
+                                default, addDefaultsForNewAura, properties)

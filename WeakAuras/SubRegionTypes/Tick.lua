@@ -1,15 +1,15 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
-local SharedMedia = LibStub("LibSharedMedia-3.0");
 local L = WeakAuras.L;
 
-local default = function(parentType)
+local default = function()
   return {
     tick_visible = true,
     tick_color = {1, 1, 1, 1},
     tick_placement_mode = "AtValue",
-    tick_placement = "50",
+    tick_placements = {"50"},
+    progressSources = {{-2, ""}},
     automatic_length = true,
     tick_thickness = 2,
     tick_length = 30,
@@ -41,12 +41,6 @@ local properties = {
     setter = "SetTickPlacementMode",
     type = "list",
     values = Private.tick_placement_modes,
-  },
-  tick_placement = {
-    display = L["Placement"],
-    setter = "SetTickPlacement",
-    type = "number",
-    validate = WeakAuras.ValidateNumeric,
   },
   automatic_length = {
     display = L["Automatic Length"],
@@ -90,7 +84,34 @@ local properties = {
     type = "bool",
     default = true,
   },
+  tick_use_texture = {
+    display = L["Use Texture"],
+    setter = "SetUseTexture",
+    type = "bool",
+    default = true,
+  },
+  tick_texture = {
+    display = L["Texture"],
+    setter = "SetTexture",
+    type = "texture"
+  }
 }
+
+local function GetProperties(parentData, data)
+  local result = CopyTable(properties)
+  for i in ipairs(data.tick_placements) do
+
+    result["tick_placements." .. i] = {
+      display = #data.tick_placements > 1 and L["Placement %i"]:format(i) or L["Placement"],
+      setter = "SetTickPlacementAt",
+      type = "number",
+      arg1 = i,
+      validate = WeakAuras.ValidateNumeric,
+    }
+  end
+
+  return result
+end
 
 local auraBarAnchor = {
   ["HORIZONTAL"] = "LEFT",
@@ -107,10 +128,8 @@ local auraBarAnchorInverse = {
 }
 
 local function create()
-  local subRegion = CreateFrame("FRAME", nil, UIParent)
-  subRegion.texture = subRegion:CreateTexture()
-  subRegion.texture:SetDrawLayer("ARTWORK", 3)
-  subRegion.texture:SetAllPoints(subRegion)
+  local subRegion = CreateFrame("Frame", nil, UIParent)
+  subRegion.ticks = {}
   return subRegion
 end
 
@@ -130,19 +149,14 @@ local function getRotatedPoints(degrees)
 end
 
 local funcs = {
-  Update = function(self, state)
-    self.trigger_inverse = state.inverse
-    self.state = state
-    if state.progressType == "timed" then
-      self.trigger_total = state.duration
-    elseif state.progressType == "static" then
-      self.trigger_total = state.total
-    else
-      self.trigger_total = nil
+  Update = function(self, state, states)
+    for i, progressSource in ipairs(self.progressSources) do
+      self.progressData[i] = {}
+      Private.UpdateProgressFrom(self.progressData[i], progressSource, {}, state, states, self.parent)
     end
     self:UpdateVisible()
     self:UpdateTickPlacement();
-    self:UpdateTimerTick()
+    self:UpdateFrameTick()
   end,
   OrientationChanged = function(self)
     self.orientation = self.parent:GetEffectiveOrientation()
@@ -162,7 +176,7 @@ local funcs = {
     self:UpdateTickSize()
   end,
   InverseChanged = function(self)
-    self.inverse = self.parent:GetInverse()
+    self.inverse_direction = self.parent:GetInverse()
     self:UpdateTickPlacement()
   end,
   SetVisible = function(self, visible)
@@ -171,21 +185,29 @@ local funcs = {
       self:UpdateVisible()
     end
   end,
-  UpdateVisible = function(self)
-    local missingProgress = self.tick_placement_mode ~= "AtPercent" and not self.trigger_total
-    if self.tick_visible and not missingProgress then
-      self:Show()
+  UpdateVisibleOne = function(self, i)
+    if self.tick_visible and self.hasProgress[i] then
+      self.ticks[i]:Show()
     else
-      self:Hide()
+      self.ticks[i]:Hide()
+    end
+  end,
+  UpdateVisible = function(self)
+    for i in ipairs(self.ticks) do
+      self:UpdateVisibleOne(i)
     end
   end,
   SetTickColor = function(self, r, g, b, a)
     self.tick_color[1], self.tick_color[2], self.tick_color[3], self.tick_color[4] = r, g, b, a or 1
     if self.use_texture then
-      self.texture:SetVertexColor(r, g, b, a or 1)
+      for _, tick in ipairs(self.ticks) do
+        tick:SetVertexColor(r, g, b, a or 1)
+      end
       self:UpdateTickDesaturated()
     else
-      self.texture:SetTexture(r, g, b, a or 1)
+      for _, tick in ipairs(self.ticks) do
+        tick:SetTexture(r, g, b, a or 1)
+      end
     end
   end,
   SetTickPlacementMode = function(self, placement_mode)
@@ -193,76 +215,95 @@ local funcs = {
       self.tick_placement_mode = placement_mode
       self:UpdateTickPlacement()
       self:UpdateVisible()
-      self:UpdateTimerTick()
+      self:UpdateFrameTick()
     end
   end,
-  UpdateTimerTick = function(self)
-    if self.tick_placement_mode == "ValueOffset" and self.state and self.state.progressType == "timed" and not self.paused then
-      if not self.TimerTick then
-        self.TimerTick = self.UpdateTickPlacement
-        self.parent:UpdateRegionHasTimerTick()
-        self.parent.subRegionEvents:AddSubscriber("TimerTick", self)
-      end
-    else
-      if self.TimerTick then
-        self.TimerTick = nil
-        self.parent:UpdateRegionHasTimerTick()
-        self.parent.subRegionEvents:RemoveSubscriber("TimerTick", self)
-      end
-    end
-  end,
-  SetTickPlacement = function(self, placement)
-    placement = tonumber(placement)
-    if self.tick_placement ~= placement then
-      self.tick_placement = placement
-      self:UpdateTickPlacement()
-    end
-  end,
-  UpdateTickPlacement = function(self)
-    local offset, offsetx, offsety = self.tick_placement, 0, 0
-    local width = self.parentMajorSize
-
-    local minValue, maxValue = self.parent:GetMinMax()
-    local valueRange = maxValue - minValue
-
-    local tick_placement
-    if self.tick_placement_mode == "AtValue" then
-      tick_placement = self.tick_placement
-    elseif self.tick_placement_mode == "AtMissingValue" then
-      tick_placement = self.trigger_total and self.trigger_total - self.tick_placement
-    elseif self.tick_placement_mode == "AtPercent" then
-      if self.tick_placement >= 0 and self.tick_placement <= 100 and self.trigger_total then
-        tick_placement = self.tick_placement * self.trigger_total / 100
-      end
-    elseif self.tick_placement_mode == "ValueOffset" then
-      if self.trigger_total and self.trigger_total ~= 0 then
-        if self.state.progressType == "timed" then
-          if self.state.paused then
-            if self.state.remaining then
-              tick_placement = self.state.remaining + self.tick_placement
-            end
-          else
-            tick_placement = self.state.expirationTime - GetTime() + self.tick_placement
-          end
-        else
-          tick_placement = self.state.value + self.tick_placement
+  UpdateFrameTick = function(self)
+    local requiresFrameTick = false
+    if self.tick_placement_mode == "ValueOffset" then
+      for i, progress in ipairs(self.progressData) do
+        if progress.progressType == "timed" and not progress.paused then
+          requiresFrameTick = true
+          break
         end
       end
     end
 
-    local percent = valueRange ~= 0 and tick_placement and (tick_placement - minValue) / valueRange
-    if not percent or (percent and percent < 0 or percent > 1) then
-      self.texture:Hide()
-      offset = 0
+    if requiresFrameTick then
+      if not self.FrameTick then
+        self.FrameTick = self.UpdateTickPlacement
+        self.parent.subRegionEvents:AddSubscriber("FrameTick", self)
+      end
     else
-      self.texture:Show()
-      offset = percent * width
+      if self.FrameTick then
+        self.FrameTick = nil
+        self.parent.subRegionEvents:RemoveSubscriber("FrameTick", self)
+      end
     end
+  end,
+  SetTickPlacementAt = function(self, tick, placement)
+    placement = tonumber(placement)
+    if self.tick_placements[tick] ~= placement then
+      self.tick_placements[tick] = placement
+      self:UpdateTickPlacementOne(tick)
+    end
+  end,
+  -- For backwards compability
+  SetTickPlacement = function(self, placement)
+    self:SetTickPlacementAt(1, placement)
+  end,
+  UpdateTickPlacement = function(self)
+    for i in ipairs(self.tick_placements) do
+      self:UpdateTickPlacementOne(i)
+    end
+  end,
+  UpdateTickPlacementOne = function(self, i)
+    local offsetx, offsety = 0, 0
+    local width = self.parentMajorSize
 
-    local inverse = self.inverse
-    if self.trigger_inverse then
+    local minValue, maxValue = self.parent:GetMinMaxProgress()
+    local valueRange = maxValue - minValue
+    local inverse = self.inverse_direction
+
+    if self.parent.inverse then
       inverse = not inverse
     end
+
+    local tick_placement
+    if self.tick_placement_mode == "AtValue" then
+      tick_placement = self.tick_placements[i]
+    elseif self.tick_placement_mode == "AtMissingValue" then
+      tick_placement = maxValue - self.tick_placements[i]
+    elseif self.tick_placement_mode == "AtPercent" then
+      if self.tick_placements[i] >= 0 and self.tick_placements[i] <= 100 and maxValue then
+        tick_placement = minValue + self.tick_placements[i] * valueRange / 100
+      end
+    elseif self.tick_placement_mode == "ValueOffset" then
+      if maxValue ~= 0 and self.progressData[i] then
+        if self.progressData[i].progressType == "timed" then
+          if self.progressData[i].paused then
+            if self.progressData[i].remaining then
+              tick_placement = self.progressData[i].remaining + self.tick_placements[i]
+            end
+          else
+            tick_placement = self.progressData[i].expirationTime - GetTime() + self.tick_placements[i]
+          end
+        elseif self.progressData[i].progressType == "static" then
+          tick_placement = self.progressData[i].value + self.tick_placements[i]
+        end
+      end
+    end
+
+    local offset
+    local percent = valueRange ~= 0 and tick_placement and (tick_placement - minValue) / valueRange
+    if not percent or (percent and percent < 0 or percent > 1) then
+      offset = 0
+      self.hasProgress[i] = false
+    else
+      offset = percent * width
+      self.hasProgress[i] = true
+    end
+    self:UpdateVisible(i)
 
     if (self.orientation == "HORIZONTAL_INVERSE") or (self.orientation == "VERTICAL") then
       offset = -offset
@@ -278,8 +319,10 @@ local funcs = {
       offsetx = offset
     end
     local side = inverse and auraBarAnchorInverse or auraBarAnchor
-    self:ClearAllPoints()
-    self:SetPoint("CENTER", self.parent.bar, side[self.orientation], offsetx + self.tick_xOffset, offsety + self.tick_yOffset)
+    self.ticks[i]:ClearAllPoints()
+    self.ticks[i]:SetPoint("CENTER", self.parent.bar, side[self.orientation],
+                       offsetx + self.tick_xOffset,
+                       offsety + self.tick_yOffset)
   end,
   SetAutomaticLength = function(self, automatic_length)
     if self.automatic_length ~= automatic_length then
@@ -301,16 +344,24 @@ local funcs = {
   end,
   UpdateTickSize = function(self)
     if self.vertical then
-      self:SetHeight(self.tick_thickness)
+      for i, tick in ipairs(self.ticks) do
+        tick:SetHeight(self.tick_thickness)
+      end
     else
-      self:SetWidth(self.tick_thickness)
+      for i, tick in ipairs(self.ticks) do
+        tick:SetWidth(self.tick_thickness)
+      end
     end
 
     local length = self.automatic_length and self.parentMinorSize or self.tick_length
     if self.vertical then
-      self:SetWidth(length)
+      for i, tick in ipairs(self.ticks) do
+        tick:SetWidth(length)
+      end
     else
-      self:SetHeight(length)
+      for i, tick in ipairs(self.ticks) do
+        tick:SetHeight(length)
+      end
     end
   end,
   SetTickDesaturated = function(self, desaturate)
@@ -320,7 +371,9 @@ local funcs = {
     end
   end,
   UpdateTickDesaturated = function(self)
-    self.texture:SetDesaturated(self.tick_desaturate)
+    for i, tick in ipairs(self.ticks) do
+      tick:SetDesaturated(self.tick_desaturate)
+    end
   end,
   SetTickRotation = function(self, degrees)
     if self.tick_rotation ~= degrees then
@@ -329,7 +382,10 @@ local funcs = {
     end
   end,
   UpdateTickRotation = function(self)
-      self:UpdateTexCoord()
+    local rad = math.rad(self.tick_rotation)
+    for _, tick in ipairs(self.ticks) do
+      tick:SetRotation(rad)
+    end
   end,
   SetTickMirror = function(self, mirror)
     if self.mirror ~= mirror then
@@ -338,7 +394,15 @@ local funcs = {
     end
   end,
   UpdateTickMirror = function(self)
-    self:UpdateTexCoord()
+    if self.mirror then
+      for _, tick in ipairs(self.ticks) do
+        tick:SetTexCoord(0,  1,  1,  1,  0,  0,  1,  0)
+      end
+    else
+      for _, tick in ipairs(self.ticks) do
+        tick:SetTexCoord(0,  0,  1,  0,  0,  1,  1,  1)
+      end
+    end
   end,
   SetTickBlendMode = function(self, mode)
     if self.tick_blend_mode ~= mode then
@@ -348,27 +412,72 @@ local funcs = {
   end,
   UpdateTickBlendMode = function(self)
     if self.use_texture then
-      self.texture:SetBlendMode(self.tick_blend_mode)
+      for _, tick in ipairs(self.ticks) do
+        tick:SetBlendMode(self.tick_blend_mode)
+      end
     else
-      self.texture:SetBlendMode("BLEND")
+      for _, tick in ipairs(self.ticks) do
+        tick:SetBlendMode("BLEND")
+      end
     end
   end,
-  UpdateTexCoord = function(self)
-    local ulx, uly, llx, lly, urx, ury, lrx, lry = getRotatedPoints(self.tick_rotation);
-    if self.mirror then
-      self.texture:SetTexCoord(urx, ury, lrx, lry, ulx, uly, llx, lly);
+  UpdateTexture = function(self)
+    if self.use_texture then
+      for _, tick in ipairs(self.ticks) do
+        tick:SetTexture(tick, self.tick_texture)
+      end
     else
-      self.texture:SetTexCoord(ulx, uly, llx, lly, urx, ury, lrx, lry);
+      for _, tick in ipairs(self.ticks) do
+        tick:SetTexture(self.tick_color[1], self.tick_color[2], self.tick_color[3], self.tick_color[4])
+      end
     end
   end,
+  SetTexture = function(self, texture)
+    if self.tick_texture == texture then
+      return
+    end
+    self.tick_texture = texture
+    self:UpdateTexture()
+  end,
+  SetUseTexture = function(self, use)
+    if self.use_texture == use then
+      return
+    end
+    self.use_texture = use
+    self:UpdateTexture()
+  end,
+
+  AnchorSubRegion = function(self, subRegion, anchorType, anchorPoint, subRegionPoint, anchorXOffset, anchorYOffset)
+    subRegion:ClearAllPoints()
+
+    if anchorType == "point" then
+      local xOffset = anchorXOffset or 0
+      local yOffset = anchorYOffset or 0
+
+      subRegionPoint = Private.point_types[subRegionPoint] and subRegionPoint or "CENTER"
+      local tickIndex = tonumber(anchorPoint:sub(6))
+      local anchorTo = tickIndex and self.ticks[tickIndex] or nil
+      if anchorTo then
+        subRegion:SetPoint(subRegionPoint, anchorTo, "CENTER", xOffset, yOffset)
+      end
+    else
+      local tickIndex = tonumber(anchorPoint:sub(10))
+      local anchorTo = tickIndex and self.ticks[tickIndex] or nil
+      local xOffset = anchorXOffset or 0
+      local yOffset = anchorYOffset or 0
+      if anchorTo then
+        subRegion:SetPoint("BOTTOMLEFT", anchorTo, "BOTTOMLEFT", -xOffset, -yOffset)
+        subRegion:SetPoint("TOPRIGHT", anchorTo, "TOPRIGHT", xOffset,  yOffset)
+      end
+    end
+  end
 }
 
 local function modify(parent, region, parentData, data, first)
-
   region:SetParent(parent)
   region.orientation = parent.effectiveOrientation
-  region.inverse = parentData.inverse
-  region.trigger_inverse = false
+  region.inverse_direction = parentData.inverse
+  region.inverse = false
   region.vertical = region.orientation == "VERTICAL" or region.orientation == "VERTICAL_INVERSE"
   if (region.vertical) then
     region.parentMinorSize, region.parentMajorSize = parent.bar:GetRealSize()
@@ -381,7 +490,35 @@ local function modify(parent, region, parentData, data, first)
   region.tick_visible = data.tick_visible
   region.tick_color = CopyTable(data.tick_color)
   region.tick_placement_mode = data.tick_placement_mode
-  region.tick_placement = tonumber(data.tick_placement)
+  region.tick_placements = {}
+  region.progressSources = {}
+  region.progressData = {}
+  for i, tick_placement in ipairs(data.tick_placements) do
+    local value = tonumber(tick_placement)
+    if region.tick_placement_mode == "ValueOffset" then
+      local progressSource = Private.AddProgressSourceMetaData(parentData, data.progressSources[i] or {-2, ""})
+      if value and progressSource then
+        tinsert(region.tick_placements, value)
+        tinsert(region.progressSources, progressSource or {})
+      end
+    else
+      if value then
+        tinsert(region.tick_placements, value)
+      end
+    end
+
+    if region.ticks[i] == nil then
+      local texture = region:CreateTexture()
+      texture:SetDrawLayer("ARTWORK", 3)
+      texture:SetAllPoints()
+      region.ticks[i] = texture
+    end
+  end
+
+  for i = #data.tick_placements + 1, #region.ticks do
+    region.ticks[i]:Hide()
+  end
+
   region.automatic_length = data.automatic_length
   region.tick_thickness = data.tick_thickness
   region.tick_length = data.tick_length
@@ -391,12 +528,16 @@ local function modify(parent, region, parentData, data, first)
   region.tick_xOffset = data.tick_xOffset
   region.tick_yOffset = data.tick_yOffset
 
+  region.hasProgress = {}
+
   for k, v in pairs(funcs) do
     region[k] = v
   end
 
   if data.use_texture then
-    region.texture:SetTexture(data.tick_texture)
+    for _, tick in ipairs(region.ticks) do
+      tick:SetTexture(data.tick_texture)
+    end
   end
 
   region:SetVisible(data.tick_visible)
@@ -406,6 +547,7 @@ local function modify(parent, region, parentData, data, first)
   region:SetTickRotation(data.tick_rotation)
   region:SetTickMirror(data.tick_mirror)
 
+  region:UpdateTickPlacement()
   region:UpdateTickSize()
 
   parent.subRegionEvents:AddSubscriber("Update", region)
@@ -413,11 +555,14 @@ local function modify(parent, region, parentData, data, first)
   parent.subRegionEvents:AddSubscriber("InverseChanged", region)
   parent.subRegionEvents:AddSubscriber("OnRegionSizeChanged", region)
 
-  region.TimerTick = nil
+  region.FrameTick = nil
+  region:ClearAllPoints()
+  region:SetAllPoints(parent.bar)
 end
 
 local function supports(regionType)
   return regionType == "aurabar"
 end
 
-WeakAuras.RegisterSubRegionType("subtick", L["Tick"], supports, create, modify, onAcquire, onRelease, default, nil, properties);
+WeakAuras.RegisterSubRegionType("subtick", L["Tick"], supports, create, modify, onAcquire, onRelease,
+                                default, nil, GetProperties);

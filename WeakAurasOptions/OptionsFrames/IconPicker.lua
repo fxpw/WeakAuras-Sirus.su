@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
@@ -8,7 +8,6 @@ local pairs  = pairs
 local CreateFrame, GetSpellInfo = CreateFrame, GetSpellInfo
 
 local AceGUI = LibStub("AceGUI-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
@@ -20,7 +19,7 @@ local spellCache = WeakAuras.spellCache
 local function ConstructIconPicker(frame)
   local group = AceGUI:Create("InlineGroup");
   group.frame:SetParent(frame);
-  group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 30); -- 12
+  group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -50);
   group.frame:Hide();
   group:SetLayout("fill");
@@ -32,21 +31,6 @@ local function ConstructIconPicker(frame)
 
   local function iconPickerFill(subname, doSort)
     scroll:ReleaseChildren();
-
-    local distances = {};
-    local names = {};
-
-    -- Work around special numbers such as inf and nan
-    if (tonumber(subname)) then
-      local spellId = tonumber(subname);
-      if (abs(spellId) < math.huge and tostring(spellId) ~= "nan") then
-        subname = GetSpellInfo(spellId or 0)
-      end
-    end
-
-    if subname then
-      subname = subname:lower();
-    end
 
     local usedIcons = {};
     local AddButton = function(name, icon)
@@ -61,14 +45,33 @@ local function ConstructIconPicker(frame)
       usedIcons[icon] = true;
     end
 
+    -- Work around special numbers such as inf and nan
+    if (tonumber(subname)) then
+      local spellId = tonumber(subname);
+      if (abs(spellId) < math.huge and tostring(spellId) ~= "nan") then
+        local name, _, icon = GetSpellInfo(spellId)
+        if name and icon then
+          AddButton(name, icon)
+        end
+        return;
+      end
+    end
+
+    if subname then
+      subname = subname:lower();
+    end
+
+
+
     local num = 0;
     if(subname and subname ~= "") then
       for name, icons in pairs(spellCache.Get()) do
         if(name:lower():find(subname, 1, true)) then
           if icons.spells then
-            for spellId, icon in pairs(icons.spells) do
-              if (not usedIcons[icon]) then
-                AddButton(name, icon)
+            for spell, icon in icons.spells:gmatch("(%d+)=([%w_\\-]+),?") do
+              local iconId = icon
+              if (not usedIcons[iconId]) then
+                AddButton(name, iconId)
                 num = num + 1;
                 if(num >= 500) then
                   break;
@@ -76,9 +79,10 @@ local function ConstructIconPicker(frame)
               end
             end
           elseif icons.achievements then
-            for _, icon in pairs(icons.achievements) do
-              if (not usedIcons[icon]) then
-                AddButton(name, icon)
+            for spell, icon in icons.achievements:gmatch("(%d+)=([%w_\\-]+),?") do
+              local iconId = icon
+              if (not usedIcons[iconId]) then
+                AddButton(name, iconId)
                 num = num + 1;
                 if(num >= 500) then
                   break;
@@ -95,23 +99,21 @@ local function ConstructIconPicker(frame)
     end
   end
 
-  local input = CreateFrame("EDITBOX", "WeakAurasIconFilterInput", group.frame, "InputBoxTemplate");
+  local input = CreateFrame("Editbox", "WeakAurasIconFilterInput", group.frame, "WA_InputBoxTemplate");
   input:SetScript("OnTextChanged", function(...) iconPickerFill(input:GetText(), false); end);
   input:SetScript("OnEnterPressed", function(...) iconPickerFill(input:GetText(), true); end);
   input:SetScript("OnEscapePressed", function(...) input:SetText(""); iconPickerFill(input:GetText(), true); end);
-  input:SetWidth(170);
+  input:SetWidth(200);
   input:SetHeight(15);
-  input:SetPoint("BOTTOMRIGHT", group.frame, "TOPRIGHT", -12, -5);
-
-  local inputLabel = input:CreateFontString(nil, "OVERLAY", "GameFontNormal");
-  inputLabel:SetText(L["Search"]);
-  inputLabel:SetJustifyH("RIGHT");
-  inputLabel:SetPoint("BOTTOMLEFT", input, "TOPLEFT", 0, 5);
+  input:SetFont(STANDARD_TEXT_FONT, 10)
+  input:SetPoint("BOTTOMRIGHT", group.frame, "TOPRIGHT", -3, -10);
 
   local icon = AceGUI:Create("WeakAurasIconButton");
   icon.frame:Disable();
   icon.frame:SetParent(group.frame);
-  icon.frame:SetPoint("BOTTOMLEFT", group.frame, "TOPLEFT", 15, -15);
+  icon.frame:SetPoint("BOTTOMLEFT", group.frame, "TOPLEFT", 44, -15);
+  icon:SetHeight(36)
+  icon:SetWidth(36)
 
   local iconLabel = input:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge");
   iconLabel:SetNonSpaceWrap("true");
@@ -153,7 +155,7 @@ local function ConstructIconPicker(frame)
     else
       self.givenPath = {};
       for child in OptionsPrivate.Private.TraverseLeafsOrAura(baseObject) do
-        if(child) then
+        if child and paths[child.id] then
           local value = valueFromPath(child, paths[child.id])
           self.givenPath[child.id] = value or "";
         end
@@ -194,7 +196,7 @@ local function ConstructIconPicker(frame)
 
   local cancel = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
   cancel:SetScript("OnClick", group.CancelClose);
-  cancel:SetPoint("bottomright", frame, "bottomright", -27, 11);
+  cancel:SetPoint("BOTTOMRIGHT", -20, -24)
   cancel:SetHeight(20);
   cancel:SetWidth(100);
   cancel:SetText(L["Cancel"]);
@@ -209,7 +211,7 @@ local function ConstructIconPicker(frame)
   return group
 end
 
-function OptionsPrivate.IconPicker(frame)
-  iconPicker = iconPicker or ConstructIconPicker(frame)
+function OptionsPrivate.IconPicker(frame, noConstruct)
+  iconPicker = iconPicker or (not noConstruct and ConstructIconPicker(frame))
   return iconPicker
 end

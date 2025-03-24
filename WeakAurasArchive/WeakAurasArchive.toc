@@ -3,5 +3,3 @@
 ## LoadOnDemand: 1
 ## SavedVariables: WeakAurasArchive
 ## Dependencies: WeakAuras
-
-WeakAurasArchive.lua

@@ -1,14 +1,13 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
-local pairs, rad = pairs, rad
+local rad = rad
 
 -- WoW APIs
 local CreateFrame = CreateFrame
 
 local AceGUI = LibStub("AceGUI-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
@@ -50,14 +49,14 @@ local function ConstructModelPicker(frame)
     end
   end
 
-  local group = AceGUI:Create("InlineGroup");
+  local group = AceGUI:Create("SimpleGroup");
   group.frame:SetParent(frame);
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 87);
-  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -15);
+  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
   group.frame:Hide();
   group:SetLayout("flow");
 
-  local filterInput = CreateFrame("editbox", "WeakAurasModelFilterInput", group.frame, "InputBoxTemplate")
+  local filterInput = CreateFrame("EditBox", "WeakAurasModelFilterInput", group.frame, "WA_InputBoxTemplate")
   filterInput:SetAutoFocus(false)
   filterInput:SetTextInsets(16, 20, 0, 0)
 
@@ -123,8 +122,7 @@ local function ConstructModelPicker(frame)
     group.modelTree:RefreshTree()
   end)
   filterInput:SetHeight(15)
-  filterInput:SetPoint("TOP", group.frame, "TOP", 0, 1)
-  filterInput:SetPoint("LEFT", group.frame, "LEFT", 7, 0)
+  filterInput:SetPoint("BOTTOMRIGHT", group.frame, "TOPRIGHT", -3, 5)
   filterInput:SetWidth(200)
   filterInput:SetFont(STANDARD_TEXT_FONT, 10)
   group.frame.filterInput = filterInput
@@ -355,7 +353,7 @@ local function ConstructModelPicker(frame)
 
   local cancel = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
   cancel:SetScript("OnClick", group.CancelClose);
-  cancel:SetPoint("bottomright", frame, "bottomright", -27, 16);
+  cancel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -27, 20);
   cancel:SetHeight(20);
   cancel:SetWidth(100);
   cancel:SetText(L["Cancel"]);
@@ -370,7 +368,7 @@ local function ConstructModelPicker(frame)
   return group
 end
 
-function OptionsPrivate.ModelPicker(frame)
-  modelPicker = modelPicker or ConstructModelPicker(frame)
+function OptionsPrivate.ModelPicker(frame, noConstruct)
+  modelPicker = modelPicker or (not noConstruct and ConstructModelPicker(frame))
   return modelPicker
 end

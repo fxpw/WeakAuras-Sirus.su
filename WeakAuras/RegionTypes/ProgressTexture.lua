@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local L = WeakAuras.L;
@@ -80,6 +80,9 @@ local function Transform(tx, x, y, angle, aspect) -- Translates texture to x, y 
 end
 
 local default = {
+  progressSource = {-1, "" },
+  adjustedMax = "",
+  adjustedMin = "",
   foregroundTexture = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
   backgroundTexture = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
   desaturateBackground = false,
@@ -113,9 +116,9 @@ local default = {
   slantMode = "INSIDE"
 };
 
-WeakAuras.regionPrototype.AddAlphaToDefault(default);
+Private.regionPrototype.AddAlphaToDefault(default);
 
-WeakAuras.regionPrototype.AddAdjustedDurationToDefault(default);
+Private.regionPrototype.AddProgressSourceToDefault(default)
 
 local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
 
@@ -176,13 +179,13 @@ local properties = {
   }
 }
 
-WeakAuras.regionPrototype.AddProperties(properties, default);
+Private.regionPrototype.AddProperties(properties, default);
 
 local function GetProperties(data)
   local overlayInfo = Private.GetOverlayInfo(data);
+  local auraProperties = CopyTable(properties)
+  auraProperties.progressSource.values = Private.GetProgressSourcesForUi(data)
   if (overlayInfo and next(overlayInfo)) then
-    local auraProperties = CopyTable(properties);
-
     for id, display in ipairs(overlayInfo) do
       auraProperties["overlays." .. id] = {
         display = string.format(L["%s Overlay Color"], display),
@@ -191,10 +194,9 @@ local function GetProperties(data)
         type = "color",
       }
     end
-
-    return auraProperties;
+    return auraProperties
   else
-    return CopyTable(properties);
+    return auraProperties
   end
 end
 
@@ -424,7 +426,7 @@ WeakAuras.createSpinner = createSpinner;
 local function create(parent)
   local font = "GameFontHighlight";
 
-  local region = CreateFrame("FRAME", nil, parent);
+  local region = CreateFrame("Frame", nil, parent);
   region.regionType = "progresstexture"
   region:SetMovable(true);
   region:SetResizable(true);
@@ -446,7 +448,7 @@ local function create(parent)
   -- Use a dummy object for the SmoothStatusBarMixin, because our SetValue
   -- is used for a different purpose
   region.smoothProgress = {};
-  WeakAuras.Mixin(region.smoothProgress, SmoothStatusBarMixin);
+  WeakAuras.Mixin(region.smoothProgress, Private.SmoothStatusBarMixin);
   region.smoothProgress.SetValue = function(self, progress)
     region:SetValueOnTexture(progress);
   end
@@ -462,19 +464,37 @@ local function create(parent)
   region.duration = 0;
   region.expirationTime = math.huge;
 
-  WeakAuras.regionPrototype.create(region);
+  Private.regionPrototype.create(region);
 
   return region;
 end
 
-local function TimerTick(self)
-  local adjustMin = self.adjustedMin or self.adjustedMinRel or 0;
-  local duration = self.state.duration
-  self:SetTime( (duration ~= 0 and (self.adjustedMax or self.adjustedMaxRel) or duration) - adjustMin, self.state.expirationTime - adjustMin, self.state.inverse);
+local function FrameTick(self)
+  local duration = self.duration
+  local expirationTime = self.expirationTime
+  local inverse = self.inverse
+
+  local progress = 1;
+  if (duration ~= 0) then
+    local remaining = expirationTime - GetTime();
+    progress = remaining / duration;
+    local inversed = not inverse ~= not self.inverseDirection
+    if(inversed) then
+      progress = 1 - progress;
+    end
+  end
+
+  progress = progress > 0.0001 and progress or 0.0001;
+
+  if (self.useSmoothProgress) then
+    self.smoothProgress:SetSmoothedValue(progress);
+  else
+    self:SetValueOnTexture(progress);
+  end
 end
 
 local function modify(parent, region, data)
-  WeakAuras.regionPrototype.modify(parent, region, data);
+  Private.regionPrototype.modify(parent, region, data);
 
   local background, foreground = region.background, region.foreground;
   local foregroundSpinner, backgroundSpinner = region.foregroundSpinner, region.backgroundSpinner;
@@ -486,6 +506,7 @@ local function modify(parent, region, data)
   region.scalex = 1;
   region.scaley = 1;
   region.aspect =  data.width / data.height;
+  region.useSmoothProgress = data.smoothProgress
   foreground:SetWidth(data.width);
   foreground:SetHeight(data.height);
   local scaleWedge =  1 / 1.4142 * (1 + (data.crop or 0.41));
@@ -843,122 +864,68 @@ local function modify(parent, region, data)
 
   region:Color(data.foregroundColor[1], data.foregroundColor[2], data.foregroundColor[3], data.foregroundColor[4]);
 
-  function region:SetTime(duration, expirationTime, inverse)
+
+  function region:UpdateTime()
     local progress = 1;
-    if (duration ~= 0) then
-      local remaining = expirationTime - GetTime();
-      progress = remaining / duration;
-      local inversed = (not inverse and region.inverseDirection) or (inverse and not region.inverseDirection);
+    if (self.duration ~= 0) then
+      local remaining = self.expirationTime - GetTime()
+      progress = remaining / self.duration
+      local inversed = not self.inverse ~= not region.inverseDirection
       if(inversed) then
         progress = 1 - progress;
       end
     end
 
     progress = progress > 0.0001 and progress or 0.0001;
-    if (data.smoothProgress) then
+    if (region.useSmoothProgress) then
       region.smoothProgress:SetSmoothedValue(progress);
     else
       region:SetValueOnTexture(progress);
     end
+
+    if self.paused and self.FrameTick then
+      self.FrameTick = nil
+      self.subRegionEvents:RemoveSubscriber("FrameTick", region)
+    end
+    if not self.paused and not self.FrameTick then
+      self.FrameTick = FrameTick
+      self.subRegionEvents:AddSubscriber("FrameTick", region)
+    end
   end
 
-  function region:SetValue(value, total)
+  function region:UpdateValue()
     local progress = 1
-    if(total > 0) then
-      progress = value / total;
+    if(self.total > 0) then
+      progress = self.value / self.total;
       if(region.inverseDirection) then
         progress = 1 - progress;
       end
     end
     progress = progress > 0.0001 and progress or 0.0001;
-    if (data.smoothProgress) then
+    if (region.useSmoothProgress) then
       region.smoothProgress:SetSmoothedValue(progress);
     else
       region:SetValueOnTexture(progress);
     end
+
+    if self.FrameTick then
+      self.FrameTick = nil
+      self.subRegionEvents:RemoveSubscriber("FrameTick", region)
+    end
   end
 
-  function region:Update()
-    local state = region.state
-
-    local max
-    if state.progressType == "timed" then
-      local expirationTime
-      if state.paused == true then
-        if not region.paused then
-          region:Pause()
-        end
-        if region.TimerTick then
-          region.TimerTick = nil
-          region:UpdateRegionHasTimerTick()
-        end
-        expirationTime = GetTime() + (state.remaining or 0)
-      else
-        if region.paused then
-          region:Resume()
-        end
-        if not region.TimerTick then
-          region.TimerTick = TimerTick
-          region:UpdateRegionHasTimerTick()
-        end
-        expirationTime = state.expirationTime and state.expirationTime > 0 and state.expirationTime or math.huge;
-      end
-
-      local duration = state.duration or 0
-      if region.adjustedMinRelPercent then
-        region.adjustedMinRel = region.adjustedMinRelPercent * duration
-      end
-      local adjustMin = region.adjustedMin or region.adjustedMinRel or 0;
-      if duration == 0 then
-        max = 0
-      elseif region.adjustedMax then
-        max = region.adjustedMax
-      elseif region.adjustedMaxRelPercent then
-        region.adjustedMaxRel = region.adjustedMaxRelPercent * duration
-        max = region.adjustedMaxRel
-      else
-        max = duration
-      end
-
-      region:SetTime(max - adjustMin, expirationTime - adjustMin, state.inverse);
-    elseif state.progressType == "static" then
-      if region.paused then
-        region:Resume()
-      end
-
-      local value = state.value or 0;
-      local total = state.total or 0;
-      if region.adjustedMinRelPercent then
-        region.adjustedMinRel = region.adjustedMinRelPercent * total
-      end
-      local adjustMin = region.adjustedMin or region.adjustedMinRel or 0;
-
-      if region.adjustedMax then
-        max = region.adjustedMax
-      elseif region.adjustedMaxRelPercent then
-        region.adjustedMaxRel = region.adjustedMaxRelPercent * total
-        max = region.adjustedMaxRel
-      else
-        max = total
-      end
-
-      region:SetValue(value - adjustMin, max - adjustMin);
-      if region.TimerTick then
-        region.TimerTick = nil
-        region:UpdateRegionHasTimerTick()
-      end
-    else
-      if region.paused then
-        region:Resume()
-      end
-      region:SetTime(0, math.huge)
-      if region.TimerTick then
-        region.TimerTick = nil
-        region:UpdateRegionHasTimerTick()
-      end
+  if region.useSmoothProgress then
+    region.PreShow = function()
+      region.smoothProgress:ResetSmoothedValue();
     end
+  else
+    region.PreShow = nil
+  end
 
-    max = max or 0
+  region.FrameTick = nil
+  function region:Update()
+    region:UpdateProgress()
+    local state = region.state
 
     if state.texture then
       region:SetTexture(state.texture)
@@ -1028,11 +995,11 @@ local function modify(parent, region, data)
     end
   end
 
-  WeakAuras.regionPrototype.modifyFinish(parent, region, data);
+  Private.regionPrototype.modifyFinish(parent, region, data);
 end
 
 local function validate(data)
   Private.EnforceSubregionExists(data, "subbackground")
 end
 
-WeakAuras.RegisterRegionType("progresstexture", create, modify, default, GetProperties, validate);
+Private.RegisterRegionType("progresstexture", create, modify, default, GetProperties, validate);

@@ -1,9 +1,8 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 -- Lua APIs
 local pairs, type, ipairs = pairs, type, ipairs
-local loadstring = loadstring
 local gsub = gsub
 
 -- WoW APIs
@@ -55,6 +54,7 @@ local editor_themes = {
 }
 
 if not WeakAurasSaved.editor_tab_spaces then WeakAurasSaved.editor_tab_spaces = 4 end
+if not WeakAurasSaved.editor_font_size then WeakAurasSaved.editor_font_size = 12 end -- set default font size if missing
 local color_scheme = {[0] = "|r"}
 local function set_scheme()
   if not WeakAurasSaved.editor_theme then
@@ -129,9 +129,7 @@ end]=]
     name = "Trigger State Updater",
     snippet = [=[
 function(allstates, event, ...)
-    allstates[""] = {
-        show = true,
-        changed = true,
+    allstates:Update("", {
         progressType = "static"||"timed",
         value = ,
         total = ,
@@ -142,8 +140,9 @@ function(allstates, event, ...)
         icon = ,
         stacks = ,
         index = ,
-    }
-    return true
+    })
+    -- allstates:Remove("")
+    -- allstates:RemoveAll()
 end]=]
   },
 }
@@ -151,16 +150,10 @@ end]=]
 local function ConstructTextEditor(frame)
   local group = AceGUI:Create("WeakAurasInlineGroup")
   group.frame:SetParent(frame)
-  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -16);
-  group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -16, 46);
+  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
+  group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
   group.frame:Hide()
   group:SetLayout("flow")
-
-  local title = AceGUI:Create("Label")
-  title:SetFontObject(GameFontNormalHuge)
-  title:SetFullWidth(true)
-  title:SetText(L["Code Editor"])
-  group:AddChild(title)
 
   local editor = AceGUI:Create("MultiLineEditBox")
   editor:SetFullWidth(true)
@@ -168,7 +161,7 @@ local function ConstructTextEditor(frame)
   editor:DisableButton(true)
   local fontPath = SharedMedia:Fetch("font", "Fira Mono Medium")
   if (fontPath) then
-    editor.editBox:SetFont(fontPath, 12)
+    editor.editBox:SetFont(fontPath, WeakAurasSaved.editor_font_size)
   end
   group:AddChild(editor)
 
@@ -187,6 +180,7 @@ local function ConstructTextEditor(frame)
   -- The indention lib overrides GetText, but for the line number
   -- display we ned the original, so save it here.
   local originalGetText = editor.editBox.GetText
+  local originalSetText = editor.editBox.SetText
   set_scheme()
   IndentationLib.enable(editor.editBox, color_scheme, WeakAurasSaved.editor_tab_spaces)
 
@@ -224,27 +218,11 @@ local function ConstructTextEditor(frame)
   settings_frame:RegisterForClicks("LeftButtonUp")
 
   local helpButton = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate")
-  helpButton:SetPoint("BOTTOMLEFT", 12, -24)
+  helpButton:SetPoint("BOTTOMLEFT", 0, -24)
   helpButton:SetFrameLevel(cancel:GetFrameLevel() + 1)
   helpButton:SetHeight(20)
   helpButton:SetWidth(100)
   helpButton:SetText(L["Help"])
-
-  local urlText = CreateFrame("editbox", nil, group.frame)
-  urlText:SetFrameLevel(cancel:GetFrameLevel() + 1)
-  urlText:SetFont(STANDARD_TEXT_FONT, 12)
-  urlText:EnableMouse(true)
-  urlText:SetAutoFocus(false)
-  urlText:SetCountInvisibleLetters(false)
-  urlText:Hide()
-
-  local urlCopyLabel = urlText:CreateFontString(nil, "BACKGROUND", "GameFontHighlightSmall")
-  urlCopyLabel:SetPoint("BOTTOMLEFT", group.frame, "BOTTOMLEFT", 12, -20)
-  urlCopyLabel:SetText(L["Press Ctrl+C to copy"])
-  urlCopyLabel:Hide()
-
-  urlText:SetPoint("TOPLEFT", urlCopyLabel, "TOPRIGHT", 12, 0)
-  urlText:SetPoint("RIGHT", settings_frame, "LEFT")
 
   local dropdown = CreateFrame("Frame", "SettingsMenuFrame", settings_frame, "UIDropDownMenuTemplate")
 
@@ -285,6 +263,14 @@ local function ConstructTextEditor(frame)
           menuList = "spaces"
         },
       level)
+      UIDropDownMenu_AddButton(
+        {
+          text = WeakAuras.newFeatureString .. L["Font Size"],
+          hasArrow = true,
+          notCheckable = true,
+          menuList = "sizes"
+        },
+      level)
     elseif menu == "spaces" then
       local spaces = {2,4}
       for _, i in pairs(spaces) do
@@ -304,6 +290,23 @@ local function ConstructTextEditor(frame)
           },
         level)
       end
+    elseif menu == "sizes" then
+      local sizes = {10, 12, 14, 16}
+      for _, i in pairs(sizes) do
+        UIDropDownMenu_AddButton(
+          {
+            text = i,
+            isNotRadio = false,
+            checked = function()
+              return WeakAurasSaved.editor_font_size == i
+            end,
+            func = function()
+              WeakAurasSaved.editor_font_size = i
+              editor.editBox:SetFont(fontPath, WeakAurasSaved.editor_font_size)
+            end
+          },
+        level)
+      end
     end
   end
   UIDropDownMenu_Initialize(dropdown, settings_dropdown_initialize, "MENU")
@@ -317,7 +320,7 @@ local function ConstructTextEditor(frame)
 
   -- Make Snippets button (top right, near the line number)
   local snippetsButton = CreateFrame("Button", "WASnippetsButton", group.frame, "UIPanelButtonTemplate")
-  snippetsButton:SetPoint("BOTTOMRIGHT", editor.frame, "TOPRIGHT", 0, -15)
+  snippetsButton:SetPoint("BOTTOMRIGHT", editor.frame, "TOPRIGHT", -20, -10)
   snippetsButton:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   snippetsButton:SetHeight(20)
   snippetsButton:SetWidth(100)
@@ -413,10 +416,12 @@ local function ConstructTextEditor(frame)
   end
 
   -- Make sidebar for snippets
-  local snippetsFrame = CreateFrame("FRAME", "WeakAurasSnippets", group.frame)
+  local snippetsFrame = CreateFrame("Frame", "WeakAurasSnippets", group.frame, "WA_PortraitFrameTemplate")
+  snippetsFrame:HidePortrait()
   snippetsFrame:SetPoint("TOPLEFT", group.frame, "TOPRIGHT", 20, 0)
   snippetsFrame:SetPoint("BOTTOMLEFT", group.frame, "BOTTOMRIGHT", 20, 0)
   snippetsFrame:SetWidth(250)
+  --[[
   snippetsFrame:SetBackdrop(
     {
       bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -428,11 +433,11 @@ local function ConstructTextEditor(frame)
     }
   )
   snippetsFrame:SetBackdropColor(0, 0, 0, 1)
-
+  ]]
   -- Add button to save new snippet
   local AddSnippetButton = CreateFrame("Button", nil, snippetsFrame, "UIPanelButtonTemplate")
-  AddSnippetButton:SetPoint("TOPLEFT", snippetsFrame, "TOPLEFT", 13, -10)
-  AddSnippetButton:SetPoint("TOPRIGHT", snippetsFrame, "TOPRIGHT", -13, -10)
+  AddSnippetButton:SetPoint("TOPLEFT", snippetsFrame, "TOPLEFT", 13, -25)
+  AddSnippetButton:SetPoint("TOPRIGHT", snippetsFrame, "TOPRIGHT", -13, -25)
   AddSnippetButton:SetHeight(20)
   AddSnippetButton:SetText(L["Add Snippet"])
   AddSnippetButton:RegisterForClicks("LeftButtonUp")
@@ -444,7 +449,7 @@ local function ConstructTextEditor(frame)
   snippetsScrollContainer:SetFullHeight(true)
   snippetsScrollContainer:SetLayout("Fill")
   snippetsScrollContainer.frame:SetParent(snippetsFrame)
-  snippetsScrollContainer.frame:SetPoint("TOPLEFT", snippetsFrame, "TOPLEFT", 17, -35)
+  snippetsScrollContainer.frame:SetPoint("TOPLEFT", snippetsFrame, "TOPLEFT", 17, -50)
   snippetsScrollContainer.frame:SetPoint("BOTTOMRIGHT", snippetsFrame, "BOTTOMRIGHT", -10, 10)
   local snippetsScroll = AceGUI:Create("ScrollFrame")
   snippetsScroll:SetLayout("List")
@@ -495,16 +500,72 @@ local function ConstructTextEditor(frame)
       end
   )
 
-  -- CTRL + S saves and closes, ESC cancels and closes
+  editor.editBox.timeMachine = {}
+  editor.editBox.timeMachinePos = 1
+  local TimeMachineMaximumRollback = 10
+
   editor.editBox:HookScript(
     "OnKeyDown",
-    function(_, key)
+    function(self, key)
+      -- CTRL + S saves and closes
       if IsControlKeyDown() and key == "S" then
         group:Close()
+      elseif IsControlKeyDown() and key == "Z" then
+        self.ignoreNextKeyPress = true
+        if self.timeMachine[self.timeMachinePos + 1] then
+          self.timeMachinePos = self.timeMachinePos + 1
+          self.skipOnTextChanged = true
+          originalSetText(self, self.timeMachine[self.timeMachinePos][1])
+          self:SetCursorPosition(self.timeMachine[self.timeMachinePos][2])
+        end
+      elseif IsControlKeyDown() and key == "Y" then
+        self.ignoreNextKeyPress = true
+        if self.timeMachine[self.timeMachinePos - 1] then
+          self.timeMachinePos = self.timeMachinePos - 1
+          self.skipOnTextChanged = true
+          originalSetText(self, self.timeMachine[self.timeMachinePos][1])
+          self:SetCursorPosition(self.timeMachine[self.timeMachinePos][2])
+        end
       end
-      if key == "ESCAPE" then
-        group:CancelClose()
+    end
+  )
+
+  editor.editBox:HookScript(
+    "OnKeyUp",
+    function(self, key)
+      if self.ignoreNextKeyPress then
+        self.ignoreNextKeyPress = false -- Reset
       end
+    end
+  )
+
+  editor.editBox:HookScript(
+    "OnTextChanged",
+    function(self, userInput)
+      if not userInput then return end
+      if self.skipOnTextChanged then
+        self.skipOnTextChanged = false
+        return
+      end
+      local cursorPosition = self:GetCursorPosition()
+      local text = originalGetText(self)
+      if IndentationLib then
+        text, cursorPosition = IndentationLib.stripWowColorsWithPos(text, cursorPosition)
+      end
+      if self.timeMachine[1] and text == self.timeMachine[1][1] then
+        return
+      end
+      -- if cursor is not at position 1, remove elements before cursor
+      for i = 2, self.timeMachinePos do
+        table.remove(self.timeMachine, 1)
+      end
+      -- insert current text
+      table.insert(self.timeMachine, 1, {text, cursorPosition - 1})
+      -- timeMachine is limited to a number of TimeMachineMaximumRollback elements
+      for i = #self.timeMachine, TimeMachineMaximumRollback + 1, -1 do
+        table.remove(self.timeMachine, i)
+      end
+      self.timeMachinePos = 1
     end
   )
 
@@ -535,46 +596,26 @@ local function ConstructTextEditor(frame)
   editorError:SetPoint("LEFT", helpButton, "RIGHT", 0, 4)
   editorError:SetPoint("RIGHT", settings_frame, "LEFT")
 
-  local editorLine = CreateFrame("Editbox", nil, group.frame)
+  local editorLine = CreateFrame("EditBox", nil, group.frame, "WA_InputBoxTemplate")
   -- Set script on enter pressed..
-  editorLine:SetPoint("BOTTOMRIGHT", editor.frame, "TOPRIGHT", -100, -15)
+  editorLine:SetPoint("RIGHT", snippetsButton, "LEFT", -10, 0)
   editorLine:SetFont(STANDARD_TEXT_FONT, 10)
   editorLine:SetJustifyH("RIGHT")
-  editorLine:SetWidth(80)
+  editorLine:SetWidth(30)
   editorLine:SetHeight(20)
   editorLine:SetNumeric(true)
-  editorLine:SetTextInsets(10, 10, 0, 0)
+  editorLine:SetTextInsets(0, 5, 0, 0)
   editorLine:SetAutoFocus(false)
 
-  urlText:SetScript(
-    "OnChar",
-    function(self)
-      self:SetText(group.url)
-      self:HighlightText()
-    end
-  )
-  urlText:SetScript(
-    "OnEscapePressed",
-    function()
-      urlText:ClearFocus()
-      urlText:Hide()
-      urlCopyLabel:Hide()
-      helpButton:Show()
-      editor:SetFocus()
-    end
-  )
+  local editorLineText = group.frame:CreateFontString(nil, "OVERLAY")
+  editorLineText:SetFont(STANDARD_TEXT_FONT, 10)
+  editorLineText:SetTextColor(1, 1, 1)
+  editorLineText:SetText(L["Line"])
+  editorLineText:SetPoint("RIGHT", editorLine, "LEFT", -8, 0)
 
-  helpButton:SetScript(
-    "OnClick",
-    function()
-      urlText:Show()
-      urlText:SetFocus()
-      urlText:HighlightText()
-      urlCopyLabel:Show()
-      helpButton:Hide()
-      editorError:Hide()
-    end
-  )
+  helpButton:SetScript("OnClick", function()
+    OptionsPrivate.ToggleTip(helpButton, group.url, L["Help"], "")
+  end)
 
   local oldOnCursorChanged = editor.editBox:GetScript("OnCursorChanged")
   editor.editBox:SetScript(
@@ -616,18 +657,21 @@ local function ConstructTextEditor(frame)
     self.reloadOptions = reloadOptions
     self.setOnParent = setOnParent
     self.url = url
-    urlText:SetText(url or "")
-    urlText:Hide()
-    urlCopyLabel:Hide()
     if url then
       helpButton:Show()
     else
       helpButton:Hide()
     end
     if (frame.window == "texture") then
-      frame.texturePicker:CancelClose()
+      local texturepicker = OptionsPrivate.TexturePicker(frame, true)
+      if texturepicker then
+        texturepicker:CancelClose()
+      end
     elseif (frame.window == "icon") then
-      frame.iconPicker:CancelClose()
+      local iconpicker = OptionsPrivate.IconPicker(frame, true)
+      if iconpicker then
+        iconpicker:CancelClose()
+      end
     end
     frame.window = "texteditor"
     frame:UpdateFrameVisible()
@@ -641,10 +685,12 @@ local function ConstructTextEditor(frame)
       end
     end
     editor:SetLabel(title)
+    editor.editBox.timeMachine = {}
+    editor.editBox.timeMachinePos = 1
     editor.editBox:SetScript(
       "OnEscapePressed",
       function()
-        group:CancelClose()
+        -- catch it so that escape doesn't default to losing focus (after which another escape would close config)
       end
     )
     self.oldOnTextChanged = editor.editBox:GetScript("OnTextChanged")
@@ -657,19 +703,14 @@ local function ConstructTextEditor(frame)
         else
           local func, errorString
           if (enclose) then
-            func, errorString = loadstring("return function() " .. str .. "\n end")
+            func, errorString = OptionsPrivate.Private.LoadFunction("return function() " .. str .. "\n end", true)
           else
-            func, errorString = loadstring("return " .. str)
+            func, errorString = OptionsPrivate.Private.LoadFunction("return " .. str, true)
           end
           if not errorString and validator then
-            local ok, validate = xpcall(func, function(err) errorString = err end)
-            if ok then
-              errorString = validator(validate)
-            end
+            errorString = validator(func)
           end
           if errorString then
-            urlText:Hide()
-            urlCopyLabel:Hide()
             if self.url then
               helpButton:Show()
             end
@@ -727,6 +768,7 @@ local function ConstructTextEditor(frame)
   function group.CancelClose(self)
     editor.editBox:SetScript("OnTextChanged", self.oldOnTextChanged)
     editor:ClearFocus()
+    frame:HideTip()
     frame.window = "default"
     frame:UpdateFrameVisible()
   end
@@ -786,6 +828,7 @@ local function ConstructTextEditor(frame)
 
     editor.editBox:SetScript("OnTextChanged", self.oldOnTextChanged)
     editor:ClearFocus()
+
     frame.window = "default"
     frame:UpdateFrameVisible()
     WeakAuras.FillOptions()
@@ -794,7 +837,7 @@ local function ConstructTextEditor(frame)
   return group
 end
 
-function OptionsPrivate.TextEditor(frame)
-  textEditor = textEditor or ConstructTextEditor(frame)
+function OptionsPrivate.TextEditor(frame, noConstruct)
+  textEditor = textEditor or (not noConstruct and ConstructTextEditor(frame))
   return textEditor
 end

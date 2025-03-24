@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local L = WeakAuras.L;
@@ -14,9 +14,19 @@ local function createOptions(id, data)
       order = 0.5,
       hidden = function() return data.modelDisplayInfo and WeakAuras.BuildInfo > 80100 end
     },
-    -- Option for modelIsDisplayInfo added below
-
-    -- Option for path/id added below
+    modelDisplayInfo = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Use Display Info Id"],
+      order = 0.6,
+      hidden = function() return data.modelIsUnit end
+    },
+    model_model_path = {
+      type = "input",
+      width = WeakAuras.doubleWidth - 0.15,
+      name = L["Model"],
+      order = 1
+    },
     chooseModel = {
       type = "execute",
       width = 0.15,
@@ -39,6 +49,7 @@ local function createOptions(id, data)
     },
     sequence = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Animation Sequence"],
       min = 0,
@@ -50,6 +61,7 @@ local function createOptions(id, data)
     },
     model_z = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Z Offset"],
       softMin = -20,
@@ -60,6 +72,7 @@ local function createOptions(id, data)
     },
     model_x = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["X Offset"],
       softMin = -20,
@@ -70,6 +83,7 @@ local function createOptions(id, data)
     },
     model_y = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Y Offset"],
       softMin = -20,
@@ -80,6 +94,7 @@ local function createOptions(id, data)
     },
     rotation = {
       type = "range",
+      control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Rotation"],
       min = 0,
@@ -88,29 +103,23 @@ local function createOptions(id, data)
       bigStep = 3,
       order = 45,
     },
+    alpha = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = L["Alpha"],
+      order = 50,
+      min = 0,
+      max = 1,
+      bigStep = 0.01,
+      isPercent = true
+    },
     endHeader = {
       type = "header",
       order = 100,
       name = "",
     },
   };
-
-  if WeakAuras.BuildInfo > 80100 then
-    options.modelDisplayInfo = {
-      type = "toggle",
-      width = WeakAuras.normalWidth,
-      name = L["Use Display Info Id"],
-      order = 0.6,
-      hidden = function() return data.modelIsUnit end
-    }
-  else
-    options.model_path = {
-      type = "input",
-      width = WeakAuras.doubleWidth - 0.15,
-      name = L["Model"],
-      order = 1
-    }
-  end
 
   for k, v in pairs(OptionsPrivate.commonOptions.BorderOptions(id, data, nil, nil, 70)) do
     options[k] = v
@@ -123,7 +132,7 @@ local function createOptions(id, data)
 end
 
 local function createThumbnail()
-  local borderframe = CreateFrame("FRAME", nil, UIParent);
+  local borderframe = CreateFrame("Frame", nil, UIParent);
   borderframe:SetWidth(32);
   borderframe:SetHeight(32);
 
@@ -144,7 +153,7 @@ local function modifyThumbnail(parent, region, data)
 
   local model = region.model
   region:SetScript("OnUpdate", function()
-    local optionsFrame = WeakAuras.OptionsFrame();
+    local optionsFrame = OptionsPrivate.Private.OptionsFrame();
     if optionsFrame then
       model:SetParent(optionsFrame)
       region:SetScript("OnUpdate", nil)
@@ -183,8 +192,8 @@ local function createIcon()
     width = 40
   };
 
-  local thumbnail = createThumbnail(UIParent);
-  modifyThumbnail(UIParent, thumbnail, data, nil, 50);
+  local thumbnail = createThumbnail();
+  modifyThumbnail(UIParent, thumbnail, data);
 
   return thumbnail;
 end
@@ -194,102 +203,107 @@ local templates = {
     title = L["Default"],
     data = {
     };
-  },
-  {
-    title = L["Fire Orb"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      model_path = "spells/6fx_smallfire.m2",
-      model_x = 0,
-      model_y = -0.5,
-      model_z = -1.5
-    },
-  },
-  {
-    title = L["Blue Sparkle Orb"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_druid_halfmoon_missile.m2",
-      model_x = 0,
-      model_y = 0.7,
-      model_z = 1.5
-    },
-  },
-  {
-    title = L["Arcane Orb"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/proc_arcane_impact_low.m2",
-      model_x = 0,
-      model_y = 0.8,
-      model_z = 2
-    },
-  },
-  {
-    title = L["Orange Rune"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_godking_orangerune_state.m2",
-    },
-  },
-  {
-    title = L["Blue Rune"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_godking_bluerune_state.m2",
-    }
-  },
-  {
-    title = L["Yellow Rune"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_godking_yellowrune_state.m2",
-    }
-  },
-  {
-    title = L["Purple Rune"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_godking_purplerune_state.m2",
-    }
-  },
-  {
-    title = L["Green Rune"],
-    description = "",
-    data = {
-      width = 100,
-      height = 100,
-      advance = true,
-      sequence = 1,
-      model_path = "spells/7fx_godking_greenrune_state.m2",
-    }
-  },
+  }
 }
 
-WeakAuras.RegisterRegionOptions("model", createOptions, createIcon, L["Model"], createThumbnail, modifyThumbnail, L["Shows a 3D model from the game files"], templates);
+tinsert(templates, {
+  title = L["Fire Orb"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    model_path = "spells/6fx_smallfire.m2",
+    model_x = 0,
+    model_y = -0.5,
+    model_z = -1.5
+  },
+})
+tinsert(templates, {
+  title = L["Blue Sparkle Orb"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_druid_halfmoon_missile.m2",
+    model_x = 0,
+    model_y = 0.7,
+    model_z = 1.5
+  },
+})
+tinsert(templates, {
+  title = L["Arcane Orb"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/proc_arcane_impact_low.m2",
+    model_x = 0,
+    model_y = 0.8,
+    model_z = 2
+  },
+})
+tinsert(templates, {
+  title = L["Orange Rune"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_godking_orangerune_state.m2",
+  },
+})
+tinsert(templates, {
+  title = L["Blue Rune"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_godking_bluerune_state.m2",
+  }
+})
+tinsert(templates, {
+  title = L["Yellow Rune"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_godking_yellowrune_state.m2",
+  }
+})
+tinsert(templates, {
+  title = L["Purple Rune"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_godking_purplerune_state.m2",
+  }
+})
+tinsert(templates, {
+  title = L["Green Rune"],
+  description = "",
+  data = {
+    width = 100,
+    height = 100,
+    advance = true,
+    sequence = 1,
+    model_path = "spells/7fx_godking_greenrune_state.m2",
+  }
+})
+
+OptionsPrivate.registerRegions = OptionsPrivate.registerRegions or {}
+table.insert(OptionsPrivate.registerRegions, function()
+  OptionsPrivate.Private.RegisterRegionOptions("model", createOptions, createIcon, L["Model"], createThumbnail, modifyThumbnail,
+                                  L["Shows a 3D model from the game files"], templates);
+end)

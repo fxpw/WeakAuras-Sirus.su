@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, OptionsPrivate = ...
 
 local L = WeakAuras.L
@@ -11,17 +11,14 @@ local disabledAll = OptionsPrivate.commonOptions.CreateDisabledAll("action")
 local hiddenAll = OptionsPrivate.commonOptions.CreateHiddenAll("action")
 local getAll = OptionsPrivate.commonOptions.CreateGetAll("action")
 local setAll = OptionsPrivate.commonOptions.CreateSetAll("action", getAll)
+local dynamicTextInputs = {}
 
-local RestrictedChannelCheck
-if WeakAuras.IsClassic() then
-  RestrictedChannelCheck = function()
-    return false
-  end
-else
-  RestrictedChannelCheck = function(data)
-    return data.message_type == "SAY" or data.message_type == "YELL" or data.message_type == "SMARTRAID"
-  end
+local RestrictedChannelCheck = function(data)
+  return data.message_type == "SAY" or data.message_type == "YELL" or data.message_type == "SMARTRAID"
 end
+
+---  a sound from each setter
+local lastPlayedSoundFromSet
 
 function OptionsPrivate.GetActionOptions(data)
   local action = {
@@ -63,9 +60,15 @@ function OptionsPrivate.GetActionOptions(data)
         data.actions[field][value] = v;
       end
       if(value == "sound" or value == "sound_path") then
-        pcall(PlaySoundFile, v, "Master");
+        if lastPlayedSoundFromSet ~= GetTime() then
+          pcall(PlaySoundFile, v, "Master")
+          lastPlayedSoundFromSet = GetTime()
+        end
       elseif(value == "sound_kit_id") then
-        pcall(PlaySound, v, "Master");
+        if lastPlayedSoundFromSet ~= GetTime() then
+          pcall(PlaySound, v, "Master")
+          lastPlayedSoundFromSet = GetTime()
+        end
       end
       WeakAuras.Add(data);
       if(value == "message") then
@@ -102,8 +105,8 @@ function OptionsPrivate.GetActionOptions(data)
         name = L["Message Type"],
         order = 2,
         values = OptionsPrivate.Private.send_chat_message_types,
+        sorting = OptionsPrivate.Private.SortOrderForValues(OptionsPrivate.Private.send_chat_message_types),
         disabled = function() return not data.actions.start.do_message end,
-        control = "WeakAurasSortedDropdown"
       },
       start_message_warning = {
         type = "description",
@@ -144,14 +147,44 @@ function OptionsPrivate.GetActionOptions(data)
       },
       start_message_dest = {
         type = "input",
-        width = WeakAuras.normalWidth,
+        width = WeakAuras.normalWidth - 0.15,
         name = L["Send To"],
         order = 3.1,
         disabled = function() return not data.actions.start.do_message end,
         hidden = function() return data.actions.start.message_type ~= "WHISPER" end,
-        desc = function()
-          return L["Dynamic text tooltip"] .. OptionsPrivate.Private.GetAdditionalProperties(data)
+        control = "WeakAurasInput",
+        callbacks = {
+          OnEditFocusGained = function(self)
+            local widget = dynamicTextInputs["start_message_dest"]
+            OptionsPrivate.ToggleTextReplacements(data, widget, "OnEditFocusGained")
+          end,
+          OnEditFocusLost = function(self)
+            OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEditFocusLost")
+          end,
+          OnEnterPressed = function(self)
+            OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEnterPressed")
+          end,
+          OnShow = function(self)
+            dynamicTextInputs["start_message_dest"] = self
+          end,
+        }
+      },
+      start_message_dest_text_replacements_button = {
+        type = "execute",
+        width = 0.15,
+        name = L["Dynamic Text Replacements"],
+        desc = L["There are several special codes available to make this text dynamic. Click to view a list with all dynamic text codes."],
+        order = 3.11,
+        disabled = function() return not data.actions.start.do_message end,
+        hidden = function() return data.actions.start.message_type ~= "WHISPER" end,
+        func = function()
+          local widget = dynamicTextInputs["start_message_dest"]
+          OptionsPrivate.ToggleTextReplacements(data, widget, "ToggleButton")
         end,
+        imageWidth = 24,
+        imageHeight = 24,
+        control = "WeakAurasIcon",
+        image = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\sidebar",
       },
       start_message_dest_isunit = {
         type = "toggle",
@@ -164,13 +197,42 @@ function OptionsPrivate.GetActionOptions(data)
       },
       start_message = {
         type = "input",
-        width = WeakAuras.doubleWidth,
+        width = WeakAuras.doubleWidth - 0.15,
         name = L["Message"],
         order = 4,
         disabled = function() return not data.actions.start.do_message end,
-        desc = function()
-          return L["Dynamic text tooltip"] .. OptionsPrivate.Private.GetAdditionalProperties(data)
+        control = "WeakAurasInput",
+        callbacks = {
+          OnEditFocusGained = function(self)
+            local widget = dynamicTextInputs["start_message"]
+            OptionsPrivate.ToggleTextReplacements(data, widget, "OnEditFocusGained")
+          end,
+          OnEditFocusLost = function(self)
+            OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEditFocusLost")
+          end,
+          OnEnterPressed = function(self)
+            OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEnterPressed")
+          end,
+          OnShow = function(self)
+            dynamicTextInputs["start_message"] = self
+          end,
+        }
+      },
+      start_message_text_replacements_button = {
+        type = "execute",
+        width = 0.15,
+        name = L["Dynamic Text Replacements"],
+        desc = L["There are several special codes available to make this text dynamic. Click to view a list with all dynamic text codes."],
+        order = 4.1,
+        disabled = function() return not data.actions.start.do_message end,
+        func = function()
+          local widget = dynamicTextInputs["start_message"]
+          OptionsPrivate.ToggleTextReplacements(data, widget, "ToggleButton")
         end,
+        imageWidth = 24,
+        imageHeight = 24,
+        control = "WeakAurasIcon",
+        image = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\sidebar",
       },
       -- texteditor added later
       start_do_sound = {
@@ -188,6 +250,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       start_sound_repeat = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Repeat After"],
         order = 8.2,
@@ -208,9 +271,10 @@ function OptionsPrivate.GetActionOptions(data)
         width = WeakAuras.normalWidth,
         name = L["Sound"],
         order = 8.4,
+        itemControl = "WeakAurasMediaSound",
         values = OptionsPrivate.Private.sound_types,
+        sorting = OptionsPrivate.Private.SortOrderForValues(OptionsPrivate.Private.sound_types),
         disabled = function() return not data.actions.start.do_sound end,
-        control = "WeakAurasSortedDropdown"
       },
       start_sound_channel = {
         type = "select",
@@ -255,15 +319,15 @@ function OptionsPrivate.GetActionOptions(data)
         type = "select",
         width = WeakAuras.normalWidth,
         desc = function()
-          return data.actions.start.glow_frame_type == "UNITFRAME"
+          return (
+            data.actions.start.glow_frame_type == "UNITFRAME"
+            or data.actions.start.glow_frame_type == "NAMEPLATE"
+          )
           and L["Require unit from trigger"] or nil
         end,
         name = L["Glow Frame Type"],
         order = 10.3,
-        values = {
-          UNITFRAME = L["Unit Frame"],
-          FRAMESELECTOR = L["Frame Selector"]
-        },
+        values = OptionsPrivate.Private.glow_frame_types,
         hidden = function()
           return not data.actions.start.do_glow
           or data.actions.start.glow_action == nil
@@ -344,6 +408,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       start_glow_lines = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Lines & Particles"],
         order = 10.81,
@@ -363,6 +428,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       start_glow_frequency = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Frequency"],
         order = 10.82,
@@ -382,6 +448,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       start_glow_length = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Length"],
         order = 10.83,
@@ -400,6 +467,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       start_glow_thickness = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Thickness"],
         order = 10.84,
@@ -418,6 +486,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       start_glow_XOffset = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["X-Offset"],
         order = 10.85,
@@ -434,6 +503,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       start_glow_YOffset = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Y-Offset"],
         order = 10.86,
@@ -450,6 +520,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       start_glow_scale = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Scale"],
         order = 10.87,
@@ -503,8 +574,8 @@ function OptionsPrivate.GetActionOptions(data)
         name = L["Message Type"],
         order = 22,
         values = OptionsPrivate.Private.send_chat_message_types,
+        sorting = OptionsPrivate.Private.SortOrderForValues(OptionsPrivate.Private.send_chat_message_types),
         disabled = function() return not data.actions.finish.do_message end,
-        control = "WeakAurasSortedDropdown"
       },
       finish_message_warning = {
         type = "description",
@@ -526,7 +597,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       finish_message_color = {
         type = "color",
-        width = WeakAuras.normalWidth,
+        width = WeakAuras.normalWidth - 0.15,
         name = L["Color"],
         order = 23,
         hasAlpha = false,
@@ -545,11 +616,44 @@ function OptionsPrivate.GetActionOptions(data)
       },
       finish_message_dest = {
         type = "input",
-        width = WeakAuras.normalWidth,
+        width = WeakAuras.normalWidth - 0.15,
         name = L["Send To"],
         order = 23.1,
         disabled = function() return not data.actions.finish.do_message end,
-        hidden = function() return data.actions.finish.message_type ~= "WHISPER" end
+        hidden = function() return data.actions.finish.message_type ~= "WHISPER" end,
+        control = "WeakAurasInput",
+        callbacks = {
+          OnEditFocusGained = function(self)
+            local widget = dynamicTextInputs["finish_message_dest"]
+            OptionsPrivate.ToggleTextReplacements(data, widget, "OnEditFocusGained")
+          end,
+          OnEditFocusLost = function(self)
+            OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEditFocusLost")
+          end,
+          OnEnterPressed = function(self)
+            OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEnterPressed")
+          end,
+          OnShow = function(self)
+            dynamicTextInputs["finish_message_dest"] = self
+          end,
+        }
+      },
+      finish_message_dest_text_replacements_button = {
+        type = "execute",
+        width = 0.15,
+        name = L["Dynamic Text Replacements"],
+        desc = L["There are several special codes available to make this text dynamic. Click to view a list with all dynamic text codes."],
+        order = 23.11,
+        disabled = function() return not data.actions.finish.do_message end,
+        hidden = function() return data.actions.finish.message_type ~= "WHISPER" end,
+        func = function()
+          local widget = dynamicTextInputs["finish_message_dest"]
+          OptionsPrivate.ToggleTextReplacements(data, widget, "ToggleButton")
+        end,
+        imageWidth = 24,
+        imageHeight = 24,
+        control = "WeakAurasIcon",
+        image = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\sidebar",
       },
       finish_message_dest_isunit = {
         type = "toggle",
@@ -562,13 +666,42 @@ function OptionsPrivate.GetActionOptions(data)
       },
       finish_message = {
         type = "input",
-        width = WeakAuras.doubleWidth,
+        width = WeakAuras.doubleWidth - 0.15,
         name = L["Message"],
         order = 24,
         disabled = function() return not data.actions.finish.do_message end,
-        desc = function()
-          return L["Dynamic text tooltip"] .. OptionsPrivate.Private.GetAdditionalProperties(data)
+        control = "WeakAurasInput",
+        callbacks = {
+          OnEditFocusGained = function(self)
+            local widget = dynamicTextInputs["finish_message"]
+            OptionsPrivate.ToggleTextReplacements(data, widget, "OnEditFocusGained")
+          end,
+          OnEditFocusLost = function(self)
+            OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEditFocusLost")
+          end,
+          OnEnterPressed = function(self)
+            OptionsPrivate.ToggleTextReplacements(nil, nil, "OnEnterPressed")
+          end,
+          OnShow = function(self)
+            dynamicTextInputs["finish_message"] = self
+          end,
+        }
+      },
+      finish_message_text_replacements_button = {
+        type = "execute",
+        width = 0.15,
+        name = L["Dynamic Text Replacements"],
+        desc = L["There are several special codes available to make this text dynamic. Click to view a list with all dynamic text codes."],
+        order = 24.1,
+        disabled = function() return not data.actions.finish.do_message end,
+        func = function()
+          local widget = dynamicTextInputs["finish_message"]
+          OptionsPrivate.ToggleTextReplacements(data, widget, "ToggleButton")
         end,
+        imageWidth = 24,
+        imageHeight = 24,
+        control = "WeakAurasIcon",
+        image = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\sidebar",
       },
       -- texteditor added below
       finish_do_sound = {
@@ -582,9 +715,10 @@ function OptionsPrivate.GetActionOptions(data)
         width = WeakAuras.normalWidth,
         name = L["Sound"],
         order = 28.1,
+        itemControl = "WeakAurasMediaSound",
         values = OptionsPrivate.Private.sound_types,
+        sorting = OptionsPrivate.Private.SortOrderForValues(OptionsPrivate.Private.sound_types),
         disabled = function() return not data.actions.finish.do_sound end,
-        control = "WeakAurasSortedDropdown"
       },
       finish_sound_channel = {
         type = "select",
@@ -629,15 +763,15 @@ function OptionsPrivate.GetActionOptions(data)
         type = "select",
         width = WeakAuras.normalWidth,
         desc = function()
-          return data.actions.finish.glow_frame_type == "UNITFRAME"
+          return (
+            data.actions.finish.glow_frame_type == "UNITFRAME"
+            or data.actions.finish.glow_frame_type == "NAMEPLATE"
+          )
           and L["Require unit from trigger"] or nil
         end,
         name = L["Glow Frame Type"],
         order = 30.3,
-        values = {
-          UNITFRAME = L["Unit Frame"],
-          FRAMESELECTOR = L["Frame Selector"]
-        },
+        values = OptionsPrivate.Private.glow_frame_types,
         hidden = function()
           return not data.actions.finish.do_glow
           or data.actions.finish.glow_action == nil
@@ -718,6 +852,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       finish_glow_lines = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Lines & Particles"],
         order = 30.81,
@@ -737,6 +872,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       finish_glow_frequency = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Frequency"],
         order = 30.82,
@@ -756,6 +892,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       finish_glow_length = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Length"],
         order = 30.83,
@@ -774,6 +911,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       finish_glow_thickness = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Thickness"],
         order = 30.84,
@@ -792,6 +930,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       finish_glow_XOffset = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["X-Offset"],
         order = 30.85,
@@ -808,6 +947,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       finish_glow_YOffset = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Y-Offset"],
         order = 30.86,
@@ -824,6 +964,7 @@ function OptionsPrivate.GetActionOptions(data)
       },
       finish_glow_scale = {
         type = "range",
+        control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
         name = L["Scale"],
         order = 30.87,

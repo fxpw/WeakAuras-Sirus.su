@@ -1,4 +1,4 @@
-if not WeakAuras.IsCorrectVersion() then return end
+if not WeakAuras.IsLibsOK() then return end
 local AddonName, Private = ...
 
 local SharedMedia = LibStub("LibSharedMedia-3.0");
@@ -33,6 +33,8 @@ local default = {
   borderBackdrop = "Blizzard Tooltip"
 };
 
+Private.regionPrototype.AddAlphaToDefault(default)
+
 local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
 
 local properties = {
@@ -56,36 +58,40 @@ local properties = {
   },
 }
 
-WeakAuras.regionPrototype.AddProperties(properties, default);
+Private.regionPrototype.AddProperties(properties, default);
 
 local function GetProperties(data)
   return properties;
 end
 
 local regionFunctions = {
-  Update = function() end
+  Update = function() end,
+  SetAlpha = function(self, alpha)
+    self.alpha = alpha
+    if self.model then
+      self.model:SetAlpha(alpha)
+    end
+  end
 }
 
 -- Called when first creating a new region/display
 local function create(parent)
   -- Main region
-  local region = CreateFrame("FRAME", nil, UIParent);
+  local region = CreateFrame("Frame", nil, UIParent);
   region.regionType = "model"
   region:SetMovable(true);
   region:SetResizable(true);
   region:SetMinResize(1, 1);
 
   -- Border region
-  local border = CreateFrame("frame", nil, region);
+  local border = CreateFrame("Frame", nil, region);
   region.border = border;
 
-  WeakAuras.regionPrototype.create(region);
+  Private.regionPrototype.create(region);
 
   for k, v in pairs (regionFunctions) do
     region[k] = v
   end
-
-  region.AnchorSubRegion = WeakAuras.regionPrototype.AnchorSubRegion
 
   -- Return complete region
   return region;
@@ -163,6 +169,7 @@ local function AcquireModel(region, data)
 end
 
 local function ReleaseModel(model)
+  model:SetAlpha(1)
   --model:SetKeepModelOnHide(false)
   model:Hide()
   model:UnregisterEvent("UNIT_MODEL_CHANGED");
@@ -175,7 +182,7 @@ end
 
 -- Modify a given region/display
 local function modify(parent, region, data)
-  WeakAuras.regionPrototype.modify(parent, region, data);
+  Private.regionPrototype.modify(parent, region, data);
   -- Localize
   local border = region.border;
 
@@ -200,9 +207,9 @@ local function modify(parent, region, data)
       bgFile = SharedMedia:Fetch("background", data.borderBackdrop),
       insets = {
         left     = data.borderInset,
-        right     = data.borderInset,
-        top     = data.borderInset,
-        bottom     = data.borderInset,
+        right    = data.borderInset,
+        top      = data.borderInset,
+        bottom   = data.borderInset,
       },
     });
     border:SetBackdropBorderColor(data.borderColor[1], data.borderColor[2], data.borderColor[3], data.borderColor[4]);
@@ -244,18 +251,28 @@ local function modify(parent, region, data)
   end
 
   -- Rotate model
-  function region:Rotate(degrees)
-    region.rotation = degrees;
+  function region:SetAnimRotation(degrees)
+    region.animRotation = degrees
+    region:UpdateEffectiveRotation()
+  end
+
+  function region:SetRotation(degrees)
+    region.rotation = degrees
+    region:UpdateEffectiveRotation()
+  end
+
+  function region:UpdateEffectiveRotation()
+    region.effectiveRotation = region.animRotation or region.rotation
     if region.model then
-      region.model:SetFacing(rad(region.rotation));
+      region.model:SetFacing(rad(region.effectiveRotation))
     end
   end
 
-  region:Rotate(data.rotation);
+  region:SetRotation(data.rotation)
 
   -- Get model rotation
-  function region:GetRotation()
-    return region.rotation;
+  function region:GetBaseRotation()
+    return region.rotation
   end
 
   function region:PreShow()
@@ -263,6 +280,9 @@ local function modify(parent, region, data)
       region.model = AcquireModel(self, data)
     else
       ConfigureModel(region, region.model, data)
+    end
+    if type(data.alpha) == "number" then
+      region:SetAlpha(data.alpha)
     end
   end
 
@@ -273,16 +293,16 @@ local function modify(parent, region, data)
     end
   end
 
-  WeakAuras.regionPrototype.modifyFinish(parent, region, data);
+  Private.regionPrototype.modifyFinish(parent, region, data);
 end
 
 -- Work around for movies and world map hiding all models
 do
   function Private.PreShowModels(self, event)
     Private.StartProfileSystem("model");
-    for id, data in pairs(WeakAuras.regions) do
+    for id, data in pairs(Private.regions) do
       Private.StartProfileAura(id);
-      if data.region.toShow then
+      if data.region and data.region.toShow then
         if (data.regionType == "model") then
           data.region:PreShow();
         end
@@ -301,4 +321,4 @@ local function validate(data)
 end
 
 -- Register new region type with WeakAuras
-WeakAuras.RegisterRegionType("model", create, modify, default, GetProperties, validate);
+Private.RegisterRegionType("model", create, modify, default, GetProperties, validate);
