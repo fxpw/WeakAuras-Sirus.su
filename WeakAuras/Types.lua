@@ -3303,7 +3303,7 @@ do
       icon = "Interface\\Icons\\Ability_Druid_Maul",
       specs = {
         [102] = { name = L["Balance"], icon = "Interface\\Icons\\Spell_Nature_StarFall" },
-        [103] = { name = L["Feral"], icon = "Interface\\Icons\\Ability_Racial_BearForm" },
+        [103] = { name = L["Feral Combat"], icon = "Interface\\Icons\\Ability_Racial_BearForm" },
         [104] = { name = L["Guardian"], icon = "Interface\\Icons\\Ability_Racial_BearForm" },
         [105] = { name = L["Restoration"], icon = "Interface\\Icons\\Spell_Nature_HealingTouch" },
       }
@@ -3432,7 +3432,7 @@ Private.specname_to_id = {
   ["DEATHKNIGHT" .. L["Frost"]] = 251,
   ["DEATHKNIGHT" .. L["Unholy"]] = 252,
   ["DRUID" .. L["Balance"]] = 102,
-  ["DRUID" .. L["Feral"]] = 103,
+  ["DRUID" .. L["Feral Combat"]] = 103,
   ["DRUID" .. L["Guardian"]] = 104,
   ["DRUID" .. L["Restoration"]] = 105,
   ["HUNTER" .. L["Beast Mastery"]] = 253,
@@ -3466,7 +3466,7 @@ Private.specid_to_name = {
   [251] = "DEATHKNIGHT" .. L["Frost"],
   [252] = "DEATHKNIGHT" .. L["Unholy"],
   [102] = "DRUID" .. L["Balance"],
-  [103] = "DRUID" .. L["Feral"],
+  [103] = "DRUID" .. L["Feral Combat"],
   [104] = "DRUID" .. L["Guardian"],
   [105] = "DRUID" .. L["Restoration"],
   [253] = "HUNTER" .. L["Beast Mastery"],
