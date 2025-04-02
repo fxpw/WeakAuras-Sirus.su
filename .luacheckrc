@@ -19568,5 +19568,5 @@ globals = {
 	"WA_UpdateNineSliceBorders", "SecondsToMinutes", "MinutesToSeconds", "HasTimePassed",
 	"SecondsFormatterConstants", "ConvertSecondsToUnits", "SecondsToClock",
 	"MinutesToTime", "FormatShortDate", "NUMBER_ABBREVIATION_DATA", "WeakAurasProfilingReportTitleText",
-	"WeakAurasRealTimeProfiling", "WeakAurasRealTimeProfilingTitleText", "seconds"
+	"WeakAurasRealTimeProfiling", "WeakAurasRealTimeProfilingTitleText", "seconds", "NUM_CHAT_WINDOWS"
 }
