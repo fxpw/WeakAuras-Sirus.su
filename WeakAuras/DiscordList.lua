@@ -1,6 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
 
-local AddonName, Private = ...
+local AddonName = ...
+local Private = select(2, ...)
 
 Private.DiscordList = {
   [=[007bb]=],
@@ -8,6 +9,7 @@ Private.DiscordList = {
   [=[aelen]=],
   [=[Aishuu]=],
   [=[Ariani  Continuity]=],
+  [=[Ashaidrax]=],
   [=[Azortharion]=],
   [=[BadBrain]=],
   [=[Bart]=],
@@ -19,10 +21,13 @@ Private.DiscordList = {
   [=[Darian]=],
   [=[Desik]=],
   [=[DjinnFish]=],
+  [=[Dodgen]=],
+  [=[Droodthor]=],
   [=[exality]=],
   [=[Fatpala]=],
   [=[Fels]=],
   [=[Fenchurch]=],
+  [=[Fx]=],
   [=[Guffin]=],
   [=[Ifor]=],
   [=[Ipwnturkeys]=],
@@ -30,6 +35,7 @@ Private.DiscordList = {
   [=[Jods]=],
   [=[kanegasi]=],
   [=[Koxy]=],
+  [=[Leezy]=],
   [=[Listefano]=],
   [=[Luckyone]=],
   [=[Luxthos]=],
@@ -44,11 +50,11 @@ Private.DiscordList = {
   [=[Ora]=],
   [=[ParkSaeRoyi]=],
   [=[phoenix7700]=],
-  [=[Pseiko]=],
   [=[Raysur]=],
   [=[reggie]=],
   [=[Reloe]=],
   [=[Spaten]=],
+  [=[Tel]=],
   [=[Tollo]=],
   [=[Translit]=],
   [=[update]=],

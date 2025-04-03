@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, Private = ...
+local AddonName = ...
+local Private = select(2, ...)
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
@@ -71,6 +72,7 @@ WeakAuras.WA_ClassColorName = WA_ClassColorName
 -- UTF-8 Sub is pretty commonly needed
 local WA_Utf8Sub = function(input, size)
   local output = ""
+  input = tostring(input)
   if type(input) ~= "string" then
     return output
   end
@@ -110,6 +112,27 @@ local WA_Utf8Sub = function(input, size)
 end
 
 WeakAuras.WA_Utf8Sub = WA_Utf8Sub
+
+
+WeakAuras.PadString = function(input, padMode, padLength)
+  input = tostring(input)
+  if type(input) ~= "string" then
+    return input
+  end
+
+  local toAdd = padLength - #input
+  if toAdd <= 0 then
+    return input
+  end
+
+  if padMode == "left" then
+    return string.rep(" ", toAdd) .. input
+  elseif padMode == "right" then
+    return input .. string.rep(" ", toAdd)
+  end
+
+  return input
+end
 
 local LCG = LibStub("LibCustomGlow-1.0")
 WeakAuras.ShowOverlayGlow = LCG.ButtonGlow_Start

@@ -1,6 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
 
-local AddonName, OptionsPrivate = ...
+local AddonName = ...
+local OptionsPrivate = select(2, ...)
 local L = WeakAuras.L
 
 local pairs, next, type, unpack = pairs, next, type, unpack
@@ -67,8 +68,29 @@ local methods = {
       WeakAuras.Import(self.companionData.encoded, nil, nil, linkedAuras)
     end
 
+    function self.callbacks.OnFollowLinkClick()
+      self.menu = {
+        { text = L["Linked Auras"], isTitle = true }
+      }
+      for auraId in pairs(self.linkedAuras) do
+        if not self.linkedChildren[auraId] then
+          tinsert(
+            self.menu,
+            {
+              text = auraId,
+              notCheckable = true,
+              func = function() WeakAuras.PickDisplay(auraId, "information") end
+            }
+          )
+        end
+      end
+      EasyMenu(self.menu, WeakAuras_DropDownMenu, self.followLink, 0, 0, "MENU", 5)
+    end
+
     self:SetTitle(self.companionData.name)
+    self.frame:SetScript("OnClick", self.callbacks.OnClickNormal)
     self.update:SetScript("OnClick", self.callbacks.OnUpdateClick)
+    self.followLink:SetScript("OnClick", self.callbacks.OnFollowLinkClick)
     local data = OptionsPrivate.Private.StringToTable(self.companionData.encoded, true)
     WeakAuras.PreAdd(data.d)
     self.data = data.d
@@ -159,9 +181,6 @@ local methods = {
   ["SetTitle"] = function(self, title)
     self.titletext = title
     self.title:SetText(title)
-  end,
-  ["SetClick"] = function(self, func)
-    self.frame:SetScript("OnClick", func)
   end,
   ["ResetLinkedAuras"] = function(self)
     wipe(self.linkedAuras)
@@ -286,6 +305,23 @@ local function Constructor()
 
   button.description = {}
 
+  -- follow link button
+  local followLink = CreateFrame("Button", nil, button)
+  button.followLink = followLink
+  followLink:SetNormalTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\loottoast-arrow-green")
+  followLink:GetNormalTexture():SetRotation(math.rad(-90))
+  followLink:SetWidth(32)
+  followLink:SetHeight(32)
+  followLink:SetPoint("RIGHT", button, "RIGHT", -2, 0)
+  followLink:SetScript("OnEnter", function()
+    GameTooltip:SetOwner(followLink, "ANCHOR_NONE")
+    GameTooltip:SetPoint("BOTTOMLEFT", followLink, "TOPRIGHT")
+    GameTooltip:ClearLines()
+    GameTooltip:AddLine(L["Linked Auras"])
+    GameTooltip:Show()
+  end)
+  followLink:SetScript("OnLeave", Hide_Tooltip)
+
   local update = CreateFrame("Button", nil, button)
   button.update = update
   update.disabled = true
@@ -295,7 +331,7 @@ local function Constructor()
   update:Disable()
   update:SetWidth(24)
   update:SetHeight(24)
-  update:SetPoint("RIGHT", button, "RIGHT", -2, 0)
+  update:SetPoint("RIGHT", followLink, "LEFT", -2, 0)
 
   -- Add logo
   local updateLogo = CreateFrame("Frame", nil, button)
@@ -324,7 +360,13 @@ local function Constructor()
   end)
   update:SetScript("OnEnter", function()
     animGroup:Play()
+    GameTooltip:SetOwner(update, "ANCHOR_NONE")
+    GameTooltip:SetPoint("BOTTOMLEFT", update, "TOPRIGHT")
+    GameTooltip:ClearLines()
+    GameTooltip:AddLine(L["Update"])
+    GameTooltip:Show()
   end)
+  update:SetScript("OnLeave", Hide_Tooltip)
   update:Hide()
   updateLogo:Hide()
 
@@ -335,6 +377,7 @@ local function Constructor()
     background = background,
     update = update,
     updateLogo = updateLogo,
+    followLink = followLink,
     type = Type,
   }
 

@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, Private = ...
+local AddonName = ...
+local Private = select(2, ...)
 
 local L = WeakAuras.L;
 
@@ -46,7 +47,7 @@ local function PreShow(self)
   self:SetModel(data.model_path)
 
   self:SetPosition(data.model_z, data.model_x, data.model_y);
-  self:SetFacing(0);
+  self:SetFacing(rad(data.rotation))
   self:SetAlpha(self.region.alpha)
 end
 
@@ -93,7 +94,7 @@ local function AcquireModel(region, data)
     model:SetModel(data.model_path)
     model:SetPosition(data.model_z, data.model_x, data.model_y);
   end)
-  model:SetFacing(0);
+  model:SetFacing(rad(data.rotation))
 
   return model
 end

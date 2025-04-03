@@ -46,7 +46,8 @@ GetTriggerConditions(data, triggernum)
 Returns potential conditions that this trigger provides.
 ]]--
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, Private = ...
+local AddonName = ...
+local Private = select(2, ...)
 
 -- Lua APIs
 local tinsert, tconcat, wipe = table.insert, table.concat, wipe
@@ -523,9 +524,7 @@ local function callFunctionForActivateEvent(func, trigger, state, property, erro
       state.changed = true
     end
   else
-    if not ok then
-      errorHandler(value)
-    end
+    errorHandler(value)
   end
 end
 
@@ -687,9 +686,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       else
         ok, returnValue = pcall(data.triggerFunc, allStates, event, arg1, arg2, ...);
       end
-      if not ok then
-        errorHandler(returnValue)
-      elseif (ok and returnValue) or optionsEvent then
+      if (ok and returnValue) or optionsEvent then
         for id, state in pairs(allStates) do
           if (state.changed) then
             if (Private.ActivateEvent(id, triggernum, data, state)) then
@@ -699,6 +696,9 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
         end
       else
         untriggerCheck = true;
+        if not ok then
+          errorHandler(returnValue)
+        end
       end
     elseif (data.statesParameter == "unit") then
       if arg1 then
@@ -721,14 +721,15 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
         else
           ok, returnValue = pcall(data.triggerFunc, state, event, unitForUnitTrigger, arg1, arg2, ...);
         end
-        if not ok then
-          errorHandler(returnValue)
-        elseif (ok and returnValue) or optionsEvent then
+        if (ok and returnValue) or optionsEvent then
           if(Private.ActivateEvent(id, triggernum, data, state)) then
             updateTriggerState = true;
           end
         else
           untriggerCheck = true;
+          if not ok then
+            errorHandler(returnValue)
+          end
         end
       end
     elseif (data.statesParameter == "one") then
@@ -740,14 +741,15 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       else
         ok, returnValue = pcall(data.triggerFunc, state, event, arg1, arg2, ...);
       end
-      if not ok then
-        errorHandler(returnValue)
-      elseif (ok and returnValue) or optionsEvent then
+      if (ok and returnValue) or optionsEvent then
         if(Private.ActivateEvent(id, triggernum, data, state, (optionsEvent and data.ignoreOptionsEventErrors) and ignoreErrorHandler or nil)) then
           updateTriggerState = true;
         end
       else
         untriggerCheck = true;
+        if not ok then
+          errorHandler(returnValue)
+        end
       end
     else
       local ok, returnValue
@@ -756,9 +758,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       else
         ok, returnValue = pcall(data.triggerFunc, event, arg1, arg2, ...);
       end
-      if not ok then
-        errorHandler(returnValue)
-      elseif (ok and returnValue) or optionsEvent then
+      if (ok and returnValue) or optionsEvent then
         allStates[""] = allStates[""] or {};
         local state = allStates[""];
         if(Private.ActivateEvent(id, triggernum, data, state, (optionsEvent and data.ignoreOptionsEventErrors) and ignoreErrorHandler or nil)) then
@@ -766,6 +766,9 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
         end
       else
         untriggerCheck = true;
+        if not ok then
+          errorHandler(returnValue)
+        end
       end
     end
     if (untriggerCheck and not optionsEvent) then
@@ -773,9 +776,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
       if (data.statesParameter == "all") then
         if data.untriggerFunc then
           local ok, returnValue = pcall(data.untriggerFunc, allStates, event, arg1, arg2, ...);
-          if not ok then
-            errorHandler(returnValue)
-          elseif (ok and returnValue) or optionsEvent then
+          if (ok and returnValue) or optionsEvent then
             for id, state in pairs(allStates) do
               if (state.changed) then
                 if (Private.EndEvent(state)) then
@@ -783,6 +784,8 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
                 end
               end
             end
+          elseif not ok then
+            errorHandler(returnValue)
           end
         end
       elseif data.statesParameter == "unit" then
@@ -1048,6 +1051,7 @@ end
 
 local function ProgressType(data, triggernum)
   local trigger = data.triggers[triggernum].trigger
+
   local prototype = GenericTrigger.GetPrototype(trigger)
   if prototype then
     if prototype.progressType then
@@ -1175,11 +1179,7 @@ function HandleEvent(frame, event, arg1, arg2, ...)
   end
 
   if not(WeakAuras.IsPaused()) then
-    if(event == "COMBAT_LOG_EVENT_UNFILTERED") then
-      Private.ScanEvents(event, arg1, arg2, ...);
-    else
-      Private.ScanEvents(event, arg1, arg2, ...);
-    end
+    Private.ScanEvents(event, arg1, arg2, ...);
   end
   if (event == "PLAYER_ENTERING_WORLD") then
     timer:ScheduleTimer(function()
@@ -4383,15 +4383,37 @@ do
   end
 end
 
-WeakAuras.CheckForItemEquipped = function(itemName, specificSlot)
+WeakAuras.CheckForItemEquipped = function(itemId, specificSlot)
   if not specificSlot then
-    return IsEquippedItem(itemName)
+    if type(itemId) == "number" then
+      return IsEquippedItem(itemId or '')
+    else
+      for slot in pairs(Private.item_slot_types) do
+        if WeakAuras.CheckForItemEquipped(itemId, slot) then
+          return true
+        end
+      end
+    end
   end
   local equippedItemID = GetInventoryItemID("player", specificSlot)
-  return itemName and equippedItemID and (
-    (type(itemName) == "number" and itemName == equippedItemID)
-    or itemName == GetItemInfo(equippedItemID)
+  return itemId and equippedItemID and (
+    (type(itemId) == "number" and itemId == equippedItemID)
+    or itemId == GetItemInfo(equippedItemID)
   )
+end
+
+Private.ExecEnv.IsEquippedItemForLoad = function(item, exact)
+  if not item then
+    return
+  end
+  if exact then
+    return WeakAuras.CheckForItemEquipped(item)
+  else
+    item = GetItemInfo(item)
+    if item then
+      return WeakAuras.CheckForItemEquipped(item)
+    end
+  end
 end
 
 WeakAuras.GetCritChance = function()
