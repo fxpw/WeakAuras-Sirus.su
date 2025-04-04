@@ -295,14 +295,6 @@ local function Constructor()
   icon:SetHeight(32)
   icon:SetPoint("LEFT", button, "LEFT")
 
-  local title = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  button.title = title
-  title:SetHeight(14)
-  title:SetJustifyH("LEFT")
-  title:SetPoint("TOPLEFT", icon, "TOPRIGHT", 2, 0)
-  title:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT")
-  title:SetVertexColor(0.6, 0.6, 0.6)
-
   button.description = {}
 
   -- follow link button
@@ -369,6 +361,15 @@ local function Constructor()
   update:SetScript("OnLeave", Hide_Tooltip)
   update:Hide()
   updateLogo:Hide()
+
+  local title = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  button.title = title
+  title:SetHeight(14)
+  title:SetJustifyH("LEFT")
+  title:SetPoint("TOPLEFT", icon, "TOPRIGHT", 2, 0)
+  title:SetPoint("BOTTOMLEFT", icon, "BOTTOMRIGHT", 2, 0)
+  title:SetPoint("RIGHT", updateLogo, "LEFT", -2, 0)
+  title:SetVertexColor(0.6, 0.6, 0.6)
 
   local widget = {
     frame = button,

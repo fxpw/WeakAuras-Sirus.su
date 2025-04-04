@@ -520,7 +520,7 @@ Bleed classification via LibDispel]=] ] = "只過濾被 LibDispel 分類為流�
 	L["Limit"] = "限制"
 	L["Line"] = "線"
 	L["Linear Texture %s"] = "線性材質 %s"
-	L["Linked aura: "] = "已連結光環: "
+	L["Linked aura: "] = "連結光環: "
 	L["Linked Auras"] = "連結的光環"
 	L["Load"] = "載入"
 	L["Loaded"] = "已載入"
