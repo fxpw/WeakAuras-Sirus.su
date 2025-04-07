@@ -7,6 +7,25 @@ local L = WeakAuras.L
 
 Private.ExecEnv.BossMods = {}
 
+local dbmSupportStates = {
+  LATEST = 0,
+  COMPATIBLE = 1,
+  LEGACY = 2,
+  UNSUPPORTED = 3
+}
+
+local dbmSupportStatus = dbmSupportStates.UNSUPPORTED
+if (DBM and type(DBM.Revision) == "number" and DBM.Revision >= 20250312000000) then
+  -- DBM 2025.03.12.000000
+  dbmSupportStatus = dbmSupportStates.LATEST
+elseif (DBM and type(DBM.Revision) == "number" and DBM.Revision >= 20250209000000) then
+  -- DBM 2025.02.09.000000
+  dbmSupportStatus = dbmSupportStates.COMPATIBLE
+elseif (DBM and type(DBM.ReleaseRevision) == "number" and DBM.ReleaseRevision >= 7005) then
+  -- DBM 7.0.5
+  dbmSupportStatus = dbmSupportStates.LEGACY
+end
+
 -- DBM
 Private.ExecEnv.BossMods.DBM = {
   registeredEvents = {},
@@ -78,7 +97,7 @@ Private.ExecEnv.BossMods.DBM = {
       end
     end
 
-    if noCastBar and v.timerType:find("^cast") then
+    if noCastBar and v.timerType and v.timerType:find("^cast") then
       return false
     end
 
@@ -166,7 +185,7 @@ Private.ExecEnv.BossMods.DBM = {
         count = count and tostring(count) or "0"
         Private.ScanEvents("BossMod_Announce", spellId, message, icon, count)
       end
-    elseif event == "DBM_TimerBegin" then
+    elseif event == "DBM_TimerBegin" or event == "DBM_TimerStart" then
       local timerId, msg, duration, icon, timerType, spellId, dbmType, _, _, _, _, _, timerCount, _, _, _, _, isBarEnabled = ...
       local now = GetTime()
       local expirationTime = now + duration
@@ -191,25 +210,26 @@ Private.ExecEnv.BossMods.DBM = {
         -- Compability code for DBM versions from around Aberrus
         -- Can be removed once we can assume newer versions
         local barOptions = DBT.Options
-
-        if dbmType == 1 then
-          r, g, b = barOptions.StartColorAR, barOptions.StartColorAG, barOptions.StartColorAB
-        elseif dbmType == 2 then
-          r, g, b = barOptions.StartColorAER, barOptions.StartColorAEG, barOptions.StartColorAEB
-        elseif dbmType == 3 then
-          r, g, b = barOptions.StartColorDR, barOptions.StartColorDG, barOptions.StartColorDB
-        elseif dbmType == 4 then
-          r, g, b = barOptions.StartColorIR, barOptions.StartColorIG, barOptions.StartColorIB
-        elseif dbmType == 5 then
-          r, g, b = barOptions.StartColorRR, barOptions.StartColorRG, barOptions.StartColorRB
-        elseif dbmType == 6 then
-          r, g, b = barOptions.StartColorPR, barOptions.StartColorPG, barOptions.StartColorPB
-        elseif dbmType == 7 then
-          r, g, b = barOptions.StartColorUIR, barOptions.StartColorUIG, barOptions.StartColorUIB
-        elseif dbmType == 8 then
-          r, g, b = barOptions.StartColorI2R, barOptions.StartColorI2G, barOptions.StartColorI2B
-        else
-          r, g, b = barOptions.StartColorR, barOptions.StartColorG, barOptions.StartColorB
+        if barOptions then
+          if dbmType == 1 then
+            r, g, b = barOptions.StartColorAR, barOptions.StartColorAG, barOptions.StartColorAB
+          elseif dbmType == 2 then
+            r, g, b = barOptions.StartColorAER, barOptions.StartColorAEG, barOptions.StartColorAEB
+          elseif dbmType == 3 then
+            r, g, b = barOptions.StartColorDR, barOptions.StartColorDG, barOptions.StartColorDB
+          elseif dbmType == 4 then
+            r, g, b = barOptions.StartColorIR, barOptions.StartColorIG, barOptions.StartColorIB
+          elseif dbmType == 5 then
+            r, g, b = barOptions.StartColorRR, barOptions.StartColorRG, barOptions.StartColorRB
+          elseif dbmType == 6 then
+            r, g, b = barOptions.StartColorPR, barOptions.StartColorPG, barOptions.StartColorPB
+          elseif dbmType == 7 then
+            r, g, b = barOptions.StartColorUIR, barOptions.StartColorUIG, barOptions.StartColorUIB
+          elseif dbmType == 8 then
+            r, g, b = barOptions.StartColorI2R, barOptions.StartColorI2G, barOptions.StartColorI2B
+          else
+            r, g, b = barOptions.StartColorR, barOptions.StartColorG, barOptions.StartColorB
+          end
         end
       end
       bar.dbmColor = {r, g, b}
@@ -324,12 +344,27 @@ Private.ExecEnv.BossMods.DBM = {
   end,
 
   RegisterTimer = function(self)
-    self:RegisterCallback("DBM_TimerBegin")
-    self:RegisterCallback("DBM_TimerStop")
-    self:RegisterCallback("DBM_TimerPause")
-    self:RegisterCallback("DBM_TimerResume")
-    self:RegisterCallback("DBM_TimerUpdate")
-    self:RegisterCallback("DBM_TimerUpdateIcon")
+    if dbmSupportStatus == dbmSupportStates.LATEST then
+      self:RegisterCallback("DBM_TimerBegin")
+      self:RegisterCallback("DBM_TimerStop")
+      self:RegisterCallback("DBM_TimerPause")
+      self:RegisterCallback("DBM_TimerResume")
+      self:RegisterCallback("DBM_TimerUpdate")
+      self:RegisterCallback("DBM_TimerUpdateIcon")
+    elseif dbmSupportStatus == dbmSupportStates.COMPATIBLE then
+      self:RegisterCallback("DBM_TimerStart")
+      self:RegisterCallback("DBM_TimerStop")
+      self:RegisterCallback("DBM_TimerPause")
+      self:RegisterCallback("DBM_TimerResume")
+      self:RegisterCallback("DBM_TimerUpdate")
+      self:RegisterCallback("DBM_TimerUpdateIcon")
+    else
+      self:RegisterCallback("DBM_TimerStart")
+      self:RegisterCallback("DBM_TimerStop")
+      self:RegisterCallback("DBM_TimerUpdate")
+      self:RegisterCallback("wipe")
+      self:RegisterCallback("kill")
+    end
   end,
 
   RegisterMessage = function(self)
@@ -458,8 +493,8 @@ Private.event_prototypes["DBM Timer"] = {
   type = "addons",
   events = {},
   internal_events = {
-    "DBM_TimerStart", "DBM_TimerStop", "DBM_TimerUpdate", "DBM_TimerForce", "DBM_TimerResume", "DBM_TimerPause",
-    "DBM_TimerUpdateIcon"
+    "DBM_TimerStart", "DBM_TimerStop", "DBM_TimerUpdate", "DBM_TimerStopAll,", "DBM_TimerForce",
+    "DBM_TimerResume", "DBM_TimerPause", "DBM_TimerUpdateIcon"
   },
   force_events = "DBM_TimerForce",
   name = L["DBM Timer"],
@@ -1772,13 +1807,18 @@ Private.event_prototypes["Boss Mod Timer"] = {
 }
 Private.category_event_prototype.addons["Boss Mod Timer"] = L["Boss Mod Timer"]
 
--- Disable DBM for users with an outdated DBM version and always disable BigWigs triggers
--- Only disable DBM triggers if the DBM version is older than 2025-Feb-09 and 2025-Mar-12
+-- Deactivate DBM for users with outdated versions, and always disable BigWigs triggers.
+-- DBM triggers are only disabled if the DBM version is older than 7.0.5+.
+-- Supported DBM version is "DBM Warmane" with commits from 2025-Feb-09+ and from 2025-Mar-12+.
+-- Note: DBM 7.0.5+ is also functional, but some triggers (e.g., Type, Bar, etc.) may not work as expected.
+--
 -- References:
--- Commit: https://github.com/Zidras/DBM-Warmane/commit/5791dac460a07225c5d617d0252a88ce1e210618 - 20250209000000
--- Commit2: https://github.com/Zidras/DBM-Warmane/commit/b6804570cab39a1c0412f964d1f2c15a63b96eed - 20250312000000
+-- Commit 1: https://github.com/Zidras/DBM-Warmane/commit/5791dac460a07225c5d617d0252a88ce1e210618 (2025-02-09)
+-- Commit 2: https://github.com/Zidras/DBM-Warmane/commit/b6804570cab39a1c0412f964d1f2c15a63b96eed (2025-03-12)
 -- Download: https://github.com/Zidras/DBM-Warmane/archive/refs/heads/main.zip
-if not (DBM and type(DBM.Revision) == "number" and DBM.Revision >= 20250312000000) then
+
+-- Disable DBM for users with an outdated DBM version
+if dbmSupportStatus == dbmSupportStates.UNSUPPORTED then
   local dbm_trigger = {
     "DBM Stage",
     "DBM Announce",
@@ -1802,6 +1842,7 @@ local bigwigs_trigger = {
   "BigWigs Timer"
 }
 
+-- Remove all relevant BigWigs event prototypes
 for _, event in ipairs(bigwigs_trigger) do
   Private.event_prototypes[event] = nil
 end
