@@ -243,6 +243,8 @@ L["Back and Forth"] = "Vai e volta"
 L["Background"] = "Plano de fundo"
 L["Background Color"] = "Cor do Plano de Fundo"
 --[[Translation missing --]]
+L["Balnazzar"] = "Balnazzar"
+--[[Translation missing --]]
 L["Bar Color/Gradient Start"] = "Bar Color/Gradient Start"
 --[[Translation missing --]]
 L["Bar enabled in BigWigs settings"] = "Bar enabled in BigWigs settings"
@@ -258,6 +260,10 @@ L["Battle for Azeroth"] = "Battle for Azeroth"
 L["Battle.net Whisper"] = "Battle.net Sussuro"
 L["Battleground"] = "Campo de Batalha"
 L["Battleguard Sartura"] = "Guarda de Batalha Sartura"
+--[[Translation missing --]]
+L["Beastmaster"] = "Beastmaster"
+--[[Translation missing --]]
+L["Beatrix"] = "Beatrix"
 L["BG>Raid>Party>Say"] = "CB>Raide>Grupo>Dizer"
 L["BG-System Alliance"] = "CB-Sistema da Aliança"
 L["BG-System Horde"] = "CB-Sistema da Horda"
@@ -317,6 +323,8 @@ L["Buffed/Debuffed"] = "Buffado/Debuffado"
 --[[Translation missing --]]
 L["Burning Crusade"] = "Burning Crusade"
 L["Buru the Gorger"] = "Buru, o Banqueteador"
+--[[Translation missing --]]
+L["Caldoran"] = "Caldoran"
 --[[Translation missing --]]
 L["Callback function"] = "Callback function"
 L["Can be used for e.g. checking if \"boss1target\" is the same as \"player\"."] = "Pode ser usado, por exemplo, para checar se \"chefe1alvo\" é o mesmo que \"jogador\"."
@@ -1255,6 +1263,8 @@ L["Level"] = "Level"
 --[[Translation missing --]]
 L["LibSharedMedia"] = "LibSharedMedia"
 --[[Translation missing --]]
+L["Lillian Voss"] = "Lillian Voss"
+--[[Translation missing --]]
 L["Limited"] = "Limited"
 --[[Translation missing --]]
 L["Linear Texture"] = "Linear Texture"
@@ -1314,6 +1324,8 @@ L["Manual Rotation"] = "Manual Rotation"
 L["Marked First"] = "Marked First"
 --[[Translation missing --]]
 L["Marked Last"] = "Marked Last"
+--[[Translation missing --]]
+L["Mason"] = "Mason"
 L["Master"] = "Mestre"
 --[[Translation missing --]]
 L["Mastery (%)"] = "Mastery (%)"
@@ -1813,6 +1825,8 @@ L["Realm Name"] = "Realm Name"
 --[[Translation missing --]]
 L["Realm of Caster's Target"] = "Realm of Caster's Target"
 --[[Translation missing --]]
+L["Reborn Council"] = "Reborn Council"
+--[[Translation missing --]]
 L["Receiving %s Bytes"] = "Receiving %s Bytes"
 --[[Translation missing --]]
 L["Receiving display information"] = "Receiving display information"
@@ -1850,7 +1864,7 @@ L["Requested display not authorized"] = "Exibição requerida não autorizada"
 L["Requesting display information from %s ..."] = "Requesting display information from %s ..."
 L["Require Valid Target"] = "Requer um alvo válido"
 --[[Translation missing --]]
-L["Requires syncing the specialization via LibGroupTalents."] = "Requires syncing the specialization via LibGroupTalents."
+L["Requires syncing the specialization via LibSpecialization."] = "Requires syncing the specialization via LibSpecialization."
 --[[Translation missing --]]
 L["Resilience (%)"] = "Resilience (%)"
 --[[Translation missing --]]
@@ -1923,6 +1937,8 @@ L["Sapphiron"] = "Sapphiron"
 L["Say"] = "falar"
 --[[Translation missing --]]
 L["Scale"] = "Scale"
+--[[Translation missing --]]
+L["Scarlet Enclave"] = "Scarlet Enclave"
 --[[Translation missing --]]
 L["Scenario"] = "Scenario"
 --[[Translation missing --]]
@@ -2030,6 +2046,8 @@ L["Smart Group"] = "Smart Group"
 L["Soft Enemy"] = "Soft Enemy"
 --[[Translation missing --]]
 L["Soft Friend"] = "Soft Friend"
+--[[Translation missing --]]
+L["Solistrasza"] = "Solistrasza"
 --[[Translation missing --]]
 L["Sound"] = "Sound"
 --[[Translation missing --]]
@@ -2594,57 +2612,4 @@ L["Zoom"] = "Zoom"
 L["Zoom Animation"] = "Zoom Animation"
 --[[Translation missing --]]
 L["Zul'Gurub"] = "Zul'Gurub"
-L["Affliction"] = "Affliction"
-L["Arcane"] = "Arcane"
-L["Arms"] = "Arms"
-L["Assassination"] = "Assassination"
-L["Balance"] = "Balance"
-L["Beast Mastery"] = "Beast Mastery"
-L["Blood"] = "Blood"
-L["Combat"] = "Combat"
-L["Demonology"] = "Demonology"
-L["Destruction"] = "Destruction"
-L["Discipline"] = "Discipline"
-L["Elemental"] = "Elemental"
-L["Enhancement"] = "Enhancement"
-L["Feral Combat"] = "Feral Combat"
-L["Fire"] = "Fire"
-L["Frost"] = "Frost"
-L["Fury"] = "Fury"
-L["Holy"] = "Holy"
-L["Hybrid"] = "Hybrid"
-L["Marksmanship"] = "Marksmanship"
-L["Protection"] = "Protection"
-L["Restoration"] = "Restoration"
-L["Retribution"] = "Retribution"
-L["Shadow"] = "Shadow"
-L["Subtlety"] = "Subtlety"
-L["Survival"] = "Survival"
-L["Unholy"] = "Unholy"
-L["SHORTDATE_EU"] = "%1$d/%2$d/%3$02d"
-L["D_SECONDS"] = "%d |4segundo:segundos;"
-L["SECONDS_ABBR"] = "%d |4s:s;"
-L["SECOND_ONELETTER_ABBR"] = "%d s"
-L["D_MINUTES"] = "%d |4minuto:minutos;"
-L["MINUTES_ABBR"] = "%d |4min:min;"
-L["MINUTE_ONELETTER_ABBR"] = "%d min"
-L["D_HOURS"] = "%d |4hora:horas;"
-L["HOURS_ABBR"] = "%d |4H:H;"
-L["HOUR_ONELETTER_ABBR"] = "%d h"
-L["D_DAYS"] = "%d |4dia:dias;"
-L["DAYS_ABBR"] = "%d |4dia:dias;"
-L["DAY_ONELETTER_ABBR"] = "%d d"
-L["LESS_THAN_OPERAND"] = "< %s"
-L["TIME_UNIT_DELIMITER"] = " "
-L["HOURS_MINUTES_SECONDS"] = "%.2d:%.2d:%.2d"
-L["MINUTES_SECONDS"] = "%.2d:%.2d"
-L["SHORTDATE"] = "%1$02d/%2$d/%3$02d"
-L["SHORTDATENOYEAR"] = "%1$02d/%2$d"
-L["SHORTDATENOYEAR_EU"] = "%1$d/%2$d"
-L["DECIMAL_SEPERATOR"] = "."
-L["SECOND_NUMBER_CAP"] = " M"
-L["FIRST_NUMBER_CAP"] = " K"
-L["FIRST_NUMBER_CAP_NO_SPACE"] = "K"
-L["FOURTH_NUMBER_CAP_NO_SPACE"] = "T"
-L["SECOND_NUMBER_CAP_NO_SPACE"] = "M"
-L["THIRD_NUMBER_CAP_NO_SPACE"] = "B"
+
