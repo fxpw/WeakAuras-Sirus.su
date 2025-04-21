@@ -1150,9 +1150,10 @@ local function TriggerInfoApplies(triggerInfo, unit)
   end
 
   if triggerInfo.specId then
-    local spec = WeakAuras.LGT:GetUnitTalentSpec(controllingUnit)
-    local class = select(2, UnitClass(controllingUnit))
-    if not (spec and class and triggerInfo.specId[class .. spec]) then
+    local spec = Private.ExecEnv.GetUnitTalentSpec(controllingUnit)
+    local _, class = UnitClass(controllingUnit)
+    local specID = (spec and class) and Private.ExecEnv.GetSpecID(class .. spec) or 0
+    if not triggerInfo.specId[specID] then
       return false
     end
   end

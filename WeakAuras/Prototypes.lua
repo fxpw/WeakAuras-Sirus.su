@@ -577,14 +577,6 @@ function WeakAuras.CheckTalentByIndex(index, extraOption)
   return result;
 end
 
-function WeakAuras.CheckClassSpec(specID)
-  specID = tonumber(specID)
-  if not specID then return end
-  local class = select(2, UnitClass("player")) or ""
-  local currentSpec = WeakAuras.LGT:GetUnitTalentSpec("player") or ""
-  return specID and Private.ExecEnv.GetSpecName(specID) == class .. currentSpec
-end
-
 function WeakAuras.CheckNumericIds(loadids, currentId)
   if (not loadids or not currentId) then
     return false;
@@ -682,9 +674,26 @@ function Private.ExecEnv.GetSpecID(specName)
   return specName and Private.specname_to_id[specName] or 0
 end
 
+function Private.ExecEnv.GetUnitTalentSpec(unit)
+  local spec = WeakAuras.LGT:GetUnitTalentSpec(unit)
+  -- LibGroupTalents misses Guardian for tanks, so we fix it here
+  if spec == L["Feral Combat"] then
+    return (WeakAuras.LGT:GetUnitRole(unit) == "tank" and L["Guardian"]) or spec
+  end
+  return spec
+end
+
+function WeakAuras.CheckClassSpec(specID)
+  specID = tonumber(specID)
+  if not specID then return end
+  local class = select(2, UnitClass("player")) or ""
+  local currentSpec = Private.ExecEnv.GetUnitTalentSpec("player") or ""
+  return Private.ExecEnv.GetSpecName(specID) == class .. currentSpec
+end
+
 function WeakAuras.SpecForUnit(unit)
   if not unit then return 0 end
-  local spec = WeakAuras.LGT:GetUnitTalentSpec(unit)
+  local spec = Private.ExecEnv.GetUnitTalentSpec(unit)
   local class = select(2, UnitClass(unit))
   return (spec and class) and Private.ExecEnv.GetSpecID(class .. spec) or 0
 end
@@ -5037,7 +5046,7 @@ Private.event_prototypes = {
     init = function(trigger)
       local class = select(2, UnitClass("player")) or "UNKNOWN"
       return ([[
-        local specName = WeakAuras.LGT:GetUnitTalentSpec("player") or "Unknown"
+        local specName = Private.ExecEnv.GetUnitTalentSpec("player") or "Unknown"
         local specId = Private.ExecEnv.GetSpecID("%s" .. specName)
         local specIcon = Private.ExecEnv.GetSpecIcon(specId)
       ]]):format(class)
