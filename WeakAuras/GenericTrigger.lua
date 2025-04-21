@@ -76,9 +76,6 @@ local ConstructTest, ConstructFunction
 
 local nameplateExists = {}
 
----@param unit UnitToken
----@param smart? boolean
----@return boolean unitExists
 function WeakAuras.UnitExistsFixed(unit, smart)
   if #unit > 9 and unit:sub(1, 9) == "nameplate" then
     return nameplateExists[unit]

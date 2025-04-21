@@ -6379,7 +6379,7 @@ Private.event_prototypes = {
       trigger.unit = trigger.unit or "target";
       local ret = [[
         unit = string.lower(unit)
-        local name = UnitName(unit, false)
+        local name = UnitName(unit, false) or (unit == "none" and "Unknown")
         local ok = true
         local aggro, status, threatpct, rawthreatpct, threatvalue, threattotal
         if unit and unit ~= "none" then
@@ -6530,7 +6530,7 @@ Private.event_prototypes = {
       },
       {
         hidden = true,
-        test = "WeakAuras.UnitExistsFixed(unit, false) and specificUnitCheck"
+        test = "((WeakAuras.UnitExistsFixed(unit, false) or unit == 'none') and specificUnitCheck)"
       }
     },
     automaticrequired = true
