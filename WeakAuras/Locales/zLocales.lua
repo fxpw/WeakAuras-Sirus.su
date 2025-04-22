@@ -174,7 +174,7 @@ elseif (locale == "deDE") then
   L["Hybrid"] = "Hybride"
   L["Marksmanship"] = "Treffsicherheit"
   L["Protection"] = "Schutz"
-  L["Restoration"] = "Wiederherstellung"
+  L["Restoration"] = "Wiederherst."
   L["Retribution"] = "Vergeltung"
   L["Shadow"] = "Schatten"
   L["Subtlety"] = "Täuschung"

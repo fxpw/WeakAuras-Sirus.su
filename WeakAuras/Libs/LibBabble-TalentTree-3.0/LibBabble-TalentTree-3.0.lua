@@ -72,7 +72,7 @@ elseif GAME_LOCALE == "deDE" then
 	Hybrid = "Hybride",
 	Marksmanship = "Treffsicherheit",
 	Protection = "Schutz",
-	Restoration = "Wiederherstellung",
+	Restoration = "Wiederherst.",
 	Retribution = "Vergeltung",
 	Shadow = "Schatten",
 	Subtlety = "Täuschung",
