@@ -29,8 +29,10 @@ To open the options window, type `/wa` or `/weakauras` into your chat and hit en
 
 * [WeakAuras Companion](https://weakauras.wtf): This application adds the missing link between Wago.io and the World of Warcraft addon, enabling you to update your auras in a convenient fashion. (Folder Structure: `World of Warcraft/_retail_/Wow.exe` and backup WTF)
 * [WeakAuras_StopMotion](https://www.curseforge.com/wow/addons/weakauras-stop-motion): This addon adds a new region type to WeakAuras that allows for stop motion animations. Stop Motion textures contain each frame of the animation as a separate image. The addon ships with a number of animations and it supports custom textures.
-* [SharedMedia](https://github.com/bkader/SharedMedia) for more bar textures.
-* [SharedMediaAdditionalFonts](https://drive.google.com/file/d/1xDCpDpStRbXdSBKYOeZHpYBt_dRDqb3g/view?usp=sharing) for more fonts.
+- [bKader Shared Media](https://github.com/bkader/SharedMedia) for more bar, textures, fonts, sounds(popular version), with alot custom stuff added.
+- [SharedMedia](https://github.com/NoM0Re/SharedMedia) for more bar textures, fonts (retail version).
+- [SharedMediaAdditionalFonts](https://github.com/NoM0Re/SharedMediaAdditionalFonts) for more fonts.
+- [MerfinPlus](https://drive.google.com/file/d/1xDCpDpStRbXdSBKYOeZHpYBt_dRDqb3g/view?usp=sharing) Adds predefined tts, sounds, statusbar, fonts and more.
 * [ColorPickerPlus](https://drive.google.com/file/d/1ymNYizWp2TxIS1a6hLg7bT9YoJ3E-8Na/view?usp=sharing) for a better version of the WoW color picker that includes class color templates and a copy and paste function.
 
 ## Documentation
