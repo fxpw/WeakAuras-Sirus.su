@@ -1706,6 +1706,42 @@ Private.event_prototypes = {
         conditionType = "select"
       },
       {
+        name = "creatureTypeIndex",
+        display = L["Creature Type"],
+        type = "multiselect",
+        init = "Private.ExecEnv.creature_type_name_to_id[UnitCreatureType(unit or '') or 0]",
+        values = "creature_type_types",
+        store = true,
+        sorted = true,
+        conditionType = "select",
+      },
+      {
+        name = "creatureType",
+        display = L["Creature Type Name"],
+        init = "UnitCreatureType(unit)",
+        store = true,
+        test = "true",
+        hidden = true,
+      },
+      {
+        name = "creatureFamilyIndex",
+        display = L["Creature Family"],
+        type = "multiselect",
+        init = "Private.ExecEnv.creature_family_name_to_id[UnitCreatureFamily(unit or '') or 0]",
+        values = "creature_family_types",
+        store = true,
+        sorted = true,
+        conditionType = "select",
+      },
+      {
+        name = "creatureFamily",
+        display = L["Creature Family Name"],
+        init = "UnitCreatureFamily(unit)",
+        store = true,
+        test = "true",
+        hidden = true,
+      },
+      {
         name = "role",
         display = L["Spec Role"],
         type = "select",
@@ -8108,6 +8144,8 @@ Private.event_prototypes = {
     force_events = "CURRENCY_DISPLAY_UPDATE",
     name = WeakAuras.newFeatureString..L["Currency"],
     init = function(trigger)
+      if type(trigger.value) ~= "string" then trigger.value = "" end
+      if type(trigger.value_operator) ~= "string" then trigger.value_operator = "" end
       local ret = [=[
           local currencyID = %d
           local discoveredTbl = Private.ExecEnv.GetDiscoveredCurrencies() or {}
