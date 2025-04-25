@@ -297,7 +297,6 @@ UNIT_POWER, UNIT_AURA PLAYER_TARGET_CHANGED]=]
 	L["Determines how many entries can be in the table."] = "决定表格中可以有多少条目"
 	L["Differences"] = "差异"
 	L["Disallow Entry Reordering"] = "不允许重新排列条目"
-	--[[Translation missing --]]
 	L["Discord"] = "Discord"
 	L["Display Name"] = "图示名称"
 	L["Display Text"] = "图示文本"

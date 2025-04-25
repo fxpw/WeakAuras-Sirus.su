@@ -383,6 +383,14 @@ L["Could not load WeakAuras Archive, the addon is %s"] = "Impossibile caricare l
 L["Count"] = "Conteggio "
 L["Counter Clockwise"] = "Conteggio Antiorario"
 L["Create"] = "Crea"
+--[[Translation missing --]]
+L["Creature Family"] = "Creature Family"
+--[[Translation missing --]]
+L["Creature Family Name"] = "Creature Family Name"
+--[[Translation missing --]]
+L["Creature Type"] = "Creature Type"
+--[[Translation missing --]]
+L["Creature Type Name"] = "Creature Type Name"
 L["Critical"] = "Critico"
 L["Critical (%)"] = "Critico (%)"
 L["Critical Rating"] = "Grado del Critico"
@@ -2687,3 +2695,4 @@ L["Zoom"] = "Zoom"
 L["Zoom Animation"] = "Zoom Animation"
 --[[Translation missing --]]
 L["Zul'Gurub"] = "Zul'Gurub"
+

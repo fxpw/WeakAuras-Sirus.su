@@ -295,7 +295,6 @@ UNIT_POWER  UNIT_AURA, PLAYER_TARGET_CHANGED]=]
 	L["Determines how many entries can be in the table."] = "Определяет, сколько записей может быть в таблице."
 	L["Differences"] = "Различия"
 	L["Disallow Entry Reordering"] = "Запретить изменение порядка записей"
-	--[[Translation missing --]]
 	L["Discord"] = "Discord"
 	L["Display Name"] = "Отображаемое имя"
 	L["Display Text"] = "Отображаемый текст"

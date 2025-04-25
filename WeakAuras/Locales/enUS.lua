@@ -333,6 +333,10 @@ L["Could not load WeakAuras Archive, the addon is %s"] = "Could not load WeakAur
 L["Count"] = "Count"
 L["Counter Clockwise"] = "Counter Clockwise"
 L["Create"] = "Create"
+L["Creature Family"] = "Creature Family"
+L["Creature Family Name"] = "Creature Family Name"
+L["Creature Type"] = "Creature Type"
+L["Creature Type Name"] = "Creature Type Name"
 L["Critical"] = "Critical"
 L["Critical (%)"] = "Critical (%)"
 L["Critical Rating"] = "Critical Rating"
@@ -1544,6 +1548,7 @@ L["Zone Name"] = "Zone Name"
 L["Zoom"] = "Zoom"
 L["Zoom Animation"] = "Zoom Animation"
 L["Zul'Gurub"] = "Zul'Gurub"
+
 
 -- Make missing translations available
 setmetatable(WeakAuras.L, {__index = function(self, key)

@@ -181,8 +181,7 @@ L["Azuregos"] = "Азурегос"
 L["Back and Forth"] = "Назад и вперед"
 L["Background"] = "Задний план"
 L["Background Color"] = "Цвет заднего плана"
---[[Translation missing --]]
-L["Balnazzar"] = "Balnazzar"
+L["Balnazzar"] = "Балназзар"
 L["Bar Color/Gradient Start"] = "Цвет полосы / Начало градиента"
 --[[Translation missing --]]
 L["Bar enabled in BigWigs settings"] = "Bar enabled in BigWigs settings"
@@ -196,10 +195,8 @@ L["Battle for Azeroth"] = "Battle for Azeroth"
 L["Battle.net Whisper"] = "Шепот в сети Battle.net"
 L["Battleground"] = "Поле боя"
 L["Battleguard Sartura"] = "Боевой страж Сартура"
---[[Translation missing --]]
-L["Beastmaster"] = "Beastmaster"
---[[Translation missing --]]
-L["Beatrix"] = "Beatrix"
+L["Beastmaster"] = "Повелитель зверей"
+L["Beatrix"] = "Беатриса"
 L["BG>Raid>Party>Say"] = "Поле боя > Рейд > Группа > Сказать"
 L["BG-System Alliance"] = "Поле боя: Альянс"
 L["BG-System Horde"] = "Поле боя: Орда"
@@ -244,8 +241,7 @@ L["Buff/Debuff"] = "Бафф / Дебафф"
 L["Buffed/Debuffed"] = "Есть бафф / дебафф"
 L["Burning Crusade"] = "Burning Crusade"
 L["Buru the Gorger"] = "Буру Ненасытный"
---[[Translation missing --]]
-L["Caldoran"] = "Caldoran"
+L["Caldoran"] = "Калдоран"
 L["Callback function"] = "Функция обратного вызова"
 L["Can be used for e.g. checking if \"boss1target\" is the same as \"player\"."] = [=[Используется для проверки того факта, что две единицы - одна и та же сущность, объект.
 Например: выбрав в качестве единицы игрока и указав для данного параметра значение "boss1target", можно определить, являетесь ли вы целью босса.]=]
@@ -341,6 +337,14 @@ L["Could not load WeakAuras Archive, the addon is %s"] = "Не удалось з
 L["Count"] = "Количество"
 L["Counter Clockwise"] = "Против часовой стрелки"
 L["Create"] = "Создание"
+--[[Translation missing --]]
+L["Creature Family"] = "Creature Family"
+--[[Translation missing --]]
+L["Creature Family Name"] = "Creature Family Name"
+--[[Translation missing --]]
+L["Creature Type"] = "Creature Type"
+--[[Translation missing --]]
+L["Creature Type Name"] = "Creature Type Name"
 L["Critical"] = "Критический эффект"
 L["Critical (%)"] = "Критический удар (%)"
 L["Critical Rating"] = "Показатель критического удара"
@@ -771,8 +775,7 @@ L["Legion"] = "Legion"
 L["Length"] = "Длина"
 L["Level"] = "Уровень"
 L["LibSharedMedia"] = "LibSharedMedia"
---[[Translation missing --]]
-L["Lillian Voss"] = "Lillian Voss"
+L["Lillian Voss"] = "Лилиан Восс"
 L["Limited"] = "Ограниченное"
 L["Linear Texture"] = "Линейная текстура"
 L["Lines & Particles"] = "Линии или частицы"
@@ -1156,8 +1159,7 @@ L["Rune Count - Unholy"] = "Количество рун нечестивости
 L["Sapphiron"] = "Сапфирон"
 L["Say"] = "Сказать"
 L["Scale"] = "Масштаб"
---[[Translation missing --]]
-L["Scarlet Enclave"] = "Scarlet Enclave"
+L["Scarlet Enclave"] = "Анклав Алого Ордена"
 L["Scenario"] = "Сценарий"
 L["Scenario (Heroic)"] = "Сценарий (героический)"
 L["Scenario (Normal)"] = "Сценарий (обычный)"
@@ -1220,8 +1222,7 @@ L["Small"] = "Мелкий"
 L["Smart Group"] = "Рейд > Группа > Игрок"
 L["Soft Enemy"] = "Противник при динам. выделении"
 L["Soft Friend"] = "Союзник при динам. выделении"
---[[Translation missing --]]
-L["Solistrasza"] = "Solistrasza"
+L["Solistrasza"] = "Солистраза"
 L["Sound"] = "Звук"
 L["Sound by Kit ID"] = "Звук по ID набора"
 L["Source"] = "Источник"
@@ -1546,3 +1547,4 @@ L["Zone Name"] = "Название игровой зоны"
 L["Zoom"] = "Масштаб"
 L["Zoom Animation"] = "Анимация масштаба"
 L["Zul'Gurub"] = "Зул'Гуруб"
+
