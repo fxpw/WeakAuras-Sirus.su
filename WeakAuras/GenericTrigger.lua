@@ -801,7 +801,7 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
             end
           end
         end
-        if not updateTriggerState and not allStates[cloneIdForUnitTrigger].show then
+        if not updateTriggerState and not (allStates[cloneIdForUnitTrigger] and allStates[cloneIdForUnitTrigger].show) then
           -- We added this state automatically, but the trigger didn't end up using it,
           -- so remove it again
           allStates[cloneIdForUnitTrigger] = nil
