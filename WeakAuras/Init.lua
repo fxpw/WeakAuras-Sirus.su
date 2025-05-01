@@ -8,8 +8,8 @@ WeakAuras.halfWidth = WeakAuras.normalWidth / 2
 WeakAuras.doubleWidth = WeakAuras.normalWidth * 2
 
 local versionStringFromToc = GetAddOnMetadata("WeakAuras", "Version")
-local versionString = "4.0.99"
-local buildTime = "2023".."07".."10".."16".."00".."00"
+local versionString = "4.0.101"
+local buildTime = "2023" .. "07" .. "10" .. "16" .. "00" .. "00"
 
 WeakAuras.versionString = versionStringFromToc
 WeakAuras.buildTime = buildTime
@@ -17,26 +17,27 @@ WeakAuras.newFeatureString = "|TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeat
 WeakAuras.BuildInfo = select(4, GetBuildInfo())
 
 function WeakAuras.IsClassic()
-  return false
+	return false
 end
 
 function WeakAuras.IsCorrectVersion()
-  return true
+	return true
 end
 
 function WeakAuras.IsSirusVersion()
-  return true
+	return true
 end
+
 function WeakAuras.IsRetail()
-  return false
+	return false
 end
 
 WeakAuras.prettyPrint = function(...)
-  print("|cff9900ffWeakAuras:|r ", ...)
+	print("|cff9900ffWeakAuras:|r ", ...)
 end
 
 if versionString ~= versionStringFromToc and versionStringFromToc ~= "Dev" then
-  WeakAuras.prettyPrint("You need to restart your game client to complete the WeakAuras update!")
+	WeakAuras.prettyPrint("You need to restart your game client to complete the WeakAuras update!")
 end
 
 -- Force enable WeakAurasCompanion and Archive because some addon managers interfere with it
@@ -79,16 +80,16 @@ function WeakAuras.PrintProfile()
 end
 
 function WeakAuras.CountWagoUpdates()
-  -- XXX this is to work around the Companion app trying to use our stuff!
-  return 0
+	-- XXX this is to work around the Companion app trying to use our stuff!
+	return 0
 end
 
 function WeakAuras.Mixin(object, ...)
-  for i = 1, select("#", ...) do
-    local mixin = select(i, ...)
-    for k, v in pairs(mixin) do
-      object[k] = v
-    end
-  end
-  return object
+	for i = 1, select("#", ...) do
+		local mixin = select(i, ...)
+		for k, v in pairs(mixin) do
+			object[k] = v
+		end
+	end
+	return object
 end
