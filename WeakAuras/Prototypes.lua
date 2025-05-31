@@ -839,26 +839,31 @@ function WeakAuras.IsSpellKnownForLoad(spell, exact)
 end
 
 function WeakAuras.IsSpellKnown(spell, pet)
-  if (spell) then
-    if tonumber(spell) then
-      if (pet) then
-        return IsSpellKnown(spell, pet);
-      end
-      return IsSpellKnown(spell);
-    else
-      return (GetSpellInfo(spell)) and true or false
+  local id = tonumber(spell)
+  if id then
+    if id > 0 and id < 2^31 then
+      return IsSpellKnown(id, pet)
     end
+    return false
   end
-  return false
+  return GetSpellInfo(spell) and true or false
 end
 
 function WeakAuras.IsSpellKnownIncludingPet(spell)
   if (not spell) then
     return false;
   end
-  if (WeakAuras.IsSpellKnown(spell) or WeakAuras.IsSpellKnown(spell, true)) then
-    return true;
+  return WeakAuras.IsSpellKnown(spell, false) or WeakAuras.IsSpellKnown(spell, true)
+end
+
+function WeakAuras.IsGlyphActive(glyphID)
+  for slot = 1, GetNumGlyphSockets() or 6 do
+    local enabled, _, glyphId = GetGlyphSocketInfo(slot)
+    if glyphID == glyphId then
+      return enabled == 1
+    end
   end
+  return false
 end
 
 function WeakAuras.GetEffectiveAttackPower()
@@ -1007,53 +1012,6 @@ Private.load_prototype = {
       type = "description",
     },
     {
-      name = "player",
-      hidden = true,
-      init = "arg",
-      test = "true"
-    },
-    {
-      name = "realm",
-      hidden = true,
-      init = "arg",
-      test = "true"
-    },
-
-    {
-      name = "guild",
-      init = "arg",
-      enable = false,
-      hidden = true
-    },
-    {
-      name = "namerealm",
-      display = L["Player Name/Realm"],
-      type = "string",
-      multiline = true,
-      test = "nameRealmChecker:Check(player, realm)",
-      preamble = "local nameRealmChecker = Private.ExecEnv.ParseNameCheck(%q)",
-      desc = constants.nameRealmFilterDesc,
-    },
-    {
-      name = "ignoreNameRealm",
-      display = L["|cFFFF0000Not|r Player Name/Realm"],
-      type = "string",
-      multiline = true,
-      test = "not nameRealmIgnoreChecker:Check(player, realm)",
-      preamble = "local nameRealmIgnoreChecker = Private.ExecEnv.ParseNameCheck(%q)",
-      desc = constants.nameRealmFilterDesc,
-    },
-    {
-      name = "guildcheck",
-      display = L["Guild"],
-      type = "string",
-      multiline = true,
-      preamble = "local guildChecker = Private.ExecEnv.ParseStringCheck(%q)",
-      test = "guildChecker:Check(guild)",
-      desc = constants.guildFilterDesc,
-      events = {"GUILD_ROSTER_UPDATE"}
-    },
-    {
       name = "class",
       display = L["Player Class"],
       type = "multiselect",
@@ -1146,6 +1104,19 @@ Private.load_prototype = {
       end
     },
     {
+      name = "glyph",
+      display = L["Glyph"],
+      type = "multiselect",
+      values = function(trigger)
+        Private.InitializeGlyphs(trigger and trigger.glyph)
+        return Private.glyph_types
+      end,
+      sorted = true,
+      sortOrder = Private.glyph_sorted,
+      test = "WeakAuras.IsGlyphActive(%s)",
+      events = {"GLYPH_ADDED", "GLYPH_REMOVED", "GLYPH_UPDATED", "USE_GLYPH"},
+    },
+    {
       name = "spellknown",
       display = L["Spell Known"],
       type = "spell",
@@ -1160,6 +1131,52 @@ Private.load_prototype = {
       test = "not WeakAuras.IsSpellKnownForLoad(%s, %s)",
       events = {"SPELLS_CHANGED", "UNIT_PET"},
       showExactOption = true
+    },
+    {
+      name = "player",
+      init = "arg",
+      enable = false,
+      hidden = true
+    },
+    {
+      name = "realm",
+      init = "arg",
+      enable = false,
+      hidden = true
+    },
+    {
+      name = "guild",
+      init = "arg",
+      enable = false,
+      hidden = true
+    },
+    {
+      name = "namerealm",
+      display = L["Player Name/Realm"],
+      type = "string",
+      multiline = true,
+      test = "nameRealmChecker:Check(player, realm)",
+      preamble = "local nameRealmChecker = Private.ExecEnv.ParseNameCheck(%q)",
+      desc = constants.nameRealmFilterDesc,
+    },
+    {
+      name = "ignoreNameRealm",
+      display = L["|cFFFF0000Not|r Player Name/Realm"],
+      type = "string",
+      multiline = true,
+      test = "not nameRealmIgnoreChecker:Check(player, realm)",
+      preamble = "local nameRealmIgnoreChecker = Private.ExecEnv.ParseNameCheck(%q)",
+      desc = constants.nameRealmFilterDesc,
+    },
+    {
+      name = "guildcheck",
+      display = L["Guild"],
+      type = "string",
+      multiline = true,
+      test = "guildChecker:Check(guild)",
+      preamble = "local guildChecker = Private.ExecEnv.ParseStringCheck(%q)",
+      desc = constants.guildFilterDesc,
+      events = {"PLAYER_GUILD_UPDATE"}
     },
     {
       name = "race",
@@ -1192,7 +1209,7 @@ Private.load_prototype = {
       type = "multiselect",
       values = "role_types",
       init = "arg",
-      events = {"PLAYER_TALENT_UPDATE", "PLAYER_ROLES_ASSIGNED", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"}
+      events = {"PLAYER_ROLES_ASSIGNED", "PLAYER_TALENT_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD"}
     },
     {
       name = "spec_position",
@@ -1200,7 +1217,7 @@ Private.load_prototype = {
       type = "multiselect",
       values = "spec_position_types",
       init = "arg",
-      events = {"PLAYER_TALENT_UPDATE", "PLAYER_ROLES_ASSIGNED", "SPELL_UPDATE_USABLE", "WA_DELAYED_PLAYER_ENTERING_WORLD"}
+      events = {"PLAYER_ROLES_ASSIGNED", "PLAYER_TALENT_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD"}
     },
     {
       name = "raid_role",
@@ -1253,8 +1270,8 @@ Private.load_prototype = {
       type = "string",
       multiline = true,
       init = "arg",
-      preamble = "local zoneChecker = Private.ExecEnv.ParseStringCheck(%q)",
-      test = "zoneChecker:Check(zone)",
+      preamble = "local checker = Private.ExecEnv.ParseStringCheck(%q)",
+      test = "checker:Check(zone)",
       events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
         return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
@@ -1263,7 +1280,7 @@ Private.load_prototype = {
     },
     {
       name = "zoneId",
-      display = L["Zone ID(s)"],
+      display = L["Player Location ID(s)"],
       type = "string",
       multiline = true,
       init = "arg",
@@ -1303,9 +1320,8 @@ Private.load_prototype = {
       display = L["Instance Difficulty"],
       type = "multiselect",
       values = "difficulty_types",
-      sorted = true,
       init = "arg",
-      events = {"PLAYER_DIFFICULTY_CHANGED", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
+      events = {"PLAYER_DIFFICULTY_CHANGED", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
       optional = true,
     },
     {
@@ -1462,6 +1478,41 @@ local function AddUnitEventForEvents(result, unit, event)
   end
 end
 
+local powerEvents = {
+  [0] = { "UNIT_MANA", "UNIT_MAXMANA" },
+  [1] = { "UNIT_RAGE", "UNIT_MAXRAGE" },
+  [2] = { "UNIT_FOCUS", "UNIT_MAXFOCUS" },
+  [3] = { "UNIT_ENERGY", "UNIT_MAXENERGY" },
+  [27] = { "UNIT_HAPPINESS", "UNIT_MAXHAPPINESS" },
+  [6] = { "UNIT_RUNIC_POWER", "UNIT_MAXRUNIC_POWER" }
+}
+
+local function AddUnitEventForPowerEvents(result, unit, powerType)
+  if powerType then
+    if powerType == 4 then return end
+    for _, event in ipairs(powerEvents[powerType]) do
+      AddUnitEventForEvents(result, unit, event)
+    end
+  else
+    for _, eventsList in pairs(powerEvents) do
+      for _, event in ipairs(eventsList) do
+        AddUnitEventForEvents(result, unit, event)
+      end
+    end
+  end
+  return result
+end
+
+local function AddTargetConditionEvents(result, useFocus)
+  if useFocus then
+    tinsert(result, "PLAYER_FOCUS_CHANGED")
+  end
+  tinsert(result, "PLAYER_TARGET_CHANGED")
+  return result
+end
+
+Private.AddTargetConditionEvents = AddTargetConditionEvents
+
 local unitHelperFunctions = {
   UnitChangedForceEventsWithPets = function(trigger)
     local events = {}
@@ -1543,34 +1594,13 @@ Private.event_categories = {
   }
 }
 
+local GetNameAndIconForSpellName = function(trigger)
+  if type(trigger.spellName) == "table" then return end
+  local name, _, icon = GetSpellInfo(trigger.spellName or 0)
+  return name, icon
+end
+
 Private.event_prototypes = {
-  ["Combo Points"] = {
-    type = "unit",
-    events = {
-      ["events"] = {
-        "UNIT_COMBO_POINTS",
-        "PLAYER_TARGET_CHANGED",
-        "PLAYER_FOCUS_CHANGED"
-       }
-    },
-    force_events = "UNIT_COMBO_POINTS",
-    name = L["Combo Points"],
-    args = {
-      {
-        name = "combopoints",
-        display = L["Combo Points"],
-        type = "number",
-        init = "GetComboPoints(UnitInVehicle('player') and 'vehicle' or 'player', 'target')"
-      }
-    },
-    durationFunc = function(trigger)
-      return GetComboPoints(UnitInVehicle("player") and "vehicle" or "player", "target"), 5, true;
-    end,
-    stacksFunc = function(trigger)
-      return GetComboPoints(UnitInVehicle("player") and "vehicle" or "player", "target");
-    end,
-    automaticrequired = true
-  },
   ["Unit Characteristics"] = {
     type = "unit",
     events = function(trigger)
@@ -1749,9 +1779,6 @@ Private.event_prototypes = {
         values = "role_types",
         store = true,
         conditionType = "select",
-        enable = function(trigger)
-          return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "player"
-        end
       },
       {
         name = "raid_role",
@@ -1768,7 +1795,7 @@ Private.event_prototypes = {
       {
         name = "raidMarkIndex",
         display = L["Raid Mark"],
-        type = "select",
+        type = "multiselect",
         values = "raid_mark_check_type",
         store = true,
         conditionType = "select",
@@ -1814,6 +1841,7 @@ Private.event_prototypes = {
       {
         name = "inRange",
         display = L["In Range"],
+        desc = L["Uses UnitInRange() to check if in range. Matches default raid frames out of range behavior, which is between 25 to 40 yards depending on your class and spec."],
         type = "toggle",
         width = WeakAuras.doubleWidth,
         enable = function(trigger)
@@ -2350,6 +2378,11 @@ Private.event_prototypes = {
         },
       },
       {
+        type = "header",
+        name = "unitCharacteristicsHeader",
+        display = L["Unit Characteristics"],
+      },
+      {
         name = "name",
         display = L["Unit Name"],
         type = "string",
@@ -2364,11 +2397,6 @@ Private.event_prototypes = {
         store = true,
         hidden = true,
         test = "true"
-      },
-      {
-        type = "header",
-        name = "unitCharacteristicsHeader",
-        display = L["Unit Characteristics"],
       },
       {
         name = "namerealm",
@@ -2455,7 +2483,7 @@ Private.event_prototypes = {
       {
         name = "raidMarkIndex",
         display = L["Raid Mark"],
-        type = "select",
+        type = "multiselect",
         values = "raid_mark_check_type",
         store = true,
         conditionType = "select",
@@ -2521,6 +2549,7 @@ Private.event_prototypes = {
       {
         name = "inRange",
         display = L["In Range"],
+        desc = L["Uses UnitInRange() to check if in range. Matches default raid frames out of range behavior, which is between 25 to 40 yards depending on your class and spec."],
         type = "toggle",
         width = WeakAuras.doubleWidth,
         enable = function(trigger)
@@ -2530,7 +2559,7 @@ Private.event_prototypes = {
       },
       {
         name = "nameplateType",
-        display = L["Nameplate Type"],
+        display = L["Hostility"],
         type = "select",
         init = "WeakAuras.GetPlayerReaction(unit)",
         values = "hostility_types",
@@ -2556,35 +2585,29 @@ Private.event_prototypes = {
     events = function(trigger)
       local unit = trigger.unit
       local result = {}
-      AddUnitEventForEvents(result, unit, "UNIT_MANA")
-      AddUnitEventForEvents(result, unit, "UNIT_RAGE")
-      AddUnitEventForEvents(result, unit, "UNIT_FOCUS")
-      AddUnitEventForEvents(result, unit, "UNIT_ENERGY")
-      AddUnitEventForEvents(result, unit, "UNIT_RUNIC_POWER")
-      AddUnitEventForEvents(result, unit, "UNIT_MAXMANA")
-      AddUnitEventForEvents(result, unit, "UNIT_MAXRAGE")
-      AddUnitEventForEvents(result, unit, "UNIT_MAXFOCUS")
-      AddUnitEventForEvents(result, unit, "UNIT_MAXENERGY")
-      AddUnitEventForEvents(result, unit, "UNIT_MAXRUNIC_POWER")
+      local powerType = trigger.use_powertype and trigger.powertype
+      AddUnitEventForPowerEvents(result, unit, powerType)
+      if trigger.powertype == 4 then
+        local _, class = UnitClass("player")
+        AddUnitEventForEvents(result, unit, "UNIT_COMBO_POINTS")
+        AddUnitEventForEvents(result, unit, "UNIT_TARGET")
+        if class == "DRUID" then
+          AddUnitEventForEvents(result, unit, "UNIT_MODEL_CHANGED")
+        end
+      end
       AddUnitEventForEvents(result, unit, "UNIT_DISPLAYPOWER")
-      AddUnitEventForEvents(result, unit, "UNIT_HAPPINESS")
       AddUnitEventForEvents(result, unit, "UNIT_NAME_UPDATE")
+
+      -- The api for spell power costs is not meant to be for other units
+      if trigger.use_showCost and unit == "player" then
+        AddUnitEventForEvents(result, unit, "UNIT_SPELLCAST_START")
+        AddUnitEventForEvents(result, unit, "UNIT_SPELLCAST_STOP")
+        AddUnitEventForEvents(result, unit, "UNIT_SPELLCAST_FAILED")
+        AddUnitEventForEvents(result, unit, "UNIT_SPELLCAST_SUCCEEDED")
+      end
+
       if trigger.use_ignoreDead or trigger.use_ignoreDisconnected then
         AddUnitEventForEvents(result, unit, "UNIT_FLAGS")
-      end
-      -- The api for spell power costs is not meant to be for other units
-      if trigger.use_showCost and trigger.unit == "player" then
-        AddUnitEventForEvents(result, "player", "UNIT_SPELLCAST_START")
-        AddUnitEventForEvents(result, "player", "UNIT_SPELLCAST_STOP")
-        AddUnitEventForEvents(result, "player", "UNIT_SPELLCAST_FAILED")
-        AddUnitEventForEvents(result, "player", "UNIT_SPELLCAST_SUCCEEDED")
-        AddUnitEventForEvents(result, "player", "UPDATE_SHAPESHIFT_FORM")
-      end
-      if unit and not Private.multiUnitUnits[unit] then
-        if not result.events then
-          result.events = {}
-        end
-        tinsert(result.events, "FRAME_UPDATE")
       end
       if trigger.use_inRange then
         AddUnitEventForEvents(result, unit, "UNIT_IN_RANGE_UPDATE")
@@ -2621,17 +2644,52 @@ Private.event_prototypes = {
         unit = string.lower(unit)
         local name, realm = WeakAuras.UnitNameWithRealm(unit)
         local smart = %s
-        local powerType = %s;
+        local powerType = %s
         local unitPowerType = UnitPowerType(unit);
         local powerTypeToCheck = powerType or unitPowerType;
       ]=]):format(trigger.unit == "group" and "true" or "false", trigger.use_powertype and trigger.powertype or "nil"))
+      local powerType = trigger.use_powertype and trigger.powertype or nil
+      -- Combo Points
+      if powerType == 4 then
+        local _, class = UnitClass("player")
+        table.insert(ret, [[
+          local comboUnit = UnitInVehicle(unit) and 'vehicle' or unit
+          local power = GetComboPoints(comboUnit, 'target')
+          local total = MAX_COMBO_POINTS
+        ]])
+        if class == "ROGUE" then
+          table.insert(ret, [[
+            unitPowerType = 4
+          ]])
+        elseif class == "DRUID" then
+          local formName = GetSpellInfo(768) or ""
+          table.insert(ret, ([[
+            local index = GetShapeshiftForm() or 0
+            local form = index > 0 and select(2, GetShapeshiftFormInfo(index)) == %q
+            if form or comboUnit == 'vehicle' then
+              unitPowerType = 4
+            end
+          ]]):format(formName))
+        end
+      -- Happiness
+      elseif powerType == 27 then
+        table.insert(ret, [[
+          local power = UnitPower(unit, 4)
+          local total = math.max(1, UnitPowerMax(unit, 4))
+        ]])
+      else
+        table.insert(ret, [[
+          local power = UnitPower(unit, powerType)
+          local total = math.max(1, UnitPowerMax(unit, powerType))
+        ]])
+      end
 
       table.insert(ret, unitHelperFunctions.SpecificUnitCheck(trigger))
 
       local canEnableShowCost = (not trigger.use_powertype) and trigger.unit == "player";
       if (canEnableShowCost and trigger.use_showCost) then
         table.insert(ret, [[
-          if (event == "UPDATE_SHAPESHIFT_FORM") then
+          if (event == "UNIT_DISPLAYPOWER") then
             local cost = WeakAuras.GetSpellCost(powerTypeToCheck)
             if state.cost ~= cost then
               state.cost = cost
@@ -2666,7 +2724,13 @@ Private.event_prototypes = {
         name = "powertype",
         display = L["Power Type"],
         type = "select",
-        values = "power_types",
+        values = function(trigger)
+          if trigger and trigger.unit ~= "player" then
+            return Private.power_types
+          else
+            return Private.power_types_player
+          end
+        end,
         init = "powerTypeToCheck",
         test = "true",
         store = true,
@@ -2696,7 +2760,7 @@ Private.event_prototypes = {
         name = "power",
         display = L["Power"],
         type = "number",
-        init = "UnitPower(unit, powerType)",
+        init = "power",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -2715,7 +2779,7 @@ Private.event_prototypes = {
       {
         name = "total",
         hidden = true,
-        init = "math.max(1, UnitPowerMax(unit, powerType))",
+        init = "total",
         store = true,
         test = "true"
       },
@@ -2825,7 +2889,10 @@ Private.event_prototypes = {
           return preamble:Check(state.npcId)
         end,
         operator_types = "none",
-        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."]
+        desc = L["Supports multiple entries, separated by commas. Prefix with '-' for negation."],
+        enable = function(trigger)
+          return trigger.powertype ~= 4
+        end
       },
       {
         name = "class",
@@ -2876,7 +2943,7 @@ Private.event_prototypes = {
       {
         name = "raidMarkIndex",
         display = L["Raid Mark"],
-        type = "select",
+        type = "multiselect",
         values = "raid_mark_check_type",
         store = true,
         conditionType = "select",
@@ -2942,6 +3009,7 @@ Private.event_prototypes = {
       {
         name = "inRange",
         display = L["In Range"],
+        desc = L["Uses UnitInRange() to check if in range. Matches default raid frames out of range behavior, which is between 25 to 40 yards depending on your class and spec."],
         type = "toggle",
         width = WeakAuras.doubleWidth,
         enable = function(trigger)
@@ -2951,12 +3019,15 @@ Private.event_prototypes = {
       },
       {
         name = "nameplateType",
-        display = L["Nameplate Type"],
+        display = L["Hostility"],
         type = "select",
         init = "WeakAuras.GetPlayerReaction(unit)",
         values = "hostility_types",
         store = true,
         conditionType = "select",
+        enable = function(trigger)
+          return trigger.powertype ~= 4
+        end
       },
       {
         hidden = true,
@@ -2992,6 +3063,7 @@ Private.event_prototypes = {
     args = {
       {}, -- timestamp ignored with _ argument
       {}, -- messageType ignored with _ argument (it is checked before the dynamic function)
+      -- {}, -- we don't have hideCaster
       {
         type = "header",
         name = "sourceHeader",
@@ -3095,6 +3167,7 @@ Private.event_prototypes = {
           end
         end
       },
+      -- we don't have sourceRaidFlags
       {
         type = "header",
         name = "destHeader",
@@ -3223,6 +3296,7 @@ Private.event_prototypes = {
           return (trigger.subeventPrefix == "SPELL" and trigger.subeventSuffix == "_CAST_START");
         end,
       },
+      -- we don't have destRaidFlags
       {
         type = "header",
         name = "subeventHeader",
@@ -3235,7 +3309,8 @@ Private.event_prototypes = {
             or trigger.subeventPrefix:find("SPELL"))
 
             or trigger.subeventSuffix and (
-              trigger.subeventSuffix == "_INTERRUPT"
+            -- trigger.subeventSuffix == "_ABSORBED" -- we don't have that
+            trigger.subeventSuffix == "_INTERRUPT"
               or trigger.subeventSuffix == "_DISPEL"
               or trigger.subeventSuffix == "_DISPEL_FAILED"
               or trigger.subeventSuffix == "_STOLEN"
@@ -3477,6 +3552,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "bool"
       },
+      -- we don't have isOffHand :(
       {
         name = "number",
         display = L["Number"],
@@ -3551,6 +3627,9 @@ Private.event_prototypes = {
     events = {},
     loadInternalEventFunc = function(trigger, untrigger)
       local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0;
+      if not trigger.use_exact_spellName then
+        spellName = type(spellName) == "number" and GetSpellInfo(spellName) or spellName;
+      end
       if spellName == nil then return {} end
       local events = {
         "SPELL_COOLDOWN_CHANGED:" .. spellName,
@@ -3568,6 +3647,9 @@ Private.event_prototypes = {
     name = L["Cooldown/Charges/Count"],
     loadFunc = function(trigger)
       local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0;
+      if not trigger.use_exact_spellName then
+        spellName = type(spellName) == "number" and GetSpellInfo(spellName) or spellName;
+      end
       WeakAuras.WatchSpellCooldown(spellName, trigger.use_matchedRune)
       if (trigger.use_showgcd) then
         WeakAuras.WatchGCD();
@@ -3575,6 +3657,12 @@ Private.event_prototypes = {
     end,
     init = function(trigger)
       local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
+      if not trigger.use_exact_spellName then
+        spellName = type(spellName) == "number" and GetSpellInfo(spellName) or spellName;
+      end
+      if (type(spellName) == "string") then
+        spellName = "[[" .. spellName .. "]]";
+      end
       local ret = {}
 
       local showOnCheck = "false";
@@ -3586,14 +3674,27 @@ Private.event_prototypes = {
         showOnCheck = "startTime ~= nil";
       end
 
-     table.insert(ret, ([=[
+      local trackSpecificCharge = trigger.use_trackcharge and trigger.trackcharge and trigger.trackcharge ~= ""
+      local track = trigger.track or "auto"
+      if track == "auto" and trackSpecificCharge then
+        track = "charges"
+      end
+
+      table.insert(ret, ([=[
         local spellname = %s
         local ignoreRuneCD = %s
         local showgcd = %s;
-        local name, _, icon = GetSpellInfo(spellname)
-        local startTime, duration, gcdCooldown = WeakAuras.GetSpellCooldown(spellname, ignoreRuneCD, showgcd);
-        local spellCount = WeakAuras.GetSpellCharges(spellname);
-        local stacks = (spellCount and spellCount > 0 and spellCount) or nil;
+        local ignoreSpellKnown = %s;
+        local track = %q
+        local effectiveSpellId = spellname
+        local name, _, icon = GetSpellInfo(effectiveSpellId)
+        local startTime, duration, gcdCooldown, readyTime, paused = WeakAuras.GetSpellCooldown(effectiveSpellId, ignoreRuneCD, showgcd, ignoreSpellKnown, track)
+        local charges, maxCharges, spellCount, chargeGainTime, chargeLostTime = WeakAuras.GetSpellCharges(effectiveSpellId, ignoreSpellKnown)
+        local stacks = spellCount and spellCount > 0 and spellCount or nil;
+        if (charges == nil) then
+          -- Use fake charges for spells that use GetSpellCooldown
+          charges = (duration == 0 or gcdCooldown) and 1 or 0;
+        end
         local genericShowOn = %s
         local expirationTime = startTime and duration and startTime + duration
         state.spellname = spellname;
@@ -3601,25 +3702,79 @@ Private.event_prototypes = {
         spellName,
         (trigger.use_matchedRune and "true" or "false"),
         (trigger.use_showgcd and "true" or "false"),
+        (trigger.use_ignoreSpellKnown and "true" or "false"),
+        track,
         showOnCheck
       ))
 
-      table.insert(ret, ([=[
-        if (state.expirationTime ~= expirationTime) then
-          state.expirationTime = expirationTime;
-          state.changed = true;
-        end
-        if (state.duration ~= duration) then
-          state.duration = duration;
-          state.changed = true;
-        end
-        state.progressType = 'timed';
-      ]=]))
+      if (not trackSpecificCharge) then
+        table.insert(ret, [=[
+          if paused then
+            if not state.paused then
+              state.paused = true
+              state.expirationTime = nil
+              state.changed = true
+            end
+            if state.remaining ~= startTime then
+              state.remaining = startTime
+              state.changed = true
+            end
+          else
+            if (state.expirationTime ~= expirationTime) then
+              state.expirationTime = expirationTime;
+              state.changed = true;
+            end
 
+            if state.paused then
+              state.paused = false
+              state.remaining = nil
+              state.changed = true
+            end
+          end
+          if (state.duration ~= duration) then
+            state.duration = duration;
+            state.changed = true;
+          end
+          state.progressType = 'timed';
+        ]=])
+      else -- Tracking charges
+        local trackedCharge = tonumber(trigger.trackcharge) or 1;
+        table.insert(ret, ([=[
+          local trackedCharge = %s
+          if (charges > trackedCharge) then
+            if (state.expirationTime ~= 0) then
+              state.expirationTime = 0;
+              state.changed = true;
+            end
+            if (state.duration ~= 0) then
+              state.duration = 0;
+              state.changed = true;
+            end
+            state.value = nil;
+            state.total = nil;
+            state.progressType = 'timed';
+          else
+            if duration then
+              expirationTime = expirationTime + (trackedCharge - charges) * duration
+            end
+            if (state.expirationTime ~= expirationTime) then
+              state.expirationTime = expirationTime;
+              state.changed = true;
+            end
+            if (state.duration ~= duration) then
+              state.duration = duration;
+              state.changed = true;
+            end
+            state.value = nil;
+            state.total = nil;
+            state.progressType = 'timed';
+          end
+        ]=]):format(trackedCharge - 1))
+      end
       if(trigger.use_remaining and trigger.genericShowOn ~= "showOnReady") then
         table.insert(ret, ([[
           local remaining = 0;
-          if (expirationTime and expirationTime > 0) then
+          if (not paused and expirationTime and expirationTime > 0) then
             remaining = expirationTime - GetTime();
             local remainingCheck = %s;
             if(remaining >= remainingCheck and remaining > 0) then
@@ -3632,11 +3787,7 @@ Private.event_prototypes = {
 
       return table.concat(ret)
     end,
-    GetNameAndIcon = function(trigger)
-      if type(trigger.spellName) == "table" then return end
-      local name, _, icon = GetSpellInfo(trigger.spellName or 0)
-      return name or "Invalid", icon
-    end,
+    GetNameAndIcon = GetNameAndIconForSpellName,
     statesParameter = "one",
     progressType = "timed",
     args = {
@@ -3655,6 +3806,12 @@ Private.event_prototypes = {
         display = function(trigger)
           return function()
             local text = "";
+            if trigger.track == "charges" then
+              text = L["Tracking Charge CDs"]
+            elseif trigger.track == "cooldown" then
+              text = L["Tracking Only Cooldown"]
+            end
+
             if trigger.use_showgcd then
               if text ~= "" then text = text .. "; " end
               text = text .. L["Show GCD"]
@@ -3665,6 +3822,17 @@ Private.event_prototypes = {
               text = text ..L["Ignore Rune CDs"]
             end
 
+            if trigger.use_ignoreSpellKnown then
+              if text ~= "" then text = text .. "; " end
+              text = text .. L["Disabled Spell Known Check"]
+            end
+
+            if trigger.genericShowOn ~= "showOnReady" and trigger.track ~= "cooldown" then
+              if trigger.use_trackcharge and trigger.trackcharge and trigger.trackcharge ~= "" then
+                if text ~= "" then text = text .. "; " end
+                text = text .. L["Tracking Charge %i"]:format(trigger.trackcharge)
+              end
+            end
             if text == "" then
               return L["|cFFffcc00Extra Options:|r None"]
             end
@@ -3672,6 +3840,16 @@ Private.event_prototypes = {
           end
         end,
         type = "collapse",
+      },
+      {
+        name = "track",
+        display = L["Track Cooldowns"],
+        type = "select",
+        values = "cooldown_types",
+        collapse = "extra Cooldown Progress (Spell)",
+        test = "true",
+        required = true,
+        default = "auto"
       },
       {
         name = "showgcd",
@@ -3685,6 +3863,24 @@ Private.event_prototypes = {
         display = L["Ignore Rune CD"],
         type = "toggle",
         test = "true",
+        collapse = "extra Cooldown Progress (Spell)"
+      },
+      {
+        name = "ignoreSpellKnown",
+        display = L["Disable Spell Known Check"],
+        type = "toggle",
+        test = "true",
+        collapse = "extra Cooldown Progress (Spell)"
+      },
+      {
+        name = "trackcharge",
+        display = L["Show CD of Charge"],
+        type = "number",
+        enable = function(trigger)
+          return (trigger.genericShowOn ~= "showOnReady") and trigger.track ~= "cooldown"
+        end,
+        test = "true",
+        noOperator = true,
         collapse = "extra Cooldown Progress (Spell)"
       },
       {
@@ -3724,6 +3920,39 @@ Private.event_prototypes = {
         test = "true",
       },
       {
+        hidden = true,
+        name = "readyTime",
+        display = L["Since Ready"],
+        conditionType = "elapsedTimer",
+        store = true,
+        test = "true"
+      },
+      {
+        hidden = true,
+        name = "chargeGainTime",
+        display = L["Since Charge Gain"],
+        conditionType = "elapsedTimer",
+        store = true,
+        test = "true"
+      },
+      {
+        hidden = true,
+        name = "chargeLostTime",
+        display = L["Since Charge Lost"],
+        conditionType = "elapsedTimer",
+        store = true,
+        test = "true"
+      },
+      {
+        hidden = true,
+        name = "effectiveSpellId",
+        display = L["Effective Spell Id"],
+        conditionType = "number",
+        store = true,
+        test = "true",
+        operator_types = "only_equal"
+      },
+      {
         name = "genericShowOn",
         display =  L["Show"],
         type = "select",
@@ -3739,7 +3968,7 @@ Private.event_prototypes = {
         display = L["On Cooldown"],
         conditionType = "bool",
         conditionTest = function(state, needle)
-          return state and state.show and (not state.gcdCooldown and state.expirationTime and state.expirationTime > GetTime()) == (needle == 1)
+          return state and state.show and (state.paused or (not state.gcdCooldown and state.expirationTime and state.expirationTime > GetTime())) == (needle == 1)
         end,
       },
       {
@@ -3755,14 +3984,13 @@ Private.event_prototypes = {
         test = "true",
         conditionType = "bool",
         conditionTest = function(state, needle)
-          return state and state.show and
+        return state and state.show and
           ((IsUsableSpell((type(state.spellname) == "number" and GetSpellInfo(state.spellname)) or state.spellname) == 1 and true or false) == (needle == 1))
         end,
-        conditionEvents = {
+        conditionEvents = AddTargetConditionEvents({
           "SPELL_UPDATE_USABLE",
-          "PLAYER_TARGET_CHANGED",
-          "UNIT_MANA", "UNIT_RAGE", "UNIT_FOCUS", "UNIT_ENERGY", "UNIT_RUNIC_POWER"
-        },
+          "UNIT_MANA:player", "UNIT_RAGE:player", "UNIT_FOCUS:player", "UNIT_ENERGY:player", "UNIT_RUNIC_POWER:player"
+        }),
       },
       {
         name = "insufficientResources",
@@ -3771,14 +3999,13 @@ Private.event_prototypes = {
         test = "true",
         conditionType = "bool",
         conditionTest = function(state, needle)
-          return state and state.show and
+        return state and state.show and
           ((select(2, IsUsableSpell((type(state.spellname) == "number" and GetSpellInfo(state.spellname)) or state.spellname)) == 1 and true or false) == (needle == 1))
         end,
-        conditionEvents = {
+        conditionEvents = AddTargetConditionEvents({
           "SPELL_UPDATE_USABLE",
-          "PLAYER_TARGET_CHANGED",
-          "UNIT_MANA", "UNIT_RAGE", "UNIT_FOCUS", "UNIT_ENERGY", "UNIT_RUNIC_POWER"
-        }
+          "UNIT_MANA:player", "UNIT_RAGE:player", "UNIT_FOCUS:player", "UNIT_ENERGY:player", "UNIT_RUNIC_POWER:player"
+        }),
       },
       {
         name = "spellInRange",
@@ -3789,10 +4016,9 @@ Private.event_prototypes = {
         conditionTest = function(state, needle)
           return state and state.show and (UnitExists('target') and state.spellname and WeakAuras.IsSpellInRange(state.spellname, 'target') == needle)
         end,
-        conditionEvents = {
-          "PLAYER_TARGET_CHANGED",
+        conditionEvents = AddTargetConditionEvents({
           "WA_SPELL_RANGECHECK",
-        },
+        }),
       },
       {
         hidden = true,
@@ -3822,59 +4048,37 @@ Private.event_prototypes = {
     type = "spell",
     events = {},
     loadInternalEventFunc = function(trigger, untrigger)
-      trigger.spellName = trigger.spellName or 0;
-      local spellName;
-      if (trigger.use_exact_spellName) then
-        spellName = trigger.spellName;
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
+      if not trigger.use_exact_spellName then
+        spellName = type(spellName) == "number" and GetSpellInfo(spellName) or spellName;
       end
       if spellName == nil then return {} end
       return { "SPELL_COOLDOWN_READY:" .. spellName }
     end,
     name = L["Cooldown Ready Event"],
     loadFunc = function(trigger)
-      trigger.spellName = trigger.spellName or 0;
-      local spellName;
-      if (trigger.use_exact_spellName) then
-        spellName = trigger.spellName;
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
+      if not trigger.use_exact_spellName then
+        spellName = type(spellName) == "number" and GetSpellInfo(spellName) or spellName;
       end
-      WeakAuras.WatchSpellCooldown(spellName);
+      WeakAuras.WatchSpellCooldown(spellName, false)
     end,
     init = function(trigger)
-      trigger.spellName = trigger.spellName or 0;
-      local spellName;
-      if (trigger.use_exact_spellName) then
-        spellName = trigger.spellName;
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
+      if not trigger.use_exact_spellName then
+        spellName = type(spellName) == "number" and GetSpellInfo(spellName) or spellName;
       end
-
       if (type(spellName) == "string") then
         spellName = "[[" .. spellName .. "]]";
       end
 
       local ret = [=[
-        local spellname = %s
-        local name, _, icon = GetSpellInfo(spellname)
+        local triggerSpellName = %s
+        local name, _, icon = GetSpellInfo(triggerSpellName)
       ]=]
-      return ret:format(spellName);
+      return ret:format(spellName)
     end,
-    GetNameAndIcon = function(trigger)
-      if type(trigger.spellName) == "table" then return end
-      local spellName
-      if (trigger.use_exact_spellName) then
-        spellName = tonumber(trigger.spellName)
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName
-      end
-      if spellName then
-        local name, _, icon = GetSpellInfo(spellName)
-        return name, icon
-      end
-    end,
+    GetNameAndIcon = GetNameAndIconForSpellName,
     statesParameter = "one",
     args = {
       {
@@ -3884,7 +4088,7 @@ Private.event_prototypes = {
         type = "spell",
         init = "arg",
         showExactOption = true,
-        test = "spellname == spellName"
+        test = "true"
       },
       {
         name = "name",
@@ -3911,58 +4115,37 @@ Private.event_prototypes = {
     type = "spell",
     events = {},
     loadInternalEventFunc = function(trigger, untrigger)
-      trigger.spellName = trigger.spellName or 0;
-      local spellName;
-      if (trigger.use_exact_spellName) then
-        spellName = trigger.spellName;
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
+      if not trigger.use_exact_spellName then
+        spellName = type(spellName) == "number" and GetSpellInfo(spellName) or spellName;
       end
       if spellName == nil then return {} end
       return { "SPELL_CHARGES_CHANGED:" .. spellName }
     end,
     name = L["Charges Changed Event"],
     loadFunc = function(trigger)
-      trigger.spellName = trigger.spellName or 0;
-      local spellName;
-      if (trigger.use_exact_spellName) then
-        spellName = trigger.spellName;
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
+      if not trigger.use_exact_spellName then
+        spellName = type(spellName) == "number" and GetSpellInfo(spellName) or spellName;
       end
       WeakAuras.WatchSpellCooldown(spellName);
     end,
     init = function(trigger)
-      local spellName;
-      if (trigger.use_exact_spellName) then
-        spellName = trigger.spellName;
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName
-        spellName = spellName or ""
+      local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
+      if not trigger.use_exact_spellName then
+        spellName = type(spellName) == "number" and GetSpellInfo(spellName) or spellName;
       end
       if (type(spellName) == "string") then
-        spellName = string.format("%q", spellName)
+        spellName = "[[" .. spellName .. "]]";
       end
       local ret = [=[
-        local spellname = %s
-        local name, _, icon = GetSpellInfo(spellname)
+        local triggerSpellName = %s
+        local name, _, icon = GetSpellInfo(triggerSpellName)
       ]=]
       return ret:format(spellName)
     end,
     statesParameter = "one",
-    GetNameAndIcon = function(trigger)
-      if type(trigger.spellName) == "table" then return end
-      local spellName
-      if (trigger.use_exact_spellName) then
-        spellName = tonumber(trigger.spellName)
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName
-      end
-      if spellName then
-        local name, _, icon = GetSpellInfo(spellName)
-        return name, icon
-      end
-    end,
+    GetNameAndIcon = GetNameAndIconForSpellName,
     args = {
       {
         name = "spellName",
@@ -3971,7 +4154,7 @@ Private.event_prototypes = {
         type = "spell",
         init = "arg",
         showExactOption = true,
-        test = "spell == spellName"
+        test = "true"
       },
       {
         name = "direction",
@@ -4084,7 +4267,7 @@ Private.event_prototypes = {
         type = "item",
         test = "true"
       },
-      {
+      --[[{ maybe some day
         name = "itemId",
         display = WeakAuras.newFeatureString .. L["ItemId"],
         hidden = true,
@@ -4093,7 +4276,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "number",
         operator_types = "only_equal",
-      },
+      },]]
       {
         name = "remaining",
         display = L["Remaining Time"],
@@ -4378,6 +4561,16 @@ Private.event_prototypes = {
         store = true,
         conditionType = "string"
       },
+      --[[{ maybe some day
+        name = "itemId",
+        display = L["ItemId"],
+        hidden = true,
+        init = "item",
+        test = "true",
+        store = true,
+        conditionType = "number",
+        operator_types = "only_equal",
+      },]]
       {
         name = "icon",
         hidden = true,
@@ -4437,6 +4630,7 @@ Private.event_prototypes = {
         local name = GetItemInfo(itemName) or "Invalid"
         local icon = GetItemIcon(itemName) or ""
       ]]
+
       local itemName = type(trigger.itemName) == "number" and trigger.itemName or string.format("%q", trigger.itemName or "0")
       return ret:format(itemName)
     end,
@@ -4454,8 +4648,7 @@ Private.event_prototypes = {
         type = "item",
         init = "arg"
       },
-      --[[
-      {
+      --[[{ maybe some day
         name = "itemId",
         display = WeakAuras.newFeatureString .. L["ItemId"],
         hidden = true,
@@ -4464,8 +4657,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "number",
         operator_types = "only_equal",
-      },
-      ]]
+      },]]
       {
         name = "name",
         display = L["Name"],
@@ -4769,30 +4961,34 @@ Private.event_prototypes = {
   },
   ["Action Usable"] = {
     type = "spell",
-    events = {
-      ["events"] = {
+    events = function()
+      local events = {
         "SPELL_UPDATE_USABLE",
         "ACTIONBAR_UPDATE_USABLE",
         "PLAYER_TARGET_CHANGED",
-        "RUNE_POWER_UPDATE",
-        "RUNE_TYPE_UPDATE",
-      },
-      ["unit_events"] = {
+      }
+      local unit_events
+      if UnitPowerType("player") == 6 then
+        tinsert(events, "RUNE_POWER_UPDATE")
+        tinsert(events, "RUNE_TYPE_UPDATE")
+        unit_events = {}
+      end
+      return {
+        ["events"] = events,
+        ["unit_events"] = unit_events or {
           ["player"] = {
           "UNIT_POWER",
           "UNIT_ENERGY",
           "UNIT_MANA",
           "UNIT_RAGE"
+          }
         }
       }
-    },
+    end,
     loadInternalEventFunc = function(trigger)
-      trigger.spellName = trigger.spellName or 0;
-      local spellName
-      if (trigger.use_exact_spellName) then
-        spellName = trigger.spellName
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
+      if type(trigger.spellName) == "number" then
+        spellName = GetSpellInfo(spellName)
       end
       if spellName == nil then return {} end
       return { "SPELL_COOLDOWN_CHANGED:" .. spellName }
@@ -4801,34 +4997,37 @@ Private.event_prototypes = {
     name = L["Spell Usable"],
     statesParameter = "one",
     loadFunc = function(trigger)
-      trigger.spellName = trigger.spellName or 0;
-      local spellName;
-      if (trigger.use_exact_spellName) then
-        spellName = trigger.spellName;
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
+      if type(trigger.spellName) == "number" then
+        spellName = GetSpellInfo(spellName)
       end
-      WeakAuras.WatchSpellCooldown(spellName);
+      WeakAuras.WatchSpellCooldown(spellName, false);
     end,
     init = function(trigger)
-      trigger.spellName = trigger.spellName or 0;
-      local spellName;
-      if (trigger.use_exact_spellName) then
-        spellName = trigger.spellName;
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName;
+      local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
+      if type(trigger.spellName) == "number" then
+        spellName = GetSpellInfo(spellName) or ""
       end
       local ret = [=[
         local spellName = %s
-        local name, _, icon = GetSpellInfo(spellName)
-        local startTime, duration, gcdCooldown, readyTime = WeakAuras.GetSpellCooldown(spellName)
-        local charges = WeakAuras.GetSpellCharges(spellName)
+        local effectiveSpellId = spellName
+        local name, _, icon = GetSpellInfo(effectiveSpellId)
+      ]=]
+
+      if trigger.use_ignoreSpellCooldown then
+        ret = ret .. [=[local active = IsUsableSpell(spellName or "")]=]
+      else
+        ret = ret .. [=[
+        local startTime, duration, gcdCooldown, readyTime, paused = WeakAuras.GetSpellCooldown(effectiveSpellId)
+        local charges, maxCharges, spellCount, chargeGainTime, chargeLostTime = WeakAuras.GetSpellCharges(effectiveSpellId)
+        local stacks = spellCount and spellCount > 0 and spellCount or nil
         if (charges == nil) then
           charges = (duration == 0 or gcdCooldown) and 1 or 0;
         end
-        local ready = startTime == 0 or charges > 0
+        local ready = (startTime == 0 and not paused) or charges > 0
         local active = IsUsableSpell(spellName or "") and ready
-      ]=]
+        ]=]
+      end
       if(trigger.use_targetRequired) then
         ret = ret.."active = active and WeakAuras.IsSpellInRange(spellName or '', 'target')\n";
       end
@@ -4842,19 +5041,7 @@ Private.event_prototypes = {
 
       return ret:format(spellName)
     end,
-    GetNameAndIcon = function(trigger)
-      if type(trigger.spellName) == "table" then return end
-      local spellName
-      if (trigger.use_exact_spellName) then
-        spellName = tonumber(trigger.spellName)
-      else
-        spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName
-      end
-      if spellName then
-        local name, _, icon = GetSpellInfo(spellName)
-        return name, icon
-      end
-    end,
+    GetNameAndIcon = GetNameAndIconForSpellName,
     args = {
       {
         name = "spellName",
@@ -4874,10 +5061,16 @@ Private.event_prototypes = {
         test = "true"
       },
       {
+        name = "ignoreSpellCooldown",
+        display = L["Ignore Spell Cooldown/Charges"],
+        type = "toggle",
+        test = "true"
+      },
+      {
         name = "charges",
         display = L["Charges"],
         type = "number",
-        enable = function(trigger) return not(trigger.use_inverse) end,
+        enable = function(trigger) return not trigger.use_inverse and not trigger.use_ignoreSpellCooldown end,
         store = true,
         conditionType = "number",
       },
@@ -4885,7 +5078,7 @@ Private.event_prototypes = {
         name = "spellCount",
         display = L["Spell Count"],
         type = "number",
-        enable = function(trigger) return not(trigger.use_inverse) end,
+        enable = function(trigger) return not trigger.use_ignoreSpellCooldown end,
         store = true,
         conditionType = "number",
       },
@@ -4895,7 +5088,8 @@ Private.event_prototypes = {
         display = L["Since Ready"],
         conditionType = "elapsedTimer",
         store = true,
-        test = "true"
+        test = "true",
+        enable = function(trigger) return not trigger.use_ignoreSpellCooldown end,
       },
       {
         hidden = true,
@@ -4903,7 +5097,8 @@ Private.event_prototypes = {
         display = L["Since Charge Gain"],
         conditionType = "elapsedTimer",
         store = true,
-        test = "true"
+        test = "true",
+        enable = function(trigger) return not trigger.use_ignoreSpellCooldown end,
       },
       {
         hidden = true,
@@ -4911,7 +5106,8 @@ Private.event_prototypes = {
         display = L["Since Charge Lost"],
         conditionType = "elapsedTimer",
         store = true,
-        test = "true"
+        test = "true",
+        enable = function(trigger) return not trigger.use_ignoreSpellCooldown end,
       },
       {
         name = "inverse",
@@ -4929,10 +5125,9 @@ Private.event_prototypes = {
         conditionTest = function(state, needle)
           return state and state.show and (UnitExists('target') and state.spellName and WeakAuras.IsSpellInRange(state.spellName, 'target') == needle)
         end,
-        conditionEvents = {
-          "PLAYER_TARGET_CHANGED",
+        conditionEvents = AddTargetConditionEvents({
           "WA_SPELL_RANGECHECK",
-        }
+        })
       },
       {
         name = "name",
@@ -4957,7 +5152,8 @@ Private.event_prototypes = {
         init = "stacks",
         test = "true",
         store = true,
-        conditionType = "number"
+        conditionType = "number",
+        enable = function(trigger) return not trigger.use_ignoreSpellCooldown end,
       },
       {
         hidden = true,
@@ -5354,6 +5550,16 @@ Private.event_prototypes = {
         showExactOption = true,
         test = "true"
       },
+      --[[{ maybe some day
+        name = "itemId",
+        display = WeakAuras.newFeatureString .. L["ItemId"],
+        hidden = true,
+        init = "itemId",
+        test = "true",
+        store = true,
+        conditionType = "number",
+        operator_types = "only_equal",
+      },]]
       {
         name = "name",
         display = L["Name"],
@@ -5364,18 +5570,6 @@ Private.event_prototypes = {
         test = "true",
         conditionType = "string"
       },
-      --[[
-      {
-        name = "itemId",
-        display = WeakAuras.newFeatureString .. L["ItemId"],
-        hidden = true,
-        init = "itemId",
-        test = "true",
-        store = true,
-        conditionType = "number",
-        operator_types = "only_equal",
-      },
-      ]]
       {
         name = "includeBank",
         display = L["Include Bank"],
@@ -5499,6 +5693,14 @@ Private.event_prototypes = {
     statesParameter = "one",
     args = {
       {
+        name = "note",
+        type = "description",
+        display = "",
+        text = function()
+          return L["Note: This trigger internally stores the shapeshift position, and thus is incompatible with learning stances on the fly, like e.g. the Gladiator Rune."]
+        end,
+      },
+      {
         name = "form",
         display = L["Form"],
         type = "multiselect",
@@ -5568,7 +5770,7 @@ Private.event_prototypes = {
         elseif triggerWeaponType == "off" then
           expirationTime, duration, name, shortenedName, icon, stacks = WeakAuras.GetOHTenchInfo()
         elseif triggerWeaponType == "ranged" then
-          expirationTime, duration, name, shortenedName, icon, stacks = WeakAuras.GetOHTenchInfo()
+          expirationTime, duration, name, shortenedName, icon, stacks = WeakAuras.GetRangeTenchInfo()
         end
 
         local remaining = expirationTime and expirationTime - GetTime()
@@ -5658,7 +5860,7 @@ Private.event_prototypes = {
       {
         name = "name",
         hidden = true,
-        init = "spell",
+        init = "name",
         test = "true",
         store = true
       },
@@ -5685,7 +5887,10 @@ Private.event_prototypes = {
         name = "remaining",
         display = L["Remaining Time"],
         type = "number",
-        test = "true"
+        test = "true",
+        enable = function(trigger)
+          return not trigger.showOn or trigger.showOn == "showOnActive"
+        end
       },
       {
         name = "showOn",
@@ -5845,7 +6050,7 @@ Private.event_prototypes = {
     timedrequired = true,
     progressType = "timed"
   },
-  --[==[
+  --[==[ maybe some day
   ["Spell Cast Succeeded"] = {
     type = "event",
     events = function(trigger)
@@ -6006,7 +6211,13 @@ Private.event_prototypes = {
     name = L["Death Knight Rune"],
     loadFunc = function(trigger)
       trigger.rune = trigger.rune or 0;
-      WeakAuras.WatchRuneCooldown(trigger.rune);
+      if (trigger.use_rune) then
+        WeakAuras.WatchRuneCooldown(trigger.rune);
+      else
+        for i = 1, 6 do
+          WeakAuras.WatchRuneCooldown(i);
+        end
+      end
     end,
     init = function(trigger)
       trigger.rune = trigger.rune or 0;
@@ -6242,8 +6453,7 @@ Private.event_prototypes = {
         test = "true",
         only_exact = true
       },
-      --[[
-      {
+      --[[{ maybe some day
         name = "itemId",
         display = WeakAuras.newFeatureString .. L["ItemId"],
         hidden = true,
@@ -6252,8 +6462,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "number",
         operator_types = "only_equal",
-      },
-      ]]
+      },]]
       {
         name = "itemSlot",
         display = WeakAuras.newFeatureString .. L["Item Slot"],
@@ -6314,6 +6523,7 @@ Private.event_prototypes = {
         local triggerItemSetName = %s;
         local inverse = %s;
         local partial = %s;
+
         local itemSetName, icon, numEquipped, numItems = WeakAuras.GetEquipmentSetInfo(useItemSetName and triggerItemSetName or nil, partial);
       ]];
 
@@ -6888,7 +7098,7 @@ Private.event_prototypes = {
       {
         name = "raidMarkIndex",
         display = L["Raid Mark"],
-        type = "select",
+        type = "multiselect",
         values = "raid_mark_check_type",
         store = true,
         conditionType = "select",
@@ -6904,7 +7114,7 @@ Private.event_prototypes = {
       },
       {
         name = "nameplateType",
-        display = L["Nameplate Type"],
+        display = L["Hostility"],
         type = "select",
         init = "WeakAuras.GetPlayerReaction(unit)",
         values = "hostility_types",
@@ -6919,7 +7129,7 @@ Private.event_prototypes = {
         values = "actual_unit_types_with_specific",
         conditionType = "unit",
         conditionTest = function(state, unit, op)
-          return state and state.show and state.unit and ((UnitIsUnit(state.sourceUnit, unit) == 1 and true or false) == (op == "=="))
+          return state and state.show and state.unit and (UnitIsUnit(state.sourceUnit, unit) == (op == "=="))
         end,
         store = true,
         hidden = true,
@@ -6969,7 +7179,7 @@ Private.event_prototypes = {
         values = "actual_unit_types_with_specific",
         conditionType = "unit",
         conditionTest = function(state, unit, op)
-          return state and state.show and state.destUnit and ((UnitIsUnit(state.destUnit, unit) == 1 and true or false) == (op == "=="))
+          return state and state.show and state.destUnit and (UnitIsUnit(state.destUnit, unit) == (op == "=="))
         end,
         store = true,
         enable = function(trigger) return not trigger.use_inverse end,
@@ -7123,7 +7333,7 @@ Private.event_prototypes = {
         "PLAYER_TARGET_CHANGED"
       },
       ["unit_events"] = {
-        ["player"] = {"UNIT_STATS", "UNIT_ATTACK_POWER", "UNIT_AURA", "UNIT_RESISTANCES"}
+        ["player"] = {"UNIT_STATS", "UNIT_ATTACK_POWER", "UNIT_AURA", "PLAYER_DAMAGE_DONE_MODS", "UNIT_RESISTANCES"}
       }
     },
     internal_events = function(trigger, untrigger)
@@ -7135,7 +7345,7 @@ Private.event_prototypes = {
     end,
     loadFunc = function(trigger)
       if trigger.use_moveSpeed then
-        WeakAuras.WatchPlayerMoveSpeed()
+        WeakAuras.WatchForPlayerMoving()
       end
     end,
     force_events = "CONDITIONS_CHECK",
@@ -7210,42 +7420,6 @@ Private.event_prototypes = {
         type = "header",
         name = "secondaryStatsHeader",
         display = L["Secondary Stats"],
-      },
-      {
-        name = "attackpower",
-        display = L["Attack Power"],
-        type = "number",
-        init = "WeakAuras.GetEffectiveAttackPower()",
-        store = true,
-        conditionType = "number",
-        multiEntry = {
-          operator = "and",
-          limit = 2
-        },
-      },
-      {
-        name = "spellpower",
-        display = L["Spell Power"],
-        type = "number",
-        init = "WeakAuras.GetEffectiveSpellPower()",
-        store = true,
-        conditionType = "number",
-        multiEntry = {
-          operator = "and",
-          limit = 2
-        },
-      },
-      {
-        name = "rangedattackpower",
-        display = L["Ranged Attack Power"],
-        type = "number",
-        init = "WeakAuras.GetEffectiveRangedAttackPower()",
-        store = true,
-        conditionType = "number",
-        multiEntry = {
-          operator = "and",
-          limit = 2
-        },
       },
       {
         name = "criticalrating",
@@ -7396,6 +7570,42 @@ Private.event_prototypes = {
         display = L["Resilience (%)"],
         type = "number",
         init = "GetCombatRatingBonus(CR_CRIT_TAKEN_MELEE)",
+        store = true,
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
+      },
+            {
+        name = "attackpower",
+        display = L["Attack Power"],
+        type = "number",
+        init = "WeakAuras.GetEffectiveAttackPower()",
+        store = true,
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
+      },
+      {
+        name = "spellpower",
+        display = L["Spell Power"],
+        type = "number",
+        init = "WeakAuras.GetEffectiveSpellPower()",
+        store = true,
+        conditionType = "number",
+        multiEntry = {
+          operator = "and",
+          limit = 2
+        },
+      },
+      {
+        name = "rangedattackpower",
+        display = L["Ranged Attack Power"],
+        type = "number",
+        init = "WeakAuras.GetEffectiveRangedAttackPower()",
         store = true,
         conditionType = "number",
         multiEntry = {
@@ -7619,9 +7829,8 @@ Private.event_prototypes = {
         tinsert(events, "PLAYER_ENTERING_WORLD")
       end
       if trigger.use_mounted ~= nil then
-        tinsert(events, "COMPANION_UPDATE")
-        tinsert(events, "PLAYER_ENTERING_WORLD")
         tinsert(events, "MOUNTED_UPDATE")
+        tinsert(events, "PLAYER_ENTERING_WORLD")
       end
       local unit_events = {}
       local pet_unit_events = {}
@@ -7637,7 +7846,6 @@ Private.event_prototypes = {
         tinsert(events, "PARTY_MEMBERS_CHANGED")
         tinsert(events, "RAID_ROSTER_UPDATE")
       end
-
       if trigger.use_instance_difficulty ~= nil
           or trigger.use_instance_size ~= nil
       then
@@ -7656,7 +7864,7 @@ Private.event_prototypes = {
       local events = { "CONDITIONS_CHECK"};
 
       if trigger.use_ismoving ~= nil then
-        tinsert(events, "PLAYER_MOVE_SPEED_UPDATE");
+        tinsert(events, "PLAYER_MOVING_UPDATE");
       end
 
       if trigger.use_instance_difficulty ~= nil
@@ -7676,7 +7884,7 @@ Private.event_prototypes = {
     name = L["Conditions"],
     loadFunc = function(trigger)
       if (trigger.use_ismoving ~= nil) then
-        WeakAuras.WatchPlayerMoveSpeed();
+        WeakAuras.WatchForPlayerMoving();
       end
       if (trigger.use_HasPet ~= nil) then
         AddWatchedUnits("pet")
@@ -7780,7 +7988,7 @@ Private.event_prototypes = {
   ["Spell Known"] = {
     type = "spell",
     events = {
-      ["events"] = {"SPELLS_CHANGED"},
+      ["events"] = {"SPELLS_CHANGED", "PLAYER_TALENT_UPDATE"},
       ["unit_events"] = {
         ["player"] = {"UNIT_PET"}
       }
@@ -7950,8 +8158,7 @@ Private.event_prototypes = {
     },
     name = L["Queued Action"],
     init = function(trigger)
-      trigger.spellName = trigger.spellName or 0
-      local spellName
+      local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
       if trigger.use_exact_spellName then
         spellName = trigger.spellName
       else
@@ -8147,26 +8354,27 @@ Private.event_prototypes = {
       if type(trigger.value) ~= "string" then trigger.value = "" end
       if type(trigger.value_operator) ~= "string" then trigger.value_operator = "" end
       local ret = [=[
-          local currencyID = %d
-          local discoveredTbl = Private.ExecEnv.GetDiscoveredCurrencies() or {}
-          local currencyInfo = {
-              name = GetItemInfo(currencyID),
-              quantity = GetItemCount(currencyID),
-              icon = GetItemIcon(currencyID),
-              totalEarned = Private.ExecEnv.GetTotalCountCurrencies(currencyID),
-              discovered = discoveredTbl[currencyID] and true or false,
-          }
-          if not currencyInfo.name then
-              currencyInfo = {
-                  name = "Unknown Currency",
-                  quantity = 0,
-                  icon = "Interface\\Icons\\INV_Misc_QuestionMark",
-                  totalEarned = 0,
-                  discovered = false
-              }
-          end
+        local currencyID = %d
+        local quantity, totalEarned, icon
+        if currencyID == 43308 then
+          quantity, totalEarned = GetHonorCurrency()
+          icon = UnitFactionGroup("player") == "Alliance" and
+            "Interface/Icons/inv_misc_tournaments_symbol_human" or
+            "Interface/Icons/Achievement_PVP_H_16"
+        elseif currencyID == 43307 then
+          quantity, totalEarned = GetArenaCurrency()
+          icon = "Interface/PVPFrame/PVP-ArenaPoints-Icon"
+        end
+        local name = GetItemInfo(currencyID)
+        local currencyInfo = {
+          name = name or "Unknown Currency",
+          quantity = quantity or GetItemCount(currencyID) or 0,
+          icon = icon or GetItemIcon(currencyID) or "Interface/Icons/INV_Misc_QuestionMark",
+          totalEarned = totalEarned or Private.ExecEnv.GetTotalCountCurrencies(currencyID) or 0,
+          discovered = ((Private.ExecEnv.GetDiscoveredCurrencies() or {})[currencyID]) and true or false
+        }
       ]=]
-      return ret:format(tonumber(trigger.currencyId) or 1)
+      return ret:format(tonumber(trigger.currencyId) or 0)
     end,
     statesParameter = "one",
     args = {
@@ -8251,8 +8459,16 @@ Private.event_prototypes = {
       },
     },
     GetNameAndIcon = function(trigger)
-      local name = GetItemInfo(trigger.currencyId or 0)
-      local icon = GetItemIcon(trigger.currencyId or 0)
+      local id = trigger.currencyId or 0
+      local name = GetItemInfo(id)
+      local icon = GetItemIcon(id)
+      if id == 43308 then
+        icon = UnitFactionGroup("player") == "Alliance" and
+          "Interface/Icons/inv_misc_tournaments_symbol_human" or
+          "Interface/Icons/Achievement_PVP_H_16"
+      elseif id == 43307 then
+        icon = "Interface/PVPFrame/PVP-ArenaPoints-Icon"
+      end
       return name, icon
     end,
     automaticrequired = true
@@ -8273,10 +8489,10 @@ Private.event_prototypes = {
     name = WeakAuras.newFeatureString..L["Location"],
     init = function(trigger)
       local ret = [=[
+        local uiMapId = GetCurrentMapAreaID()
         local instanceName, instanceType, difficultyID = GetInstanceInfo()
         local minimapZoneText = GetMinimapZoneText()
         local zoneText = GetZoneText()
-        local MapId = GetCurrentMapAreaID()
       ]=]
       return ret
     end,
@@ -8304,7 +8520,7 @@ Private.event_prototypes = {
       {
         name = "zoneId",
         display = L["Zone ID"],
-        init = "MapId",
+        init = "uiMapId",
         store = true,
         hidden = true,
         test = "true",
@@ -8514,6 +8730,23 @@ Private.dynamic_texts = {
     end
   }
 };
+
+-- Events in that list can be filtered by unitID
+Private.UnitEventList = {
+  PLAYER_GUILD_UPDATE = true,
+  MINIMAP_PING = true,
+  PARTY_MEMBER_DISABLE = true,
+  PARTY_MEMBER_ENABLE = true,
+  READY_CHECK_CONFIRM = true,
+  PLAYER_GAINS_VEHICLE_DATA = true,
+  PLAYER_LOSES_VEHICLE_DATA = true,
+  KNOWN_TITLES_UPDATE = true,
+  PLAYER_DAMAGE_DONE_MODS = true,
+  PLAYER_FLAGS_CHANGED = true,
+  PLAYER_PVP_KILLS_CHANGED = true,
+  PLAYER_PVP_RANK_CHANGED = true,
+  PLAYER_XP_UPDATE = true,
+}
 
 Private.InternalEventByIDList = {
   ITEM_COOLDOWN_STARTED = true,

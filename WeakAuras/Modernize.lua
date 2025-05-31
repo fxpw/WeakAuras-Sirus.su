@@ -4,6 +4,7 @@ local Private = select(2, ...)
 local L = WeakAuras.L
 
 -- Takes as input a table of display data and attempts to update it to be compatible with the current version
+--- Modernizes the aura data
 function Private.Modernize(data, oldSnapshot)
   if not data.internalVersion or data.internalVersion < 2 then
     WeakAuras.prettyPrint(string.format("Data for '%s' is too old, can't modernize.", data.id))
@@ -292,7 +293,7 @@ function Private.Modernize(data, oldSnapshot)
   -- Version 18 was a migration for stance/form trigger, but deleted later because of migration issue
 
   -- Version 19 were introduced in July 2019 in BfA
-  if WeakAuras.isAwesomeEnabled() then
+  if WeakAuras.IsAwesomeEnabled() then
     if data.internalVersion < 19 then
       if data.triggers then
         for triggerId, triggerData in ipairs(data.triggers) do
@@ -809,9 +810,6 @@ function Private.Modernize(data, oldSnapshot)
       end
     end
 
-    -- To convert:
-    -- * actions
-    -- * conditions
     data.progressPrecision = nil
     data.totalPrecision = nil
   end
@@ -993,6 +991,7 @@ function Private.Modernize(data, oldSnapshot)
       ["Totem"] = "spell",
       ["Ready Check"] = "event",
       ["BigWigs Message"] = "addons",
+      ["Class/Spec"] = "unit",
       ["Stance/Form/Aura"] = "unit",
       ["Weapon Enchant"] = "item",
       ["Global Cooldown"] = "spell",
@@ -1498,7 +1497,7 @@ function Private.Modernize(data, oldSnapshot)
     end
     do
       local loadFields = {
-        "level", "itemequiped", "itemequiped"
+        "level", "itemequiped"
       }
 
       for _, field in ipairs(loadFields) do
@@ -1736,6 +1735,24 @@ function Private.Modernize(data, oldSnapshot)
     migrateToTable(data.load, "itemequiped")
   end
 
+  if data.internalVersion < 70 then
+    local trigger_migration = {
+      Power = {
+        "power",
+        "power_operator"
+      }
+    }
+    for _, triggerData in ipairs(data.triggers) do
+      local t = triggerData.trigger
+      local fieldsToMigrate = trigger_migration[t.event]
+      if fieldsToMigrate then
+        for _, field in ipairs(fieldsToMigrate) do
+          migrateToTable(t, field)
+        end
+      end
+    end
+  end
+
   if data.internalVersion < 71 then
     if data.regionType == 'icon' or data.regionType == 'aurabar'
        or data.regionType == 'progresstexture'
@@ -1946,6 +1963,7 @@ function Private.Modernize(data, oldSnapshot)
         multi = true
       }
     }
+
     local function fixData(data, fields)
       for k, v in pairs(fields) do
         if v == true and type(data[k]) == "table" then
@@ -1969,6 +1987,7 @@ function Private.Modernize(data, oldSnapshot)
         end
       end
     end
+
     for _, triggerData in ipairs(data.triggers) do
       fixData(triggerData.trigger, triggerFix)
     end
@@ -1994,6 +2013,7 @@ function Private.Modernize(data, oldSnapshot)
       end
     end
   end
+
 
   if data.internalVersion < 80 then
     -- Use common names for anchor areas/points so
@@ -2062,7 +2082,7 @@ function Private.Modernize(data, oldSnapshot)
   end
 
   if data.internalVersion < 83.25 then
-  -- Due to a Localisation issue and a bad implementation clear out all class/spec triggers that contain strings
+    -- Due to a Localisation issue and a bad implementation clear out all class/spec triggers that contain strings
     local function replaceSpecData(data, field, bt2)
       if data[field] then
         if bt2 then
@@ -2101,6 +2121,91 @@ function Private.Modernize(data, oldSnapshot)
           replaceSpecData(trigger, "specId")
         elseif trigger and trigger.type == "aura2" then
           replaceSpecData(trigger, "actualSpec", "useActualSpec")
+        end
+      end
+    end
+  end
+
+  if data.internalVersion < 84 then
+    if data.triggers then
+      for _, triggerData in ipairs(data.triggers) do
+        local trigger = triggerData.trigger
+        if trigger and trigger.type == "addons" then
+          if trigger.event == "Boss Mod Timer" or trigger.event == "BigWigs Timer" or trigger.event == "DBM Timer" then
+            -- if trigger don't filter bars, show only those active in the addon config for triggers made before this option was added
+            -- show disabled bars when looking for specific ids/name
+            if not (trigger.use_message or trigger.use_spellId) then
+              trigger.use_isBarEnabled = true
+            end
+          end
+        end
+      end
+    end
+  end
+
+  if data.internalVersion < 85 then
+    -- Migrate raidMarkIndex and old Combo Points triggers and Happiness
+    if data.triggers then
+      local eventTypes = {
+        ["Unit Characteristics"] = true,
+        ["Health"] = true,
+        ["Power"] = true,
+        ["Alternate Power"] = true,
+        ["Cast"] = true
+      }
+      for _, triggerData in ipairs(data.triggers) do
+        local trigger = triggerData.trigger
+        if trigger and trigger.type == "unit" then
+          -- Migrate raidMarkIndex
+          if eventTypes[trigger.event] then
+            local rt = trigger.raidMarkIndex
+            if type(rt) == "number" then
+              trigger.raidMarkIndex = {
+                single = rt
+              }
+            end
+            if trigger.use_raidMarkIndex == false then
+              trigger.use_raidMarkIndex = nil
+            end
+          end
+          -- Modernize Happiness
+          if trigger.event == "Power" and trigger.powertype == 4 then
+            trigger.powertype = 27
+          end
+          -- Migrate old Combo Points triggers
+          if trigger.event == "Combo Points" then
+            local newTrigger = {
+              type = "unit",
+              use_unit = true,
+              unit = "player",
+              use_powertype = true,
+              powertype = 4,
+              event = "Power"
+            }
+            if trigger.combopoints and trigger.combopoints_operator then
+              newTrigger.use_power = true
+              newTrigger.power = { trigger.combopoints }
+              newTrigger.power_operator = { trigger.combopoints_operator }
+            end
+            triggerData.trigger = newTrigger
+          end
+        end
+      end
+    end
+    -- Migrates the "power" and "power_operator" fields for the Power trigger again,
+    -- from internalVersion < 70. Previously missed the migration.
+    local trigger_migration = {
+      Power = {
+        "power",
+        "power_operator"
+      }
+    }
+    for _, triggerData in ipairs(data.triggers) do
+      local t = triggerData.trigger
+      local fieldsToMigrate = trigger_migration[t.event]
+      if fieldsToMigrate then
+        for _, field in ipairs(fieldsToMigrate) do
+          migrateToTable(t, field)
         end
       end
     end

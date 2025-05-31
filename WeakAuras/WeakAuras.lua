@@ -1,7 +1,7 @@
 local AddonName = ...
 local Private = select(2, ...)
 
-local internalVersion = 84
+local internalVersion = 85
 
 -- Lua APIs
 local insert = table.insert
@@ -869,31 +869,41 @@ local function LoadCustomActionFunctions(data)
   Private.customActionsFunctions[id] = {};
 
   if (data.actions) then
-    if (data.actions.init and data.actions.init.do_custom and data.actions.init.custom) then
-      local func = WeakAuras.LoadFunction("return function() "..(data.actions.init.custom).."\n end");
-      Private.customActionsFunctions[id]["init"] = func;
+    if data.actions.init then
+      if data.actions.init.do_custom and data.actions.init.custom then
+        local func = WeakAuras.LoadFunction("return function() "..(data.actions.init.custom).."\n end", data.id);
+        Private.customActionsFunctions[id]["init"] = func
+      end
+      if data.actions.init.do_custom_load and data.actions.init.customOnLoad then
+        local func = WeakAuras.LoadFunction("return function() "..(data.actions.init.customOnLoad).."\n end", data.id);
+        Private.customActionsFunctions[id]["load"] = func
+      end
+      if data.actions.init.do_custom_unload and data.actions.init.customOnUnload then
+        local func = WeakAuras.LoadFunction("return function() "..(data.actions.init.customOnUnload).."\n end", data.id);
+        Private.customActionsFunctions[id]["unload"] = func
+      end
     end
 
     if (data.actions.start) then
       if (data.actions.start.do_custom and data.actions.start.custom) then
-        local func = WeakAuras.LoadFunction("return function() "..(data.actions.start.custom).."\n end");
+        local func = WeakAuras.LoadFunction("return function() "..(data.actions.start.custom).."\n end", data.id);
         Private.customActionsFunctions[id]["start"] = func;
       end
 
       if (data.actions.start.do_message and data.actions.start.message_custom) then
-        local func = WeakAuras.LoadFunction("return "..(data.actions.start.message_custom));
+        local func = WeakAuras.LoadFunction("return "..(data.actions.start.message_custom), data.id);
         Private.customActionsFunctions[id]["start_message"] = func;
       end
     end
 
     if (data.actions.finish) then
       if (data.actions.finish.do_custom and data.actions.finish.custom) then
-        local func = WeakAuras.LoadFunction("return function() "..(data.actions.finish.custom).."\n end");
+        local func = WeakAuras.LoadFunction("return function() "..(data.actions.finish.custom).."\n end", data.id);
         Private.customActionsFunctions[id]["finish"] = func;
       end
 
       if (data.actions.finish.do_message and data.actions.finish.message_custom) then
-        local func = WeakAuras.LoadFunction("return "..(data.actions.finish.message_custom));
+        local func = WeakAuras.LoadFunction("return "..(data.actions.finish.message_custom), data.id);
         Private.customActionsFunctions[id]["finish_message"] = func;
       end
     end
@@ -1126,6 +1136,8 @@ function Private.Login(takeNewSnapshots)
       -- history is now in archive so we can shrink WeakAurasSaved
       db.history = nil
     end
+
+    coroutine.yield(3000, "login check uid corruption")
 
     local toAdd = {};
     loginFinished = false
@@ -1444,7 +1456,7 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
     raidMemberType = raidMemberType + 2
   end
 
-  local size, difficulty, instanceType = GetInstanceTypeAndSize()
+  local size, difficulty = GetInstanceTypeAndSize()
   local group = Private.ExecEnv.GroupType()
   local groupSize = GetNumGroupMembers()
 
@@ -1459,8 +1471,8 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
     if (data and not data.controlledChildren) then
       local loadFunc = loadFuncs[id];
       local loadOpt = loadFuncsForOptions[id];
-      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, mounted, player, realm, guild, class, race, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
-      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, mounted, player, realm, guild, class, race, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
 
       if(shouldBeLoaded and not loaded[id]) then
         changed = changed + 1;
@@ -1622,6 +1634,13 @@ local function UnloadAll()
   for _, triggerSystem in pairs(triggerSystems) do
     triggerSystem.UnloadAll();
   end
+
+  for id in pairs(loaded) do
+    local func = Private.customActionsFunctions[id] and Private.customActionsFunctions[id]["unload"]
+    if func then
+      xpcall(func, Private.GetErrorHandlerId(id, "onUnload"))
+    end
+  end
   wipe(loaded);
 end
 
@@ -1669,21 +1688,34 @@ function Private.LoadDisplays(toLoad, ...)
   for _, triggerSystem in pairs(triggerSystems) do
     triggerSystem.LoadDisplays(toLoad, ...);
   end
+  for id in pairs(toLoad) do
+    local func = Private.customActionsFunctions[id] and Private.customActionsFunctions[id]["load"]
+    if func then
+      xpcall(func, Private.GetErrorHandlerId(id, "onLoad"))
+    end
+  end
 end
 
 function Private.UnloadDisplays(toUnload, ...)
+  for id in pairs(toUnload) do
+    local func = Private.customActionsFunctions[id] and Private.customActionsFunctions[id]["unload"]
+    if func then
+      xpcall(func, Private.GetErrorHandlerId(id, "onUnload"))
+    end
+  end
   for _, triggerSystem in pairs(triggerSystems) do
     triggerSystem.UnloadDisplays(toUnload, ...);
   end
 
   for id in pairs(toUnload) do
-
-    for i = 1, triggerState[id].numTriggers do
-      if (triggerState[id][i]) then
-        wipe(triggerState[id][i]);
+    if triggerState[id] then
+      for i = 1, triggerState[id].numTriggers do
+        if (triggerState[id][i]) then
+          wipe(triggerState[id][i])
+        end
       end
+      triggerState[id].show = nil
     end
-    triggerState[id].show = nil;
 
     if (timers[id]) then
       for _, trigger in pairs(timers[id]) do
@@ -1737,6 +1769,11 @@ function WeakAuras.Delete(data)
   local uid = data.uid
   local parentId = data.parent
   local parentUid = data.parent and db.displays[data.parent].uid
+
+
+  if loaded[id] then
+    Private.UnloadDisplays({[id] = true})
+  end
 
   Private.callbacks:Fire("AboutToDelete", uid, id, parentUid, parentId)
 
@@ -2212,6 +2249,7 @@ local function loadOrder(tbl, idtable)
     load(id, {});
     coroutine.yield(100, "sort deps")
   end
+
   return order
 end
 
@@ -2258,7 +2296,7 @@ function Private.AddMany(tbl, takeSnapshots)
     else
       if next(WeakAuras.LoadFromArchive("Repository", "migration").stores) ~= nil then
         timer:ScheduleTimer(function()
-          prettyPrint(L["WeakAuras has detected empty settings. If this is unexpected, ask for assitance on https://discord.gg/weakauras."])
+          prettyPrint(L["WeakAuras has detected empty settings. If this is unexpected, ask for assitance on https://discord.gg/UXSc7nt."])
         end, 1)
       end
     end
@@ -2701,7 +2739,7 @@ function WeakAuras.PreAdd(data, snapshot)
     end
   end
   validateUserConfig(data, data.authorOptions, data.config)
-  if not(WeakAuras.isAwesomeEnabled()) then
+  if not(WeakAuras.IsAwesomeEnabled()) then
     removeNameplateUnitsAndAnchors(data)
   end
   data.init_started = nil
@@ -2789,7 +2827,7 @@ function pAdd(data, simpleChange)
         Private.ClearAuraEnvironment(parent.id);
       end
 
-      db.displays[id] = data;
+      db.displays[id] = data
 
       if (not data.triggers.activeTriggerMode or data.triggers.activeTriggerMode > #data.triggers) then
         data.triggers.activeTriggerMode = Private.trigger_modes.first_active;
@@ -2811,11 +2849,11 @@ function pAdd(data, simpleChange)
       loadEvents["SCAN_ALL"][id] = true
 
       local loadForOptionsFuncStr = ConstructFunction(load_prototype, data.load, true);
-      local loadFunc = Private.LoadFunction(loadFuncStr);
-      local loadForOptionsFunc = Private.LoadFunction(loadForOptionsFuncStr);
+      local loadFunc = Private.LoadFunction(loadFuncStr, id);
+      local loadForOptionsFunc = Private.LoadFunction(loadForOptionsFuncStr, id);
       local triggerLogicFunc;
       if data.triggers.disjunctive == "custom" then
-        triggerLogicFunc = WeakAuras.LoadFunction("return "..(data.triggers.customTriggerLogic or ""));
+        triggerLogicFunc = WeakAuras.LoadFunction("return "..(data.triggers.customTriggerLogic or ""), data.id);
       end
 
       LoadCustomActionFunctions(data);
@@ -3005,8 +3043,8 @@ local function EnsureRegion(id)
 
     -- So we go up the list of parents and collect auras that must be created
     -- If we find a parent already exists, we can stop
-
     local aurasToCreate = {}
+
     while(id) do
       local data = WeakAuras.GetData(id)
       tinsert(aurasToCreate, data.id)
@@ -3771,17 +3809,11 @@ do
   end
 end
 
-function WeakAuras.GetAuraTooltipInfo(unit, index, filter)
-  local tooltip = WeakAuras.GetHiddenTooltip();
-  tooltip:ClearLines();
-  tooltip:SetUnitAura(unit, index, filter);
-  local tooltipTextLine = select(3, tooltip:GetRegions())
-
-  local tooltipText = tooltipTextLine and tooltipTextLine:GetObjectType() == "FontString" and tooltipTextLine:GetText() or "";
+function Private.ParseTooltipText(tooltipText)
   local debuffType = "none";
   local tooltipSize = {};
   if(tooltipText) then
-    for t in tooltipText:gmatch("(%d[%d%.,]*)") do
+    for t in tooltipText:gmatch("(-?%d[%d%.,]*)") do
       if (LARGE_NUMBER_SEPERATOR == ",") then
         t = t:gsub(",", "");
       else
@@ -3797,6 +3829,17 @@ function WeakAuras.GetAuraTooltipInfo(unit, index, filter)
   else
     return tooltipText, debuffType, 0;
   end
+end
+
+function WeakAuras.GetAuraTooltipInfo(unit, index, filter)
+  local tooltipText = ""
+  local tooltip = WeakAuras.GetHiddenTooltip();
+  tooltip:ClearLines();
+  tooltip:SetUnitAura(unit, index, filter);
+  local tooltipTextLine = select(3, tooltip:GetRegions())
+  tooltipText = tooltipTextLine and tooltipTextLine:GetObjectType() == "FontString" and tooltipTextLine:GetText() or "";
+
+  return Private.ParseTooltipText(tooltipText)
 end
 
 local FrameTimes = {};
