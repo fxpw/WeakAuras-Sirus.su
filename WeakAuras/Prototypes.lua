@@ -2613,7 +2613,7 @@ Private.event_prototypes = {
       end
 
       -- Register shared events unless we're in the FRAME_UPDATE case
-      if not (unit and not Private.multiUnitUnits[unit]) then
+      if (not (unit and not Private.multiUnitUnits[unit])) or (trigger.powertype == 4) then
         AddUnitEventForEvents(result, unit, "UNIT_DISPLAYPOWER")
         AddUnitEventForEvents(result, unit, "UNIT_NAME_UPDATE")
         if trigger.use_ignoreDead or trigger.use_ignoreDisconnected then
