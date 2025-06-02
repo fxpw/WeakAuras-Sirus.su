@@ -2586,7 +2586,7 @@ Private.event_prototypes = {
       local unit = trigger.unit
       local result = {}
       local powerType = trigger.use_powertype and trigger.powertype
-      AddUnitEventForPowerEvents(result, unit, powerType)
+
       if trigger.powertype == 4 then
         local _, class = UnitClass("player")
         AddUnitEventForEvents(result, unit, "UNIT_COMBO_POINTS")
@@ -2594,9 +2594,15 @@ Private.event_prototypes = {
         if class == "DRUID" then
           AddUnitEventForEvents(result, unit, "UNIT_MODEL_CHANGED")
         end
+      -- For units not in multiUnitUnits, add FRAME_UPDATE to ensure smooth power updates
+      elseif unit and not Private.multiUnitUnits[unit] then
+        if not result.events then
+          result.events = {}
+        end
+        tinsert(result.events, "FRAME_UPDATE")
+      else
+        AddUnitEventForPowerEvents(result, unit, powerType)
       end
-      AddUnitEventForEvents(result, unit, "UNIT_DISPLAYPOWER")
-      AddUnitEventForEvents(result, unit, "UNIT_NAME_UPDATE")
 
       -- The api for spell power costs is not meant to be for other units
       if trigger.use_showCost and unit == "player" then
@@ -2606,11 +2612,16 @@ Private.event_prototypes = {
         AddUnitEventForEvents(result, unit, "UNIT_SPELLCAST_SUCCEEDED")
       end
 
-      if trigger.use_ignoreDead or trigger.use_ignoreDisconnected then
-        AddUnitEventForEvents(result, unit, "UNIT_FLAGS")
-      end
-      if trigger.use_inRange then
-        AddUnitEventForEvents(result, unit, "UNIT_IN_RANGE_UPDATE")
+      -- Register shared events unless we're in the FRAME_UPDATE case
+      if not (unit and not Private.multiUnitUnits[unit]) then
+        AddUnitEventForEvents(result, unit, "UNIT_DISPLAYPOWER")
+        AddUnitEventForEvents(result, unit, "UNIT_NAME_UPDATE")
+        if trigger.use_ignoreDead or trigger.use_ignoreDisconnected then
+          AddUnitEventForEvents(result, unit, "UNIT_FLAGS")
+        end
+        if trigger.use_inRange then
+          AddUnitEventForEvents(result, unit, "UNIT_IN_RANGE_UPDATE")
+        end
       end
       return result;
     end,

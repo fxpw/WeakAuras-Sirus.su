@@ -694,6 +694,9 @@ local function RunTriggerFunc(allStates, data, id, triggernum, event, arg1, arg2
         untriggerCheck = true;
       end
     elseif (data.statesParameter == "unit") then
+      if event == "FRAME_UPDATE" and not Private.multiUnitUnits[data.trigger.unit] then
+        arg1 = data.trigger.unit
+      end
       if arg1 then
         if Private.multiUnitUnits[data.trigger.unit] then
           if data.trigger.unit == "group" and IsInRaid() and Private.multiUnitUnits.party[arg1] then
