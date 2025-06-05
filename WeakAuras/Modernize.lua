@@ -2153,7 +2153,7 @@ function Private.Modernize(data, oldSnapshot)
         ["Alternate Power"] = true,
         ["Cast"] = true
       }
-      for _, triggerData in ipairs(data.triggers) do
+      for triggerNum, triggerData in ipairs(data.triggers) do
         local trigger = triggerData.trigger
         if trigger and trigger.type == "unit" then
           -- Migrate raidMarkIndex
@@ -2174,6 +2174,19 @@ function Private.Modernize(data, oldSnapshot)
           end
           -- Migrate old Combo Points triggers
           if trigger.event == "Combo Points" then
+            -- Conditions
+            if data.conditions then
+              for conditionIndex, condition in ipairs(data.conditions) do
+                if condition.check then
+                  if condition.check.trigger == triggerNum then
+                    if condition.check.variable == "stacks" then
+                      condition.check.variable = "power"
+                    end
+                  end
+                end
+              end
+            end
+            -- Trigger
             local newTrigger = {
               type = "unit",
               use_unit = true,

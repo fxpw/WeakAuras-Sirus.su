@@ -6114,7 +6114,7 @@ Private.event_prototypes = {
         preamble = "local spellChecker = Private.ExecEnv.CreateSpellChecker()",
         preambleGroup = "spell",
         test = "spellChecker:CheckName(spellNames)",
-        conditionType = "number",
+        --conditionType = "number", -- Disabled because input would be string and would break imports to retail
         noProgressSource = true
       },
       {

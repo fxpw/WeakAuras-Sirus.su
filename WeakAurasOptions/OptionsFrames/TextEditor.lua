@@ -506,7 +506,7 @@ local function ConstructTextEditor(frame)
   editor.editBox.timeMachinePos = 1
   local TimeMachineMaximumRollback = 10
 
-  -- We do not have those events in the editbox, so we created buttons for undo/redo below...
+  -- These events aren’t supported in the editbox, so we add undo/redo buttons below instead...
   --[[editor.editBox:HookScript(
     "OnKeyDown",
     function(self, key)
