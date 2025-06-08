@@ -1986,10 +1986,10 @@ do
     swingTriggerUpdate()
   end
 
-  local function swingStart(hand)
+  local function swingStart(hand, curTime)
     mainSpeed, offSpeed = UnitAttackSpeed("player")
     offSpeed = offSpeed or 0
-    local currentTime = GetTime()
+    local currentTime = curTime or GetTime()
     if hand == "main" then
       lastSwingMain = currentTime
       swingDurationMain = mainSpeed
@@ -2041,12 +2041,15 @@ do
             return
           end
         end
-        local isOffHand = select(event == "SWING_DAMAGE" and 10 or 2, ...);
-        if not isOffHand then
-          swingStart("main")
-        elseif(isOffHand) then
-          swingStart("off")
+
+        local currentTime = GetTime()
+        local hand = "main"
+        if offSpeed and offSpeed > 0 and lastSwingMain then
+          if (currentTime - lastSwingMain) < (mainSpeed * 0.6) then
+            hand = "off"
+          end
         end
+        swingStart(hand, currentTime)
         swingTriggerUpdate()
       end
     elseif (destGUID == selfGUID and (... == "PARRY" or select(4, ...) == "PARRY")) then
