@@ -8,8 +8,12 @@ if not lib then
   return
 end
 
-lib.callbacks = lib.callbacks or LibStub("CallbackHandler-1.0"):New(lib)
 lib.timer = lib.timer or LibStub("AceTimer-3.0")
+if not lib.timer then
+  error(MAJOR_VERSION .. " requires AceTimer-3.0.")
+end
+
+lib.callbacks = lib.callbacks or LibStub("CallbackHandler-1.0"):New(lib)
 local callbacks = lib.callbacks
 
 local GetPlayerInfoByGUID, UnitExists, UnitIsUnit, SecureButton_GetUnit, IsAddOnLoaded  =
@@ -466,11 +470,8 @@ local function GetUnitFrames(target, ignoredFrames)
     if type(target) ~= "string" then
       return
     end
-    local B = tonumber(target:sub(5, 5), 16)
-    if B and B % 8 == 0 then
-        target = select(6, GetPlayerInfoByGUID(target))
-    else
-        target = target:gsub(" .*", "")
+    if target:match("^0x") then
+      target = select(6, GetPlayerInfoByGUID(target))
     end
     if not UnitExists(target) then
       return
@@ -575,7 +576,7 @@ local function Init(noDelay)
   GetFramesCacheListener:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
   GetFramesCacheListener:SetScript("OnEvent", function(self, event, unit, ...)
     fixGetUnitFrameIntegrity()
-    if event == "RAID_ROSTER_UPDATE" or "PARTY_MEMBERS_CHANGED" then
+    if event == "RAID_ROSTER_UPDATE" or event == "PARTY_MEMBERS_CHANGED" then
       wipe(unitPetState)
       for member in IterateGroupMembers() do
         unitPetState[member] = UnitExists(member .. "pet") and true or nil
