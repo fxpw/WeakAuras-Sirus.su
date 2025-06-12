@@ -1,0 +1,58 @@
+name: Sync to WeakAuras-Sirus
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Проверять каждые 30 минут
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout target repo
+      uses: actions/checkout@v2
+      with:
+        repository: fxpw/WeakAuras-Sirus.su
+        path: target-repo
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Checkout source repo
+      uses: actions/checkout@v2
+      with:
+        repository: NoM0Re/WeakAuras-WotLK
+        ref: main
+        path: source-repo
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Check for changes
+      run: |
+        cd target-repo
+        git remote add source ../source-repo
+        git fetch source
+        if [ "$(git rev-list HEAD...source/main --count)" -gt 0 ]; then
+          echo "New commits found"
+          git merge source/main --no-commit
+        else
+          echo "No new commits"
+          exit 0
+        fi
+
+    - name: Commit changes
+      run: |
+        git config --local user.name "GitHub Action"
+        git config --local user.email "action@github.com"
+        git add .
+        git commit -m "Sync changes from NoM0Re/WeakAuras-WotLK" || exit 0
+
+    - name: Push changes
+      run: |
+        git push origin 5_ver
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v3
+      with:
+        title: 'Sync from NoM0Re/WeakAuras-WotLK'
+        body: 'This PR syncs changes from the NoM0Re/WeakAuras-WotLK repository to the 5_ver branch.'
+        base: 5_ver
+        token: ${{ secrets.GITHUB_TOKEN }}
