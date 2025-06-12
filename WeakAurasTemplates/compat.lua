@@ -12,7 +12,6 @@ if not C_Spell.GetSpellIcon then
     end
 end
 
-
 --~new async callback api
 AsyncCallbackAPIType = {
 	ASYNC_QUEST = 1,
