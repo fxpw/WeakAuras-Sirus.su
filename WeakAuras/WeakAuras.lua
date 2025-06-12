@@ -1429,7 +1429,7 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
 
   local player, realm, zone, subzone = UnitName("player"), GetRealmName(), GetRealZoneText(), GetSubZoneText();
   local guild = GetGuildInfo("player")
-  local _, race = UnitRace("player")
+  local race = WeakAuras.GetUnitRace()
   local faction = UnitFactionGroup("player")
   local zoneId = GetCurrentMapAreaID()
   local role = WeakAuras.LGT:GetUnitRole("player")
@@ -1472,8 +1472,8 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
     if (data and not data.controlledChildren) then
       local loadFunc = loadFuncs[id];
       local loadOpt = loadFuncsForOptions[id];
-      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
-      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, constellation, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, constellation, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
 
       if(shouldBeLoaded and not loaded[id]) then
         changed = changed + 1;
@@ -5636,6 +5636,7 @@ do
   trackableUnits["focus"] = true
   trackableUnits["pet"] = true
   trackableUnits["vehicle"] = true
+  trackableUnits["targettarget"] = true
 
   for i = 1, 5 do
     trackableUnits["arena" .. i] = true
@@ -5833,6 +5834,11 @@ function Private.QuotedString(input)
   local str = string.format("%q", input)
   return (str:gsub("%-%-", "-\\-"))
 end
+
+function WeakAuras.GetUnitRace()
+  return select(2,UnitRace("player"))
+end
+
 local ConstellationTable = {
   [371788] = true,
   [371789] = true,

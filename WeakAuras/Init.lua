@@ -109,7 +109,7 @@ if not libsAreOk then
   WeakAuras.prettyPrint("WeakAuras is missing necessary libraries. Please reinstall a proper package.")
 end
 
-if versionString ~= versionStringFromToc .. " Beta" and versionStringFromToc ~= "Dev" then
+if versionString ~= versionStringFromToc and versionStringFromToc ~= "Dev" then
   WeakAuras.prettyPrint("You need to restart your game client to complete the WeakAuras update!")
 end
 
