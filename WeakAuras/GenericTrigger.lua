@@ -3694,10 +3694,9 @@ do
       isMounted = IsMounted()
       Private.ScanForLoads(nil, "MOUNTED_UPDATE")
       Private.ScanEvents("MOUNTED_UPDATE")
-      mountedFrame:SetScript("OnUpdate", nil)
-    end
-    if(elapsed > delay) then
-      mountedFrame:SetScript("OnUpdate", nil)
+      self:SetScript("OnUpdate", nil)
+    elseif(elapsed > delay) then
+      self:SetScript("OnUpdate", nil)
     end
     Private.StopProfileSystem("generictrigger mounted")
   end
@@ -3707,10 +3706,10 @@ do
       mountedFrame = CreateFrame("Frame")
 	  Private.frames["Mount Use Handler"] = mountedFrame
       mountedFrame:RegisterEvent("COMPANION_UPDATE")
-      mountedFrame:SetScript("OnEvent", function(_, _, arg)
+      mountedFrame:SetScript("OnEvent", function(self, _, arg)
         if arg == "MOUNT" then
           elapsed = 0
-          mountedFrame:SetScript("OnUpdate", checkForMounted)
+          self:SetScript("OnUpdate", checkForMounted)
         end
       end)
     end
