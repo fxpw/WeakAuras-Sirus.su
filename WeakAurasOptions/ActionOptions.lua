@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, OptionsPrivate = ...
+local AddonName = ...
+local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
 
@@ -78,13 +79,25 @@ function OptionsPrivate.GetActionOptions(data)
     args = {
       init_header = {
         type = "header",
-        name = L["On Init"],
-        order = 0.005
+        name = L["Custom Functions"],
+        order = 0.1
       },
       init_do_custom = {
         type = "toggle",
-        name = L["Custom"],
-        order = 0.011,
+        name = L["Custom Init"],
+        order = 0.2,
+        width = WeakAuras.doubleWidth
+      },
+      init_do_custom_load = {
+        type = "toggle",
+        name = L["Custom Load"],
+        order = 0.3,
+        width = WeakAuras.doubleWidth
+      },
+      init_do_custom_unload = {
+        type = "toggle",
+        name = L["Custom Unload"],
+        order = 0.4,
         width = WeakAuras.doubleWidth
       },
       -- texteditor added here by AddCodeOption
@@ -406,6 +419,40 @@ function OptionsPrivate.GetActionOptions(data)
         end,
         disabled = function() return not data.actions.start.use_glow_color end,
       },
+      start_glow_startAnim = {
+        type = "toggle",
+        width = WeakAuras.normalWidth,
+        name = L["Start Animation"],
+        order = 10.801,
+        get = function()
+          return data.actions.start.glow_startAnim and true or false
+        end,
+        hidden = function()
+          return not data.actions.start.do_glow
+          or data.actions.start.glow_action ~= "show"
+          or data.actions.start.glow_frame_type == nil
+          or data.actions.start.glow_type ~= "Proc"
+        end,
+      },
+      start_glow_duration = {
+        type = "range",
+        control = "WeakAurasSpinBox",
+        width = WeakAuras.normalWidth,
+        name = L["Duration"],
+        order = 10.802,
+        softMin = 0.01,
+        softMax = 3,
+        step = 0.05,
+        get = function()
+          return data.actions.start.glow_duration or 1
+        end,
+        hidden = function()
+          return not data.actions.start.do_glow
+          or data.actions.start.glow_action ~= "show"
+          or data.actions.start.glow_frame_type == nil
+          or data.actions.start.glow_type ~= "Proc"
+        end,
+      },
       start_glow_lines = {
         type = "range",
         control = "WeakAurasSpinBox",
@@ -423,6 +470,7 @@ function OptionsPrivate.GetActionOptions(data)
           or data.actions.start.glow_action ~= "show"
           or not data.actions.start.glow_type
           or data.actions.start.glow_type == "buttonOverlay"
+          or data.actions.start.glow_type == "Proc"
           or data.actions.start.glow_frame_type == nil
         end,
       },
@@ -443,6 +491,7 @@ function OptionsPrivate.GetActionOptions(data)
           or data.actions.start.glow_action ~= "show"
           or not data.actions.start.glow_type
           or data.actions.start.glow_type == "buttonOverlay"
+          or data.actions.start.glow_type == "Proc"
           or data.actions.start.glow_frame_type == nil
         end,
       },
@@ -850,6 +899,40 @@ function OptionsPrivate.GetActionOptions(data)
         end,
         disabled = function() return not data.actions.finish.use_glow_color end,
       },
+      finish_glow_startAnim = {
+        type = "toggle",
+        width = WeakAuras.normalWidth,
+        name = L["Start Animation"],
+        order = 10.801,
+        get = function()
+          return data.actions.finish.glow_startAnim and true or false
+        end,
+        hidden = function()
+          return not data.actions.finish.do_glow
+          or data.actions.finish.glow_action ~= "show"
+          or data.actions.finish.glow_frame_type == nil
+          or data.actions.finish.glow_type ~= "Proc"
+        end,
+      },
+      finish_glow_duration = {
+        type = "range",
+        control = "WeakAurasSpinBox",
+        width = WeakAuras.normalWidth,
+        name = L["Duration"],
+        order = 10.802,
+        softMin = 0.01,
+        softMax = 3,
+        step = 0.05,
+        get = function()
+          return data.actions.finish.glow_duration or 1
+        end,
+        hidden = function()
+          return not data.actions.finish.do_glow
+          or data.actions.finish.glow_action ~= "show"
+          or data.actions.finish.glow_frame_type == nil
+          or data.actions.finish.glow_type ~= "Proc"
+        end,
+      },
       finish_glow_lines = {
         type = "range",
         control = "WeakAurasSpinBox",
@@ -867,6 +950,7 @@ function OptionsPrivate.GetActionOptions(data)
           or data.actions.finish.glow_action ~= "show"
           or not data.actions.finish.glow_type
           or data.actions.finish.glow_type == "buttonOverlay"
+          or data.actions.start.glow_type == "Proc"
           or data.actions.finish.glow_frame_type == nil
         end,
       },
@@ -887,6 +971,7 @@ function OptionsPrivate.GetActionOptions(data)
           or data.actions.finish.glow_action ~= "show"
           or not data.actions.finish.glow_type
           or data.actions.finish.glow_type == "buttonOverlay"
+          or data.actions.start.glow_type == "Proc"
           or data.actions.finish.glow_frame_type == nil
         end,
       },
@@ -1013,7 +1098,12 @@ function OptionsPrivate.GetActionOptions(data)
   -- Text format option helpers
 
   OptionsPrivate.commonOptions.AddCodeOption(action.args, data, L["Custom Code"], "init", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#on-init",
-                          0.011, function() return not data.actions.init.do_custom end, {"actions", "init", "custom"}, true);
+                          0.21, function() return not data.actions.init.do_custom end, {"actions", "init", "custom"}, true)
+
+  OptionsPrivate.commonOptions.AddCodeOption(action.args, data, L["Custom Code"], "customOnLoad", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#on-load",
+                          0.31, function() return not data.actions.init.do_custom_load end, {"actions", "init", "customOnLoad"}, true)
+  OptionsPrivate.commonOptions.AddCodeOption(action.args, data, L["Custom Code"], "customOnUnload", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#on-unload",
+                          0.41, function() return not data.actions.init.do_custom_unload end, {"actions", "init", "customOnUnload"}, true)
 
   OptionsPrivate.commonOptions.AddCodeOption(action.args, data, L["Custom Code"], "start_message", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#chat-message---custom-code",
                           5, function() return not (data.actions.start.do_message and (OptionsPrivate.Private.ContainsCustomPlaceHolder(data.actions.start.message) or (data.actions.start.message_type == "WHISPER" and OptionsPrivate.Private.ContainsCustomPlaceHolder(data.actions.start.message_dest)))) end, {"actions", "start", "message_custom"}, false);

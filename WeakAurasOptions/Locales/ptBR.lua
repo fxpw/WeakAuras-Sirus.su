@@ -61,6 +61,10 @@ local L = WeakAuras.L
 	L["%s - Init Action"] = "%s - Init Action"
 	--[[Translation missing --]]
 	L["%s - Main"] = "%s - Main"
+	--[[Translation missing --]]
+	L["%s - OnLoad"] = "%s - OnLoad"
+	--[[Translation missing --]]
+	L["%s - OnUnload"] = "%s - OnUnload"
 	L["%s - Option #%i has the key %s. Please choose a different option key."] = "%s - Option #%i possui a chave %s. Por favor, selecione uma opção diferente de chave."
 	--[[Translation missing --]]
 	L["%s - Rotate Animation"] = "%s - Rotate Animation"
@@ -220,9 +224,9 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["Anchor Mode"] = "Anchor Mode"
 	L["Anchor Point"] = "Ponto da âncora"
 	L["Anchored To"] = "Ancorado a"
-	L["And "] = "E"
 	--[[Translation missing --]]
 	L["and"] = "and"
+	L["And "] = "E"
 	--[[Translation missing --]]
 	L["and %s"] = "and %s"
 	L["and aligned left"] = "e alinhado à esquerda"
@@ -392,16 +396,41 @@ Off Screen]=] ] = "Aura está fora da tela"
 	--[[Translation missing --]]
 	L["Custom Frames"] = "Custom Frames"
 	--[[Translation missing --]]
+	L["Custom Functions"] = "Custom Functions"
+	--[[Translation missing --]]
+	L["Custom Init"] = "Custom Init"
+	--[[Translation missing --]]
+	L["Custom Load"] = "Custom Load"
+	--[[Translation missing --]]
 	L["Custom Options"] = "Custom Options"
 	L["Custom Trigger"] = "Gatilho personalizado"
 	--[[Translation missing --]]
-	L["Custom trigger event tooltip"] = "Custom trigger event tooltip"
+	L["Custom trigger event tooltip"] = [=[Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
+• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
+• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
+• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
+
+|cFF4444FFFor example:|r
+UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
+]=]
 	--[[Translation missing --]]
-	L["Custom trigger status tooltip"] = "Custom trigger status tooltip"
+	L["Custom trigger status tooltip"] = [=[Choose which events cause the custom trigger to be checked. Multiple events can be specified using commas or spaces.
+
+• "UNIT" events can use colons to define which unitIDs will be registered. In addition to UnitIDs Unit types can be used, they include "nameplate", "group", "raid", "party", "arena", "boss".
+• "CLEU" can be used instead of COMBAT_LOG_EVENT_UNFILTERED and colons can be used to separate specific "subEvents" you want to receive.
+• The keyword "TRIGGER" can be used, with colons separating trigger numbers, to have the custom trigger get updated when the specified trigger(s) update.
+
+Since this is a status-type trigger, the specified events may be called by WeakAuras without the expected arguments.
+
+|cFF4444FFFor example:|r
+UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:SPELL_CAST_SUCCESS TRIGGER:3:1
+]=]
 	--[[Translation missing --]]
 	L["Custom Trigger: Ignore Lua Errors on OPTIONS event"] = "Custom Trigger: Ignore Lua Errors on OPTIONS event"
 	--[[Translation missing --]]
 	L["Custom Trigger: Send fake events instead of STATUS event"] = "Custom Trigger: Send fake events instead of STATUS event"
+	--[[Translation missing --]]
+	L["Custom Unload"] = "Custom Unload"
 	--[[Translation missing --]]
 	L["Custom Untrigger"] = "Custom Untrigger"
 	--[[Translation missing --]]
@@ -427,6 +456,8 @@ Off Screen]=] ] = "Aura está fora da tela"
 	L["Differences"] = "Diferenças"
 	--[[Translation missing --]]
 	L["Disallow Entry Reordering"] = "Disallow Entry Reordering"
+	--[[Translation missing --]]
+	L["Discord"] = "Discord"
 	--[[Translation missing --]]
 	L["Display Name"] = "Display Name"
 	L["Display Text"] = "Texto do mostruário"
@@ -628,7 +659,7 @@ Bleed classification via LibDispel]=]
 	--[[Translation missing --]]
 	L["Grid direction"] = "Grid direction"
 	--[[Translation missing --]]
-	L["Group (verb)"] = "Group (verb)"
+	L["Group (verb)"] = "Group"
 	--[[Translation missing --]]
 	L["Group Alpha"] = "Group Alpha"
 	--[[Translation missing --]]
@@ -642,7 +673,17 @@ Bleed classification via LibDispel]=]
 - Unit Frames: attach to unit frame buttons per unit.
 - Custom Frames: choose which frame each region should be anchored to.]=]
 	--[[Translation missing --]]
-	L["Group aura count description"] = "Group aura count description"
+	L["Group aura count description"] = [=[The amount of units of type '%s' which must be affected by one or more of the given auras for the display to trigger.
+If the entered number is a whole number (e.g. 5), the number of affected units will be compared with the entered number.
+If the entered number is a decimal (e.g. 0.5), fraction (e.g. 1/2), or percentage (e.g. 50%%), then that fraction of the %s must be affected.
+
+|cFF4444FFFor example:|r
+|cFF00CC00> 0|r will trigger when any unit of type '%s' is affected
+|cFF00CC00= 100%%|r will trigger when every unit of type '%s' is affected
+|cFF00CC00!= 2|r will trigger when the number of units of type '%s' affected is not exactly 2
+|cFF00CC00<= 0.8|r will trigger when less than 80%% of the units of type '%s' is affected (4 of 5 party members, 8 of 10 or 20 of 25 raid members)
+|cFF00CC00> 1/2|r will trigger when more than half of the units of type '%s' is affected
+]=]
 	--[[Translation missing --]]
 	L["Group by Frame"] = "Group by Frame"
 	--[[Translation missing --]]
@@ -778,8 +819,6 @@ Bleed classification via LibDispel]=]
 	L["Is Stealable"] = "É Roubável"
 	--[[Translation missing --]]
 	L["Is Unit"] = "Is Unit"
-	--[[Translation missing --]]
-	L["Join Discord"] = "Join Discord"
 	L["Justify"] = "Justificar"
 	--[[Translation missing --]]
 	L["Keep Aspect Ratio"] = "Keep Aspect Ratio"
@@ -806,6 +845,7 @@ Bleed classification via LibDispel]=]
 	--[[Translation missing --]]
 	L["LibSerialize: Sanjo"] = "LibSerialize: Sanjo"
 	--[[Translation missing --]]
+	L["LibSpecialization: Funkeh"] = "LibSpecialization: Funkeh"
 	--[[Translation missing --]]
 	L["Limit"] = "Limit"
 	--[[Translation missing --]]
@@ -814,6 +854,8 @@ Bleed classification via LibDispel]=]
 	L["Linear Texture %s"] = "Linear Texture %s"
 	--[[Translation missing --]]
 	L["Linked aura: "] = "Linked aura: "
+	--[[Translation missing --]]
+	L["Linked Auras"] = "Linked Auras"
 	--[[Translation missing --]]
 	L["Load"] = "Load"
 	L["Loaded"] = "Carregado"
@@ -874,11 +916,14 @@ Bleed classification via LibDispel]=]
 	L["Moving auras: "] = "Moving auras: "
 	L["Multiple Displays"] = "Múltiplos displays"
 	--[[Translation missing --]]
-	L["Multiselect ignored tooltip"] = "Multiselect ignored tooltip"
+	L["Multiselect ignored tooltip"] = [=[|cFFFF0000Ignored|r - |cFF777777Single|r - |cFF777777Multiple|r
+This option will not be used to determine when this display should load]=]
 	--[[Translation missing --]]
-	L["Multiselect multiple tooltip"] = "Multiselect multiple tooltip"
+	L["Multiselect multiple tooltip"] = [=[|cFF777777Ignored|r - |cFF777777Single|r - |cFF00FF00Multiple|r
+Any number of matching values can be picked]=]
 	--[[Translation missing --]]
-	L["Multiselect single tooltip"] = "Multiselect single tooltip"
+	L["Multiselect single tooltip"] = [=[|cFF777777Ignored|r - |cFF00FF00Single|r - |cFF777777Multiple|r
+Only a single matching value can be picked]=]
 	--[[Translation missing --]]
 	L["Must be a power of 2"] = "Must be a power of 2"
 	--[[Translation missing --]]
@@ -939,7 +984,6 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	--[[Translation missing --]]
 	L["ON"] = "ON"
 	L["On Hide"] = "Quando sumir"
-	L["On Init"] = "No início"
 	L["On Show"] = "Quando mostrar"
 	--[[Translation missing --]]
 	L["Only Match auras cast by a player (not an npc)"] = "Only Match auras cast by a player (not an npc)"
@@ -1059,9 +1103,7 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Require unit from trigger"] = "Require unit from trigger"
 	L["Required for Activation"] = "Requerido para Ativar"
 	--[[Translation missing --]]
-	L["Requires LibGroupTalents, that is e.g. a up-to date WeakAuras version"] = "Requires LibGroupTalents, that is e.g. a up-to date WeakAuras version"
-	--[[Translation missing --]]
-	L["Requires syncing the specialization via LibGroupTalents."] = "Requires syncing the specialization via LibGroupTalents."
+	L["Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"] = "Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"
 	--[[Translation missing --]]
 	L["Reset all options to their default values."] = "Reset all options to their default values."
 	--[[Translation missing --]]
@@ -1124,7 +1166,7 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	--[[Translation missing --]]
 	L["Shadow Y Offset"] = "Shadow Y Offset"
 	--[[Translation missing --]]
-	L["Shift-click to create chat link"] = "Shift-click to create chat link"
+	L["Shift-click to create chat link"] = "Shift-click to create a |cFF8800FF[Chat Link]"
 	--[[Translation missing --]]
 	L["Show \"Edge\""] = "Show \"Edge\""
 	--[[Translation missing --]]

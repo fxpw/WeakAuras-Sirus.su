@@ -1,8 +1,7 @@
 local ipairs = ipairs
 local pairs = pairs
-local abs, ceil, floor = math.abs, math.ceil, math.floor
+local ceil, floor = math.ceil, math.floor
 
-local GetInstanceInfo = GetInstanceInfo
 local GetNumPartyMembers = GetNumPartyMembers
 local GetNumRaidMembers = GetNumRaidMembers
 
@@ -115,6 +114,10 @@ RAID_CLASS_COLORS.SHAMAN.colorStr = "ff0070de"
 RAID_CLASS_COLORS.WARRIOR.colorStr = "ffc79c6e"
 RAID_CLASS_COLORS.DEATHKNIGHT.colorStr = "ffc41f3b"
 
+function WrapTextInColorCode(text, colorHexString)
+  return ("|c%s%s|r"):format(colorHexString, text);
+end
+
 function CreateTextureMarkup(file, fileWidth, fileHeight, width, height, left, right, top, bottom, xOffset, yOffset)
 	return ("|T%s:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d|t"):format(
 		  file
@@ -156,4 +159,14 @@ end
 
 function FrameDeltaLerp(startValue, endValue, amount, elapsed)
 	return DeltaLerp(startValue, endValue, amount, elapsed);
+end
+
+-- Fix FrameStrata of ChatFrame
+for i = 1, NUM_CHAT_WINDOWS do
+	local chatFrame = _G["ChatFrame" .. i]
+	if chatFrame and type(chatFrame.GetFrameStrata) == "function" and type(chatFrame.SetFrameStrata) == "function" then
+		if chatFrame:GetFrameStrata() == "BACKGROUND" then
+			chatFrame:SetFrameStrata("MEDIUM")
+		end
+	end
 end

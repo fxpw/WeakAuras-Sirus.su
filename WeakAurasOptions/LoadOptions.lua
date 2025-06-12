@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, OptionsPrivate = ...
+local AddonName = ...
+local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
 
@@ -686,6 +687,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
               local value = getValue(trigger, "use_"..realname, realname, multiEntry, entryNumber)
               if(arg.type == "item") then
                 local useExactSpellId = (arg.showExactOption and getValue(trigger, nil, "use_exact_"..realname, multiEntry, entryNumber))
+                                        or arg.only_exact
                 if value and value ~= "" then
                   if useExactSpellId then
                     local itemId = tonumber(value)
@@ -708,6 +710,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
                 end
               elseif(arg.type == "spell") then
                 local useExactSpellId = (arg.showExactOption and getValue(trigger, nil, "use_exact_"..realname, multiEntry, entryNumber))
+                                        or arg.only_exact
                 if value and value ~= "" and (type(value) == "number" or type(value) == "string") then
                   local spellID = WeakAuras.SafeToNumber(value)
                   if spellID then

@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, OptionsPrivate = ...
+local AddonName = ...
+local OptionsPrivate = select(2, ...)
 
 -- Lua APIs
 local pairs, type, ipairs = pairs, type, ipairs
@@ -156,6 +157,7 @@ local function ConstructTextEditor(frame)
   group:SetLayout("flow")
 
   local editor = AceGUI:Create("MultiLineEditBox")
+  editor.editBox.group = group
   editor:SetFullWidth(true)
   editor:SetFullHeight(true)
   editor:DisableButton(true)
@@ -504,22 +506,23 @@ local function ConstructTextEditor(frame)
   editor.editBox.timeMachinePos = 1
   local TimeMachineMaximumRollback = 10
 
-  editor.editBox:HookScript(
+  -- These events aren’t supported in the editbox, so we add undo/redo buttons below instead...
+  --[[editor.editBox:HookScript(
     "OnKeyDown",
     function(self, key)
       -- CTRL + S saves and closes
       if IsControlKeyDown() and key == "S" then
         group:Close()
-      elseif IsControlKeyDown() and key == "Z" then
-        self.ignoreNextKeyPress = true
+      elseif key == "Z" and IsControlKeyDown() then
+        self:SetPropagateKeyboardInput(false)
         if self.timeMachine[self.timeMachinePos + 1] then
           self.timeMachinePos = self.timeMachinePos + 1
           self.skipOnTextChanged = true
           originalSetText(self, self.timeMachine[self.timeMachinePos][1])
           self:SetCursorPosition(self.timeMachine[self.timeMachinePos][2])
         end
-      elseif IsControlKeyDown() and key == "Y" then
-        self.ignoreNextKeyPress = true
+      elseif key == "Y" and IsControlKeyDown() then
+        self:SetPropagateKeyboardInput(false)
         if self.timeMachine[self.timeMachinePos - 1] then
           self.timeMachinePos = self.timeMachinePos - 1
           self.skipOnTextChanged = true
@@ -528,20 +531,35 @@ local function ConstructTextEditor(frame)
         end
       end
     end
-  )
-
-  editor.editBox:HookScript(
-    "OnKeyUp",
-    function(self, key)
-      if self.ignoreNextKeyPress then
-        self.ignoreNextKeyPress = false -- Reset
-      end
-    end
-  )
+  )]]
 
   editor.editBox:HookScript(
     "OnTextChanged",
     function(self, userInput)
+      local str = editor.editBox:GetText()
+      if not str or str:trim() == "" or editor.combinedText == true then
+        self.group.editorError:SetText("")
+      else
+        local func, errorString
+        if (self.group.enclose) then
+          func, errorString = OptionsPrivate.Private.LoadFunction("return function() " .. str .. "\n end", self.group.data.id, true)
+        else
+          func, errorString = OptionsPrivate.Private.LoadFunction("return " .. str, self.group.data.id, true)
+        end
+        if not errorString and self.group.validator then
+          errorString = self.group.validator(func)
+        end
+        if errorString then
+          if self.url then
+            helpButton:Show()
+          end
+          self.group.editorError:Show()
+          self.group.editorError:SetText(errorString)
+        else
+          self.group.editorError:SetText("")
+        end
+      end
+
       if not userInput then return end
       if self.skipOnTextChanged then
         self.skipOnTextChanged = false
@@ -595,6 +613,7 @@ local function ConstructTextEditor(frame)
   editorError:SetTextColor(1, 0, 0)
   editorError:SetPoint("LEFT", helpButton, "RIGHT", 0, 4)
   editorError:SetPoint("RIGHT", settings_frame, "LEFT")
+  group.editorError = editorError
 
   local editorLine = CreateFrame("EditBox", nil, group.frame, "WA_InputBoxTemplate")
   -- Set script on enter pressed..
@@ -612,6 +631,54 @@ local function ConstructTextEditor(frame)
   editorLineText:SetTextColor(1, 1, 1)
   editorLineText:SetText(L["Line"])
   editorLineText:SetPoint("RIGHT", editorLine, "LEFT", -8, 0)
+
+  local redoButton = CreateFrame("Button", nil, editorLine)
+  redoButton:SetPoint("RIGHT", editorLineText, "LEFT", -10, 0)
+  redoButton:SetSize(20, 20)
+  redoButton:SetNormalTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\undo")
+  local redoNormal = redoButton:GetNormalTexture()
+  redoNormal:SetAllPoints()
+  redoNormal:SetTexCoord(1, 0, 0, 1)
+  redoNormal:SetBlendMode("BLEND")
+  redoButton:SetHighlightTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\undo-highlight")
+  local redoHighlight = redoButton:GetHighlightTexture()
+  redoHighlight:SetAllPoints()
+  redoHighlight:SetTexCoord(1, 0, 0, 1)
+  redoHighlight:SetBlendMode("BLEND")
+
+  local undoButton = CreateFrame("Button", nil, redoButton)
+  undoButton:SetPoint("RIGHT", redoButton, "LEFT", -10, 0)
+  undoButton:SetSize(20, 20)
+  undoButton:SetNormalTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\undo")
+  local undoNormal = undoButton:GetNormalTexture()
+  undoNormal:SetAllPoints()
+  undoNormal:SetTexCoord(0, 1, 0, 1)
+  undoNormal:SetBlendMode("BLEND")
+  undoButton:SetHighlightTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\undo-highlight")
+  local undoHighlight = undoButton:GetHighlightTexture()
+  undoHighlight:SetAllPoints()
+  undoHighlight:SetTexCoord(0, 1, 0, 1)
+  undoHighlight:SetBlendMode("BLEND")
+
+  redoButton:SetScript("OnClick", function()
+    local self = editor.editBox
+    if self.timeMachine[self.timeMachinePos - 1] then
+      self.timeMachinePos = self.timeMachinePos - 1
+      self.skipOnTextChanged = true
+      originalSetText(self, self.timeMachine[self.timeMachinePos][1])
+      self:SetCursorPosition(self.timeMachine[self.timeMachinePos][2])
+    end
+  end)
+
+  undoButton:SetScript("OnClick", function()
+    local self = editor.editBox
+    if self.timeMachine[self.timeMachinePos + 1] then
+      self.timeMachinePos = self.timeMachinePos + 1
+      self.skipOnTextChanged = true
+      originalSetText(self, self.timeMachine[self.timeMachinePos][1])
+      self:SetCursorPosition(self.timeMachine[self.timeMachinePos][2])
+    end
+  end)
 
   helpButton:SetScript("OnClick", function()
     OptionsPrivate.ToggleTip(helpButton, group.url, L["Help"], "")
@@ -657,6 +724,8 @@ local function ConstructTextEditor(frame)
     self.reloadOptions = reloadOptions
     self.setOnParent = setOnParent
     self.url = url
+    self.enclose = enclose
+    self.validator = validator
     if url then
       helpButton:Show()
     else
@@ -691,36 +760,6 @@ local function ConstructTextEditor(frame)
       "OnEscapePressed",
       function()
         -- catch it so that escape doesn't default to losing focus (after which another escape would close config)
-      end
-    )
-    self.oldOnTextChanged = editor.editBox:GetScript("OnTextChanged")
-    editor.editBox:SetScript(
-      "OnTextChanged",
-      function(...)
-        local str = editor.editBox:GetText()
-        if not str or str:trim() == "" or editor.combinedText == true then
-          editorError:SetText("")
-        else
-          local func, errorString
-          if (enclose) then
-            func, errorString = OptionsPrivate.Private.LoadFunction("return function() " .. str .. "\n end", true)
-          else
-            func, errorString = OptionsPrivate.Private.LoadFunction("return " .. str, true)
-          end
-          if not errorString and validator then
-            errorString = validator(func)
-          end
-          if errorString then
-            if self.url then
-              helpButton:Show()
-            end
-            editorError:Show()
-            editorError:SetText(errorString)
-          else
-            editorError:SetText("")
-          end
-        end
-        self.oldOnTextChanged(...)
       end
     )
 
@@ -766,7 +805,6 @@ local function ConstructTextEditor(frame)
   end
 
   function group.CancelClose(self)
-    editor.editBox:SetScript("OnTextChanged", self.oldOnTextChanged)
     editor:ClearFocus()
     frame:HideTip()
     frame.window = "default"
@@ -826,7 +864,6 @@ local function ConstructTextEditor(frame)
 
     WeakAuras.ClearAndUpdateOptions(self.data.id)
 
-    editor.editBox:SetScript("OnTextChanged", self.oldOnTextChanged)
     editor:ClearFocus()
 
     frame.window = "default"

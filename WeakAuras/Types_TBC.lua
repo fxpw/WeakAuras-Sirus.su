@@ -1,10 +1,10 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, Private = ...
+local AddonName = ...
+local Private = select(2, ...)
 
 -- Talent Data for the Warmane TBC Realms "Onyxia" and "Blackrock TBC"
-if GetRealmName() ~= "Onyxia" and
-  not (GetRealmName() == "Blackrock [PvP only]" and GetExpansionLevel() == 1) then
-   return
+if not WeakAuras.IsTBC() then
+  return
 end
 
 Private.talentInfo = {

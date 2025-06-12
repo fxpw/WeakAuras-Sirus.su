@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, Private = ...
+
+local AddonName = ...
+local Private = select(2, ...)
 
 local function fixMissingFields(state)
   if type(state) ~= "table" then return end
@@ -15,7 +17,7 @@ local remove = function(states, key)
   if state then
     state.show = false
     state.changed = true
-    states.__changed = true
+    states:SetChanged(true)
     changed = true
   end
   return changed
@@ -29,37 +31,59 @@ local removeAll = function(states)
     changed = true
   end
   if changed then
-    states.__changed = true
+    states:SetChanged(true)
   end
   return changed
 end
 
-local function recurseUpdate(t1, t2)
+local skipKeys = {
+  trigger = true,
+  triggernum = true
+}
+
+local function recurseReplaceOrUpdate(t1, t2, isRoot, replace)
   local changed = false
-  for k, v in pairs(t2) do
-    if type(v) == "table" and type(t1[k]) == "table" then
-      if recurseUpdate(t1[k], v) then
+  if replace then
+    -- Remove keys in t1 that are not in t2
+    for k in pairs(t1) do
+      if t2[k] == nil then
+        t1[k] = nil
         changed = true
       end
+    end
+  end
+  for k, v in pairs(t2) do
+    if isRoot and skipKeys[k] then
+      -- skip this key
     else
-      if t1[k] ~= v then
-        t1[k] = v
-        changed = true
+      if type(v) == "table" then
+        if type(t1[k]) ~= "table" then
+          t1[k] = {}
+          changed = true
+        end
+        if recurseReplaceOrUpdate(t1[k], v, false, replace) then
+          changed = true
+        end
+      else
+        if t1[k] ~= v then
+          t1[k] = v
+          changed = true
+        end
       end
     end
   end
   return changed
 end
 
-local update = function(states, key, newState)
+local replaceOrUpdate = function(states, key, newState, replace)
   local changed = false
   local state = states[key]
   if state then
     fixMissingFields(newState)
-    changed = recurseUpdate(state, newState)
+    changed = recurseReplaceOrUpdate(state, newState, true, replace)
     if changed then
       state.changed = true
-      states.__changed = true
+      states:SetChanged(true)
     end
   end
   return changed
@@ -68,7 +92,7 @@ end
 local create = function(states, key, newState)
   states[key] = newState
   states[key].changed = true
-  states.__changed = true
+  states:SetChanged(true)
   fixMissingFields(states[key])
   return true
 end
@@ -76,16 +100,51 @@ end
 local createOrUpdate = function(states, key, newState)
   key = key or ""
   if states[key] then
-    return update(states, key, newState)
+    return replaceOrUpdate(states, key, newState, false)
   else
     return create(states, key, newState)
   end
 end
 
+local get = function(states, key, field)
+  key = key or ""
+  local state = states[key]
+  if state then
+    if field == nil then
+      return state
+    end
+    return state[field] or nil
+  end
+  return nil
+end
+
+local createOrReplace = function(states, key, newState)
+  key = key or ""
+  if states[key] then
+    return replaceOrUpdate(states, key, newState, true)
+  else
+    return create(states, key, newState)
+  end
+end
+
+local changedStates = {}
+
+local isChanged = function(states)
+  return changedStates[states] == true
+end
+
+local setChanged = function(states, changed)
+  changedStates[states] = changed
+end
+
 Private.allstatesMetatable = {
   __index = {
     Update = createOrUpdate,
+    Replace = createOrReplace,
     Remove = remove,
-    RemoveAll = removeAll
+    RemoveAll = removeAll,
+    Get = get,
+    IsChanged = isChanged,
+    SetChanged = setChanged,
   }
 }

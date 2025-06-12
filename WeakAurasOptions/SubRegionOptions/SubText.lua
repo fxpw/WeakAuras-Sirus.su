@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, OptionsPrivate = ...
+local AddonName = ...
+local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
 
@@ -55,7 +56,7 @@ local function createOptions(parentData, data, index, subIndex)
         WeakAuras.Add(parentData)
         WeakAuras.ClearAndUpdateOptions(parentData.id)
       end,
-      control = "WeakAurasInput",
+      control = "WeakAurasInputWithIndentation",
       callbacks = {
         OnEditFocusGained = function(self)
           local widget = dynamicTextInputs[subIndex]

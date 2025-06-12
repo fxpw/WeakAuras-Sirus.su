@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, Private = ...
+local AddonName = ...
+local Private = select(2, ...)
 
 local L = WeakAuras.L
 local timer = WeakAuras.timer
@@ -97,8 +98,9 @@ local function formatValueForAssignment(vType, value, pathToCustomFunction, path
   elseif (vType == "string" or vType == "texture") then
     if type(value) == "string" then
       return string.format("%s", Private.QuotedString(value))
+    else
+      return '""'
     end
-    return "nil"
   elseif(vType == "color") then
     if (value and type(value) == "table") then
       return string.format("{%s, %s, %s, %s}",
@@ -133,7 +135,7 @@ local function formatValueForAssignment(vType, value, pathToCustomFunction, path
     if (value and type(value) == "table") then
       return ([[{ glow_action = %q, glow_frame_type = %q, glow_type = %q,
       glow_frame = %q, use_glow_color = %s, glow_color = {%s, %s, %s, %s},
-      glow_lines = %d, glow_frequency = %f, glow_length = %f, glow_thickness = %f, glow_XOffset = %f, glow_YOffset = %f,
+      glow_startAnim = %s, glow_duration = %f, glow_lines = %d, glow_frequency = %f, glow_length = %f, glow_thickness = %f, glow_XOffset = %f, glow_YOffset = %f,
       glow_scale = %f, glow_border = %s }]]):format(
         value.glow_action or "",
         value.glow_frame_type or "",
@@ -144,6 +146,8 @@ local function formatValueForAssignment(vType, value, pathToCustomFunction, path
         type(value.glow_color) == "table" and tostring(value.glow_color[2]) or "1",
         type(value.glow_color) == "table" and tostring(value.glow_color[3]) or "1",
         type(value.glow_color) == "table" and tostring(value.glow_color[4]) or "1",
+        value.glow_startAnim and "true" or "false",
+        value.glow_duration or 1,
         value.glow_lines or 8,
         value.glow_frequency or 0.25,
         value.glow_length or 10,
@@ -249,6 +253,7 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
     local conditionTemplate = allConditionsTemplate[trigger] and allConditionsTemplate[trigger][variable];
     local cType = conditionTemplate and conditionTemplate.type;
     local test = conditionTemplate and conditionTemplate.test;
+    local recheckTime = conditionTemplate and conditionTemplate.recheckTime
     local preamble = conditionTemplate and conditionTemplate.preamble;
     local progressSource
     local pausedProperty
@@ -287,7 +292,7 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
       end
     elseif (cType == "customcheck") then
       if value then
-        local customCheck = WeakAuras.LoadFunction("return " .. value)
+        local customCheck = WeakAuras.LoadFunction("return " .. value, data.id)
         if customCheck then
           Private.ExecEnv.conditionHelpers[uid] = Private.ExecEnv.conditionHelpers[uid] or {}
           Private.ExecEnv.conditionHelpers[uid].customTestFunctions
@@ -373,7 +378,7 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
         fn = fn:format(input.op_range, input.range, op, value)
       end
       if fn then
-        local customCheck = WeakAuras.LoadFunction(fn)
+        local customCheck = WeakAuras.LoadFunction(fn, data.id)
         if customCheck then
           Private.ExecEnv.conditionHelpers[uid] = Private.ExecEnv.conditionHelpers[uid] or {}
           Private.ExecEnv.conditionHelpers[uid].customTestFunctions
@@ -403,7 +408,22 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
     end
     -- If adding a new condition type, don't forget to adjust the validator in the options code
 
-    if (cType == "timer" and value) then
+    if recheckTime then
+      if (value) then
+        Private.ExecEnv.conditionHelpers[uid] = Private.ExecEnv.conditionHelpers[uid] or {}
+        Private.ExecEnv.conditionHelpers[uid].customTestFunctions
+          = Private.ExecEnv.conditionHelpers[uid].customTestFunctions or {}
+        tinsert(Private.ExecEnv.conditionHelpers[uid].customTestFunctions, recheckTime);
+        local testFunctionNumber = #(Private.ExecEnv.conditionHelpers[uid].customTestFunctions);
+        local valueString = type(value) == "string" and string.format("%q", value) or value;
+
+        recheckCode = string.format("  nextTime = Private.ExecEnv.CallCustomConditionTest(%q, %s, state[%s], %s) \n",
+                                    uid, testFunctionNumber, trigger, valueString)
+        recheckCode = recheckCode .. "  if (nextTime and (not recheckTime or nextTime < recheckTime) and nextTime >= now) then\n"
+        recheckCode = recheckCode .. "    recheckTime = nextTime\n";
+        recheckCode = recheckCode .. "  end\n"
+      end
+    elseif (cType == "timer" and value) then
       local variableString =  "state[" .. trigger .. "]" .. string.format("[%q]",  variable)
       local andNotPaused = pausedProperty
             and "and not " .. "state[" .. trigger .. "]" .. string.format("[%q]",  pausedProperty)
@@ -634,7 +654,7 @@ function Private.LoadConditionPropertyFunctions(data)
             else
               prefix, suffix = "return function()", "\nend";
             end
-            local customFunc = WeakAuras.LoadFunction(prefix .. custom .. suffix);
+            local customFunc = WeakAuras.LoadFunction(prefix .. custom .. suffix, data.id);
             if (customFunc) then
               Private.ExecEnv.customConditionsFunctions[id][conditionNumber] = Private.ExecEnv.customConditionsFunctions[id][conditionNumber] or {};
               Private.ExecEnv.customConditionsFunctions[id][conditionNumber].changes = Private.ExecEnv.customConditionsFunctions[id][conditionNumber].changes or {};
@@ -815,7 +835,7 @@ function Private.LoadConditionFunction(data)
   CancelTimers(data.uid)
 
   local checkConditionsFuncStr = ConstructConditionFunction(data);
-  local checkConditionsFunc = checkConditionsFuncStr and Private.LoadFunction(checkConditionsFuncStr)
+  local checkConditionsFunc = checkConditionsFuncStr and Private.LoadFunction(checkConditionsFuncStr, data.id)
 
   checkConditions[data.uid] = checkConditionsFunc;
 end
@@ -994,7 +1014,8 @@ function Private.RegisterForGlobalConditions(uid)
           dynamicConditionsFrame.units[unit] = CreateFrame("Frame");
           dynamicConditionsFrame.units[unit]:SetScript("OnEvent", handleDynamicConditionsPerUnit);
         end
-        pcall(dynamicConditionsFrame.units[unit].RegisterUnitEvent, dynamicConditionsFrame.units[unit], unitEvent, unit);
+        dynamicConditionsFrame.units[unit].unit = unit;
+        pcall(dynamicConditionsFrame.units[unit].RegisterEvent, dynamicConditionsFrame.units[unit], unitEvent, unit);
         UpdateDynamicConditionsPerUnitState(dynamicConditionsFrame, event, unit)
       else
         pcall(dynamicConditionsFrame.RegisterEvent, dynamicConditionsFrame, event);

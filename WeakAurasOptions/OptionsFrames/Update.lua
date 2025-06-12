@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, OptionsPrivate = ...
+local AddonName = ...
+local OptionsPrivate = select(2, ...)
 
 local AceGUI = LibStub("AceGUI-3.0")
 
@@ -72,7 +73,10 @@ local function scamCheck(codes, data)
   if (data.actions) then
     if data.actions.init then
       addCode(codes, L["%s - Init Action"]:format(data.id), data.actions.init.custom, data.actions.init.do_custom)
+      addCode(codes, L["%s - OnLoad"]:format(data.id), data.actions.init.customOnLoad, data.actions.init.do_custom_load)
+      addCode(codes, L["%s - OnUnload"]:format(data.id), data.actions.init.customOnUnload, data.actions.init.do_custom_unload)
     end
+
     if data.actions.start then
       addCode(codes, L["%s - Start Action"]:format(data.id), data.actions.start.custom, data.actions.start.do_custom)
       addCode(codes, L["%s - Start Custom Text"]:format(data.id), data.actions.start.message_custom, data.actions.start.do_message)

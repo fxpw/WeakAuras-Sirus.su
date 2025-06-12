@@ -4,37 +4,35 @@ local AddonName = ...
 local OptionsPrivate = select(2, ...)
 
 OptionsPrivate.changelog = {
-  versionString = '5.19.5',
-  dateString = '2025-03-10',
-  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.19.4...5.19.5',
+  versionString = '5.19.11',
+  dateString = '2025-06-09',
+  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.19.10...5.19.11',
   highlightText = [==[
-No new features this release, just fixes to some minor bugs]==],  commitText = [==[InfusOnWoW (9):
+Bugfixes and initial Mists of Pandaria support
 
-- Update Discord List
-- Update Discord List
-- Stop Motion Sub Element: Fix setting of custom row/colum etc settings
-- Partially revert 4e628f546befa7
-- Being in Excavation Site 9 IsInInstance() returns false
-- Texture Sub Element: Don't resize main aura on atlas selection
-- Workaround boss unit stupidity by Blizzard
-- Workaround INSTANCE_ENGAGE_UNIT with incosistent UnitGUID/UnitExists
-- Remove Stop Motion texture data
+Fixes:
+- Custom Options: Fix lua error on subOptions sorting
+- Fix missing aura_env for Custom onLoad/onUnload
+- Alternate Power: Add UNIT_POWER_BAR_HIDE event
+- Fix loadstring error's error with subtext #5892]==],  commitText = [==[InfusOnWoW (5):
 
-Stanzilla (2):
+- Custom Options: Fix lua error on subOptions sorting
+- Load Instance Type: Add "None" to the list
+- Fix missing aura_env for Custom onLoad/onUnload
+- Alternate Power: Add UNIT_POWER_BAR_HIDE event
+- Update Discord List
+
+Stanzilla (1):
 
 - Update WeakAurasModelPaths from wago.tools
-- Update WeakAurasModelPaths from wago.tools
 
-dependabot[bot] (4):
+mrbuds (5):
 
-- Bump cbrgm/mastodon-github-action from 2.1.12 to 2.1.13
-- Bump tsickert/discord-webhook from 6.0.0 to 7.0.0
-- Bump leafo/gh-actions-luarocks from 4 to 5
-- Bump leafo/gh-actions-lua from 10 to 11
-
-emptyrivers (1):
-
-- remove spurious enUS translations
+- Fix loadstring error's error with subtext #5892
+- Use the new glyphID returned by GetGlyphSocketInfo
+- Mists: add WeakAuras.CheckTalentForUnit and WeakAuras.CheckGlyphForUnit
+- Fix error when clicking on load tab
+- Mist of Pandaria (#5850)
 
 ]==]
 }

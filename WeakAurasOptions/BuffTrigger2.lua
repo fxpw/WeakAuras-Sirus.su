@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, OptionsPrivate = ...
+local AddonName = ...
+local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
 
@@ -717,7 +718,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       type = "toggle",
       width = WeakAuras.normalWidth,
       name = L["Filter by Specialization"],
-      desc = L["Requires LibGroupTalents, that is e.g. a up-to date WeakAuras version"],
+      desc =   L["Requires syncing the specialization via LibGroupTalents."],
       order = 66.3,
       hidden = function() return
         not (trigger.type == "aura2" and (trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party"))

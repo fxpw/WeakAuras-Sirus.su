@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, Private = ...
+local AddonName = ...
+local Private = select(2, ...)
 
 local WeakAuras = WeakAuras;
 local L = WeakAuras.L;
@@ -8,6 +9,8 @@ local LSM = LibStub("LibSharedMedia-3.0");
 
 local wipe, tinsert = wipe, tinsert
 local GetNumShapeshiftForms, GetShapeshiftFormInfo = GetNumShapeshiftForms, GetShapeshiftFormInfo
+local WrapTextInColorCode = WrapTextInColorCode
+local MAX_NUM_TALENTS = MAX_NUM_TALENTS or 40
 
 local function WA_GetClassColor(classFilename)
   local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[classFilename]
@@ -28,7 +31,7 @@ Private.glow_frame_types = {
   FRAMESELECTOR = L["Frame Selector"],
   PARENTFRAME = L["Parent Frame"]
 }
-if WeakAuras.isAwesomeEnabled() then
+if WeakAuras.IsAwesomeEnabled() then
   Private.glow_frame_types.NAMEPLATE = L["Nameplate"]
 end
 
@@ -115,6 +118,11 @@ Private.round_types = {
   floor = L["Floor"],
   ceil = L["Ceil"],
   round = L["Round"]
+}
+
+Private.pad_types = {
+  left = L["Left"],
+  right = L["Right"]
 }
 
 Private.unit_color_types = {
@@ -280,11 +288,45 @@ Private.format_types = {
           return not get(symbol .. "_abbreviate")
         end
       })
+      addOption(symbol .. "_pad", {
+        type = "toggle",
+        name = L["Pad"],
+        width = WeakAuras.normalWidth,
+        hidden = hidden,
+      })
+      addOption(symbol .. "_pad_mode", {
+        type = "select",
+        name = L["Pad Mode"],
+        width = WeakAuras.halfWidth,
+        values = Private.pad_types,
+        hidden = hidden,
+      })
+      addOption(symbol .. "_pad_max", {
+        type = "range",
+        control = "WeakAurasSpinBox",
+        name = L["Pad to"],
+        width = WeakAuras.halfWidth,
+        min = 1,
+        max = 20,
+        hidden = hidden,
+        step = 1,
+      })
     end,
     CreateFormatter = function(symbol, get)
       local abbreviate = get(symbol .. "_abbreviate", false)
       local abbreviateMax = get(symbol .. "_abbreviate_max", 8)
-      if abbreviate then
+      local pad = get(symbol .. "_pad", false)
+      local padMode = get(symbol .. "_pad_mode", "left")
+      local padLength = get(symbol .. "_pad_max", 8)
+      if abbreviate and pad then
+        return function(input)
+          return WeakAuras.PadString(WeakAuras.WA_Utf8Sub(input, abbreviateMax), padMode, padLength)
+        end
+      elseif pad then
+        return function(input)
+          return WeakAuras.PadString(input, padMode, padLength)
+        end
+      elseif abbreviate then
         return function(input)
           return WeakAuras.WA_Utf8Sub(input, abbreviateMax)
         end
@@ -490,7 +532,7 @@ Private.format_types = {
   },
   BigNumber = {
     display = L["Big Number"],
-    AddOptions = function(symbol, hidden, addOption)
+    AddOptions = function(symbol, hidden, addOption, get)
       addOption(symbol .. "_big_number_format", {
         type = "select",
         name = L["Format"],
@@ -504,15 +546,49 @@ Private.format_types = {
         width = WeakAuras.normalWidth,
         hidden = hidden
       })
+      addOption(symbol .. "_pad", {
+        type = "toggle",
+        name = L["Pad"],
+        width = WeakAuras.normalWidth,
+        hidden = hidden,
+      })
+      addOption(symbol .. "_pad_mode", {
+        type = "select",
+        name = L["Pad Mode"],
+        width = WeakAuras.halfWidth,
+        values = Private.pad_types,
+        hidden = hidden,
+      })
+      addOption(symbol .. "_pad_max", {
+        type = "range",
+        control = "WeakAurasSpinBox",
+        name = L["Pad to"],
+        width = WeakAuras.halfWidth,
+        min = 1,
+        max = 20,
+        hidden = hidden,
+        step = 1,
+      })
     end,
     CreateFormatter = function(symbol, get)
       local format = get(symbol .. "_big_number_format", "AbbreviateNumbers")
+      local pad = get(symbol .. "_pad", false)
+      local padMode = get(symbol .. "_pad_mode", "left")
+      local padLength = get(symbol .. "_pad_max", 8)
+      local formatterFunc
       if (format == "AbbreviateNumbers") then
-        return simpleFormatters.AbbreviateNumbers
+        formatterFunc = simpleFormatters.AbbreviateNumbers
       elseif (format == "BreakUpLargeNumbers") then
-        return simpleFormatters.BreakUpLargeNumbers
+        formatterFunc = simpleFormatters.BreakUpLargeNumbers
+      else
+        formatterFunc = simpleFormatters.AbbreviateLargeNumbers
       end
-      return simpleFormatters.AbbreviateLargeNumbers
+      if pad then
+        return function(input)
+          return WeakAuras.PadString(formatterFunc(input), padMode, padLength)
+        end
+      end
+      return formatterFunc
     end
   },
   Number = {
@@ -535,18 +611,51 @@ Private.format_types = {
           return get(symbol .. "_decimal_precision") ~= 0
         end
       })
+      addOption(symbol .. "_pad", {
+        type = "toggle",
+        name = L["Pad"],
+        width = WeakAuras.normalWidth,
+        hidden = hidden,
+      })
+      addOption(symbol .. "_pad_mode", {
+        type = "select",
+        name = L["Pad Mode"],
+        width = WeakAuras.halfWidth,
+        values = Private.pad_types,
+        hidden = hidden,
+      })
+      addOption(symbol .. "_pad_max", {
+        type = "range",
+        control = "WeakAurasSpinBox",
+        name = L["Pad to"],
+        width = WeakAuras.halfWidth,
+        min = 1,
+        max = 20,
+        hidden = hidden,
+        step = 1,
+      })
     end,
     CreateFormatter = function(symbol, get)
       local precision = get(symbol .. "_decimal_precision", 1)
+      local pad = get(symbol .. "_pad", false)
+      local padMode = get(symbol .. "_pad_mode", "left")
+      local padLength = get(symbol .. "_pad_max", 8)
+      local formatterFunc
       if precision == 0 then
         local type = get(symbol .. "_round_type", "floor")
-        return simpleFormatters[type]
+        formatterFunc = simpleFormatters[type]
       else
         local format = "%." .. precision .. "f"
-        return function(value)
+        formatterFunc = function(value)
           return (type(value) == "number") and string.format(format, value) or value
         end
       end
+      if pad then
+        return function(input)
+          return WeakAuras.PadString(formatterFunc(input), padMode, padLength)
+        end
+      end
+      return formatterFunc
     end
   },
   Unit = {
@@ -577,7 +686,7 @@ Private.format_types = {
       addOption(symbol .. "_abbreviate_max", {
         type = "range",
         control = "WeakAurasSpinBox",
-        name = L["Max Char "],
+        name = L["Max Char"],
         width = WeakAuras.normalWidth,
         min = 1,
         max = 20,
@@ -587,12 +696,38 @@ Private.format_types = {
           return not get(symbol .. "_abbreviate")
         end
       })
+      addOption(symbol .. "_pad", {
+        type = "toggle",
+        name = L["Pad"],
+        width = WeakAuras.normalWidth,
+        hidden = hidden,
+      })
+      addOption(symbol .. "_pad_mode", {
+        type = "select",
+        name = L["Pad Mode"],
+        width = WeakAuras.halfWidth,
+        values = Private.pad_types,
+        hidden = hidden,
+      })
+      addOption(symbol .. "_pad_max", {
+        type = "range",
+        control = "WeakAurasSpinBox",
+        name = L["Pad to"],
+        width = WeakAuras.halfWidth,
+        min = 1,
+        max = 20,
+        hidden = hidden,
+        step = 1,
+      })
     end,
     CreateFormatter = function(symbol, get, withoutColor)
       local color = not withoutColor and get(symbol .. "_color", true)
       local realm = get(symbol .. "_realm_name", "never")
       local abbreviate = get(symbol .. "_abbreviate", false)
       local abbreviateMax = get(symbol .. "_abbreviate_max", 8)
+      local pad = get(symbol .. "_pad", false)
+      local padMode = get(symbol .. "_pad_mode", "left")
+      local padLength = get(symbol .. "_pad_max", 8)
 
       local nameFunc
       local colorFunc
@@ -602,7 +737,7 @@ Private.format_types = {
           if unit and UnitPlayerControlled(unit) then
             local classFilename = select(2, UnitClass(unit))
             if classFilename then
-              return string.format("|c%s%s|r", WA_GetClassColor(classFilename), text)
+              return WrapTextInColorCode(text, WA_GetClassColor(classFilename))
             end
           end
           return text
@@ -611,7 +746,7 @@ Private.format_types = {
 
       if realm == "never" then
         nameFunc = function(unit)
-          return unit and WeakAuras.UnitName(unit)
+          return unit and WeakAuras.UnitName(unit) or ""
         end
       elseif realm == "star" then
         nameFunc = function(unit)
@@ -622,7 +757,7 @@ Private.format_types = {
           if realm then
             return name .. "*"
           end
-          return name
+          return name or ""
         end
       elseif realm == "differentServer" then
         nameFunc = function(unit)
@@ -633,7 +768,7 @@ Private.format_types = {
           if realm then
             return name .. "-" .. realm
           end
-          return name
+          return name or ""
         end
       elseif realm == "always" then
         nameFunc = function(unit)
@@ -645,7 +780,15 @@ Private.format_types = {
         end
       end
 
-      if abbreviate then
+      if pad and abbreviate then
+        abbreviateFunc = function(input)
+          return WeakAuras.PadString(WeakAuras.WA_Utf8Sub(input, abbreviateMax), padMode, padLength)
+        end
+      elseif pad then
+        abbreviateFunc = function(input)
+          return WeakAuras.PadString(input, padMode, padLength)
+        end
+      elseif abbreviate then
         abbreviateFunc = function(input)
           return WeakAuras.WA_Utf8Sub(input, abbreviateMax)
         end
@@ -714,12 +857,38 @@ Private.format_types = {
           return not get(symbol .. "_abbreviate")
         end
       })
+      addOption(symbol .. "_pad", {
+        type = "toggle",
+        name = L["Pad"],
+        width = WeakAuras.normalWidth,
+        hidden = hidden,
+      })
+      addOption(symbol .. "_pad_mode", {
+        type = "select",
+        name = L["Pad Mode"],
+        width = WeakAuras.halfWidth,
+        values = Private.pad_types,
+        hidden = hidden,
+      })
+      addOption(symbol .. "_pad_max", {
+        type = "range",
+        control = "WeakAurasSpinBox",
+        name = L["Pad to"],
+        width = WeakAuras.halfWidth,
+        min = 1,
+        max = 20,
+        hidden = hidden,
+        step = 1,
+      })
     end,
     CreateFormatter = function(symbol, get, withoutColor)
       local color = not withoutColor and get(symbol .. "_color", true)
       local realm = get(symbol .. "_realm_name", "never")
       local abbreviate = get(symbol .. "_abbreviate", false)
       local abbreviateMax = get(symbol .. "_abbreviate_max", 8)
+      local pad = get(symbol .. "_pad", false)
+      local padMode = get(symbol .. "_pad_mode", "left")
+      local padLength = get(symbol .. "_pad_max", 8)
 
       local nameFunc
       local colorFunc
@@ -727,7 +896,7 @@ Private.format_types = {
       if color == "class" then
         colorFunc = function(class, text)
           if class then
-            return string.format("|c%s%s|r", WA_GetClassColor(class), text)
+            return WrapTextInColorCode(text, WA_GetClassColor(class))
           else
             return text
           end
@@ -764,7 +933,15 @@ Private.format_types = {
         end
       end
 
-      if abbreviate then
+      if pad and abbreviate then
+        abbreviateFunc = function(input)
+          return WeakAuras.PadString(WeakAuras.WA_Utf8Sub(input, abbreviateMax), padMode, padLength)
+        end
+      elseif pad then
+        abbreviateFunc = function(input)
+          return WeakAuras.PadString(input, padMode, padLength)
+        end
+      elseif abbreviate then
         abbreviateFunc = function(input)
           return WeakAuras.WA_Utf8Sub(input, abbreviateMax)
         end
@@ -915,7 +1092,6 @@ Private.format_types = {
 Private.format_types_display = {}
 for k, v in pairs(Private.format_types) do Private.format_types_display[k] = v.display end
 
-
 Private.sound_channel_types = {
   Master = L["Master"],
   SFX = ENABLE_SOUNDFX,
@@ -962,7 +1138,6 @@ Private.aura_types = {
   DEBUFF = L["Debuff"],
 }
 
-
 Private.debuff_class_types = {
   magic = L["Magic"],
   curse = L["Curse"],
@@ -977,20 +1152,21 @@ Private.player_target_events = {
   PLAYER_FOCUS_CHANGED = "focus",
 }
 
-Private.unit_types = {
-  player = L["Player"],
+local target_unit_types = {
   target = L["Target"],
   focus = L["Focus"],
+}
+
+Private.unit_types = WeakAuras.Mixin({
+  player = L["Player"],
   group = L["Group"],
   member = L["Specific Unit"],
   pet = L["Pet"],
   multi = L["Multi-target"]
-}
+}, target_unit_types)
 
-Private.unit_types_bufftrigger_2 = {
+Private.unit_types_bufftrigger_2 = WeakAuras.Mixin({
   player = L["Player"],
-  target = L["Target"],
-  focus = L["Focus"],
   group = L["Smart Group"],
   raid = L["Raid"],
   party = L["Party"],
@@ -999,29 +1175,24 @@ Private.unit_types_bufftrigger_2 = {
   pet = L["Pet"],
   member = L["Specific Unit"],
   multi = L["Multi-target"]
-}
-if WeakAuras.isAwesomeEnabled() then
+}, target_unit_types)
+if WeakAuras.IsAwesomeEnabled() then
   Private.unit_types_bufftrigger_2.nameplate = L["Nameplate"]
 end
 
-Private.actual_unit_types = {
+Private.actual_unit_types = WeakAuras.Mixin({
   player = L["Player"],
   pet = L["Pet"],
-  target = L["Target"],
-}
+}, target_unit_types)
 
-Private.actual_unit_types_with_specific = {
+Private.actual_unit_types_with_specific = WeakAuras.Mixin({
   player = L["Player"],
-  target = L["Target"],
-  focus = L["Focus"],
   pet = L["Pet"],
-  member = L["Specific Unit"],
-}
+  member = L["Specific Unit"]
+}, target_unit_types)
 
-Private.actual_unit_types_cast = {
+Private.actual_unit_types_cast = WeakAuras.Mixin({
   player = L["Player"],
-  target = L["Target"],
-  focus = L["Focus"],
   group = L["Smart Group"],
   party = L["Party"],
   raid = L["Raid"],
@@ -1029,30 +1200,26 @@ Private.actual_unit_types_cast = {
   arena = L["Arena"],
   pet = L["Pet"],
   member = L["Specific Unit"],
-}
-if WeakAuras.isAwesomeEnabled() then
+}, target_unit_types)
+if WeakAuras.IsAwesomeEnabled() then
   Private.actual_unit_types_cast.nameplate = L["Nameplate"]
 end
 
 Private.actual_unit_types_cast_tooltip = L["• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.\n• |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.\n|cffff0000Note|r: The game will not fire events for all valid unitIDs, making some untrackable by this trigger.\n• |cffffff00Party|r, |cffffff00Raid|r, |cffffff00Boss|r, |cffffff00Arena|r, and |cffffff00Nameplate|r can match multiple corresponding unitIDs.\n• |cffffff00Smart Group|r adjusts to your current group type, matching just the \"player\" when solo, \"party\" units (including \"player\") in a party or \"raid\" units in a raid.\n\n|cffffff00*|r Yellow Unit settings will create clones for each matching unit while this trigger is providing Dynamic Info to the Aura."]
 
-Private.threat_unit_types = {
-  target = L["Target"],
-  focus = L["Focus"],
+Private.threat_unit_types = WeakAuras.Mixin({
   boss = L["Boss"],
   member = L["Specific Unit"],
   none = L["At Least One Enemy"]
-}
-if WeakAuras.isAwesomeEnabled() then
+}, target_unit_types)
+if WeakAuras.IsAwesomeEnabled() then
   Private.threat_unit_types.nameplate = L["Nameplate"]
 end
 
-Private.unit_types_range_check = {
-  target = L["Target"],
-  focus = L["Focus"],
+Private.unit_types_range_check = WeakAuras.Mixin({
   pet = L["Pet"],
   member = L["Specific Unit"]
-}
+}, target_unit_types)
 
 Private.unit_threat_situation_types = {
   [-1] = L["Not On Threat Table"],
@@ -1064,9 +1231,13 @@ Private.unit_threat_situation_types = {
 
 WeakAuras.class_types = {}
 for i, class in ipairs(CLASS_SORT_ORDER) do
-  WeakAuras.class_types[class] = string.format("|c%s%s|r", WA_GetClassColor(class), LOCALIZED_CLASS_NAMES_MALE[class])
+  WeakAuras.class_types[class] = WrapTextInColorCode(LOCALIZED_CLASS_NAMES_MALE[class], WA_GetClassColor(class))
+end
+if WeakAuras.IsClassicPlusOrTBC() then
+  WeakAuras.class_types["DEATHKNIGHT"] = nil
 end
 
+-- missing localisation
 WeakAuras.race_types = {
   Human = "Human",
   Orc = "Orc",
@@ -1177,7 +1348,7 @@ Private.anchor_frame_types = {
   UNITFRAME = L["Unit Frames"],
   CUSTOM = L["Custom"]
 }
-if WeakAuras.isAwesomeEnabled() then
+if WeakAuras.IsAwesomeEnabled() then
   Private.anchor_frame_types.NAMEPLATE = L["Nameplates"]
 end
 
@@ -1294,8 +1465,18 @@ Private.power_types = {
   [1] = RAGE,
   [2] = FOCUS,
   [3] = ENERGY,
-  [4] = HAPPINESS,
   [6] = RUNIC_POWER,
+  [27] = HAPPINESS,
+}
+
+Private.power_types_player = {
+  [0] = MANA,
+  [1] = RAGE,
+  [2] = FOCUS,
+  [3] = ENERGY,
+  [4] = COMBAT_TEXT_SHOW_COMBO_POINTS_TEXT,
+  [6] = RUNIC_POWER,
+  [27] = HAPPINESS,
 }
 
 Private.miss_types = {
@@ -1383,12 +1564,6 @@ for id, str in pairs(Private.combatlog_spell_school_types) do
   Private.combatlog_spell_school_types_for_ui[id] = ("%.3d - %s"):format(id, str)
 end
 
-Private.money_icons = {
-  ["gold"] = "interface/moneyframe/ui-goldicon",
-  ["silver"] = "interface/moneyframe/ui-silvericon",
-  ["copper"] = "interface/moneyframe/ui-coppericon"
-}
-
 Private.coin_icons = {
   ["gold"] = "|Tinterface/moneyframe/ui-goldicon:0|t",
   ["silver"] = "|Tinterface/moneyframe/ui-silvericon:0|t",
@@ -1432,7 +1607,7 @@ function Private.ExecEnv.GetTotalCountCurrencies(currencyID)
 end
 
 local function InitializeCurrencies()
-  if Private.discovered_currencies then
+  if Private.discovered_currencies and next(Private.discovered_currencies) then
     return
   end
   Private.discovered_currencies = {}
@@ -1441,7 +1616,7 @@ local function InitializeCurrencies()
 
   local expanded = {}
   for index = GetCurrencyListSize(), 1, -1 do
-  local name, isHeader, isExpanded, _, _, _, _, _, _ = GetCurrencyListInfo(index)
+  local name, isHeader, isExpanded = GetCurrencyListInfo(index)
     if isHeader and not isExpanded then
       ExpandCurrencyList(index, true)
       expanded[name] = true
@@ -1449,11 +1624,16 @@ local function InitializeCurrencies()
   end
 
   for index = 1, GetCurrencyListSize() do
-    local name, isHeader, _, _, _, _, _, iconFileID, itemID = GetCurrencyListInfo(index)
-    local currencyLink = tonumber(itemID) and GetItemInfo(itemID)
+    local name, isHeader, _, _, _, _, currencyType, iconFileID, itemID = GetCurrencyListInfo(index)
 
-    if currencyLink then
-      local icon = iconFileID or "Interface\\Icons\\INV_Misc_QuestionMark" --iconFileID not available on first login
+    local icon
+    if currencyType == 1 then	-- Arena points
+      icon = "Interface\\PVPFrame\\PVP-ArenaPoints-Icon"
+    elseif currencyType == 2 then -- Honor points
+      icon = "Interface\\BattlefieldFrame\\Battleground-".. UnitFactionGroup("player")
+    end
+    if itemID and iconFileID then
+      icon = icon or iconFileID or "Interface\\Icons\\INV_Misc_QuestionMark" -- iconFileID not available on first login
       Private.discovered_currencies[itemID] = "|T" .. icon .. ":0|t" .. name
       Private.discovered_currencies_sorted[itemID] = index
     elseif isHeader then
@@ -1487,6 +1667,124 @@ end
 Private.GetDiscoveredCurrenciesHeaders  = function()
   InitializeCurrencies()
   return Private.discovered_currencies_headers
+end
+
+Private.ExecEnv.GetFactionDataByIndex = function(index)
+  local name, description, standingID, barMin, barMax, barValue, atWarWith, canToggleAtWar, isHeader, isCollapsed, hasRep, isWatched, isChild = GetFactionInfo(index)
+  return {
+    factionID = name and Private.faction_to_id[name] or 0,
+    name = name,
+    description = description,
+    reaction = standingID,
+    currentReactionThreshold = barMin,
+    nextReactionThreshold = barMax,
+    currentStanding = barValue,
+    atWarWith = atWarWith or false,
+    canToggleAtWar = canToggleAtWar,
+    isChild = isChild,
+    isHeader = isHeader,
+    isHeaderWithRep = hasRep,
+    isCollapsed = isCollapsed,
+    isWatched = isWatched,
+  }
+end
+
+Private.ExecEnv.GetFactionDataByID = function(ID)
+  local factionName = ID and Private.id_to_faction[ID]
+  if factionName then
+    for index = 1, GetNumFactions() do
+      local name, description, standingID, barMin, barMax, barValue, atWarWith, canToggleAtWar, isHeader, isCollapsed, hasRep, isWatched, isChild = GetFactionInfo(index)
+      if name == factionName then
+        return {
+          factionID = ID,
+          name = name,
+          description = description,
+          reaction = standingID,
+          currentReactionThreshold = barMin,
+          nextReactionThreshold = barMax,
+          currentStanding = barValue,
+          atWarWith = atWarWith or false,
+          canToggleAtWar = canToggleAtWar,
+          isChild = isChild,
+          isHeader = isHeader,
+          isHeaderWithRep = hasRep,
+          isCollapsed = isCollapsed,
+          isWatched = isWatched,
+        }
+      end
+    end
+  end
+end
+
+Private.ExecEnv.GetWatchedFactionId = function()
+  local factionName = GetWatchedFactionInfo()
+  return factionName and Private.faction_to_id[factionName]
+end
+
+local function InitializeReputations()
+  if Private.reputations and next(Private.reputations) then
+    return
+  end
+
+  Private.reputations = {}
+  Private.reputations_sorted = {}
+  Private.reputations_headers = {}
+
+  -- Dynamic expansion of all collapsed headers
+  local collapsed = {}
+  local index = 1
+  while index <= GetNumFactions() do
+    local factionData = Private.ExecEnv.GetFactionDataByIndex(index)
+    if factionData and factionData.isHeader and factionData.isCollapsed then
+      ExpandFactionHeader(index)
+      collapsed[factionData.name] = true
+    end
+    index = index + 1
+  end
+
+  -- Process all faction data
+  for i = 1, GetNumFactions() do
+    local factionData = Private.ExecEnv.GetFactionDataByIndex(i)
+    if factionData then
+      if factionData.currentStanding > 0 or not factionData.isHeader then
+        local factionID = factionData.factionID
+        if factionID then
+          Private.reputations[factionID] = factionData.name
+          Private.reputations_sorted[factionID] = i
+        end
+      else
+        local name = factionData.name
+        if name then
+          Private.reputations[name] = name
+          Private.reputations_sorted[name] = i
+          Private.reputations_headers[name] = true
+        end
+      end
+    end
+  end
+
+  -- Collapse headers back to their original state
+  for i = GetNumFactions(), 1, -1 do
+    local factionData = Private.ExecEnv.GetFactionDataByIndex(i)
+    if factionData and collapsed[factionData.name] then
+      CollapseFactionHeader(i)
+    end
+  end
+end
+
+Private.GetReputations = function()
+  InitializeReputations()
+  return Private.reputations
+end
+
+Private.GetReputationsSorted  = function()
+  InitializeReputations()
+  return Private.reputations_sorted
+end
+
+Private.GetReputationsHeaders  = function()
+  InitializeReputations()
+  return Private.reputations_headers
 end
 
 Private.combatlog_raid_mark_check_type = {
@@ -2114,11 +2412,6 @@ Private.eventend_types = {
   ["custom"] = L["Custom"]
 }
 
-Private.autoeventend_types = {
-  ["auto"] = L["Automatic"],
-  ["custom"] = L["Custom"]
-}
-
 Private.timedeventend_types = {
   ["timed"] = L["Timed"],
 }
@@ -2162,7 +2455,7 @@ Private.grid_types = {
   LV = L["Left, then Centered Vertical"],
   RV = L["Right, then Centered Vertical"],
   HV = L["Centered Horizontal, then Centered Vertical"],
-  VH = L["Centered Vertical, then Centered Horizontal"],
+  VH = L["Centered Vertical, then Centered Horizontal"]
 }
 
 Private.centered_types_h = {
@@ -2342,9 +2635,133 @@ Private.classification_types = {
   normal = L["Normal"],
   trivial = L["Trivial (Low Level)"]
 }
-if WeakAuras.isAwesomeEnabled() then
+if WeakAuras.IsAwesomeEnabled() then
   Private.classification_types.minus = L["Minus (Small Nameplate)"]
 end
+
+Private.creature_type_types = {
+  [1] = L["Beast"],
+  [2] = L["Dragonkin"],
+  [3] = L["Demon"],
+  [4] = L["Elemental"],
+  [5] = L["Giant"],
+  [6] = L["Undead"],
+  [7] = L["Humanoid"],
+  [8] = L["Critter"],
+  [9] = L["Mechanical"],
+  [10] = L["Not specified"],
+  [11] = L["Totem"],
+  [12] = L["Non-combat Pet"],
+  [13] = L["Gas Cloud"],
+  [14] = L["Wild Pet"],
+  [15] = L["Aberration"],
+}
+
+Private.ExecEnv.creature_type_name_to_id = {
+  [L["Beast"]] = 1,
+  [L["Dragonkin"]] = 2,
+  [L["Demon"]] = 3,
+  [L["Elemental"]] = 4,
+  [L["Giant"]] = 5,
+  [L["Undead"]] = 6,
+  [L["Humanoid"]] = 7,
+  [L["Critter"]] = 8,
+  [L["Mechanical"]] = 9,
+  [L["Not specified"]] = 10,
+  [L["Totem"]] = 11,
+  [L["Non-combat Pet"]] = 12,
+  [L["Gas Cloud"]] = 13,
+  [L["Wild Pet"]] = 14,
+  [L["Aberration"]] = 15,
+}
+
+Private.creature_family_types = {
+  [1] = L["Wolf"],
+  [2] = L["Cat"],
+  [3] = L["Spider"],
+  [4] = L["Bear"],
+  [5] = L["Boar"],
+  [6] = L["Crocolisk"],
+  [7] = L["Carrion Bird"],
+  [8] = L["Crab"],
+  [9] = L["Gorilla"],
+  [11] = L["Raptor"],
+  [12] = L["Tallstrider"],
+  [15] = L["Felhunter"],
+  [16] = L["Voidwalker"],
+  [17] = L["Succubus"],
+  [19] = L["Doomguard"],
+  [20] = L["Scorpid"],
+  [21] = L["Turtle"],
+  [23] = L["Imp"],
+  [24] = L["Bat"],
+  [25] = L["Hyena"],
+  [26] = L["Bird of Prey"],
+  [27] = L["Wind Serpent"],
+  [28] = L["Remote Control"],
+  [29] = L["Felguard"],
+  [30] = L["Dragonhawk"],
+  [31] = L["Ravager"],
+  [32] = L["Warp Stalker"],
+  [33] = L["Sporebat"],
+  [34] = L["Nether Ray"],
+  [35] = L["Serpent"],
+  [37] = L["Moth"],
+  [38] = L["Chimaera"],
+  [39] = L["Devilsaur"],
+  [40] = L["Ghoul"],
+  [41] = L["Silithid"],
+  [42] = L["Worm"],
+  [43] = L["Rhino"],
+  [44] = L["Wasp"],
+  [45] = L["Core Hound"],
+  [46] = L["Spirit Beast"],
+  [302] = L["Incubus"],
+}
+
+Private.ExecEnv.creature_family_name_to_id = {
+  [L["Wolf"]] = 1,
+  [L["Cat"]] = 2,
+  [L["Spider"]] = 3,
+  [L["Bear"]] = 4,
+  [L["Boar"]] = 5,
+  [L["Crocolisk"]] = 6,
+  [L["Carrion Bird"]] = 7,
+  [L["Crab"]] = 8,
+  [L["Gorilla"]] = 9,
+  [L["Raptor"]] = 11,
+  [L["Tallstrider"]] = 12,
+  [L["Felhunter"]] = 15,
+  [L["Voidwalker"]] = 16,
+  [L["Succubus"]] = 17,
+  [L["Doomguard"]] = 19,
+  [L["Scorpid"]] = 20,
+  [L["Turtle"]] = 21,
+  [L["Imp"]] = 23,
+  [L["Bat"]] = 24,
+  [L["Hyena"]] = 25,
+  [L["Bird of Prey"]] = 26,
+  [L["Wind Serpent"]] = 27,
+  [L["Remote Control"]] = 28,
+  [L["Felguard"]] = 29,
+  [L["Dragonhawk"]] = 30,
+  [L["Ravager"]] = 31,
+  [L["Warp Stalker"]] = 32,
+  [L["Sporebat"]] = 33,
+  [L["Nether Ray"]] = 34,
+  [L["Serpent"]] = 35,
+  [L["Moth"]] = 37,
+  [L["Chimaera"]] = 38,
+  [L["Devilsaur"]] = 39,
+  [L["Ghoul"]] = 40,
+  [L["Silithid"]] = 41,
+  [L["Worm"]] = 42,
+  [L["Rhino"]] = 43,
+  [L["Wasp"]] = 44,
+  [L["Core Hound"]] = 45,
+  [L["Spirit Beast"]] = 46,
+  [L["Incubus"]] = 302,
+}
 
 Private.anim_start_preset_types = {
   slidetop = L["Slide from Top"],
@@ -3081,8 +3498,8 @@ Private.array_entry_name_types = {
   -- the rest is auto-populated with indices which are valid entry name sources
 }
 
+-- option types which can be used to generate entry names on arrays
 Private.name_source_option_types = {
-  -- option types which can be used to generate entry names on arrays
   input = true,
   number = true,
   range = true,
@@ -3103,6 +3520,7 @@ Private.glow_types = {
   ACShine = L["Autocast Shine"],
   Pixel = L["Pixel Glow"],
   buttonOverlay = L["Action Button Glow"],
+  Proc = L["Proc Glow"]
 }
 
 Private.font_sizes = {
@@ -3131,7 +3549,7 @@ Private.multiUnitId = {
   ["partypetsonly"] = true,
   ["raid"] = true,
 }
-if WeakAuras.isAwesomeEnabled() then
+if WeakAuras.IsAwesomeEnabled() then
   Private.multiUnitId["nameplate"] = true
 end
 
@@ -3142,7 +3560,7 @@ Private.multiUnitUnits = {
   ["party"] = {},
   ["raid"] = {}
 }
-if WeakAuras.isAwesomeEnabled() then
+if WeakAuras.IsAwesomeEnabled() then
   Private.multiUnitUnits["nameplate"] = {}
 end
 
@@ -3165,7 +3583,6 @@ for i = 1, MAX_BOSS_FRAMES do
   Private.baseUnitId["boss"..i] = true
   Private.multiUnitUnits.boss["boss"..i] = true
 end
-
 for i = 1, 5 do
   Private.baseUnitId["arena"..i] = true
   Private.multiUnitUnits.arena["arena"..i] = true
@@ -3179,8 +3596,7 @@ for i = 1, 40 do
   Private.multiUnitUnits.group["raidpet"..i] = true
   Private.multiUnitUnits.raid["raidpet"..i] = true
 end
-
-if WeakAuras.isAwesomeEnabled() then
+if WeakAuras.IsAwesomeEnabled() then
   for i = 1, 100 do
     Private.baseUnitId["nameplate"..i] = true
     Private.multiUnitUnits.nameplate["nameplate"..i] = true
@@ -3290,108 +3706,439 @@ WeakAuras.StopMotion.animation_types = {
 }
 
 do
+  local function addGlyphFromSpellID(id, sorted)
+    local name, _, icon = GetSpellInfo(id or 0)
+    if name and icon and not Private.glyph_types[id] then
+      Private.glyph_types[id] = "|T" .. icon .. ":0|t" .. name
+      table.insert(sorted, { glyphID = id, name = name })
+    end
+  end
+
+  local function addEquippedGlyphs(sorted)
+    for i = 1, GetNumGlyphSockets() or 6 do
+      local _, _, glyphID, icon = GetGlyphSocketInfo(i)
+      if glyphID and icon and not Private.glyph_types[glyphID] then
+        local name = GetSpellInfo(glyphID)
+        if name then
+          Private.glyph_types[glyphID] = "|T" .. icon .. ":0|t" .. name
+          table.insert(sorted, { glyphID = glyphID, name = name })
+        end
+      end
+    end
+  end
+
+  Private.InitializeGlyphs = function(glyphId)
+    Private.glyph_types = {}
+    Private.glyph_sorted = {}
+    local sorted = {}
+
+    addEquippedGlyphs(sorted)
+    if glyphId then
+      if glyphId.single then
+        addGlyphFromSpellID(glyphId.single, sorted)
+      end
+      if glyphId.multi then
+        for _, id in ipairs(glyphId.multi) do
+          addGlyphFromSpellID(id, sorted)
+        end
+      end
+    end
+
+    table.sort(sorted, function(a, b)
+      return a.name < b.name
+    end)
+
+    for _, glyph in ipairs(sorted) do
+      table.insert(Private.glyph_sorted, glyph.glyphID)
+    end
+  end
+end
+
+Private.id_to_faction = {
+  ["21"] = L["Booty Bay"],
+  ["47"] = L["Ironforge"],
+  ["54"] = L["Gnomeregan"],
+  ["59"] = L["Thorium Brotherhood"],
+  ["67"] = L["Horde"],
+  ["68"] = L["Undercity"],
+  ["69"] = L["Darnassus"],
+  ["70"] = L["Syndicate"],
+  ["72"] = L["Stormwind"],
+  ["76"] = L["Orgrimmar"],
+  ["81"] = L["Thunder Bluff"],
+  ["87"] = L["Bloodsail Buccaneers"],
+  ["92"] = L["Gelkis Clan Centaur"],
+  ["93"] = L["Magram Clan Centaur"],
+  ["270"] = L["Zandalar Tribe"],
+  ["349"] = L["Ravenholdt"],
+  ["369"] = L["Gadgetzan"],
+  ["469"] = L["Alliance"],
+  ["470"] = L["Ratchet"],
+  ["509"] = L["The League of Arathor"],
+  ["510"] = L["The Defilers"],
+  ["529"] = L["Argent Dawn"],
+  ["530"] = L["Darkspear Trolls"],
+  ["576"] = L["Timbermaw Hold"],
+  ["577"] = L["Everlook"],
+  ["589"] = L["Wintersaber Trainers"],
+  ["609"] = L["Cenarion Circle"],
+  ["729"] = L["Frostwolf Clan"],
+  ["730"] = L["Stormpike Guard"],
+  ["749"] = L["Hydraxian Waterlords"],
+  ["809"] = L["Shen'dralar"],
+  ["889"] = L["Warsong Outriders"],
+  ["890"] = L["Silverwing Sentinels"],
+  ["909"] = L["Darkmoon Faire"],
+  ["910"] = L["Brood of Nozdormu"],
+  ["911"] = L["Silvermoon City"],
+  ["922"] = L["Tranquillien"],
+  ["930"] = L["Exodar"],
+  ["932"] = L["The Aldor"],
+  ["933"] = L["The Consortium"],
+  ["934"] = L["The Scryers"],
+  ["935"] = L["The Sha'tar"],
+  ["941"] = L["The Mag'har"],
+  ["942"] = L["Cenarion Expedition"],
+  ["946"] = L["Honor Hold"],
+  ["947"] = L["Thrallmar"],
+  ["967"] = L["The Violet Eye"],
+  ["970"] = L["Sporeggar"],
+  ["978"] = L["Kurenai"],
+  ["989"] = L["Keepers of Time"],
+  ["990"] = L["The Scale of the Sands"],
+  ["1011"] = L["Lower City"],
+  ["1012"] = L["Ashtongue Deathsworn"],
+  ["1015"] = L["Netherwing"],
+  ["1031"] = L["Sha'tari Skyguard"],
+  ["1037"] = L["Alliance Vanguard"],
+  ["1038"] = L["Ogri'la"],
+  ["1050"] = L["Valiance Expedition"],
+  ["1052"] = L["Horde Expedition"],
+  ["1064"] = L["The Taunka"],
+  ["1067"] = L["The Hand of Vengeance"],
+  ["1068"] = L["Explorers' League"],
+  ["1073"] = L["The Kalu'ak"],
+  ["1077"] = L["Shattered Sun Offensive"],
+  ["1085"] = L["Warsong Offensive"],
+  ["1090"] = L["Kirin Tor"],
+  ["1091"] = L["The Wyrmrest Accord"],
+  ["1094"] = L["The Silver Covenant"],
+  ["1098"] = L["Knights of the Ebon Blade"],
+  ["1104"] = L["Frenzyheart Tribe"],
+  ["1105"] = L["The Oracles"],
+  ["1106"] = L["Argent Crusade"],
+  ["1119"] = L["The Sons of Hodir"],
+  ["1124"] = L["The Sunreavers"],
+  ["1126"] = L["The Frostborn"],
+  ["1133"] = L["Bilgewater Cartel"],
+  ["1134"] = L["Gilneas"],
+  ["1135"] = L["The Earthen Ring"],
+  ["1156"] = L["The Ashen Verdict"],
+  ["1158"] = L["Guardians of Hyjal"],
+  ["1171"] = L["Therazane"],
+  ["1172"] = L["Dragonmaw Clan"],
+  ["1173"] = L["Ramkahen"],
+  ["1174"] = L["Wildhammer Clan"],
+  ["1177"] = L["Baradin's Wardens"],
+  ["1178"] = L["Hellscream's Reach"],
+  ["10000"] = L["Winterfin Retreat"],
+}
+
+Private.faction_to_id = {
+  [L["Booty Bay"]] = 21,
+  [L["Ironforge"]] = 47,
+  [L["Gnomeregan"]] = 54,
+  [L["Thorium Brotherhood"]] = 59,
+  [L["Horde"]] = 67,
+  [L["Undercity"]] = 68,
+  [L["Darnassus"]] = 69,
+  [L["Syndicate"]] = 70,
+  [L["Stormwind"]] = 72,
+  [L["Orgrimmar"]] = 76,
+  [L["Thunder Bluff"]] = 81,
+  [L["Bloodsail Buccaneers"]] = 87,
+  [L["Gelkis Clan Centaur"]] = 92,
+  [L["Magram Clan Centaur"]] = 93,
+  [L["Zandalar Tribe"]] = 270,
+  [L["Ravenholdt"]] = 349,
+  [L["Gadgetzan"]] = 369,
+  [L["Alliance"]] = 469,
+  [L["Ratchet"]] = 470,
+  [L["The League of Arathor"]] = 509,
+  [L["The Defilers"]] = 510,
+  [L["Argent Dawn"]] = 529,
+  [L["Darkspear Trolls"]] = 530,
+  [L["Timbermaw Hold"]] = 576,
+  [L["Everlook"]] = 577,
+  [L["Wintersaber Trainers"]] = 589,
+  [L["Cenarion Circle"]] = 609,
+  [L["Frostwolf Clan"]] = 729,
+  [L["Stormpike Guard"]] = 730,
+  [L["Hydraxian Waterlords"]] = 749,
+  [L["Shen'dralar"]] = 809,
+  [L["Warsong Outriders"]] = 889,
+  [L["Silverwing Sentinels"]] = 890,
+  [L["Darkmoon Faire"]] = 909,
+  [L["Brood of Nozdormu"]] = 910,
+  [L["Silvermoon City"]] = 911,
+  [L["Tranquillien"]] = 922,
+  [L["Exodar"]] = 930,
+  [L["The Aldor"]] = 932,
+  [L["The Consortium"]] = 933,
+  [L["The Scryers"]] = 934,
+  [L["The Sha'tar"]] = 935,
+  [L["The Mag'har"]] = 941,
+  [L["Cenarion Expedition"]] = 942,
+  [L["Honor Hold"]] = 946,
+  [L["Thrallmar"]] = 947,
+  [L["The Violet Eye"]] = 967,
+  [L["Sporeggar"]] = 970,
+  [L["Kurenai"]] = 978,
+  [L["Keepers of Time"]] = 989,
+  [L["The Scale of the Sands"]] = 990,
+  [L["Lower City"]] = 1011,
+  [L["Ashtongue Deathsworn"]] = 1012,
+  [L["Netherwing"]] = 1015,
+  [L["Sha'tari Skyguard"]] = 1031,
+  [L["Alliance Vanguard"]] = 1037,
+  [L["Ogri'la"]] = 1038,
+  [L["Valiance Expedition"]] = 1050,
+  [L["Horde Expedition"]] = 1052,
+  [L["The Taunka"]] = 1064,
+  [L["The Hand of Vengeance"]] = 1067,
+  [L["Explorers' League"]] = 1068,
+  [L["The Kalu'ak"]] = 1073,
+  [L["Shattered Sun Offensive"]] = 1077,
+  [L["Warsong Offensive"]] = 1085,
+  [L["Kirin Tor"]] = 1090,
+  [L["The Wyrmrest Accord"]] = 1091,
+  [L["The Silver Covenant"]] = 1094,
+  [L["Knights of the Ebon Blade"]] = 1098,
+  [L["Frenzyheart Tribe"]] = 1104,
+  [L["The Oracles"]] = 1105,
+  [L["Argent Crusade"]] = 1106,
+  [L["The Sons of Hodir"]] = 1119,
+  [L["The Sunreavers"]] = 1124,
+  [L["The Frostborn"]] = 1126,
+  [L["Bilgewater Cartel"]] = 1133,
+  [L["Gilneas"]] = 1134,
+  [L["The Earthen Ring"]] = 1135,
+  [L["The Ashen Verdict"]] = 1156,
+  [L["Guardians of Hyjal"]] = 1158,
+  [L["Therazane"]] = 1171,
+  [L["Dragonmaw Clan"]] = 1172,
+  [L["Ramkahen"]] = 1173,
+  [L["Wildhammer Clan"]] = 1174,
+  [L["Baradin's Wardens"]] = 1177,
+  [L["Hellscream's Reach"]] = 1178,
+  [L["Winterfin Retreat"]] = 10000,
+}
+
+do
   local classData = {
     DEATHKNIGHT = {
       icon = "Interface\\Icons\\Spell_Deathknight_ClassIcon",
       specs = {
-        [L["Unholy"]] = "Interface\\Icons\\Spell_Deathknight_UnholyPresence",
-        [L["Frost"]] = "Interface\\Icons\\Spell_Deathknight_FrostPresence",
-        [L["Blood"]] = "Interface\\Icons\\Spell_Deathknight_BloodPresence",
+        [250] = { name = L["Blood"], icon = "Interface\\Icons\\Spell_Deathknight_BloodPresence" },
+        [251] = { name = L["Frost"], icon = "Interface\\Icons\\Spell_Deathknight_FrostPresence" },
+        [252] = { name = L["Unholy"], icon = "Interface\\Icons\\Spell_Deathknight_UnholyPresence" },
       }
     },
     DRUID = {
       icon = "Interface\\Icons\\Ability_Druid_Maul",
       specs = {
-        [L["Balance"]] = "Interface\\Icons\\Spell_Nature_StarFall",
-        [L["Restoration"]] = "Interface\\Icons\\Spell_Nature_HealingTouch",
-        [L["Feral Combat"]] = "Interface\\Icons\\Ability_Racial_BearForm",
-        [L["Guardian"]] = "Interface\\Icons\\Ability_Racial_BearForm",
+        [102] = { name = L["Balance"], icon = "Interface\\Icons\\Spell_Nature_StarFall" },
+        [103] = { name = L["Feral Combat"], icon = "Interface\\Icons\\Ability_Racial_BearForm" },
+        [104] = { name = L["Guardian"], icon = "Interface\\Icons\\Ability_Racial_BearForm" },
+        [105] = { name = L["Restoration"], icon = "Interface\\Icons\\Spell_Nature_HealingTouch" },
       }
     },
     HUNTER = {
       icon = "Interface\\Icons\\INV_Weapon_Bow_07",
       specs = {
-        [L["Marksmanship"]] = "Interface\\Icons\\Ability_Marksmanship",
-        [L["Beast Mastery"]] = "Interface\\Icons\\Ability_Hunter_BeastTaming",
-        [L["Survival"]] = "Interface\\Icons\\Ability_Hunter_SwiftStrike",
+        [253] = { name = L["Beast Mastery"], icon = "Interface\\Icons\\Ability_Hunter_BeastTaming" },
+        [254] = { name = L["Marksmanship"], icon = "Interface\\Icons\\Ability_Marksmanship" },
+        [255] = { name = L["Survival"], icon = "Interface\\Icons\\Ability_Hunter_SwiftStrike" },
       }
     },
     MAGE = {
       icon = "Interface\\Icons\\INV_Staff_13",
       specs = {
-        [L["Fire"]] = "Interface\\Icons\\Spell_Fire_FireBolt02",
-        [L["Frost"]] = "Interface\\Icons\\Spell_Frost_FrostBolt02",
-        [L["Arcane"]] = "Interface\\Icons\\Spell_Holy_MagicalSentry",
+        [62] = { name = L["Arcane"], icon = "Interface\\Icons\\Spell_Holy_MagicalSentry" },
+        [63] = { name = L["Fire"], icon = "Interface\\Icons\\Spell_Fire_FireBolt02" },
+        [64] = { name = L["Frost"], icon = "Interface\\Icons\\Spell_Frost_FrostBolt02" },
       }
     },
     PALADIN = {
       icon = "Interface\\Icons\\INV_Hammer_01",
       specs = {
-        [L["Protection"]] = "Interface\\Icons\\Spell_Holy_DevotionAura",
-        [L["Holy"]] = "Interface\\Icons\\Spell_Holy_HolyBolt",
-        [L["Retribution"]] = "Interface\\Icons\\Spell_Holy_AuraOfLight",
+        [65] = { name = L["Holy"], icon = "Interface\\Icons\\Spell_Holy_HolyBolt" },
+        [66] = { name = L["Protection"], icon = "Interface\\Icons\\Spell_Holy_DevotionAura" },
+        [70] = { name = L["Retribution"], icon = "Interface\\Icons\\Spell_Holy_AuraOfLight" },
       }
     },
     PRIEST = {
       icon = "Interface\\Icons\\INV_Staff_30",
       specs = {
-        [L["Discipline"]] = "Interface\\Icons\\Spell_Holy_WordFortitude",
-        [L["Holy"]] = "Interface\\Icons\\Spell_Holy_GuardianSpirit",
-        [L["Shadow"]] = "Interface\\Icons\\Spell_Shadow_ShadowWordPain",
+        [256] = { name = L["Discipline"], icon = "Interface\\Icons\\Spell_Holy_WordFortitude" },
+        [257] = { name = L["Holy"], icon = "Interface\\Icons\\Spell_Holy_GuardianSpirit" },
+        [258] = { name = L["Shadow"], icon = "Interface\\Icons\\Spell_Shadow_ShadowWordPain" },
       }
     },
     ROGUE = {
       icon = "Interface\\Icons\\INV_ThrowingKnife_04",
       specs = {
-        [L["Subtlety"]] = "Interface\\Icons\\Ability_Stealth",
-        [L["Combat"]] = "Interface\\Icons\\Ability_BackStab",
-        [L["Assassination"]] = "Interface\\Icons\\Ability_Rogue_Eviscerate",
+        [259] = { name = L["Assassination"], icon = "Interface\\Icons\\Ability_Rogue_Eviscerate" },
+        [260] = { name = L["Combat"], icon = "Interface\\Icons\\Ability_BackStab" },
+        [261] = { name = L["Subtlety"], icon = "Interface\\Icons\\Ability_Stealth" },
       }
     },
     SHAMAN = {
       icon = "Interface\\Icons\\Spell_Nature_BloodLust",
       specs = {
-        [L["Enhancement"]] = "Interface\\Icons\\Spell_Nature_LightningShield",
-        [L["Elemental"]] = "Interface\\Icons\\Spell_Nature_Lightning",
-        [L["Restoration"]] = "Interface\\Icons\\Spell_Nature_MagicImmunity",
+        [262] = { name = L["Elemental"], icon = "Interface\\Icons\\Spell_Nature_Lightning" },
+        [263] = { name = L["Enhancement"], icon = "Interface\\Icons\\Spell_Nature_LightningShield" },
+        [264] = { name = L["Restoration"], icon = "Interface\\Icons\\Spell_Nature_MagicImmunity" },
       }
     },
     WARLOCK = {
       icon = "Interface\\Icons\\Spell_Nature_FaerieFire",
       specs = {
-        [L["Demonology"]] = "Interface\\Icons\\Spell_Shadow_Metamorphosis",
-        [L["Affliction"]] = "Interface\\Icons\\Spell_Shadow_DeathCoil",
-        [L["Destruction"]] = "Interface\\Icons\\Spell_Shadow_RainOfFire",
+        [265] = { name = L["Affliction"], icon = "Interface\\Icons\\Spell_Shadow_DeathCoil" },
+        [266] = { name = L["Demonology"], icon = "Interface\\Icons\\Spell_Shadow_Metamorphosis" },
+        [267] = { name = L["Destruction"], icon = "Interface\\Icons\\Spell_Shadow_RainOfFire" },
       }
     },
     WARRIOR = {
       icon = "Interface\\Icons\\INV_Sword_27",
       specs = {
-        [L["Arms"]] = "Interface\\Icons\\Ability_Rogue_Eviscerate",
-        [L["Protection"]] = "Interface\\Icons\\INV_Shield_06",
-        [L["Fury"]] = "Interface\\Icons\\Ability_Warrior_InnerRage",
+        [71] = { name = L["Arms"], icon = "Interface\\Icons\\Ability_Rogue_Eviscerate" },
+        [72] = { name = L["Fury"], icon = "Interface\\Icons\\Ability_Warrior_InnerRage" },
+        [73] = { name = L["Protection"], icon = "Interface\\Icons\\INV_Shield_06" },
       }
     },
   }
-
-  local function createSpecString(class, spec)
+  -- Creates the options layout. Due to CUSTOM_CLASS_COLORS, it needs to be created dynamically.
+  local function createSpecString(class, specID)
     local data = classData[class]
+    if not data then return "" end
     local classIcon = data.icon or "Interface\\Icons\\INV_Misc_QuestionMark"
-    local specIcon = data.specs[spec] or "Interface\\Icons\\INV_Misc_QuestionMark"
+    local specData = data.specs[specID] or { icon = "Interface\\Icons\\INV_Misc_QuestionMark", name = "Unknown" }
     local color = WA_GetClassColor(class)
-    return ("|T%s:0|t |T%s:0|t |c%s%s|r"):format(classIcon, specIcon, color, spec)
+    return ("|T%s:0|t |T%s:0|t |c%s%s|r"):format(classIcon, specData.icon, color, specData.name)
   end
 
   Private.spec_types_all = {}
   Private.spec = {}
   for class, data in pairs(classData) do
-    for specName, specIcon in pairs(data.specs) do
-      local key = class .. specName
-      Private.spec_types_all[key] = createSpecString(class, specName)
-      Private.spec[key] = specIcon
+    for specID in pairs(data.specs) do
+      Private.spec_types_all[specID] = createSpecString(class, specID)
     end
   end
+  wipe(classData)
 end
+
+Private.specid_to_icon = {
+  [250] = "Interface\\Icons\\Spell_Deathknight_BloodPresence",
+  [251] = "Interface\\Icons\\Spell_Deathknight_FrostPresence",
+  [252] = "Interface\\Icons\\Spell_Deathknight_UnholyPresence",
+  [102] = "Interface\\Icons\\Spell_Nature_StarFall",
+  [103] = "Interface\\Icons\\Ability_Racial_BearForm",
+  [104] = "Interface\\Icons\\Ability_Racial_BearForm",
+  [105] = "Interface\\Icons\\Spell_Nature_HealingTouch",
+  [253] = "Interface\\Icons\\Ability_Hunter_BeastTaming",
+  [254] = "Interface\\Icons\\Ability_Marksmanship",
+  [255] = "Interface\\Icons\\Ability_Hunter_SwiftStrike",
+  [62] = "Interface\\Icons\\Spell_Holy_MagicalSentry",
+  [63] = "Interface\\Icons\\Spell_Fire_FireBolt02",
+  [64] = "Interface\\Icons\\Spell_Frost_FrostBolt02",
+  [65] = "Interface\\Icons\\Spell_Holy_HolyBolt",
+  [66] = "Interface\\Icons\\Spell_Holy_DevotionAura",
+  [70] = "Interface\\Icons\\Spell_Holy_AuraOfLight",
+  [256] = "Interface\\Icons\\Spell_Holy_WordFortitude",
+  [257] = "Interface\\Icons\\Spell_Holy_GuardianSpirit",
+  [258] = "Interface\\Icons\\Spell_Shadow_ShadowWordPain",
+  [259] = "Interface\\Icons\\Ability_Rogue_Eviscerate",
+  [260] = "Interface\\Icons\\Ability_BackStab",
+  [261] = "Interface\\Icons\\Ability_Stealth",
+  [262] = "Interface\\Icons\\Spell_Nature_Lightning",
+  [263] = "Interface\\Icons\\Spell_Nature_LightningShield",
+  [264] = "Interface\\Icons\\Spell_Nature_MagicImmunity",
+  [265] = "Interface\\Icons\\Spell_Shadow_DeathCoil",
+  [266] = "Interface\\Icons\\Spell_Shadow_Metamorphosis",
+  [267] = "Interface\\Icons\\Spell_Shadow_RainOfFire",
+  [71] = "Interface\\Icons\\Ability_Rogue_Eviscerate",
+  [72] = "Interface\\Icons\\Ability_Warrior_InnerRage",
+  [73] = "Interface\\Icons\\INV_Shield_06",
+}
+
+Private.specname_to_id = {
+  ["DEATHKNIGHT" .. L["Blood"]] = 250,
+  ["DEATHKNIGHT" .. L["Frost"]] = 251,
+  ["DEATHKNIGHT" .. L["Unholy"]] = 252,
+  ["DRUID" .. L["Balance"]] = 102,
+  ["DRUID" .. L["Feral Combat"]] = 103,
+  ["DRUID" .. L["Guardian"]] = 104,
+  ["DRUID" .. L["Restoration"]] = 105,
+  ["HUNTER" .. L["Beast Mastery"]] = 253,
+  ["HUNTER" .. L["Marksmanship"]] = 254,
+  ["HUNTER" .. L["Survival"]] = 255,
+  ["MAGE" .. L["Arcane"]] = 62,
+  ["MAGE" .. L["Fire"]] = 63,
+  ["MAGE" .. L["Frost"]] = 64,
+  ["PALADIN" .. L["Holy"]] = 65,
+  ["PALADIN" .. L["Protection"]] = 66,
+  ["PALADIN" .. L["Retribution"]] = 70,
+  ["PRIEST" .. L["Discipline"]] = 256,
+  ["PRIEST" .. L["Holy"]] = 257,
+  ["PRIEST" .. L["Shadow"]] = 258,
+  ["ROGUE" .. L["Assassination"]] = 259,
+  ["ROGUE" .. L["Combat"]] = 260,
+  ["ROGUE" .. L["Subtlety"]] = 261,
+  ["SHAMAN" .. L["Elemental"]] = 262,
+  ["SHAMAN" .. L["Enhancement"]] = 263,
+  ["SHAMAN" .. L["Restoration"]] = 264,
+  ["WARLOCK" .. L["Affliction"]] = 265,
+  ["WARLOCK" .. L["Demonology"]] = 266,
+  ["WARLOCK" .. L["Destruction"]] = 267,
+  ["WARRIOR" .. L["Arms"]] = 71,
+  ["WARRIOR" .. L["Fury"]] = 72,
+  ["WARRIOR" .. L["Protection"]] = 73,
+}
+
+Private.specid_to_name = {
+  [250] = "DEATHKNIGHT" .. L["Blood"],
+  [251] = "DEATHKNIGHT" .. L["Frost"],
+  [252] = "DEATHKNIGHT" .. L["Unholy"],
+  [102] = "DRUID" .. L["Balance"],
+  [103] = "DRUID" .. L["Feral Combat"],
+  [104] = "DRUID" .. L["Guardian"],
+  [105] = "DRUID" .. L["Restoration"],
+  [253] = "HUNTER" .. L["Beast Mastery"],
+  [254] = "HUNTER" .. L["Marksmanship"],
+  [255] = "HUNTER" .. L["Survival"],
+  [62] = "MAGE" .. L["Arcane"],
+  [63] = "MAGE" .. L["Fire"],
+  [64] = "MAGE" .. L["Frost"],
+  [65] = "PALADIN" .. L["Holy"],
+  [66] = "PALADIN" .. L["Protection"],
+  [70] = "PALADIN" .. L["Retribution"],
+  [256] = "PRIEST" .. L["Discipline"],
+  [257] = "PRIEST" .. L["Holy"],
+  [258] = "PRIEST" .. L["Shadow"],
+  [259] = "ROGUE" .. L["Assassination"],
+  [260] = "ROGUE" .. L["Combat"],
+  [261] = "ROGUE" .. L["Subtlety"],
+  [262] = "SHAMAN" .. L["Elemental"],
+  [263] = "SHAMAN" .. L["Enhancement"],
+  [264] = "SHAMAN" .. L["Restoration"],
+  [265] = "WARLOCK" .. L["Affliction"],
+  [266] = "WARLOCK" .. L["Demonology"],
+  [267] = "WARLOCK" .. L["Destruction"],
+  [71] = "WARRIOR" .. L["Arms"],
+  [72] = "WARRIOR" .. L["Fury"],
+  [73] = "WARRIOR" .. L["Protection"],
+}
 
 --[=[[ Old unused Talent List
 Private.talents_ids = {

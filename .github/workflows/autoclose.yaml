@@ -1,0 +1,115 @@
+name: Autoclose after 2 days
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  issues:
+    types: [labeled]
+  pull_request:
+    types: [labeled]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  autoclose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close Issues/PRs labeled 'Auto Close' after 2 days, if label set by collaborator and no recent comments
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const labelName = '⏳Auto Close';
+            const maxAgeDays = 2;
+            const now = new Date();
+
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              labels: labelName,
+              state: 'open',
+              per_page: 100,
+            });
+
+            for (const issue of issues) {
+              const issue_number = issue.number;
+
+              const events = await github.paginate(github.rest.issues.listEventsForTimeline, {
+                owner,
+                repo,
+                issue_number,
+                per_page: 100,
+              });
+
+              const labelEvent = events.find(event =>
+                event.event === 'labeled' &&
+                event.label?.name === labelName
+              );
+
+              if (!labelEvent) continue;
+
+              let labelDate = new Date(labelEvent.created_at);
+
+              const comments = await github.paginate(
+                issue.pull_request
+                  ? github.rest.pulls.listReviewComments
+                  : github.rest.issues.listComments,
+                {
+                  owner,
+                  repo,
+                  issue_number,
+                  per_page: 100,
+                }
+              );
+
+              const recentCommentsAfterLabel = comments
+                .filter(c => new Date(c.created_at) > labelDate);
+
+              let latestDate = labelDate;
+              if (recentCommentsAfterLabel.length > 0) {
+                latestDate = new Date(Math.max(...recentCommentsAfterLabel.map(c => new Date(c.created_at).getTime())));
+              }
+
+              const diffDays = (now - latestDate) / (1000 * 60 * 60 * 24);
+
+              if (diffDays < maxAgeDays) continue;
+
+              const actor = labelEvent.actor?.login;
+              if (!actor) continue;
+
+              try {
+                await github.rest.repos.checkCollaborator({
+                  owner,
+                  repo,
+                  username: actor,
+                });
+              } catch (error) {
+                if (error.status === 404) {
+                  await github.rest.issues.removeLabel({
+                    owner,
+                    repo,
+                    issue_number,
+                    name: labelName,
+                  });
+                  continue;
+                } else {
+                  throw error;
+                }
+              }
+
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number,
+                state: 'closed',
+              });
+
+              await github.rest.issues.removeLabel({
+                owner,
+                repo,
+                issue_number,
+                name: labelName,
+              });
+            }

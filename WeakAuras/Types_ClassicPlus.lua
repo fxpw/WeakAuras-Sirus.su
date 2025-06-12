@@ -1,8 +1,11 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, Private = ...
+local AddonName = ...
+local Private = select(2, ...)
 
 -- Talent Data for the Project Epoch Realm "Kezan"
-if GetRealmName() ~= "Kezan" then return end
+if not WeakAuras.IsClassicPlus() then
+  return
+end
 
 Private.talentInfo = {
   ["DRUID"] = {

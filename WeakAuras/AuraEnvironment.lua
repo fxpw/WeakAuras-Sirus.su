@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, Private = ...
+local AddonName = ...
+local Private = select(2, ...)
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
@@ -71,6 +72,7 @@ WeakAuras.WA_ClassColorName = WA_ClassColorName
 -- UTF-8 Sub is pretty commonly needed
 local WA_Utf8Sub = function(input, size)
   local output = ""
+  input = tostring(input)
   if type(input) ~= "string" then
     return output
   end
@@ -110,6 +112,27 @@ local WA_Utf8Sub = function(input, size)
 end
 
 WeakAuras.WA_Utf8Sub = WA_Utf8Sub
+
+
+WeakAuras.PadString = function(input, padMode, padLength)
+  input = tostring(input)
+  if type(input) ~= "string" then
+    return input
+  end
+
+  local toAdd = padLength - #input
+  if toAdd <= 0 then
+    return input
+  end
+
+  if padMode == "left" then
+    return string.rep(" ", toAdd) .. input
+  elseif padMode == "right" then
+    return input .. string.rep(" ", toAdd)
+  end
+
+  return input
+end
 
 local LCG = LibStub("LibCustomGlow-1.0")
 WeakAuras.ShowOverlayGlow = LCG.ButtonGlow_Start
@@ -455,11 +478,13 @@ local FakeWeakAurasMixin = {
     me = UnitName("player"),
     myGUID = UnitGUID("player"),
     GetData = function(id)
-      local currentId = Private.UIDtoID(current_uid)
-      getDataCallCounts[currentId] = getDataCallCounts[currentId] + 1
-      if getDataCallCounts[currentId] > 99 then
-        Private.AuraWarnings.UpdateWarning(current_uid, "FakeWeakAurasGetData", "warning",
-                  L["This aura calls GetData a lot, which is a slow function."])
+      if current_uid then
+        local currentId = Private.UIDtoID(current_uid)
+        getDataCallCounts[currentId] = getDataCallCounts[currentId] + 1
+        if getDataCallCounts[currentId] > 99 then
+          Private.AuraWarnings.UpdateWarning(current_uid, "FakeWeakAurasGetData", "warning",
+                    L["This aura calls GetData a lot, which is a slow function."])
+        end
       end
       local data = WeakAuras.GetData(id)
       return data and CopyTable(data) or nil
@@ -607,14 +632,14 @@ local function CreateFunctionCache(exec_env)
   local cache = {
     funcs = setmetatable({}, {__mode = "v"})
   }
-  cache.Load = function(self, string, silent)
+  cache.Load = function(self, string, id, silent)
     if self.funcs[string] then
       return self.funcs[string]
     else
       local loadedFunction, errorString = loadstring(string, firstLine(string))
       if errorString then
         if not silent then
-          print(errorString)
+          print(string.format(L["Error in aura '%s'"], id), errorString)
         end
         return nil, errorString
       elseif loadedFunction then
@@ -633,12 +658,12 @@ end
 local function_cache_custom = CreateFunctionCache(exec_env_custom)
 local function_cache_builtin = CreateFunctionCache(exec_env_builtin)
 
-function WeakAuras.LoadFunction(string)
-  return function_cache_custom:Load(string)
+function WeakAuras.LoadFunction(string, id)
+  return function_cache_custom:Load(string, id)
 end
 
-function Private.LoadFunction(string, silent)
-  return function_cache_builtin:Load(string, silent)
+function Private.LoadFunction(string, id, silent)
+  return function_cache_builtin:Load(string, id, silent)
 end
 
 function Private.GetSanitizedGlobal(key)

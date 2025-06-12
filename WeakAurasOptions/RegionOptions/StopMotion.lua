@@ -1,7 +1,8 @@
 if not WeakAuras.IsLibsOK() then return end
 
 local L = WeakAuras.L
-local AddonName, OptionsPrivate = ...
+local AddonName = ...
+local OptionsPrivate = select(2, ...)
 
 local texture_types = WeakAuras.StopMotion.texture_types;
 local texture_data = WeakAuras.StopMotion.texture_data;
@@ -216,7 +217,7 @@ local function createOptions(id, data)
             name = L["Animation Start"],
             min = 0,
             max = 1,
-            --bigStep = 0.01,
+            bigStep = 0.01,
             order = 13,
             isPercent = true
         },
@@ -227,7 +228,7 @@ local function createOptions(id, data)
             name = L["Animation End"],
             min = 0,
             max = 1,
-            --bigStep  = 0.01,
+            bigStep  = 0.01,
             order = 14,
             isPercent = true
         },

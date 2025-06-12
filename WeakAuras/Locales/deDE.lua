@@ -185,6 +185,8 @@ L["Assigned Role"] = "Zugewiesene Rolle"
 L["Assigned Role Icon"] = "Assigned Role Icon"
 --[[Translation missing --]]
 L["Assist"] = "Assist"
+--[[Translation missing --]]
+L["Assisted Combat Next Cast"] = "Assisted Combat Next Cast"
 L["At Least One Enemy"] = "Zumindest ein Feind"
 L["At missing Value"] = "Bei fehlendem Wert"
 L["At Percent"] = "Bei Prozent"
@@ -192,6 +194,8 @@ L["At Value"] = "Bei Wert"
 --[[Translation missing --]]
 L["At War"] = "At War"
 L["Attach to End"] = "am Ende befestigen"
+--[[Translation missing --]]
+L["Attach to End, backwards"] = "Attach to End, backwards"
 --[[Translation missing --]]
 L["Attach to Point"] = "Attach to Point"
 L["Attach to Start"] = "am Anfang befestigen"
@@ -247,7 +251,15 @@ L["Back and Forth"] = "Vor und zurück"
 L["Background"] = "Hintergrund"
 L["Background Color"] = "Hintergrundfarbe"
 --[[Translation missing --]]
+L["Balnazzar"] = "Balnazzar"
+--[[Translation missing --]]
 L["Bar Color/Gradient Start"] = "Bar Color/Gradient Start"
+--[[Translation missing --]]
+L["Bar enabled in BigWigs settings"] = "Bar enabled in BigWigs settings"
+--[[Translation missing --]]
+L["Bar enabled in Boss Mod addon settings"] = "Bar enabled in Boss Mod addon settings"
+--[[Translation missing --]]
+L["Bar enabled in DBM settings"] = "Bar enabled in DBM settings"
 --[[Translation missing --]]
 L["Bar Texture"] = "Bar Texture"
 --[[Translation missing --]]
@@ -258,6 +270,10 @@ L["Battle.net Whisper"] = "Battle.net-Flüster"
 L["Battleground"] = "Schlachtfeld"
 --[[Translation missing --]]
 L["Battleguard Sartura"] = "Battleguard Sartura"
+--[[Translation missing --]]
+L["Beastmaster"] = "Beastmaster"
+--[[Translation missing --]]
+L["Beatrix"] = "Beatrix"
 --[[Translation missing --]]
 L["BG>Raid>Party>Say"] = "BG>Raid>Party>Say"
 L["BG-System Alliance"] = "BG-System Allianz"
@@ -322,6 +338,8 @@ L["Buffed/Debuffed"] = "Buffed/Debuffed"
 L["Burning Crusade"] = "Burning Crusade"
 --[[Translation missing --]]
 L["Buru the Gorger"] = "Buru the Gorger"
+--[[Translation missing --]]
+L["Caldoran"] = "Caldoran"
 --[[Translation missing --]]
 L["Callback function"] = "Callback function"
 L["Can be used for e.g. checking if \"boss1target\" is the same as \"player\"."] = "Kann genutzt werden um z.B zu checken ob \"Ziel\" dieselbe Einheit ist wie \"Spieler\""
@@ -461,6 +479,14 @@ L["Could not load WeakAuras Archive, the addon is %s"] = "Could not load WeakAur
 L["Count"] = "Anzahl"
 L["Counter Clockwise"] = "Gegen den Uhrzeigersinn"
 L["Create"] = "Erstellen"
+--[[Translation missing --]]
+L["Creature Family"] = "Creature Family"
+--[[Translation missing --]]
+L["Creature Family Name"] = "Creature Family Name"
+--[[Translation missing --]]
+L["Creature Type"] = "Creature Type"
+--[[Translation missing --]]
+L["Creature Type Name"] = "Creature Type Name"
 L["Critical"] = "Kritisch"
 --[[Translation missing --]]
 L["Critical (%)"] = "Critical (%)"
@@ -627,8 +653,6 @@ L["Ease Out"] = "Ease Out"
 --[[Translation missing --]]
 L["Ebonroc"] = "Ebonroc"
 --[[Translation missing --]]
-L["Eclipse"] = "Eclipse"
---[[Translation missing --]]
 L["Eclipse Direction"] = "Eclipse Direction"
 L["Edge"] = "Ecke"
 --[[Translation missing --]]
@@ -717,6 +741,8 @@ L["Error deserializing"] = "Error deserializing"
 L["Error Frame"] = "Fehlerfenster"
 --[[Translation missing --]]
 L["ERROR in '%s' unknown or incompatible sub element type '%s'"] = "ERROR in '%s' unknown or incompatible sub element type '%s'"
+--[[Translation missing --]]
+L["Error in aura '%s'"] = "Error in aura '%s'"
 --[[Translation missing --]]
 L["Error not receiving display information from %s"] = "Error not receiving display information from %s"
 --[[Translation missing --]]
@@ -868,6 +894,8 @@ L["Glow"] = "Leuchten"
 L["Glow External Element"] = "Glow External Element"
 --[[Translation missing --]]
 L["Gluth"] = "Gluth"
+--[[Translation missing --]]
+L["Glyph"] = "Glyph"
 --[[Translation missing --]]
 L["Gold"] = "Gold"
 --[[Translation missing --]]
@@ -1021,9 +1049,9 @@ L["Install the addons BugSack and BugGrabber for detailed error logs."] = "Insta
 L["Instance"] = "Instanz"
 L["Instance Difficulty"] = "Instanzschwierigkeit"
 --[[Translation missing --]]
-L["Instance Id"] = "Instance Id"
---[[Translation missing --]]
 L["Instance ID"] = "Instance ID"
+--[[Translation missing --]]
+L["Instance Id"] = "Instance Id"
 --[[Translation missing --]]
 L["Instance Info"] = "Instance Info"
 --[[Translation missing --]]
@@ -1138,6 +1166,8 @@ L["Level"] = "Stufe"
 --[[Translation missing --]]
 L["LibSharedMedia"] = "LibSharedMedia"
 --[[Translation missing --]]
+L["Lillian Voss"] = "Lillian Voss"
+--[[Translation missing --]]
 L["Limited"] = "Limited"
 --[[Translation missing --]]
 L["Linear Texture"] = "Linear Texture"
@@ -1190,6 +1220,8 @@ L["Manual Icon"] = "Manual Icon"
 L["Manual Rotation"] = "Manuelle Rotation"
 L["Marked First"] = "Zuerst markiert"
 L["Marked Last"] = "Zuletzt markiert"
+--[[Translation missing --]]
+L["Mason"] = "Mason"
 L["Master"] = "Master"
 L["Mastery (%)"] = "Meisterschaft (%)"
 L["Mastery Rating"] = "Meisterschaftswertung"
@@ -1206,6 +1238,8 @@ Intermissions are .5
 E.g. 1;2;1;2;2.5;3]=]
 --[[Translation missing --]]
 L["Max Char "] = "Max Char "
+--[[Translation missing --]]
+L["Max Char"] = "Max Char"
 --[[Translation missing --]]
 L["Max Charges"] = "Max Charges"
 --[[Translation missing --]]
@@ -1298,8 +1332,6 @@ L["Name(s)"] = "Name(s)"
 L["Name/Realm of Caster's Target"] = "Name/Realm of Caster's Target"
 --[[Translation missing --]]
 L["Nameplate"] = "Nameplate"
---[[Translation missing --]]
-L["Nameplate Type"] = "Nameplate Type"
 --[[Translation missing --]]
 L["Nameplates"] = "Nameplates"
 --[[Translation missing --]]
@@ -1478,6 +1510,12 @@ L["Overlay Cost of Casts"] = "Overlay Cost of Casts"
 --[[Translation missing --]]
 L["Overlay Latency"] = "Overlay Latency"
 --[[Translation missing --]]
+L["Pad"] = "Pad"
+--[[Translation missing --]]
+L["Pad Mode"] = "Pad Mode"
+--[[Translation missing --]]
+L["Pad to"] = "Pad to"
+--[[Translation missing --]]
 L["Paragon Reputation"] = "Paragon Reputation"
 --[[Translation missing --]]
 L["Paragon Reward Pending"] = "Paragon Reward Pending"
@@ -1581,9 +1619,9 @@ L["Progress Total"] = "Totaler Fortschritt"
 L["Progress Value"] = "Fortschrittswert"
 L["Pulse"] = "Pulsieren"
 L["PvP Flagged"] = "PvP aktiv"
-L["PvP Talent selected"] = "Gewähltes PvP-Talent"
 --[[Translation missing --]]
 L["PvP Talent Selected"] = "PvP Talent Selected"
+L["PvP Talent selected"] = "Gewähltes PvP-Talent"
 --[[Translation missing --]]
 L["Quality Id"] = "Quality Id"
 --[[Translation missing --]]
@@ -1642,6 +1680,8 @@ L["Realm Name"] = "Realm Name"
 --[[Translation missing --]]
 L["Realm of Caster's Target"] = "Realm of Caster's Target"
 --[[Translation missing --]]
+L["Reborn Council"] = "Reborn Council"
+--[[Translation missing --]]
 L["Receiving %s Bytes"] = "Receiving %s Bytes"
 L["Receiving display information"] = "Erhalte Anzeigeinformationen von %s"
 L["Reflect"] = "Reflektieren (REFLECT)"
@@ -1675,7 +1715,7 @@ L["Requested display not authorized"] = "Angeforderte Anzeige ist nicht autorisi
 L["Requesting display information from %s ..."] = "Requesting display information from %s ..."
 L["Require Valid Target"] = "Erfordert gültiges Ziel"
 --[[Translation missing --]]
-L["Requires syncing the specialization via LibGroupTalents."] = "Requires syncing the specialization via LibGroupTalents."
+L["Requires syncing the specialization via LibSpecialization."] = "Requires syncing the specialization via LibSpecialization."
 --[[Translation missing --]]
 L["Resilience (%)"] = "Resilience (%)"
 --[[Translation missing --]]
@@ -1737,6 +1777,8 @@ L["Sapphiron"] = "Sapphiron"
 L["Say"] = "Sagen"
 --[[Translation missing --]]
 L["Scale"] = "Scale"
+--[[Translation missing --]]
+L["Scarlet Enclave"] = "Scarlet Enclave"
 L["Scenario"] = "Szenario"
 --[[Translation missing --]]
 L["Scenario (Heroic)"] = "Scenario (Heroic)"
@@ -1764,11 +1806,13 @@ L["Selection Mode"] = "Selection Mode"
 --[[Translation missing --]]
 L["Separator"] = "Separator"
 --[[Translation missing --]]
-L["Set IDs can be found on websites such as classic.wowhead.com/item-sets"] = "Set IDs can be found on websites such as classic.wowhead.com/item-sets"
---[[Translation missing --]]
 L["Set IDs can be found on websites such as wowhead.com/cata/item-sets"] = "Set IDs can be found on websites such as wowhead.com/cata/item-sets"
 --[[Translation missing --]]
+L["Set IDs can be found on websites such as wowhead.com/classic/item-sets"] = "Set IDs can be found on websites such as wowhead.com/classic/item-sets"
+--[[Translation missing --]]
 L["Set IDs can be found on websites such as wowhead.com/item-sets"] = "Set IDs can be found on websites such as wowhead.com/item-sets"
+--[[Translation missing --]]
+L["Set IDs can be found on websites such as wowhead.com/mop-classic/item-sets"] = "Set IDs can be found on websites such as wowhead.com/mop-classic/item-sets"
 L["Shadow Resistance"] = "Schattenwiderstand"
 --[[Translation missing --]]
 L["Shadowlands"] = "Shadowlands"
@@ -1797,6 +1841,8 @@ L["Silithid Royalty"] = "Silithid Royalty"
 --[[Translation missing --]]
 L["Silver"] = "Silver"
 L["Simple"] = "Einfach"
+--[[Translation missing --]]
+L["Since Active"] = "Since Active"
 --[[Translation missing --]]
 L["Since Apply"] = "Since Apply"
 --[[Translation missing --]]
@@ -1833,6 +1879,8 @@ L["Smart Group"] = "Smart Group"
 L["Soft Enemy"] = "Soft Enemy"
 --[[Translation missing --]]
 L["Soft Friend"] = "Soft Friend"
+--[[Translation missing --]]
+L["Solistrasza"] = "Solistrasza"
 L["Sound"] = "Ton"
 --[[Translation missing --]]
 L["Sound by Kit ID"] = "Sound by Kit ID"
@@ -1979,6 +2027,8 @@ L[ [=[Supports multiple entries, separated by commas
 --[[Translation missing --]]
 L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."] = "Supports multiple entries, separated by commas. Escape ',' with \\. Prefix with '-' for negation."
 --[[Translation missing --]]
+L["Supports multiple entries, separated by commas. Escape with \\. Prefix with '-' for negation."] = "Supports multiple entries, separated by commas. Escape with \\. Prefix with '-' for negation."
+--[[Translation missing --]]
 L["Supports multiple entries, separated by commas. Prefix with '-' for negation."] = "Supports multiple entries, separated by commas. Prefix with '-' for negation."
 --[[Translation missing --]]
 L[ [=[Supports multiple entries, separated by commas. To include child zone ids, prefix with 'c', e.g. 'c2022'.
@@ -2018,6 +2068,12 @@ L["Target"] = "Ziel"
 L["Targeted"] = "Anvisiert"
 --[[Translation missing --]]
 L["Tertiary Stats"] = "Tertiary Stats"
+--[[Translation missing --]]
+L["Test if bar is enabled in BigWigs settings"] = "Test if bar is enabled in BigWigs settings"
+--[[Translation missing --]]
+L["Test if bar is enabled in Boss Mod addon settings"] = "Test if bar is enabled in Boss Mod addon settings"
+--[[Translation missing --]]
+L["Test if bar is enabled in DBM settings"] = "Test if bar is enabled in DBM settings"
 L["Text"] = "Text"
 --[[Translation missing --]]
 L["Text To Speech"] = "Text To Speech"
@@ -2344,57 +2400,4 @@ L["Zoom"] = "Zoom"
 --[[Translation missing --]]
 L["Zoom Animation"] = "Zoom Animation"
 L["Zul'Gurub"] = "Zul'Gurub"
-L["Affliction"] = "Gebrechen"
-L["Arcane"] = "Arkan"
-L["Arms"] = "Waffen"
-L["Assassination"] = "Meucheln"
-L["Balance"] = "Gleichgewicht"
-L["Beast Mastery"] = "Tierherrschaft"
-L["Blood"] = "Blut"
-L["Combat"] = "Kampf"
-L["Demonology"] = "Dämonologie"
-L["Destruction"] = "Zerstörung"
-L["Discipline"] = "Disziplin"
-L["Elemental"] = "Elementar"
-L["Enhancement"] = "Verstärkung"
-L["Feral Combat"] = "Wilder Kampf"
-L["Fire"] = "Feuer"
-L["Frost"] = "Frost"
-L["Fury"] = "Furor"
-L["Holy"] = "Heilig"
-L["Hybrid"] = "Hybride"
-L["Marksmanship"] = "Treffsicherheit"
-L["Protection"] = "Schutz"
-L["Restoration"] = "Wiederherstellung"
-L["Retribution"] = "Vergeltung"
-L["Shadow"] = "Schatten"
-L["Subtlety"] = "Täuschung"
-L["Survival"] = "Überleben"
-L["Unholy"] = "Unheilig"
-L["SHORTDATE_EU"] = "%1$d.%2$d.%3$02d"
-L["D_SECONDS"] = "%d |4Sekunde:Sekunden;"
-L["SECONDS_ABBR"] = "%d |4Sek.:Sek.;"
-L["SECOND_ONELETTER_ABBR"] = "%d s"
-L["D_MINUTES"] = "%d |4Minute:Minuten;"
-L["MINUTES_ABBR"] = "%d |4Min.:Min.;"
-L["MINUTE_ONELETTER_ABBR"] = "%d m"
-L["D_HOURS"] = "%d |4Stunde:Stunden;"
-L["HOURS_ABBR"] = "%d |4Std.:Std.;"
-L["HOUR_ONELETTER_ABBR"] = "%d h"
-L["D_DAYS"] = "%d |4Tag:Tage;"
-L["DAYS_ABBR"] = "%d |4Tag:Tage;"
-L["DAY_ONELETTER_ABBR"] = "%d d"
-L["LESS_THAN_OPERAND"] = "< %s"
-L["TIME_UNIT_DELIMITER"] = " "
-L["HOURS_MINUTES_SECONDS"] = "%.2d:%.2d:%.2d"
-L["MINUTES_SECONDS"] = "%.2d:%.2d"
-L["SHORTDATE"] = "%1$02d.%2$02d.%3$02d"
-L["SHORTDATENOYEAR"] = "%1$02d.%2$d."
-L["SHORTDATENOYEAR_EU"] = "%1$d.%2$d."
-L["DECIMAL_SEPERATOR"] = ","
-L["SECOND_NUMBER_CAP"] = " M"
-L["FIRST_NUMBER_CAP"] = " K"
-L["FIRST_NUMBER_CAP_NO_SPACE"] = "K"
-L["FOURTH_NUMBER_CAP_NO_SPACE"] = " Bio."
-L["SECOND_NUMBER_CAP_NO_SPACE"] = " Mio."
-L["THIRD_NUMBER_CAP_NO_SPACE"] = " Mrd."
+

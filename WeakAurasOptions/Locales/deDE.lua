@@ -38,6 +38,10 @@ local L = WeakAuras.L
 	L["%s - Finish Custom Text"] = "%s - Benutzerdefinierter Endtext"
 	L["%s - Init Action"] = "%s - Initialisierung"
 	L["%s - Main"] = "%s - Haupt"
+	--[[Translation missing --]]
+	L["%s - OnLoad"] = "%s - OnLoad"
+	--[[Translation missing --]]
+	L["%s - OnUnload"] = "%s - OnUnload"
 	L["%s - Option #%i has the key %s. Please choose a different option key."] = "Die %s - Option #%i hat bereits den Schlüssel %s. Bitte wähle einen anderen Optionsschlüssel."
 	L["%s - Rotate Animation"] = "%s - Rotierungsanimation"
 	L["%s - Scale Animation"] = "%s - Skalierungsanimation"
@@ -356,6 +360,12 @@ Off Screen]=]
 	--[[Translation missing --]]
 	L["Custom Frames"] = "Custom Frames"
 	--[[Translation missing --]]
+	L["Custom Functions"] = "Custom Functions"
+	--[[Translation missing --]]
+	L["Custom Init"] = "Custom Init"
+	--[[Translation missing --]]
+	L["Custom Load"] = "Custom Load"
+	--[[Translation missing --]]
 	L["Custom Options"] = "Custom Options"
 	L["Custom Trigger"] = "Benutzerdefinierter Auslöser"
 	L["Custom trigger event tooltip"] = [=[Wähle die Ereignisse, die den benutzerdefinierten Auslöser aufrufen sollen.
@@ -373,6 +383,8 @@ UNIT_POWER, UNIT_AURA PLAYER_TARGET_CHANGED]=]
 	L["Custom Trigger: Ignore Lua Errors on OPTIONS event"] = "Custom Trigger: Ignore Lua Errors on OPTIONS event"
 	--[[Translation missing --]]
 	L["Custom Trigger: Send fake events instead of STATUS event"] = "Custom Trigger: Send fake events instead of STATUS event"
+	--[[Translation missing --]]
+	L["Custom Unload"] = "Custom Unload"
 	L["Custom Untrigger"] = "Benutzerdefinierter Umkehrauslöser"
 	--[[Translation missing --]]
 	L["Debug Log"] = "Debug Log"
@@ -393,6 +405,8 @@ UNIT_POWER, UNIT_AURA PLAYER_TARGET_CHANGED]=]
 	L["Differences"] = "Unterschiede"
 	--[[Translation missing --]]
 	L["Disallow Entry Reordering"] = "Disallow Entry Reordering"
+	--[[Translation missing --]]
+	L["Discord"] = "Discord"
 	L["Display Name"] = "Anzeigename"
 	L["Display Text"] = "Anzeigetext"
 	L["Displays a text, works best in combination with other displays"] = "Zeigt einen Text an, funktioniert am besten in Kombination mit anderen Anzeigen"
@@ -724,8 +738,6 @@ Falls die Zahl als Dezimalzahl (z.B. 0.5), Bruch (z.B. 1/2) oder Prozentsatz (z.
 	L["Is Stealable"] = "Ist stehlbar"
 	--[[Translation missing --]]
 	L["Is Unit"] = "Is Unit"
-	--[[Translation missing --]]
-	L["Join Discord"] = "Join Discord"
 	L["Justify"] = "Ausrichten"
 	--[[Translation missing --]]
 	L["Keep Aspect Ratio"] = "Keep Aspect Ratio"
@@ -750,6 +762,7 @@ Falls die Zahl als Dezimalzahl (z.B. 0.5), Bruch (z.B. 1/2) oder Prozentsatz (z.
 	--[[Translation missing --]]
 	L["LibSerialize: Sanjo"] = "LibSerialize: Sanjo"
 	--[[Translation missing --]]
+	L["LibSpecialization: Funkeh"] = "LibSpecialization: Funkeh"
 	L["Limit"] = "Limit"
 	--[[Translation missing --]]
 	L["Line"] = "Line"
@@ -757,6 +770,8 @@ Falls die Zahl als Dezimalzahl (z.B. 0.5), Bruch (z.B. 1/2) oder Prozentsatz (z.
 	L["Linear Texture %s"] = "Linear Texture %s"
 	--[[Translation missing --]]
 	L["Linked aura: "] = "Linked aura: "
+	--[[Translation missing --]]
+	L["Linked Auras"] = "Linked Auras"
 	L["Load"] = "Laden"
 	L["Loaded"] = "Geladen"
 	--[[Translation missing --]]
@@ -874,7 +889,6 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	--[[Translation missing --]]
 	L["ON"] = "ON"
 	L["On Hide"] = "Beim Ausblenden"
-	L["On Init"] = "Beim Initialisieren"
 	L["On Show"] = "Beim Einblenden"
 	--[[Translation missing --]]
 	L["Only Match auras cast by a player (not an npc)"] = "Only Match auras cast by a player (not an npc)"
@@ -986,9 +1000,7 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Require unit from trigger"] = "Require unit from trigger"
 	L["Required for Activation"] = "Benötigt zur Aktivierung"
 	--[[Translation missing --]]
-	L["Requires LibGroupTalents, that is e.g. a up-to date WeakAuras version"] = "Requires LibGroupTalents, that is e.g. a up-to date WeakAuras version"
-	--[[Translation missing --]]
-	L["Requires syncing the specialization via LibGroupTalents."] = "Requires syncing the specialization via LibGroupTalents."
+	L["Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"] = "Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"
 	--[[Translation missing --]]
 	L["Reset all options to their default values."] = "Reset all options to their default values."
 	L["Reset Entry"] = "Eintrag zurücksetzen"
@@ -1318,9 +1330,9 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	--[[Translation missing --]]
 	L["Use SetTransform"] = "Use SetTransform"
 	--[[Translation missing --]]
-	L["Used in Auras:"] = "Used in Auras:"
-	--[[Translation missing --]]
 	L["Used in auras:"] = "Used in auras:"
+	--[[Translation missing --]]
+	L["Used in Auras:"] = "Used in Auras:"
 	--[[Translation missing --]]
 	L["Uses Texture Coordinates to rotate the texture."] = "Uses Texture Coordinates to rotate the texture."
 	--[[Translation missing --]]

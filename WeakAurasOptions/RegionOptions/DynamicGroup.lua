@@ -1,5 +1,6 @@
 if not WeakAuras.IsLibsOK() then return end
-local AddonName, OptionsPrivate = ...
+local AddonName = ...
+local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
 
@@ -174,7 +175,7 @@ local function createOptions(id, data)
           ["UNITFRAME"] = L["Unit Frames"],
           ["CUSTOM"] = L["Custom Frames"]
         }
-        if WeakAuras.isAwesomeEnabled() then
+        if WeakAuras.IsAwesomeEnabled() then
           v["NAMEPLATE"] = L["Nameplates"]
         end
         return v
