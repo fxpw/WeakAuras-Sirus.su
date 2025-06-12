@@ -1564,12 +1564,6 @@ for id, str in pairs(Private.combatlog_spell_school_types) do
   Private.combatlog_spell_school_types_for_ui[id] = ("%.3d - %s"):format(id, str)
 end
 
-Private.money_icons = {
-  ["gold"] = "interface/moneyframe/ui-goldicon",
-  ["silver"] = "interface/moneyframe/ui-silvericon",
-  ["copper"] = "interface/moneyframe/ui-coppericon"
-}
-
 Private.coin_icons = {
   ["gold"] = "|Tinterface/moneyframe/ui-goldicon:0|t",
   ["silver"] = "|Tinterface/moneyframe/ui-silvericon:0|t",
@@ -1634,11 +1628,9 @@ local function InitializeCurrencies()
 
     local icon
     if currencyType == 1 then	-- Arena points
-      icon = "Interface/PVPFrame/PVP-ArenaPoints-Icon"
+      icon = "Interface\\PVPFrame\\PVP-ArenaPoints-Icon"
     elseif currencyType == 2 then -- Honor points
-      icon = UnitFactionGroup("player") == "Alliance" and
-        "Interface/Icons/inv_misc_tournaments_symbol_human" or
-        "Interface/Icons/Achievement_PVP_H_16"
+      icon = "Interface\\BattlefieldFrame\\Battleground-".. UnitFactionGroup("player")
     end
     if itemID and iconFileID then
       icon = icon or iconFileID or "Interface\\Icons\\INV_Misc_QuestionMark" -- iconFileID not available on first login

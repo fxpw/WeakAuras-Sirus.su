@@ -16,7 +16,6 @@ local GetShapeshiftFormInfo, GetShapeshiftForm = GetShapeshiftFormInfo, GetShape
 local GetRuneCooldown, UnitCastingInfo, UnitChannelInfo = GetRuneCooldown, UnitCastingInfo, UnitChannelInfo
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation
 local MAX_NUM_TALENTS = MAX_NUM_TALENTS or 40
-local MONEY = MONEY
 
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
@@ -8270,8 +8269,6 @@ Private.event_prototypes = {
         local gold = floor(money / 1e4)
         local silver = floor(money / 100 % 100)
         local copper = money % 100
-
-        local icon = "interface/moneyframe/ui-goldicon"
       ]=]
     end,
     args = {
@@ -8312,14 +8309,14 @@ Private.event_prototypes = {
       },
       {
         name = "icon",
-        init = "icon",
+        init = "GetCoinIcon(money)",
         store = true,
         hidden = true,
         test = "true",
       },
     },
     GetNameAndIcon = function()
-      return MONEY, "interface/moneyframe/ui-goldicon"
+      return MONEY, GetCoinIcon(GetMoney())
     end,
   },
   ["Currency"] = {
