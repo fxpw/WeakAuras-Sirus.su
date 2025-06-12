@@ -1446,6 +1446,7 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   local vehicle = UnitInVehicle("player") or UnitOnTaxi("player") or false
   local vehicleUi = UnitHasVehicleUI("player") or false
   local mounted = IsMounted() or false
+  local constellation = WeakAuras.GetCurrentConstellation()
 
   local raidMemberType = 0
 
@@ -5832,7 +5833,46 @@ function Private.QuotedString(input)
   local str = string.format("%q", input)
   return (str:gsub("%-%-", "-\\-"))
 end
+local ConstellationTable = {
+  [371788] = true,
+  [371789] = true,
+  [371790] = true,
+  [371791] = true,
+  [371792] = true,
+  [371793] = true,
+  [371794] = true,
+  [371795] = true,
+  [371796] = true,
+  [371797] = true,
+  [371798] = true,
+  [371799] = true,
+  [371800] = true,
+  [371801] = true,
+  [371802] = true,
+  [371803] = true,
+  [371804] = true,
+  [371805] = true,
+  [371806] = true,
+  [371807] = true,
+  [371808] = true,
+  [371809] = true,
+  [371810] = true,
+}
 
+function WeakAuras.GetCurrentConstellation()
+  local i = 1
+  while true do
+    local name, _, icon, count, _, duration, expirationTime, unitCaster, _, _, spellId = UnitDebuff("player", i)
+    if not name then
+        break -- no more buffs to check
+    end
+    if(ConstellationTable[spellId]) then
+      return spellId
+    end
+    i = i+1
+  end
+  return nil
+end
 -- Helper function to make the templates not care, how the generic triggers
 -- are categorized
 function WeakAuras.GetTriggerCategoryFor(triggerType)

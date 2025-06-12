@@ -465,7 +465,7 @@ local function addDefaultsForNewAura(data)
   elseif data.regionType == "icon" then
     tinsert(data.subRegions, {
       ["type"] = "subtext",
-      text_text = "%s",
+      text_text = "%p",
       text_color = {1, 1, 1, 1},
       text_font = defaultFont,
       text_fontSize = defaultFontSize,

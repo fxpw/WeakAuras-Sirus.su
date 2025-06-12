@@ -179,6 +179,9 @@ local blockedFunctions = {
   ChatEdit_ActivateChat = true,
   ChatEdit_ParseText = true,
   ChatEdit_OnEnterPressed = true,
+  CastSpellByName = true,
+  CastSpell = true,
+  CastSpellByID = true,
 }
 
 local blockedTables = {

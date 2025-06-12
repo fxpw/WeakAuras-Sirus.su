@@ -5666,6 +5666,7 @@ Private.event_prototypes = {
       local inverse = trigger.use_inverse;
       local ret = {[[
         local form = GetShapeshiftForm()
+		if select(2,UnitClass("player")) == "WARLOCK" and form == 2 then form = 1 end
         local active = false
       ]]}
       if trigger.use_form and trigger.form and trigger.form.single then

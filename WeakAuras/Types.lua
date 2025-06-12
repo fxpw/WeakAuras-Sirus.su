@@ -1254,6 +1254,7 @@ WeakAuras.race_types = {
 Private.faction_group = {
   Alliance = L["Alliance"],
   Horde = L["Horde"],
+  Renegade = L["Renegade"],
   Neutral = L["Neutral"]
 }
 
@@ -2619,6 +2620,31 @@ Private.role_types = {
   melee = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:22:41|t "..L["Melee"],
   caster = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:22:41|t "..L["Ranged"],
   healer = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:1:20|t "..HEALER,
+}
+Private.constellation_type = {
+  [371788] = L["BloodElfConstellation"],
+  [371789] = L["DarkIronDwarfConstellation"],
+  [371790] = L["DracthyrConstellation"],
+  [371791] = L["DreneiConstellation"],
+  [371792] = L["DwarfConstellation"],
+  [371793] = L["EredarConstellation"],
+  [371794] = L["GnomeConstellation"],
+  [371795] = L["GoblinConstellation"],
+  [371796] = L["HumanConstellation"],
+  [371797] = L["LightforgedConstellation"],
+  [371798] = L["NagaConstellation"],
+  [371799] = L["NightBornConstellation"],
+  [371800] = L["NightElfConstellation"],
+  [371801] = L["OrcConstellation"],
+  [371802] = L["PandarenConstellation"],
+  [371803] = L["QueldoConstellation"],
+  [371804] = L["ScourgeConstellation"],
+  [371805] = L["TaurenConstellation"],
+  [371806] = L["TrollConstellation"],
+  [371807] = L["VoidElfConstellation"],
+  [371808] = L["VulperaConstellation"],
+  [371809] = L["VorgenConstellation"],
+  [371810] = L["ZandalariTrollConstellation"],
 }
 
 Private.group_member_types = {

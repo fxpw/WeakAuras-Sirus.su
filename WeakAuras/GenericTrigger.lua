@@ -2645,7 +2645,7 @@ do
             end
           end
         end
-      elseif(event == "UNIT_INVENTORY_CHANGED" and ... == "player" or event == "BAG_UPDATE_COOLDOWN" or event == "PLAYER_EQUIPMENT_CHANGED") then
+      elseif(event == "UNIT_INVENTORY_CHANGED" and ... == "player" or event == "BAG_UPDATE_COOLDOWN" or event == "PLAYER_EQUIPMENT_CHANGED" or event == "PLAYER_ENTERING_WORLD")  then
         Private.CheckItemSlotCooldowns();
       end
       Private.StopProfileSystem("generictrigger cd tracking");
