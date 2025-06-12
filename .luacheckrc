@@ -42,6 +42,8 @@ globals = {
 	"CallErrorHandler",
 	"ItemEventListener",
 	"SpellMixin",
+	"SpellEventListener",
+	"QuestEventListener",
 
 	-- misc custom
 	"AceGUIWeakAurasMultiLineEditBoxInsertLink",
