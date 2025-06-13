@@ -173,7 +173,8 @@
 		"PanelTemplates_SetDisabledTabState",
 		"PanelTemplates_SelectTab",
 		"PanelTemplates_DeselectTab",
-		"CallErrorHandler"
+		"CallErrorHandler",
+		"UNKNOWNOBJECT"
 	],
 "Lua.runtime.version": "Lua 5.1",
 "Lua.runtime.builtin": {
