@@ -124,10 +124,10 @@ Private.talentInfo = {
       34462, -- [4]
     }, -- [19]
     {
-      "Interface\\Icons\\Ability_Hunter_Invigeration", -- [1]
+      "interface\\icons\\ability_hunter_arrow_of_hunt", -- [1]
       8, -- [2]
       1, -- [3]
-      53252, -- [4]
+      322472, -- [4]
     }, -- [20]
     {
       "Interface\\Icons\\Ability_Hunter_SerpentSwiftness", -- [1]
