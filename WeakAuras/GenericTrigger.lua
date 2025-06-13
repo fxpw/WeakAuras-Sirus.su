@@ -911,6 +911,7 @@ end
 function Private.ScanUnitEvents(event, unit, ...)
   Private.StartProfileSystem("generictrigger " .. event .. " " .. unit)
   local unit_list = loaded_unit_events[unit]
+  local inRaid = IsInRaid()
   if unit_list then
     local event_list = unit_list[event]
     if event_list then
@@ -919,14 +920,21 @@ function Private.ScanUnitEvents(event, unit, ...)
         Private.ActivateAuraEnvironment(id);
         local updateTriggerState = false;
         for triggernum, data in pairs(triggers) do
-          local delay = GenericTrigger.GetDelay(data)
-          if delay == 0 then
-            local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
-            if (RunTriggerFunc(allStates, data, id, triggernum, event, unit, ...)) then
-              updateTriggerState = true;
-            end
+          if inRaid and Private.multiUnitUnits.party[unit]
+          and events[id][triggernum].ignorePartyUnitsInRaid
+          and events[id][triggernum].ignorePartyUnitsInRaid[event]
+          then
+            -- If the unit is a group unit, we don't want to run the trigger for every party member
           else
-            Private.RunTriggerFuncWithDelay(delay, id, triggernum, data, event, unit, ...)
+            local delay = GenericTrigger.GetDelay(data)
+            if delay == 0 then
+              local allStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
+              if (RunTriggerFunc(allStates, data, id, triggernum, event, unit, ...)) then
+                updateTriggerState = true;
+              end
+            else
+              Private.RunTriggerFuncWithDelay(delay, id, triggernum, data, event, unit, ...)
+            end
           end
         end
         if (updateTriggerState) then
@@ -1595,6 +1603,7 @@ function GenericTrigger.Add(data, region)
         local trigger_unit_events = {};
         local includePets
         local trigger_subevents = {};
+        local ignorePartyUnitsInRaid
         local force_events = false;
         local durationFunc, overlayFuncs, nameFunc, iconFunc, textureFunc, stacksFunc, loadFunc, loadInternalEventFunc;
         local tsuConditionVariables;
@@ -1781,6 +1790,9 @@ function GenericTrigger.Add(data, region)
                   elseif string.lower(strsub(i, #i - 7)) == "petsonly" then
                     includePets = "PetsOnly"
                     i = strsub(i, 1, #i - 8)
+                  elseif string.lower(i, #i - 5) == "group" then
+                    ignorePartyUnitsInRaid = ignorePartyUnitsInRaid or {}
+                    ignorePartyUnitsInRaid[trueEvent] = true
                   end
 
                   trigger_unit_events[i] = trigger_unit_events[i] or {}
@@ -1835,6 +1847,7 @@ function GenericTrigger.Add(data, region)
           statesParameter = statesParameter,
           event = trigger.event,
           events = trigger_events,
+          ignorePartyUnitsInRaid = ignorePartyUnitsInRaid,
           internal_events = internal_events,
           loadInternalEventFunc = loadInternalEventFunc,
           force_events = force_events,
