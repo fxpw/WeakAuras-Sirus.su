@@ -3679,10 +3679,10 @@ Private.talentInfo = {
       14079, -- [4]
     }, -- [92]
     {
-      "Interface\\Icons\\Ability_Ambush", -- [1]
+      "interface\\icons\\ability_rogue_fatality", -- [1]
       5, -- [2]
       1, -- [3]
-      30894, -- [4]
+      322803, -- [4]
     }, -- [93]
     {
       "Interface\\Icons\\Spell_Shadow_AntiShadow", -- [1]
@@ -3713,6 +3713,12 @@ Private.talentInfo = {
       6, -- [2]
       3, -- [3]
       30902, -- [4]
+    }, -- [98]
+    {
+      "Interface\\Icons\\Ability_Ambush", -- [1]
+      6, -- [2]
+      4, -- [3]
+      30894, -- [4]
     }, -- [98]
     {
       "Interface\\Icons\\Ability_Rogue_EnvelopingShadows", -- [1]
@@ -3774,7 +3780,6 @@ Private.talentInfo = {
       2, -- [3]
       51713, -- [4]
     }, -- [108]
-    nil, -- [109]
     nil, -- [110]
     nil, -- [111]
     nil, -- [112]
@@ -4136,10 +4141,16 @@ Private.talentInfo = {
       48532, -- [4]
     }, -- [67]
     {
+      "Interface\\Icons\\Ability_Druid_SkinTeeth", -- [1]
+      10, -- [2]
+      1, -- [3]
+      373822, -- [4]
+    }, -- [68]
+    {
       "Interface\\Icons\\Ability_Druid_PrimalAgression", -- [1]
       10, -- [2]
       2, -- [3]
-      51269, -- [4]
+      48432, -- [4]
     }, -- [68]
     {
       "Interface\\Icons\\Ability_Druid_Rake", -- [1]
@@ -4153,7 +4164,6 @@ Private.talentInfo = {
       2, -- [3]
       50334, -- [4]
     }, -- [70]
-    nil, -- [71]
     nil, -- [72]
     nil, -- [73]
     nil, -- [74]
