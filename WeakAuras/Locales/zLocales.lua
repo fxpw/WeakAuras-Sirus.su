@@ -108,6 +108,7 @@ if (locale == "enUS" or locale == "enGB") then
   L["Argent Crusade"] = "Argent Crusade"
   L["The Sons of Hodir"] = "The Sons of Hodir"
   L["The Sunreavers"] = "The Sunreavers"
+  L["The Ashen Verdict"] = "The Ashen Verdict"
 
   L["Beast"] = "Beast"
   L["Critter"] = "Critter"
@@ -299,6 +300,7 @@ elseif (locale == "deDE") then
   L["Argent Crusade"] = "Argentumkreuzzug"
   L["The Sons of Hodir"] = "Die Söhne Hodirs"
   L["The Sunreavers"] = "Die Sonnenhäscher"
+  L["The Ashen Verdict"] = "Das Äscherne Verdikt"
 
   L["Beast"] = "Wildtier"
   L["Critter"] = "Tier"
@@ -489,6 +491,7 @@ elseif (locale == "esES") then
   L["Argent Crusade"] = "Cruzada Argenta"
   L["The Sons of Hodir"] = "Los Hijos de Hodir"
   L["The Sunreavers"] = "Los Atracasol"
+  L["The Ashen Verdict"] = "El Veredicto Cinéreo"
 
   L["Beast"] = "Bestia"
   L["Critter"] = "Alma"
@@ -871,6 +874,7 @@ elseif (locale == "frFR") then
   L["Argent Crusade"] = "La Croisade d'argent"
   L["The Sons of Hodir"] = "Les Fils de Hodir"
   L["The Sunreavers"] = "Les Saccage-soleil"
+  L["The Ashen Verdict"] = "Le Verdict des cendres"
 
   L["Beast"] = "Bête"
   L["Critter"] = "Bestiole"
@@ -1063,6 +1067,7 @@ elseif (locale == "itIT") then
   L["Argent Crusade"] = "Argent Crusade"
   L["The Sons of Hodir"] = "The Sons of Hodir"
   L["The Sunreavers"] = "The Sunreavers"
+  L["The Ashen Verdict"] = "The Ashen Verdict"
 
   --[[Translation missing --]]
   L["Beast"] = "Beast"
@@ -1447,6 +1452,7 @@ elseif (locale == "ptBR") then
   L["Argent Crusade"] = "Argent Crusade"
   L["The Sons of Hodir"] = "The Sons of Hodir"
   L["The Sunreavers"] = "The Sunreavers"
+  L["The Ashen Verdict"] = "The Ashen Verdict"
 
   L["Beast"] = "Fera"
   L["Critter"] = "Bicho"
@@ -1637,6 +1643,7 @@ elseif (locale == "ruRU") then
   L["Argent Crusade"] = "Серебряный Авангард"
   L["The Sons of Hodir"] = "The Sons of Hodir"
   L["The Sunreavers"] = "The Sunreavers"
+  L["The Ashen Verdict"] = "Пепельный союз"
 
   L["Beast"] = "Животное"
   L["Critter"] = "Существо"
