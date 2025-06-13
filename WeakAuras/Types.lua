@@ -7,10 +7,9 @@ local L = WeakAuras.L;
 
 local LSM = LibStub("LibSharedMedia-3.0");
 
-local wipe, tinsert = wipe, tinsert
+local wipe = wipe
 local GetNumShapeshiftForms, GetShapeshiftFormInfo = GetNumShapeshiftForms, GetShapeshiftFormInfo
 local WrapTextInColorCode = WrapTextInColorCode
-local MAX_NUM_TALENTS = MAX_NUM_TALENTS or 40
 
 local function WA_GetClassColor(classFilename)
   local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[classFilename]
@@ -1237,19 +1236,21 @@ if WeakAuras.IsClassicPlusOrTBC() then
   WeakAuras.class_types["DEATHKNIGHT"] = nil
 end
 
--- missing localisation
-WeakAuras.race_types = {
-  Human = "Human",
-  Orc = "Orc",
-  Dwarf = "Dwarf",
-  NightElf = "Night Elf",
-  Scourge = "Undead",
-  Tauren = "Tauren",
-  Gnome = "Gnome",
-  Troll = "Troll",
-  BloodElf = "Blood Elf",
-  Draenei = "Draenei",
+-- Extract Race names from faction IDs
+WeakAuras.race_types = {}
+local ids = {
+  [1]="Human", [2]="Orc", [3]="Dwarf", [4]="Night Elf", [5]="Undead",
+  [6]="Tauren", [8]="Gnome", [9]="Troll", [914]="BloodElf", [927]="Draenei",
 }
+for id, key in pairs(ids) do
+  local raw = GetFactionInfoByID(id)
+  local name = type(raw) == "string"
+             and (raw:match("^[^,:]*[,:](.+)$") or raw)
+             :match("^%s*(.-)%s*$")
+             or key
+  WeakAuras.race_types[key] = (name == "" and key) or name
+end
+ids = nil
 
 Private.faction_group = {
   Alliance = L["Alliance"],
