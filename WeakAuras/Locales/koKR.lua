@@ -1502,7 +1502,7 @@ L["Warning: Full Scan auras checking for both name and spell id can't be convert
 L["Warning: Name info is now available via %affected, %unaffected. Number of affected group members via %unitCount. Some options behave differently now. This is not automatically adjusted."] = "경고: 이제부터 %affected, %unaffected를 통해 이름 정보를 사용할 수 있습니다. 오라에 걸린 그룹원 수는 %unitCount를 사용합니다. 일부 옵션이 지금부터 다르게 작용합니다. 이것은 자동으로 조정되지 않습니다."
 L["Warning: Tooltip values are now available via %tooltip1, %tooltip2, %tooltip3 instead of %s. This is not automatically adjusted."] = "경고: 툴팁 값은 이제 %s 대신 %tooltip1, %tooltip2, %tooltip3으로 사용할 수 있습니다. 이것은 자동으로 조정되지 않습니다."
 L["WeakAuras Built-In (63:42 | 3:07 | 10 | 2.4)"] = "WeakAuras 내장 (63:42 | 3:07 | 10 | 2.4)"
-L["WeakAuras has detected empty settings. If this is unexpected, ask for assitance on https://discord.gg/weakauras."] = "WeakAuras가 빈 설정을 감지했습니다. 갑자기 발생한 것이라면 https://discord.gg/weakauras에서 도움을 요청하세요."
+L["WeakAuras has detected empty settings. If this is unexpected, ask for assitance on https://discord.gg/addony-dlia-sirus-su-914079030125420565."] = "WeakAuras가 빈 설정을 감지했습니다. 갑자기 발생한 것이라면 https://discord.gg/addony-dlia-sirus-su-914079030125420565에서 도움을 요청하세요."
 L[ [=[WeakAuras has detected that it has been downgraded.
 Your saved auras may no longer work properly.
 Would you like to run the |cffff0000EXPERIMENTAL|r repair tool? This will overwrite any changes you have made since the last database upgrade.

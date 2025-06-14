@@ -1450,7 +1450,7 @@ L["Warning: Name info is now available via %affected, %unaffected. Number of aff
 L["Warning: Tooltip values are now available via %tooltip1, %tooltip2, %tooltip3 instead of %s. This is not automatically adjusted."] = [=[Aviso: Los valores de tooltip ahora están disponibles a través de %tooltip1, %tooltip2, %tooltip3 en lugar de %s. Esto no se ajusta automáticamente.
 ​]=]
 L["WeakAuras Built-In (63:42 | 3:07 | 10 | 2.4)"] = "WeakAuras incorporado (63:42 | 3:07 | 10 | 2.4)"
-L["WeakAuras has detected empty settings. If this is unexpected, ask for assitance on https://discord.gg/weakauras."] = "WeakAuras ha detectado configuraciones vacías. Si esto es inesperado, solicita asistencia en https://discord.gg/weakauras."
+L["WeakAuras has detected empty settings. If this is unexpected, ask for assitance on https://discord.gg/addony-dlia-sirus-su-914079030125420565."] = "WeakAuras ha detectado configuraciones vacías. Si esto es inesperado, solicita asistencia en https://discord.gg/addony-dlia-sirus-su-914079030125420565."
 L[ [=[WeakAuras has detected that it has been downgraded.
 Your saved auras may no longer work properly.
 Would you like to run the |cffff0000EXPERIMENTAL|r repair tool? This will overwrite any changes you have made since the last database upgrade.

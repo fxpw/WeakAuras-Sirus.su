@@ -4164,6 +4164,7 @@ Private.talentInfo = {
       2, -- [3]
       50334, -- [4]
     }, -- [70]
+    nil, -- [71]
     nil, -- [72]
     nil, -- [73]
     nil, -- [74]
@@ -4347,7 +4348,6 @@ Private.talentInfo = {
     nil, -- [117]
     nil, -- [118]
     nil, -- [119]
-    nil, -- [120]
     [121] = {
       "DruidBalance", -- [1]
       "DruidFeralCombat", -- [2]

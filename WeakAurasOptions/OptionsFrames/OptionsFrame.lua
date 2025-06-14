@@ -486,7 +486,7 @@ function OptionsPrivate.CreateFrame()
   local thanksListK = lineWrapDiscordList(OptionsPrivate.Private.DiscordListK)
 
 
-  local discordButton = addFooter(L["Discord"], [[Interface\AddOns\WeakAuras\Media\Textures\discord.tga]], "https://discord.gg/UXSc7nt",
+  local discordButton = addFooter(L["Discord"], [[Interface\AddOns\WeakAuras\Media\Textures\discord.tga]], "https://discord.gg/addony-dlia-sirus-su-914079030125420565",
                                   L["Chat with WeakAuras experts on our Discord server."])
   discordButton:SetParent(tipFrame)
   discordButton:SetPoint("LEFT", tipFrame, "LEFT")
