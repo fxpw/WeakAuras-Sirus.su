@@ -5,7 +5,7 @@ end
 local L = WeakAuras.L
 
 -- WeakAuras
-L[ [=[ Filter formats: 'Name', 'Name-Realm', '-Realm'. 
+L[ [=[ Filter formats: 'Name', 'Name-Realm', '-Realm'.
 
 Supports multiple entries, separated by commas
 Can use \ to escape -.]=] ] = [=[Формат записи: Имя, Имя-Игровой мир, -Игровой мир.
@@ -510,7 +510,7 @@ L["Error Frame"] = "Область вывода ошибок"
 L["ERROR in '%s' unknown or incompatible sub element type '%s'"] = "Ошибка в индикации %s. Внутренний элемент неизвестного или несовместимого типа %s."
 --[[Translation missing --]]
 L["Error in aura '%s'"] = "Error in aura '%s'"
-L["Error not receiving display information from %s"] = [=[Ошибка при получении информации об индикации 
+L["Error not receiving display information from %s"] = [=[Ошибка при получении информации об индикации
 от %s]=]
 L["Essence"] = "Сущность"
 L["Essence #1"] = "Сущность #1"
@@ -673,7 +673,7 @@ L["Icon Function"] = "Функция иконки"
 L["Icon Function (fallback state)"] = "Функция иконки (резервное состояние)"
 L["ID"] = "ID"
 L["Id"] = "ID"
-L["If you require additional assistance, please open a ticket on GitHub or visit our Discord at https://discord.gg/weakauras!"] = "Если вам необходима дополнительная помощь, пожалуйста, откройте запрос на GitHub или посетите наш сервер в Discord по адресу https://discord.gg/weakauras."
+L["If you require additional assistance, please open a ticket on GitHub or visit our Discord at https://discord.gg/addony-dlia-sirus-su-914079030125420565!"] = "Если вам необходима дополнительная помощь, пожалуйста, откройте запрос на GitHub или посетите наш сервер в Discord по адресу https://discord.gg/addony-dlia-sirus-su-914079030125420565."
 L["Ignore Dead"] = "Не учитывать мёртвые цели"
 L["Ignore Disconnected"] = "Не учитывать игроков не в сети"
 L["Ignore Rune CD"] = "Игнорировать задержку от рун"
@@ -1323,8 +1323,8 @@ L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix wi
 L["Supports multiple entries, separated by commas. Escape with \\. Prefix with '-' for negation."] = "Supports multiple entries, separated by commas. Escape with \\. Prefix with '-' for negation."
 L["Supports multiple entries, separated by commas. Prefix with '-' for negation."] = "Поддерживает несколько записей, разделённых запятыми. Используйте префикс '-' для отрицания."
 L[ [=[Supports multiple entries, separated by commas. To include child zone ids, prefix with 'c', e.g. 'c2022'.
-Group Zone IDs must be prefixed with 'g', e.g. 'g277'. 
-Supports Area IDs from https://wago.tools/db2/AreaTable prefixed with 'a'. 
+Group Zone IDs must be prefixed with 'g', e.g. 'g277'.
+Supports Area IDs from https://wago.tools/db2/AreaTable prefixed with 'a'.
 Supports Instance IDs prefixed with 'i'.
 Entries can be prefixed with '-' to negate.]=] ] = "Поддерживает несколько записей, разделённых запятыми. Чтобы включить идентификаторы дочерних зон, используйте префикс 'c', например, 'c2022'. IDs групп зон должны начинаться с 'g', например, 'g277'. Поддерживает IDs областей из https://wago.tools/db2/AreaTable с префиксом 'a'. Поддерживает IDs экземпляров с префиксом 'i'. Записи могут иметь префикс '-' для отрицания."
 L["Swing"] = "Ближний бой"
