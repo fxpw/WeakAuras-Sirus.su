@@ -1238,19 +1238,20 @@ end
 
 -- Extract Race names from faction IDs
 WeakAuras.race_types = {}
-local ids = {
-  [1]="Human", [2]="Orc", [3]="Dwarf", [4]="Night Elf", [5]="Undead",
-  [6]="Tauren", [8]="Gnome", [9]="Troll", [914]="BloodElf", [927]="Draenei",
-}
-for id, key in pairs(ids) do
-  local raw = GetFactionInfoByID(id)
-  local name = type(raw) == "string"
-             and (raw:match("^[^,:]*[,:](.+)$") or raw)
-             :match("^%s*(.-)%s*$")
-             or key
-  WeakAuras.race_types[key] = (name == "" and key) or name
+do
+  local race_ids = {
+    [1]="Human", [2]="Orc", [3]="Dwarf", [4]="NightElf", [5]="Undead",
+    [6]="Tauren", [8]="Gnome", [9]="Troll", [914]="BloodElf", [927]="Draenei",
+  }
+  for id, key in pairs(race_ids) do
+    local raw = GetFactionInfoByID(id)
+    local name = type(raw) == "string"
+              and (raw:match("^[^,:]*[,:](.+)$") or raw)
+              :match("^%s*(.-)%s*$")
+              or key
+    WeakAuras.race_types[key] = (name == "" and key) or name
+  end
 end
-ids = nil
 
 Private.faction_group = {
   Alliance = L["Alliance"],
