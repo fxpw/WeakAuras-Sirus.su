@@ -5,7 +5,7 @@ end
 local L = WeakAuras.L
 
 -- WeakAuras
-L[ [=[ Filter formats: 'Name', 'Name-Realm', '-Realm'.
+L[ [=[ Filter formats: 'Name', 'Name-Realm', '-Realm'. 
 
 Supports multiple entries, separated by commas
 Can use \ to escape -.]=] ] = "Formatos de filtro: 'Nombre', 'Nombre-Reino', '-Reino'. Admite varias entradas, separadas por comas Puedes utilizar \\ para escapar -."
@@ -639,7 +639,7 @@ L["Icon Function"] = "Función de icono"
 L["Icon Function (fallback state)"] = "Función de icono (estado de reserva)"
 L["ID"] = "ID"
 L["Id"] = "ID"
-L["If you require additional assistance, please open a ticket on GitHub or visit our Discord at https://discord.gg/addony-dlia-sirus-su-914079030125420565!"] = "Si necesitas más ayuda, abre un ticket en GitHub o visita nuestro Discord en https://discord.gg/addony-dlia-sirus-su-914079030125420565."
+L["If you require additional assistance, please open a ticket on GitHub or visit our Discord at https://discord.gg/weakauras!"] = "Si necesitas más ayuda, abre un ticket en GitHub o visita nuestro Discord en https://discord.gg/weakauras."
 L["Ignore Dead"] = "Ignorar muertos"
 L["Ignore Disconnected"] = "Ignorar desconectados"
 L["Ignore Rune CD"] = "Ignorar Recarga de Runas"
@@ -1269,8 +1269,8 @@ L["Supports multiple entries, separated by commas. Escape ',' with \\. Prefix wi
 L["Supports multiple entries, separated by commas. Escape with \\. Prefix with '-' for negation."] = "Admite múltiples entradas, separadas por comas. Escapa con . Prefíjalas con '-' para negación."
 L["Supports multiple entries, separated by commas. Prefix with '-' for negation."] = "Admite múltiples entradas, separadas por comas. Prefija con '-' para negación."
 L[ [=[Supports multiple entries, separated by commas. To include child zone ids, prefix with 'c', e.g. 'c2022'.
-Group Zone IDs must be prefixed with 'g', e.g. 'g277'.
-Supports Area IDs from https://wago.tools/db2/AreaTable prefixed with 'a'.
+Group Zone IDs must be prefixed with 'g', e.g. 'g277'. 
+Supports Area IDs from https://wago.tools/db2/AreaTable prefixed with 'a'. 
 Supports Instance IDs prefixed with 'i'.
 Entries can be prefixed with '-' to negate.]=] ] = "Admite múltiples entradas, separadas por comas. Para incluir identificadores de zonas secundarias, prefija con 'c', por ejemplo, 'c2022'. Los identificadores de zonas grupales deben estar prefijados con 'g', por ejemplo, 'g277'. Admite identificadores de áreas de https://wago.tools/db2/AreaTable prefijados con 'a'. Admite identificadores de estancias prefijados con 'i'. Las entradas pueden prefijarse con '-' para negar."
 L["Swing"] = "Golpe"
