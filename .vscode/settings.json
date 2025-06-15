@@ -174,7 +174,8 @@
 		"PanelTemplates_SelectTab",
 		"PanelTemplates_DeselectTab",
 		"CallErrorHandler",
-		"UNKNOWNOBJECT"
+		"UNKNOWNOBJECT",
+		"SmoothStatusBarMixin"
 	],
 "Lua.runtime.version": "Lua 5.1",
 "Lua.runtime.builtin": {
