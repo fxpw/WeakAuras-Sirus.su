@@ -150,6 +150,22 @@
 		"MouseIsOver",
 		"SELECTED_CHAT_FRAME",
 		"CANCEL",
-		"OKAY"
+		"OKAY",
+		"CLOSE",
+		"PanelTemplates_TabResize",
+		"PanelTemplates_SetDisabledTabState",
+		"PanelTemplates_SelectTab",
+		"PanelTemplates_DeselectTab",
+		"SetDesaturation",
+		"ColorPickerFrame",
+		"NOT_BOUND",
+		"SEARCH",
+		"UIDropDownMenu_Initialize",
+		"ToggleDropDownMenu",
+		"UIDropDownMenu_AddButton",
+		"ICON_LIST",
+		"CallErrorHandler",
+		"MONEY",
+		"COMBATLOG_OBJECT_AFFILIATION_OUTSIDER"
 	]
 }

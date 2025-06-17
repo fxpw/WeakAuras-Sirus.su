@@ -2,7 +2,7 @@
 ## Title: WeakAuras
 ## Author: The WeakAuras Team
 # Init.lua:11 also change
-## Version: 5.19
+## Version: 5.19.11
 ## IconTexture: Interface\AddOns\WeakAuras\Media\Textures\icon.blp
 ## X-Flavor: 3.3.5
 ## Notes: A powerful, comprehensive utility for displaying graphics and information based on buffs, debuffs, and other triggers.
