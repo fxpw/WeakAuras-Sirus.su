@@ -22,7 +22,7 @@
 ## SavedVariables: WeakAurasSaved
 ## OptionalDeps: Ace3, LibCompress, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Masque, GTFO, LibButtonGlow-1.0, LibSpellRange-1.0, LibRangeCheck-2.0, LibDBIcon-1.0, LibGetFrame-1.0, LibGroupTalents, !!AddonLocale, CustomNames, BigWigs, DBM-Core
 
-## X-Sirus-Update: https://github.com/fxpw/WeakAuras-Sirus.su/tree/5_ver/WeakAuras
+## X-Sirus-Update: https://github.com/fxpw/WeakAuras-Sirus.su/tree/master/WeakAuras
 
 Templates.lua
 Templates.xml
