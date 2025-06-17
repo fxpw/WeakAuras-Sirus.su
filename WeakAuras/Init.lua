@@ -9,8 +9,8 @@ WeakAuras.halfWidth = WeakAuras.normalWidth / 2
 WeakAuras.doubleWidth = WeakAuras.normalWidth * 2
 
 local versionStringFromToc = GetAddOnMetadata("WeakAuras", "Version")
-local versionString = "5.19.11 Beta"
-local buildTime = "20250425191700"
+local versionString = "5.19.11"
+local buildTime = "2025".."04".."25".."19".."17".."00"
 local isAwesomeEnabled = C_NamePlate and C_NamePlate.GetNamePlateForUnit and true or false
 
 local flavor
@@ -33,6 +33,9 @@ end
 
 function WeakAuras.IsCorrectVersion()
   return true
+end
+function WeakAuras.IsSirusVersion()
+	return true
 end
 
 function WeakAuras.IsWrath()
@@ -106,7 +109,7 @@ if not libsAreOk then
   WeakAuras.prettyPrint("WeakAuras is missing necessary libraries. Please reinstall a proper package.")
 end
 
-if versionString ~= versionStringFromToc .. " Beta" and versionStringFromToc ~= "Dev" then
+if versionString ~= versionStringFromToc and versionStringFromToc ~= "Dev" then
   WeakAuras.prettyPrint("You need to restart your game client to complete the WeakAuras update!")
 end
 

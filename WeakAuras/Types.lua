@@ -7,9 +7,10 @@ local L = WeakAuras.L;
 
 local LSM = LibStub("LibSharedMedia-3.0");
 
-local wipe = wipe
+local wipe, tinsert = wipe, tinsert
 local GetNumShapeshiftForms, GetShapeshiftFormInfo = GetNumShapeshiftForms, GetShapeshiftFormInfo
 local WrapTextInColorCode = WrapTextInColorCode
+local MAX_NUM_TALENTS = MAX_NUM_TALENTS or 40
 
 local function WA_GetClassColor(classFilename)
   local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[classFilename]
@@ -1236,26 +1237,62 @@ if WeakAuras.IsClassicPlusOrTBC() then
   WeakAuras.class_types["DEATHKNIGHT"] = nil
 end
 
--- Extract Race names from faction IDs
-WeakAuras.race_types = {}
-do
-  local race_ids = {
-    [1]="Human", [2]="Orc", [3]="Dwarf", [4]="NightElf", [5]="Undead",
-    [6]="Tauren", [8]="Gnome", [9]="Troll", [914]="BloodElf", [927]="Draenei",
-  }
-  for id, key in pairs(race_ids) do
-    local raw = GetFactionInfoByID(id)
-    local name = type(raw) == "string"
-              and (raw:match("^[^,:]*[,:](.+)$") or raw)
-              :match("^%s*(.-)%s*$")
-              or key
-    WeakAuras.race_types[key] = (name == "" and key) or name
-  end
-end
+-- missing localisation
+WeakAuras.race_types = {
+  Human = L["Human"],
+  Dwarf = L["Dwarf"],
+  Gnome = L["Gnome"],
+  Draenei = L["Drenei"],
+  Worgen = L["Vorgen"],
+  NightElf = L["NightElf"],
+  Queldo = L["Queldo"],
+  VoidElf = L["VoidElf"],
+  DarkIronDwarf = L["DarkIronDwarf"],
+  Lightforged = L["Lightforged"],
+  Pandaren = L["Pandaren"],
+  Vulpera = L["Vulpera"],
+  Orc = L["Orc"],
+  Scourge = L["Scourge"],
+  Tauren = L["Tauren"],
+  Troll = L["Troll"],
+  Goblin = L["Goblin"],
+  Naga = L["Naga"],
+  BloodElf = L["BloodElf"],
+  Nightborne = L["NightBorn"],
+  Eredar = L["Eredar"],
+  ZandalariTroll = L["ZandalariTroll"],
+  Dracthyr = L["Dracthyr"],
+}
+Private.constellation_type = {
+  [371788] = L["BloodElfConstellation"],
+  [371789] = L["DarkIronDwarfConstellation"],
+  [371790] = L["DracthyrConstellation"],
+  [371791] = L["DreneiConstellation"],
+  [371792] = L["DwarfConstellation"],
+  [371793] = L["EredarConstellation"],
+  [371794] = L["GnomeConstellation"],
+  [371795] = L["GoblinConstellation"],
+  [371796] = L["HumanConstellation"],
+  [371797] = L["LightforgedConstellation"],
+  [371798] = L["NagaConstellation"],
+  [371799] = L["NightBornConstellation"],
+  [371800] = L["NightElfConstellation"],
+  [371801] = L["OrcConstellation"],
+  [371802] = L["PandarenConstellation"],
+  [371803] = L["QueldoConstellation"],
+  [371804] = L["ScourgeConstellation"],
+  [371805] = L["TaurenConstellation"],
+  [371806] = L["TrollConstellation"],
+  [371807] = L["VoidElfConstellation"],
+  [371808] = L["VulperaConstellation"],
+  [371809] = L["VorgenConstellation"],
+  [371810] = L["ZandalariTrollConstellation"],
+}
 
 Private.faction_group = {
   Alliance = L["Alliance"],
   Horde = L["Horde"],
+  Renegade = L["Renegade"],
   Neutral = L["Neutral"]
 }
 
@@ -2617,6 +2654,31 @@ Private.role_types = {
   caster = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:22:41|t "..L["Ranged"],
   healer = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:1:20|t "..HEALER,
 }
+Private.constellation_type = {
+  [371788] = L["BloodElfConstellation"],
+  [371789] = L["DarkIronDwarfConstellation"],
+  [371790] = L["DracthyrConstellation"],
+  [371791] = L["DreneiConstellation"],
+  [371792] = L["DwarfConstellation"],
+  [371793] = L["EredarConstellation"],
+  [371794] = L["GnomeConstellation"],
+  [371795] = L["GoblinConstellation"],
+  [371796] = L["HumanConstellation"],
+  [371797] = L["LightforgedConstellation"],
+  [371798] = L["NagaConstellation"],
+  [371799] = L["NightBornConstellation"],
+  [371800] = L["NightElfConstellation"],
+  [371801] = L["OrcConstellation"],
+  [371802] = L["PandarenConstellation"],
+  [371803] = L["QueldoConstellation"],
+  [371804] = L["ScourgeConstellation"],
+  [371805] = L["TaurenConstellation"],
+  [371806] = L["TrollConstellation"],
+  [371807] = L["VoidElfConstellation"],
+  [371808] = L["VulperaConstellation"],
+  [371809] = L["VorgenConstellation"],
+  [371810] = L["ZandalariTrollConstellation"],
+}
 
 Private.group_member_types = {
   LEADER = L["Leader"],
@@ -3751,6 +3813,96 @@ do
   end
 end
 
+Private.id_to_faction = {
+  ["21"] = L["Booty Bay"],
+  ["47"] = L["Ironforge"],
+  ["54"] = L["Gnomeregan"],
+  ["59"] = L["Thorium Brotherhood"],
+  ["67"] = L["Horde"],
+  ["68"] = L["Undercity"],
+  ["69"] = L["Darnassus"],
+  ["70"] = L["Syndicate"],
+  ["72"] = L["Stormwind"],
+  ["76"] = L["Orgrimmar"],
+  ["81"] = L["Thunder Bluff"],
+  ["87"] = L["Bloodsail Buccaneers"],
+  ["92"] = L["Gelkis Clan Centaur"],
+  ["93"] = L["Magram Clan Centaur"],
+  ["270"] = L["Zandalar Tribe"],
+  ["349"] = L["Ravenholdt"],
+  ["369"] = L["Gadgetzan"],
+  ["469"] = L["Alliance"],
+  ["470"] = L["Ratchet"],
+  ["509"] = L["The League of Arathor"],
+  ["510"] = L["The Defilers"],
+  ["529"] = L["Argent Dawn"],
+  ["530"] = L["Darkspear Trolls"],
+  ["576"] = L["Timbermaw Hold"],
+  ["577"] = L["Everlook"],
+  ["589"] = L["Wintersaber Trainers"],
+  ["609"] = L["Cenarion Circle"],
+  ["729"] = L["Frostwolf Clan"],
+  ["730"] = L["Stormpike Guard"],
+  ["749"] = L["Hydraxian Waterlords"],
+  ["809"] = L["Shen'dralar"],
+  ["889"] = L["Warsong Outriders"],
+  ["890"] = L["Silverwing Sentinels"],
+  ["909"] = L["Darkmoon Faire"],
+  ["910"] = L["Brood of Nozdormu"],
+  ["911"] = L["Silvermoon City"],
+  ["922"] = L["Tranquillien"],
+  ["930"] = L["Exodar"],
+  ["932"] = L["The Aldor"],
+  ["933"] = L["The Consortium"],
+  ["934"] = L["The Scryers"],
+  ["935"] = L["The Sha'tar"],
+  ["941"] = L["The Mag'har"],
+  ["942"] = L["Cenarion Expedition"],
+  ["946"] = L["Honor Hold"],
+  ["947"] = L["Thrallmar"],
+  ["967"] = L["The Violet Eye"],
+  ["970"] = L["Sporeggar"],
+  ["978"] = L["Kurenai"],
+  ["989"] = L["Keepers of Time"],
+  ["990"] = L["The Scale of the Sands"],
+  ["1011"] = L["Lower City"],
+  ["1012"] = L["Ashtongue Deathsworn"],
+  ["1015"] = L["Netherwing"],
+  ["1031"] = L["Sha'tari Skyguard"],
+  ["1037"] = L["Alliance Vanguard"],
+  ["1038"] = L["Ogri'la"],
+  ["1050"] = L["Valiance Expedition"],
+  ["1052"] = L["Horde Expedition"],
+  ["1064"] = L["The Taunka"],
+  ["1067"] = L["The Hand of Vengeance"],
+  ["1068"] = L["Explorers' League"],
+  ["1073"] = L["The Kalu'ak"],
+  ["1077"] = L["Shattered Sun Offensive"],
+  ["1085"] = L["Warsong Offensive"],
+  ["1090"] = L["Kirin Tor"],
+  ["1091"] = L["The Wyrmrest Accord"],
+  ["1094"] = L["The Silver Covenant"],
+  ["1098"] = L["Knights of the Ebon Blade"],
+  ["1104"] = L["Frenzyheart Tribe"],
+  ["1105"] = L["The Oracles"],
+  ["1106"] = L["Argent Crusade"],
+  ["1119"] = L["The Sons of Hodir"],
+  ["1124"] = L["The Sunreavers"],
+  ["1126"] = L["The Frostborn"],
+  ["1133"] = L["Bilgewater Cartel"],
+  ["1134"] = L["Gilneas"],
+  ["1135"] = L["The Earthen Ring"],
+  ["1156"] = L["The Ashen Verdict"],
+  ["1158"] = L["Guardians of Hyjal"],
+  ["1171"] = L["Therazane"],
+  ["1172"] = L["Dragonmaw Clan"],
+  ["1173"] = L["Ramkahen"],
+  ["1174"] = L["Wildhammer Clan"],
+  ["1177"] = L["Baradin's Wardens"],
+  ["1178"] = L["Hellscream's Reach"],
+  ["10000"] = L["Winterfin Retreat"],
+}
+
 Private.faction_to_id = {}
 do
   local factionIDs = {
@@ -3765,7 +3917,7 @@ do
       Private.faction_to_id[GetFactionInfoByID(id) or ""] = id
   end
 end
-
+-- TODO NEW SIRUS FACTIONS
 do
   local classData = {
     DEATHKNIGHT = {

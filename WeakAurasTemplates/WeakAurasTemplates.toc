@@ -1,0 +1,20 @@
+## Interface: 30300
+## Title: WeakAuras Templates
+## Author: The WeakAuras Team
+## Version: 1.0.1
+## Notes: Templates for WeakAuras
+## X-Category: Interface Enhancements
+## Globe-Main: WeakAuras
+## DefaultState: Enabled
+## LoadOnDemand: 1
+## Dependencies: WeakAuras, WeakAurasOptions
+## X-Sirus-Update: https://github.com/fxpw/WeakAuras-Sirus.su/tree/master/WeakAurasTemplates
+
+locales.xml
+
+compat.lua
+
+TriggerTemplates.lua
+TriggerTemplatesDataWrath.lua
+
+AceGUI-Widgets\AceGUIContainer-WeakAurasTemplateGroup.lua

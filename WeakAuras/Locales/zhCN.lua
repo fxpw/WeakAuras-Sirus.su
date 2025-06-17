@@ -1505,7 +1505,7 @@ L["Warning: Full Scan auras checking for both name and spell id can't be convert
 L["Warning: Name info is now available via %affected, %unaffected. Number of affected group members via %unitCount. Some options behave differently now. This is not automatically adjusted."] = "警告：现在名称信息通过 %affected, %unaffected，受影响的团队成员数量通过 %unitCount 提供。一些选项的工作方式发生了变化，且不会自动进行调整。"
 L["Warning: Tooltip values are now available via %tooltip1, %tooltip2, %tooltip3 instead of %s. This is not automatically adjusted."] = "警告：鼠标提示值现在将通过 %tooltip1, %tooltip2, %tooltip3 显示（取代通过 %s ）。这些变化将不会自动调整。"
 L["WeakAuras Built-In (63:42 | 3:07 | 10 | 2.4)"] = "WeakAuras内置格式 （63:42 | 3:07 | 10 | 2.4）"
-L["WeakAuras has detected empty settings. If this is unexpected, ask for assitance on https://discord.gg/weakauras."] = "WeakAuras 检测到了空的设置。如果这是意外情况，请在 https://discord.gg/weakauras 上寻求帮助。"
+L["WeakAuras has detected empty settings. If this is unexpected, ask for assitance on https://discord.gg/addony-dlia-sirus-su-914079030125420565."] = "WeakAuras 检测到了空的设置。如果这是意外情况，请在 https://discord.gg/addony-dlia-sirus-su-914079030125420565 上寻求帮助。"
 L[ [=[WeakAuras has detected that it has been downgraded.
 Your saved auras may no longer work properly.
 Would you like to run the |cffff0000EXPERIMENTAL|r repair tool? This will overwrite any changes you have made since the last database upgrade.

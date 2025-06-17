@@ -111,14 +111,14 @@ function OptionsPrivate.CreateFrame()
   frame:SetMinResize(minWidth, minHeight)
   frame:SetFrameStrata("DIALOG")
 
-  local now = time()
-  local y = date("*t", now).year
-  local inJune = now >= time{year=y, month=6, day=1, hour=0} and now < time{year=y, month=7, day=1, hour=0}
-  if inJune then
-    frame.PortraitContainer.portrait:SetTexture([[Interface\AddOns\WeakAuras\Media\Textures\logo_256_round_pride.tga]])
-  else
+--   local now = time()
+--   local y = date("*t", now).year
+--   local inJune = now >= time{year=y, month=6, day=1, hour=0} and now < time{year=y, month=7, day=1, hour=0}
+--   if inJune then
+--     frame.PortraitContainer.portrait:SetTexture([[Interface\AddOns\WeakAuras\Media\Textures\logo_256_round_pride.tga]])
+--   else
     frame.PortraitContainer.portrait:SetTexture([[Interface\AddOns\WeakAuras\Media\Textures\logo_256_round.tga]])
-  end
+--   end
 
   frame.window = "default"
 
@@ -486,7 +486,7 @@ function OptionsPrivate.CreateFrame()
   local thanksListK = lineWrapDiscordList(OptionsPrivate.Private.DiscordListK)
 
 
-  local discordButton = addFooter(L["Discord"], [[Interface\AddOns\WeakAuras\Media\Textures\discord.tga]], "https://discord.gg/UXSc7nt",
+  local discordButton = addFooter(L["Discord"], [[Interface\AddOns\WeakAuras\Media\Textures\discord.tga]], "https://discord.gg/addony-dlia-sirus-su-914079030125420565",
                                   L["Chat with WeakAuras experts on our Discord server."])
   discordButton:SetParent(tipFrame)
   discordButton:SetPoint("LEFT", tipFrame, "LEFT")
@@ -516,31 +516,31 @@ function OptionsPrivate.CreateFrame()
     changelogButton:SetPoint("LEFT", thanksButton, "RIGHT", footerSpacing, 0)
   end
 
-  local awesomeWotlkButton
-  if not WeakAuras.IsAwesomeEnabled() then
-    awesomeWotlkButton = addFooter("Awesome WotLK", [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/FrostAtom/awesome_wotlk/releases",
-                                    L["Unlock nameplate anchoring & units in WeakAuras with the Awesome WotLK client patch"])
-    awesomeWotlkButton:SetParent(tipFrame)
-    awesomeWotlkButton:SetPoint("LEFT", changelogButton or thanksButton, "RIGHT", footerSpacing, 0)
-  end
+--   local awesomeWotlkButton
+--   if not WeakAuras.IsAwesomeEnabled() then
+--     awesomeWotlkButton = addFooter("Awesome WotLK", [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/FrostAtom/awesome_wotlk/releases",
+--                                     L["Unlock nameplate anchoring & units in WeakAuras with the Awesome WotLK client patch"])
+--     awesomeWotlkButton:SetParent(tipFrame)
+--     awesomeWotlkButton:SetPoint("LEFT", changelogButton or thanksButton, "RIGHT", footerSpacing, 0)
+--   end
 
-  local reportbugButton = addFooter(L["Found a Bug?"], [[Interface\AddOns\WeakAuras\Media\Textures\bug_report.tga]], "https://github.com/NoM0Re/WeakAuras-WotLK/issues",
+  local reportbugButton = addFooter(L["Found a Bug?"], [[Interface\AddOns\WeakAuras\Media\Textures\bug_report.tga]], "https://discord.gg/addony-dlia-sirus-su-914079030125420565",
                                     L["Report bugs on our issue tracker."], nil, nil, true)
   reportbugButton:SetParent(tipFrame)
   reportbugButton:SetPoint("RIGHT", tipFrame, "RIGHT")
 
-  local wagoButton = addFooter(L["Find Auras"], [[Interface\AddOns\WeakAuras\Media\Textures\wago.tga]], "https://wago.io/search/imports/wow/all?q=3.3.5",
-                                L["Browse Wago, the largest collection of auras."], nil, nil, true)
-  wagoButton:SetParent(tipFrame)
-  wagoButton:SetPoint("RIGHT", reportbugButton, "LEFT", -footerSpacing, 0)
+--   local wagoButton = addFooter(L["Find Auras"], [[Interface\AddOns\WeakAuras\Media\Textures\wago.tga]], "https://discord.gg/addony-dlia-sirus-su-914079030125420565",
+--                                 L["Browse Wago, the largest collection of auras."], nil, nil, true)
+--   wagoButton:SetParent(tipFrame)
+--   wagoButton:SetPoint("RIGHT", reportbugButton, "LEFT", -footerSpacing, 0)
 
-  local companionButton
-  if not OptionsPrivate.Private.CompanionData.slugs then
-    companionButton = addFooter(L["Update Auras"], [[Interface\AddOns\WeakAuras\Media\Textures\wagoupdate_refresh.tga]], "https://weakauras.wtf",
-            L["Keep your Wago imports up to date with the Companion App."])
-    companionButton:SetParent(tipFrame)
-    companionButton:SetPoint("RIGHT", wagoButton, "LEFT", -footerSpacing, 0)
-  end
+--   local companionButton
+--   if not OptionsPrivate.Private.CompanionData.slugs then
+--     companionButton = addFooter(L["Update Auras"], [[Interface\AddOns\WeakAuras\Media\Textures\wagoupdate_refresh.tga]], "https://weakauras.wtf",
+--             L["Keep your Wago imports up to date with the Companion App."])
+--     companionButton:SetParent(tipFrame)
+--     companionButton:SetPoint("RIGHT", wagoButton, "LEFT", -footerSpacing, 0)
+--   end
 
   frame.ShowTip = function(self)
     self.tipFrame:Show()

@@ -340,9 +340,6 @@ local function SortProfileMap(map)
   end
 
   sort(result, function(a, b)
-    if map[a].spike and map[b].spike then
-      return map[a].spike > map[b].spike
-    end
     return map[a].elapsed > map[b].elapsed
   end)
 
@@ -401,16 +398,16 @@ function WeakAuras.PrintProfile()
 
   popup.messageFrame:SetText("")
 
-  PrintOneProfile(popup, "|cff9900ffTotal time:|r", profileData.systems.time)
-  PrintOneProfile(popup, "|cff9900ffTime inside WA:|r", profileData.systems.wa)
-  popup:AddText(string.format("|cff9900ffTime spent inside WA:|r %.2f%%",
-                              100 * profileData.systems.wa.elapsed / profileData.systems.time.elapsed))
+--   PrintOneProfile(popup, "|cff9900ffTotal time:|r", profileData.systems.time)
+--   PrintOneProfile(popup, "|cff9900ffTime inside WA:|r", profileData.systems.wa)
+--   popup:AddText(string.format("|cff9900ffTime spent inside WA:|r %.2f%%",
+--                               100 * profileData.systems.wa.elapsed / profileData.systems.time.elapsed))
 
-  popup:AddText("")
-  popup:AddText("Note: Not every aspect of each aura can be tracked.")
-  popup:AddText("You can ask on our discord https://discord.gg/weakauras for help interpreting this output.")
+--   popup:AddText("")
+--   popup:AddText("Note: Not every aspect of each aura can be tracked.")
+--   popup:AddText("You can ask on our discord https://discord.gg/weakauras for help interpreting this output.")
 
-  popup:AddText("")
+--   popup:AddText("")
   popup:AddText("|cff9900ffAuras:|r")
   local total = TotalProfileTime(profileData.auras)
   popup:AddText("Total time attributed to auras: ", floor(total) .."ms")
@@ -545,25 +542,30 @@ function RealTimeProfilingWindow:RefreshBars()
   end
 
   local total = TotalProfileTime(profileData.auras)
+  local total_spike = 0
+  local total_elapsed = 0
   for i, name in ipairs(SortProfileMap(profileData.auras)) do
     if (name ~= "time" and name ~= "wa") then
       local bar = self:GetBar(name)
       local elapsed = profileData.auras[name].elapsed
+	  total_elapsed= total_elapsed+elapsed
       local pct = 100 * elapsed / total
       local spike = profileData.auras[name].spike
+	  total_spike = total_spike + spike
       bar:SetPosition(i)
       bar:SetProgress(pct)
       bar:SetText(elapsed, pct, spike)
     end
   end
-  if profileData.systems.wa then
-    local timespent = debugprofilestop() - profileData.systems.time.start
-    self.statsFrameText:SetText(("|cFFFFFFFFTime in WA: %.2fs / %ds (%.1f%%)"):format(
-      profileData.systems.wa.elapsed / 1000,
-      timespent / 1000,
-      100 * profileData.systems.wa.elapsed / timespent
-    ))
-  end
+--   self.bars:Sort()
+--   if profileData.systems.wa then
+--     -- local timespent = debugprofilestop() - profileData.systems.time.start
+--     self.statsFrameText:SetText(("|cFFFFFFFFTime in WA: %.4fs / %.4fs (%.1f%%)"):format(
+-- 		total_spike / 1000,
+-- 		total_elapsed/ 1000,
+--       100 * total_spike/total_elapsed
+--     ))
+--   end
 end
 
 function RealTimeProfilingWindow:ResetBars()

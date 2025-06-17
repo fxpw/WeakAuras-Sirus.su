@@ -1184,6 +1184,15 @@ Private.load_prototype = {
       values = "race_types",
       init = "arg"
     },
+	{
+      name = "constellation",
+      display = L["Player Сonstellation"],
+      type = "multiselect",
+      values = "constellation_type",
+      init = "arg",
+      width = WeakAuras.normalWidth,
+      events = {"PARTY_MEMBERS_CHANGED","RAID_ROSTER_UPDATE"}
+    },
     {
       name = "faction",
       display = L["Player Faction"],
@@ -5666,6 +5675,7 @@ Private.event_prototypes = {
       local inverse = trigger.use_inverse;
       local ret = {[[
         local form = GetShapeshiftForm()
+		if select(2,UnitClass("player")) == "WARLOCK" and form == 2 then form = 1 end
         local active = false
       ]]}
       if trigger.use_form and trigger.form and trigger.form.single then

@@ -221,6 +221,7 @@ local function supports(regionType)
          or regionType == "icon"
          or regionType == "aurabar"
          or regionType == "text"
+		 or regionType == "model"
          or regionType == "empty"
 end
 
