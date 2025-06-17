@@ -168,5 +168,6 @@
 		"MONEY",
 		"COMBATLOG_OBJECT_AFFILIATION_OUTSIDER",
 		"UISpecialFrames"
-	]
+	],
+	"Lua.type.weakUnionCheck": true
 }

@@ -55,7 +55,7 @@ local function changes(property, regionType)
       value = true,
       property = "sub."..subregionPos..".glow"
     };
-  elseif WeakAuras.regionTypes[regionType].default[property] == nil then
+  elseif TemplatePrivate.Private.regionTypes[regionType].default[property] == nil then
     return nil;
   elseif property == "cooldownSwipe" then
     return {
@@ -1215,10 +1215,10 @@ function WeakAuras.CreateTemplateView(Private, frame)
   TemplatePrivate.Private = Private
 
   -- Enrich Display templates with default values
-  for regionType, regionData in pairs(WeakAuras.regionOptions) do
+  for regionType, regionData in pairs(TemplatePrivate.Private.regionOptions) do
     if (regionData.templates) then
       for _, item in ipairs(regionData.templates) do
-        for k, v in pairs(WeakAuras.regionTypes[regionType].default) do
+        for k, v in pairs(TemplatePrivate.Private.regionTypes[regionType].default) do
           if (item.data[k] == nil) then
             item.data[k] = v
           end
@@ -1393,7 +1393,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
       templateButton:SetDescription(item.description);
       templateButton:SetClick(function()
         newView.data = CopyTable(item.data);
-        WeakAuras.validate(newView.data, WeakAuras.data_stub);
+        TemplatePrivate.Private.validate(newView.data, TemplatePrivate.Private.data_stub);
         newView.data.internalVersion = WeakAuras.InternalVersion();
         newView.data.regionType = regionType;
         createButtons();
@@ -1494,7 +1494,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
               else
                 replaceTrigger(newView.data, item, subType);
                 replaceCondition(newView.data, item, subType);
-                newView.data.id = WeakAuras.FindUnusedId(item.title);
+                newView.data.id = TemplatePrivate.Private.FindUnusedId(item.title);
                 newView.data.load = {};
                 if (item.load) then
                   newView.data.load = CopyTable(item.load);
@@ -1555,7 +1555,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
         else
           replaceTrigger(newView.data, item, subType);
           replaceCondition(newView.data, item, subType);
-          newView.data.id = WeakAuras.FindUnusedId(item.title);
+          newView.data.id = TemplatePrivate.Private.FindUnusedId(item.title);
           newView.data.load = {};
           if (item.load) then
             newView.data.load = CopyTable(item.load);
@@ -1618,7 +1618,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
       WeakAuras.NewDisplayButton(data);
       WeakAuras.UpdateThumbnail(data);
     end
-    for child in WeakAuras.TraverseLeafsOrAura(data) do
+    for child in TemplatePrivate.Private.TraverseLeafsOrAura(data) do
       handle(child, item, subType);
     end
     WeakAuras.ClearAndUpdateOptions(data.id)
@@ -1636,7 +1636,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
       WeakAuras.NewDisplayButton(data);
       WeakAuras.UpdateThumbnail(data);
     end
-    for child in WeakAuras.TraverseLeafsOrAura(data) do
+    for child in TemplatePrivate.Private.TraverseLeafsOrAura(data) do
       handle(child, item, subType);
     end
     WeakAuras.ClearAndUpdateOptions(data.id)
@@ -1654,8 +1654,8 @@ function WeakAuras.CreateTemplateView(Private, frame)
         newView.data.load[v] = nil;
         newView.data.load["use_"..v] = nil;
       end
-      newView.data.load.class = CopyTable(WeakAuras.data_stub.load.class);
-      newView.data.load.spec = CopyTable(WeakAuras.data_stub.load.spec);
+      newView.data.load.class = CopyTable(TemplatePrivate.Private.data_stub.load.class);
+      newView.data.load.spec = CopyTable(TemplatePrivate.Private.data_stub.load.spec);
       if (newView.chosenItem.load) then
         WeakAuras.DeepMixin(newView.data.load, newView.chosenItem.load)
       end
@@ -1680,8 +1680,8 @@ function WeakAuras.CreateTemplateView(Private, frame)
     newView.batchModeLabel:Hide();
     if (not newView.data) then
       -- First step: Show region types
-      if WeakAuras.regionOptions then
-        for regionType, regionData in pairs(WeakAuras.regionOptions) do
+      if TemplatePrivate.Private.regionOptions then
+        for regionType, regionData in pairs(TemplatePrivate.Private.regionOptions) do
           if (regionData.templates) then
             local button = createRegionButton(regionType, regionData, selectedItem);
             newViewScroll:AddChild(button);
