@@ -10,6 +10,52 @@ local Type, Version = "WeakAurasDisplayButton", 60
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
+local function Mixin(object, ...)
+  for i = 1, select("#", ...) do
+    local mixin = select(i, ...);
+    for k, v in pairs(mixin) do
+      object[k] = v;
+    end
+  end
+
+  return object;
+end
+
+local function CreateFromMixins(...)
+  return Mixin({}, ...)
+end
+
+local FramePoolMixin = CreateFromMixins(ObjectPoolMixin);
+
+local function FramePoolFactory(framePool)
+  return CreateFrame(framePool.frameType, nil, framePool.parent, framePool.frameTemplate);
+end
+
+local function ForbiddenFramePoolFactory(framePool)
+  return CreateForbiddenFrame(framePool.frameType, nil, framePool.parent, framePool.frameTemplate);
+end
+
+function FramePoolMixin:OnLoad(frameType, parent, frameTemplate, resetterFunc, forbidden)
+  if forbidden then
+    ObjectPoolMixin.OnLoad(self, ForbiddenFramePoolFactory, resetterFunc);
+  else
+    ObjectPoolMixin.OnLoad(self, FramePoolFactory, resetterFunc);
+  end
+  self.frameType = frameType;
+  self.parent = parent;
+  self.frameTemplate = frameTemplate;
+end
+
+function FramePoolMixin:GetTemplate()
+  return self.frameTemplate;
+end
+
+local function WACreateFramePool(frameType, parent, frameTemplate, resetterFunc, forbidden)
+  local framePool = CreateFromMixins(FramePoolMixin);
+  framePool:OnLoad(frameType, parent, frameTemplate, resetterFunc or FramePool_HideAndClearAnchors, forbidden);
+  return framePool;
+end
+
 local L = WeakAuras.L;
 local fullName;
 local clipboard = {};
@@ -275,7 +321,7 @@ local function ensure(t, k, v)
   return t and k and v and t[k] == v
 end
 
-local statusIconPool = CreateFramePool("Button")
+local statusIconPool = WACreateFramePool("Button")
 
 --[[     Actions     ]]--
 
@@ -1377,6 +1423,7 @@ local methods = {
     end
     if not iconButton then
       iconButton = statusIconPool:Acquire()
+      -- iconButton = CreateFrame("Button");
       iconButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
       tinsert(self.statusIcons.buttons, iconButton)
       iconButton:SetParent(self.statusIcons)
