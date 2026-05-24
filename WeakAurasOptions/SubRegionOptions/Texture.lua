@@ -9,8 +9,8 @@ local function createOptions(parentData, data, index, subIndex)
   local pointAnchors = {}
   local areaAnchors = {}
   for child in OptionsPrivate.Private.TraverseLeafsOrAura(parentData) do
-    OptionsMixin(pointAnchors, OptionsPrivate.Private.GetAnchorsForData(child, "point"))
-    OptionsMixin(areaAnchors, OptionsPrivate.Private.GetAnchorsForData(child, "area"))
+    Mixin(pointAnchors, OptionsPrivate.Private.GetAnchorsForData(child, "point"))
+    Mixin(areaAnchors, OptionsPrivate.Private.GetAnchorsForData(child, "area"))
   end
 
   local options = {
