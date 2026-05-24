@@ -12,6 +12,8 @@ local _G = _G
 -- WoW APIs
 local InCombatLockdown = InCombatLockdown
 local CreateFrame, IsAddOnLoaded, LoadAddOn = CreateFrame, IsAddOnLoaded, LoadAddOn
+local tIndexOf = OptionsPrivate.tIndexOf
+local tAppendAll = OptionsPrivate.tAppendAll
 
 local AceGUI = LibStub("AceGUI-3.0")
 
@@ -453,7 +455,7 @@ StaticPopupDialogs["WEAKAURAS_CONFIRM_DELETE"] = {
   showAlert = 1,
   whileDead = 1,
   timeout = 0,
-  preferredindex = STATICPOPUP_NUMDIALOGS,
+  preferredindex = 4,
 }
 
 function OptionsPrivate.IsWagoUpdateIgnored(auraId)
@@ -854,6 +856,10 @@ function WeakAuras.ShowOptions(msg)
 
   if (OptionsPrivate.Private.personalRessourceDisplayFrame) then
     OptionsPrivate.Private.personalRessourceDisplayFrame:OptionsOpened();
+  end
+
+  if frame.moversizer then
+    frame.moversizer:OptionsOpened()
   end
 
   if not(firstLoad) then

@@ -6,6 +6,8 @@ local WeakAuras = WeakAuras
 local L = WeakAuras.L
 local SharedMedia = LibStub("LibSharedMedia-3.0")
 
+local tIndexOf = Private.tIndexOf
+
 local default = {
   controlledChildren = {},
   border = false,
@@ -41,7 +43,8 @@ local default = {
   centerType = "LR",
   gridWidth = 5,
   rowSpace = 1,
-  columnSpace = 1
+  columnSpace = 1,
+  sharedFrameLevel = true, -- true to ensure identical behavior on newer clients
 }
 
 Private.regionPrototype.AddAlphaToDefault(default);
@@ -87,7 +90,7 @@ local controlPointFunctions = {
 
 local function createControlPoint(self)
   local controlPoint = CreateFrame("Frame", nil, self.parent)
-  WeakAuras.Mixin(controlPoint, controlPointFunctions)
+  Private.Mixin(controlPoint, controlPointFunctions)
 
   controlPoint:SetWidth(16)
   controlPoint:SetHeight(16)
@@ -1049,6 +1052,28 @@ local function clearCache(cache, id, cloneId)
   end
 end
 
+-- Resize queue
+local RunNextFrame = CreateFrame("Frame")
+local q = {}
+RunNextFrame:Hide()
+
+local function QueueResize(g)
+  if not g then return end
+  q[#q+1] = g
+  RunNextFrame:Show()
+end
+
+RunNextFrame:SetScript("OnUpdate", function(self)
+  self:Hide()
+  for i = 1, #q do
+    local g = q[i]
+    q[i] = nil
+    if g and g.Resize then
+      g:Resize()
+    end
+  end
+end)
+
 local function modify(parent, region, data)
   Private.FixGroupChildrenOrderForGroup(data)
   region:SetScale(data.scale and data.scale > 0 and data.scale <= 10 and data.scale or 1)
@@ -1528,7 +1553,7 @@ local function modify(parent, region, data)
 
     Private.StopProfileSystem("dynamicgroup")
     Private.StopProfileAura(data.id)
-    self:Resize()
+    QueueResize(self)
   end
 
 

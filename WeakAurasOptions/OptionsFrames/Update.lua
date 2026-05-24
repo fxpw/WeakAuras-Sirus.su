@@ -7,6 +7,12 @@ local AceGUI = LibStub("AceGUI-3.0")
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
+-- Lua APIs
+local ipairs_reverse = OptionsPrivate.ipairs_reverse
+
+-- WoW APIs
+local tIndexOf = OptionsPrivate.tIndexOf
+
 -- Scam Check
 local function notEmptyString(str)
   return str and str ~= "" and string.find(str, "%S")
@@ -247,8 +253,10 @@ local function DebugPrintDiff(diff, id, uid)
 end
 
 local function Diff(ours, theirs)
-  local ignored = WeakAuras.Mixin({}, OptionsPrivate.Private.internal_fields,
-                                  OptionsPrivate.Private.non_transmissable_fields)
+  local ignored = OptionsPrivate.CreateFromMixins(
+    OptionsPrivate.Private.internal_fields,
+    OptionsPrivate.Private.non_transmissable_fields
+  )
 
   -- generates a diff which WeakAuras.Update can use
   local debug = false
@@ -288,26 +296,39 @@ end
 local function BuildUidMap(data, children, type)
   children = children or {}
   -- The eventual result
+
+  --- @class UidMapData
+  --- @field originalName auraId The original id of the aura
+  --- @field id auraId The current id of the aura, might have changed due to ids being unique
+  --- @field data auraData The raw data, is non-authoritative on e.g. id, controlledChildren, parent, sortHybridTable
+  --- @field controlledChildren? uid[] A array of child uids
+  --- @field parent? uid The parent uid
+  --- @field sortHybrid boolean? optional bool !! the parent's sortHybridTable is split up and recorded per aura:
+  ---                            nil, if the parent is not a dynamic group
+  ---                            false/true based on the sortHybridTable of the dynamic group
+  --- @field anchorFrameFrame uid? uid of the anchor iff the aura is anchored to another aura that is part of the same
+  ---                              import, otherwise nil
+  --- @field matchedUid uid? for "update", the matched uid. Is from a different domain!
+  --- @field diff any  for "update", the diff and the categories of that diff between the aura and its match
+  --- @field categories? table the categories
+  --- @field index? number helpers that transport data between phase 1 and 2
+  --- @field total? number helpers that transport data between phase 1 and 2
+  --- @field parentIsDynamicGroup? boolean helpers that transport data between phase 1 and 2
+
+  --- @class UidMap
+  --- @field map table<uid, UidMapData>
+  --- @field type "new"|"old"
+  --- @field root uid uid of the root
+  --- @field totalCount number
+  --- @field idToUid table<auraId, uid> maps from id to uid
   local uidMap = {
-    map = { -- per uid
-      -- originalName: The original id of the aura
-      -- id: The current id of the aura, might have changed due to ids being unique
-      -- data: The raw data, contains non-authoritative information on e.g. id, controlledChildren, parent, sortHybridTable
-      -- controlledChildren: A array of child uids
-      -- parent: The parent uid
-      -- sortHybrid: optional bool !! the parent's sortHybridTable is split up and recorded per aura:
-      --             nil, if the parent is not a dynamic group
-      --             false/true based on the sortHybridTable of the dynamic group
-
-      -- matchedUid: for "update", the matched uid. Is from a different domain!
-      -- diff, categories: for "update", the diff and the categories of that diff between the aura and its match
-
-      -- index, total, parentIsDynamicGroup: helpers that transport data between phase 1 and 2
+    --- @type table<uid, UidMapData>
+    map = {
     },
     type = type, -- Either old or new, only used for error checking
-    root = data.uid, -- root: uid of the root
-    totalCount = #children + 1, -- totalCount: count of members
-    idToUid = {} -- idToUid maps from id to uid
+    root = data.uid,
+    totalCount = #children + 1,
+    idToUid = {}
   }
 
   -- Build helper map from id to uid
@@ -346,15 +367,14 @@ local function BuildUidMap(data, children, type)
 
     -- Handle anchorFrameFrame
     if data.anchorFrameType == "SELECTFRAME"
-     and data.anchorFrameFrame
-     and data.anchorFrameFrame:sub(1, 10) == "WeakAuras:"
-  then
-    local target = data.anchorFrameFrame:sub(11)
-    if idToUid[target] then
-      uidMap.map[data.uid].anchorFrameFrame = idToUid[target]
+      and data.anchorFrameFrame
+      and data.anchorFrameFrame:sub(1, 10) == "WeakAuras:"
+    then
+      local target = data.anchorFrameFrame:sub(11)
+      if idToUid[target] then
+        uidMap.map[data.uid].anchorFrameFrame = idToUid[target]
+      end
     end
-  end
-
   end
 
   local function handleSortHybridTable(data)
@@ -1378,7 +1398,7 @@ local methods = {
     self:ReleaseChildren()
     self:AddBasicInformationWidgets(data, sender)
 
-    --[[
+    --[[ Let people install auras that are newer than their version of WeakAuras, even tho it is bad
     do
       local highestVersion = data.internalVersion or 0
       if children then
@@ -1544,7 +1564,7 @@ local methods = {
       self:AddChild(linkedAurasText)
     end
 
-    -- Let people install auras that are newer than their version of WeakAuras
+    -- Let people install auras that are newer than their version of WeakAuras, even tho it is bad
     local highestVersion = data.internalVersion or 0
     if children then
       for _, child in ipairs(children) do
@@ -1629,6 +1649,26 @@ local methods = {
     end
   end,
   Import = function(self)
+    --[[if WeakAuras.IsClassicEra() and C_GameRules.IsHardcoreActive() then
+      StaticPopupDialogs["WEAKAURAS_CONFIRM_IMPORT_HARDCORE"] = {
+        text = L["You are about to Import an Aura with custom Lua code on a Hardcore server.\n\n|cFFFF0000There is a risk the custom code could be used to kill your hardcore character!|r\n\nWould you like to continue?"],
+        button1 = L["Import"],
+        button2 = L["Cancel"],
+        OnShow = function(self)
+          self.text:SetFontObject(GameFontNormalLarge)
+        end,
+        OnHide = function(self)
+          self.text:SetFontObject(GameFontNormal)
+        end,
+        OnAccept = function()
+          OptionsPrivate.Private.Threads:Add("import", coroutine.create(function()
+            self:ImportImpl()
+          end))
+        end,
+      }
+      StaticPopup_Show("WEAKAURAS_CONFIRM_IMPORT_HARDCORE")
+      return
+    end]]
     OptionsPrivate.Private.Threads:Add("import", coroutine.create(function()
       self:ImportImpl()
     end))
@@ -1648,6 +1688,7 @@ local methods = {
     self:AddBasicInformationWidgets(pendingData.data, pendingData.sender)
     self:AddProgressWidgets()
 
+    ---@type {uid: uid, data: auraData, source: string}[]
     local copies = {}
     local pendingPickData
 
@@ -2212,6 +2253,7 @@ local methods = {
 
 local updateFrame
 local function ConstructUpdateFrame(frame)
+  ---@class GroupUpdateFrame: AceGUIFrame
   local group = AceGUI:Create("ScrollFrame");
   group.frame:SetParent(frame);
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -63);

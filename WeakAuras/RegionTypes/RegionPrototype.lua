@@ -236,7 +236,7 @@ local function SendChat(self, options)
   if (not options or WeakAuras.IsOptionsOpen()) then
     return
   end
-  Private.HandleChatAction(options.message_type, options.message, options.message_dest, options.message_dest_isunit, options.message_channel, options.r, options.g, options.b, self, options.message_custom, nil, options.message_formaters, options.message_voice);
+  Private.HandleChatAction(options.message_type, options.message, options.message_dest, options.message_dest_isunit, options.message_channel, options.r, options.g, options.b, self, {customFunc = options.message_custom}, nil, options.message_formaters);
 end
 
 local function RunCode(self, func)
@@ -1054,6 +1054,7 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       end
 
       region:UpdateTick()
+      Private.StopAutoHideTimer(id, cloneId)
     end
     function region:Expand()
       if (region.toShow) then
@@ -1111,6 +1112,7 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       end
 
       region:UpdateTick()
+      Private.StopAutoHideTimer(id, cloneId)
     end
     function region:Expand()
       if data.anchorFrameType == "SELECTFRAME"

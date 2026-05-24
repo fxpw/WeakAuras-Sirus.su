@@ -92,7 +92,7 @@ local properties = {
     setter = "SetGradientEnabled",
     type = "bool",
   },
-  icon_visible = {
+  icon = {
     display = {L["Icon"], L["Visibility"]},
     setter = "SetIconVisible",
     type = "bool"
@@ -1140,7 +1140,7 @@ end
 local function setTexture(self, ...)
   local apply = self._SetTexture(self, ...)
   if self.isDesaturated ~= nil then
-    self:_SetDesaturated(self.isDesaturated)
+    self:_SetDesaturated(self.isDesaturated == 1)
   end
   return apply
 end
@@ -1158,7 +1158,7 @@ local function create(parent)
 
   -- Create statusbar (inherit prototype)
   local bar = CreateFrame("Frame", nil, region);
-  WeakAuras.Mixin(bar, Private.SmoothStatusBarMixin);
+  Private.Mixin(bar, Private.SmoothStatusBarMixin);
   fgMask:SetAllPoints(bar);
 
   -- Now create a bunch of textures

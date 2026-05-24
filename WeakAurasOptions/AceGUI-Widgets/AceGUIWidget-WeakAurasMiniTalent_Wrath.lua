@@ -1,6 +1,13 @@
-if not WeakAuras.IsLibsOK() then return end
+local AddonName = ...
+local OptionsPrivate = select(2, ...)
 
-local widgetType, widgetVersion = "WeakAurasMiniTalent", 3
+if not WeakAuras.IsLibsOK() then
+  return
+end
+
+local keepOpenForReload = {}
+
+local widgetType, widgetVersion = "WeakAurasMiniTalent", 5
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(widgetType) or 0) >= widgetVersion then
   return
@@ -160,11 +167,15 @@ local function TalentFrame_Update(self)
     local backgroundIndex = MAX_NUM_TALENTS * GetNumTalentTabs() + 1
     for tab = 1, GetNumTalentTabs() do
       local background = self.backgrounds[tab]
-      local texture = self.list[backgroundIndex][tab]
-      local base = "Interface\\TalentFrame\\" .. texture .. "-"
-      background:SetTexture(base .. "TopLeft")
-      if self.open then
-        background:Show()
+      local texture = self.list[backgroundIndex] and self.list[backgroundIndex][tab]
+      if texture then
+        local base = "Interface\\TalentFrame\\" .. texture .. "-"
+        background:SetTexture(base .. "TopLeft")
+        if self.open then
+          background:Show()
+        else
+          background:Hide()
+        end
       else
         background:Hide()
       end
@@ -175,6 +186,7 @@ end
 local methods = {
   OnAcquire = function(self)
     self:SetDisabled(false)
+    self.acquired = true
   end,
 
   OnRelease = function(self)
@@ -182,6 +194,7 @@ local methods = {
     self:SetMultiselect(false)
     self.value = nil
     self.list = nil
+    self.acquired = false
   end,
 
   SetList = function(self, list)
@@ -299,6 +312,30 @@ local function Constructor()
     widget[method] = func
   end
   talentFrame.obj = widget
+
+  local function OnBeforeReload()
+    if widget.acquired then
+      local user = widget:GetUserDataTable()
+      if user and user.path then
+        keepOpenForReload[user.path[#user.path]] = widget.open
+      end
+    end
+  end
+
+  local function OnAfterReload()
+    if widget.acquired then
+      local user = widget:GetUserDataTable()
+      if user and user.path then
+        if keepOpenForReload[user.path[#user.path]] then
+          widget:ToggleView(true)
+          keepOpenForReload[user.path[#user.path]] = nil
+        end
+      end
+    end
+  end
+
+  OptionsPrivate.Private.callbacks:RegisterCallback("BeforeReload", OnBeforeReload)
+  OptionsPrivate.Private.callbacks:RegisterCallback("AfterReload", OnAfterReload)
 
   return AceGUI:RegisterAsWidget(widget)
 end

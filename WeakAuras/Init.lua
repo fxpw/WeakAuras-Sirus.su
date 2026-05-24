@@ -9,18 +9,19 @@ WeakAuras.halfWidth = WeakAuras.normalWidth / 2
 WeakAuras.doubleWidth = WeakAuras.normalWidth * 2
 
 local versionStringFromToc = GetAddOnMetadata("WeakAuras", "Version")
-local versionString = "5.20.5"
+local versionString = "5.21.6 Beta"
 -- Year, Month, Day, Hour, Minute, Seconds
-local buildTime = "2025".."10".."20".."22".."00".."00"
+local buildTime = "2025".."11".."29".."04".."45".."00"
 local isAwesomeEnabled = C_VoiceChat and C_VoiceChat.SpeakText and 2 -- TTS available
                         or C_NamePlate and C_NamePlate.GetNamePlateForUnit and 1 -- Nameplates available
                         or false
+local isDBMRegistered = (DBM and type(DBM.Revision) == "number" and DBM.Revision >= 20250929200404) and true or false
 
 local flavor
-if GetRealmName() == "Onyxia" or (GetRealmName() == "Blackrock [PvP only]" and GetExpansionLevel() == 1) then
-  flavor = "TBC"
-elseif GetRealmName() == "Kezan" or GetRealmName() == "Menethil" or GetRealmName() == "Gurubashi" then
+if GetRealmName() == "Kezan" or GetRealmName() == "Menethil" or GetRealmName() == "Gurubashi" then
   flavor = "ClassicPlus"
+elseif GetRealmName():find("Frostmourne", 1, true) and ((GetCVar("realmList") or ""):lower():find("stormforge", 1, true)) then
+  flavor = "WrathReborn"
 else
   flavor = "Wrath"
 end
@@ -34,6 +35,10 @@ function WeakAuras.IsAwesomeEnabled()
   return isAwesomeEnabled
 end
 
+function WeakAuras.IsDBMRegistered()
+  return isDBMRegistered
+end
+
 function WeakAuras.IsCorrectVersion()
   return true
 end
@@ -42,19 +47,15 @@ function WeakAuras.IsSirusVersion()
 end
 
 function WeakAuras.IsWrath()
-  return flavor == "Wrath"
+  return flavor == "Wrath" or flavor == "WrathReborn"
 end
 
-function WeakAuras.IsTBC()
-  return flavor == "TBC"
+function WeakAuras.IsWrathReborn()
+  return flavor == "WrathReborn"
 end
 
 function WeakAuras.IsClassicPlus()
   return flavor == "ClassicPlus"
-end
-
-function WeakAuras.IsClassicPlusOrTBC()
-  return WeakAuras.IsClassicPlus() or WeakAuras.IsTBC()
 end
 
 WeakAuras.prettyPrint = function(...)
@@ -160,14 +161,4 @@ end
 function WeakAuras.CountWagoUpdates()
   -- XXX this is to work around the Companion app trying to use our stuff!
   return 0
-end
-
-function WeakAuras.Mixin(object, ...)
-  for i = 1, select("#", ...) do
-    local mixin = select(i, ...)
-    for k, v in pairs(mixin) do
-      object[k] = v
-    end
-  end
-  return object
 end

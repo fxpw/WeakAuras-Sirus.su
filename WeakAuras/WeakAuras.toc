@@ -1,8 +1,7 @@
 ## Interface: 30300
 ## Title: WeakAuras
 ## Author: The WeakAuras Team
-# Init.lua:11 also change
-## Version: 5.20.5
+## Version: 5.21.6
 ## IconTexture: Interface\AddOns\WeakAuras\Media\Textures\icon.blp
 ## X-Flavor: 3.3.5
 ## Notes: A powerful, comprehensive utility for displaying graphics and information based on buffs, debuffs, and other triggers.
@@ -13,14 +12,11 @@
 ## Notes-zhTW: 一個強大且全面實用的顯示圖形和訊息基於增益，減益和其它觸發。
 ## X-Category: Interface Enhancements
 ## Globe-Post: WeakAurasOptions, WeakAurasModelPaths, WeakAurasTemplates
-## X-Website: https://www.curseforge.com/wow/addons/weakauras
-## X-Curse-Project-ID: 65387
-## X-WoWI-ID: 24910
-## X-Wago-ID: VBNBxKx5
+## X-Website: https://www.github.com/NoM0Re/WeakAuras-WotLK
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
 ## SavedVariables: WeakAurasSaved
-## OptionalDeps: Ace3, LibCompress, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Masque, GTFO, LibButtonGlow-1.0, LibSpellRange-1.0, LibRangeCheck-2.0, LibDBIcon-1.0, LibGetFrame-1.0, LibGroupTalents, !!AddonLocale, CustomNames, BigWigs, DBM-Core
+## OptionalDeps: Ace3, LibCompress, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Masque, GTFO, LibButtonGlow-1.0, LibSpellRange-1.0, LibRangeCheck-2.0, LibDBIcon-1.0, LibGetFrame-1.0, LibGroupTalents-1.0, !!AddonLocale, CustomNames, BigWigs, DBM-Core, AwesomeCVar
 
 ## X-Sirus-Update: https://github.com/fxpw/WeakAuras-Sirus.su/tree/master/WeakAuras
 
@@ -42,7 +38,7 @@ SubscribableObject.lua
 Features.lua
 TimeMachine.lua
 Types_ClassicPlus.lua
-Types_TBC.lua
+Types_WrathReborn.lua
 Types_Wrath.lua
 Types.lua
 Prototypes.lua
@@ -65,6 +61,7 @@ BossMods.lua
 TSUHelpers.lua
 AuraWarnings.lua
 AuraEnvironment.lua
+AuraEnvironmentWrappedSystems.lua
 DebugLog.lua
 
 # Region support

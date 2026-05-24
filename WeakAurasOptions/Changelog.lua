@@ -1,21 +1,16 @@
 if not WeakAuras.IsLibsOK() then return end
-
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
-
 OptionsPrivate.changelog = {
-  versionString = '5.20.2',
-  dateString = '2025-08-15',
-  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.20.1...5.20.2',
+  versionString = '5.21.6',
+  dateString = '2026-04-17',
+  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.21.5...5.21.6',
   highlightText = [==[
-bugfix release for some broken textures]==],  commitText = [==[Pewtro (2):
+]==],  commitText = [==[NoM0Re (1):
 
-- Re-export the .blp files
-- Add Celestial Dungeon load option instance type
-
-emptyrivers (1):
-
-- some more difficulty ids
+- Titan: Update Destruction Warlock talents
 
 ]==]
 }

@@ -211,10 +211,10 @@ end
 
 function Private.ExecEnv.CallCustomConditionTest(uid, testFunctionNumber, ...)
   local ok, result = pcall(Private.ExecEnv.conditionHelpers[uid].customTestFunctions[testFunctionNumber], ...)
-  if not ok then
-    Private.GetErrorHandlerUid(uid, L["Condition Custom Test"])
-  elseif (ok) then
+  if (ok) then
     return result
+  else
+    Private.GetErrorHandlerUid(uid, L["Condition Custom Test"])
   end
 end
 
@@ -268,7 +268,7 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
       remainingProperty = progressSource[7]
     end
 
-    local stateCheck = "state[" .. trigger .. "] and state[" .. trigger .. "].show and ";
+    local stateCheck = "state[" .. trigger .. "] and ";
     local stateVariableCheck = string.format("state[" .. trigger .. "][%q]", variable) .. "~= nil and ";
 
     local preambleString
@@ -347,7 +347,7 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
         check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]".. string.format("[%q]", variable)
                 .. op .. "'" .. value .. "'";
       end
-    elseif (cType == "range" and value and op and input.type and input.op_range and input.range) then
+    elseif (cType == "range" and value and op and input.type and (input.type ~= "enemies" or WeakAuras.IsAwesomeEnabled()) and input.op_range and input.range) then
       local fn
       if input.type == "group" then
         fn = [[
@@ -401,13 +401,13 @@ local function CreateTestForCondition(data, input, allConditionsTemplate, usedSt
     elseif (cType == "string" and value) then
       if(op == "==") then
         check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable)
-                .. " == [[" .. value .. "]]";
+                .. string.format(" == %q", value)
       elseif (op  == "find('%s')") then
         check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]", variable)
-                .. ":find([[" .. value .. "]], 1, true)";
+                .. string.format(":find(%q, 1, true)", value)
       elseif (op == "match('%s')") then
         check = stateCheck .. stateVariableCheck .. "state[" .. trigger .. "]" .. string.format("[%q]",  variable)
-                .. ":match([[" .. value .. "]], 1, true)";
+                .. string.format(":match(%q, 1, true)", value)
       end
     end
     -- If adding a new condition type, don't forget to adjust the validator in the options code
@@ -860,7 +860,6 @@ local dynamicConditionsFrame = nil;
 
 local globalConditionAllState = {
   [""] = {
-    show = true;
   }
 };
 

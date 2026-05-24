@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: WeakAuras Options
 ## Author: The WeakAuras Team
-## Version: 5.20.5
+## Version: 5.21.6
 ## IconTexture: Interface\AddOns\WeakAuras\Media\Textures\icon.blp
 ## Notes: Options for WeakAuras
 ## Notes-esES: Opciones para WeakAuras
@@ -18,6 +18,8 @@
 
 embeds.xml
 locales.xml
+
+Compatibility.lua
 
 VersionCheck.lua
 ForAllIndentsAndPurposes.lua

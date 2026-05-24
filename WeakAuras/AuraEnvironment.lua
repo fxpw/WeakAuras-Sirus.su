@@ -5,6 +5,10 @@ local Private = select(2, ...)
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
+local IsInRaid = Private.IsInRaid
+local GetNumSubgroupMembers = Private.GetNumSubgroupMembers
+local GetNumGroupMembers = Private.GetNumGroupMembers
+
 local LibSerialize = LibStub("LibSerialize")
 local LibDeflate = LibStub:GetLibrary("LibDeflate")
 
@@ -50,25 +54,6 @@ local WA_IterateGroupMembers = function(reversed, forceParty)
   end
 end
 
--- Wrapping a unit's name in its class colour is very common in custom Auras
-local WA_ClassColorName = function(unit)
-  if unit and UnitExists(unit) then
-    local name = WeakAuras.UnitName(unit)
-    local _, class = UnitClass(unit)
-    if not class then
-      return name
-    else
-      local classData = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
-      local coloredName = ("|c%s%s|r"):format(classData.colorStr, name)
-      return coloredName
-    end
-  else
-    return "" -- ¯\_(ツ)_/¯
-  end
-end
-
-WeakAuras.WA_ClassColorName = WA_ClassColorName
-
 -- UTF-8 Sub is pretty commonly needed
 local WA_Utf8Sub = function(input, size)
   local output = ""
@@ -113,6 +98,27 @@ end
 
 WeakAuras.WA_Utf8Sub = WA_Utf8Sub
 
+-- Wrapping a unit's name in its class colour is very common in custom Auras
+local WA_ClassColorName = function(unit, maxlen)
+  if unit and UnitExists(unit) then
+    local name = WeakAuras.UnitName(unit)
+    if maxlen and maxlen > 0 then
+      name = WA_Utf8Sub(name, maxlen)
+    end
+    local _, class = UnitClass(unit)
+    if not class then
+      return name
+    else
+      local classData = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
+      local coloredName = ("|c%s%s|r"):format(classData.colorStr, name)
+      return coloredName
+    end
+  else
+    return "" -- ¯\_(ツ)_/¯
+  end
+end
+
+WeakAuras.WA_ClassColorName = WA_ClassColorName
 
 WeakAuras.PadString = function(input, padMode, padLength)
   input = tostring(input)
@@ -193,7 +199,9 @@ local blockedTables = {
   ChatFrame1 = true,
   WeakAurasSaved = true,
   WeakAurasOptions = true,
-  WeakAurasOptionsSaved = true
+  WeakAurasOptionsSaved = true,
+  ItemRackUser = true,
+  ItemRackEvents = true
 }
 
 local aura_environments = {}
@@ -526,9 +534,23 @@ local overridden = {
   ActionButton_HideOverlayGlow = WeakAuras.HideOverlayGlow,
   WeakAuras = FakeWeakAuras
 }
+for k, v in pairs(Private.AuraEnvOverrides) do
+  overridden[k] = v
+end
+
+-- WORKAROUND API which return Mixin'd values need those mixin "rawgettable" in caller's fenv #5071
+local mixins = {}
+if ColorMixin then mixins["ColorMixin"] = ColorMixin end
+if Vector2DMixin then mixins["Vector2DMixin"] = Vector2DMixin end
+if Vector3DMixin then mixins["Vector3DMixin"] = Vector3DMixin end
+if ItemLocationMixin then mixins["ItemLocationMixin"] = ItemLocationMixin end
+if ItemTransmogInfoMixin then mixins["ItemTransmogInfoMixin"] = ItemTransmogInfoMixin end
+if TransmogPendingInfoMixin then mixins["TransmogPendingInfoMixin"] = TransmogPendingInfoMixin end
+if TransmogLocationMixin then mixins["TransmogLocationMixin"] = TransmogLocationMixin end
+if PlayerLocationMixin then mixins["PlayerLocationMixin"] = PlayerLocationMixin end
 
 local env_getglobal_custom
-local exec_env_custom = setmetatable({},
+local exec_env_custom = setmetatable(CopyTable(mixins),
 {
   __index = function(t, k)
     if k == "_G" then
@@ -539,6 +561,10 @@ local exec_env_custom = setmetatable({},
       return current_aura_env
     elseif k == "DebugPrint" then
       return DebugPrint
+    elseif k == "C_Timer" then
+      return current_aura_env and Private.AuraEnvironmentWrappedSystem.Get("C_Timer",
+                                      current_aura_env.id, current_aura_env.cloneId)
+                              or C_Timer
     elseif blockedFunctions[k] then
       blocked(k)
       return function(_) end
@@ -589,7 +615,7 @@ local PrivateForBuiltIn = {
 }
 
 local env_getglobal_builtin
-local exec_env_builtin = setmetatable({},
+local exec_env_builtin = setmetatable(CopyTable(mixins),
 {
   __index = function(t, k)
     if k == "_G" then
@@ -649,7 +675,7 @@ local function CreateFunctionCache(exec_env)
       local loadedFunction, errorString = loadstring(string, firstLine(string))
       if errorString then
         if not silent then
-          print(string.format(L["Error in aura '%s'"], id), errorString)
+          print(string.format(L["Error in Aura '%s'"], id), errorString)
         end
         return nil, errorString
       elseif loadedFunction then

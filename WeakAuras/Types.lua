@@ -7,10 +7,11 @@ local L = WeakAuras.L;
 
 local LSM = LibStub("LibSharedMedia-3.0");
 
-local wipe, tinsert = wipe, tinsert
+local wipe = wipe
 local GetNumShapeshiftForms, GetShapeshiftFormInfo = GetNumShapeshiftForms, GetShapeshiftFormInfo
-local WrapTextInColorCode = WrapTextInColorCode
-local MAX_NUM_TALENTS = MAX_NUM_TALENTS or 40
+local WrapTextInColorCode = Private.WrapTextInColorCode
+local Round = Private.Round
+local tCompare = Private.tCompare
 
 local function WA_GetClassColor(classFilename)
   local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[classFilename]
@@ -138,17 +139,17 @@ Private.unit_realm_name_types = {
 }
 
 local timeFormatter = {}
-WeakAuras.Mixin(timeFormatter, SecondsFormatterMixin)
-timeFormatter:Init(0, SecondsFormatter.Abbreviation.OneLetter)
+Private.Mixin(timeFormatter, Private.SecondsFormatterMixin)
+timeFormatter:Init(0, Private.SecondsFormatter.Abbreviation.OneLetter)
 
 -- The default time formatter adds a space between the value and the unit
 -- While there is a API to strip it, that API does not work on all locales, e.g. german
 -- Thus, copy the interval descriptions, strip the whitespace from them
 -- and hack the timeFormatter to use our interval descriptions
 local timeFormatIntervalDescriptionFixed = {}
-timeFormatIntervalDescriptionFixed = CopyTable(SecondsFormatter.IntervalDescription)
+timeFormatIntervalDescriptionFixed = CopyTable(Private.SecondsFormatter.IntervalDescription)
 for i, interval in ipairs(timeFormatIntervalDescriptionFixed) do
-  interval.formatString = CopyTable(SecondsFormatter.IntervalDescription[i].formatString)
+  interval.formatString = CopyTable(Private.SecondsFormatter.IntervalDescription[i].formatString)
   for j, formatString in ipairs(interval.formatString) do
     interval.formatString[j] = formatString:gsub(" ", "")
   end
@@ -162,55 +163,18 @@ timeFormatter.GetMaxInterval = function(self)
   return #timeFormatIntervalDescriptionFixed
 end
 
-local AbbreviateNumbers = AbbreviateNumbers
-local gameLocale = GetLocale()
-if gameLocale == "koKR" or gameLocale == "zhCN" or gameLocale == "zhTW" then
-  -- Work around https://github.com/Stanzilla/WoWUIBugs/issues/515
-  --
-  local NUMBER_ABBREVIATION_DATA_FIXED={
-    [1]={
-      breakpoint = 10000 * 10000,
-      significandDivisor = 10000 * 10000,
-      abbreviation = L["SECOND_NUMBER_CAP_NO_SPACE"],
-      fractionDivisor = 1
-    },
-    [2]={
-      breakpoint = 1000 * 10000,
-      significandDivisor = 1000 * 10000,
-      abbreviation = L["SECOND_NUMBER_CAP_NO_SPACE"],
-      fractionDivisor = 10
-    },
-    [3]={
-      breakpoint = 10000,
-      significandDivisor = 1000,
-      abbreviation = L["FIRST_NUMBER_CAP_NO_SPACE"],
-      fractionDivisor = 10
-    }
-  }
-
-  AbbreviateNumbers = function(value)
-    for i, data in ipairs(NUMBER_ABBREVIATION_DATA_FIXED) do
-      if value >= data.breakpoint then
-              local finalValue = math.floor(value / data.significandDivisor) / data.fractionDivisor;
-              return finalValue .. data.abbreviation;
-      end
-    end
-    return tostring(value);
-  end
-end
-
 local simpleFormatters = {
   AbbreviateNumbers = function(value)
     if type(value) == "string" then value = tonumber(value) end
-    return (type(value) == "number") and AbbreviateNumbers(value) or value
+    return (type(value) == "number") and Private.AbbreviateNumbers(value) or value
   end,
   AbbreviateLargeNumbers = function(value)
     if type(value) == "string" then value = tonumber(value) end
-    return (type(value) == "number") and AbbreviateLargeNumbers(Round(value)) or value
+    return (type(value) == "number") and Private.AbbreviateLargeNumbers(Round(value)) or value
   end,
   BreakUpLargeNumbers = function(value)
     if type(value) == "string" then value = tonumber(value) end
-    return (type(value) == "number") and BreakUpLargeNumbers(value) or value
+    return (type(value) == "number") and Private.BreakUpLargeNumbers(value) or value
   end,
   floor = function(value)
     if type(value) == "string" then value = tonumber(value) end
@@ -1066,16 +1030,16 @@ Private.format_types = {
 
         if cast then
           local _, _, _, _, endTime = UnitCastingInfo("player")
-          local castExpirationTIme = endTime and endTime > 0 and (endTime / 1000) or 0
-          if castExpirationTIme > 0 then
-            result = min(result, now + value - castExpirationTIme)
+          local castExpirationTime = endTime and endTime > 0 and (endTime / 1000) or 0
+          if castExpirationTime > 0 then
+            result = min(result, now + value - castExpirationTime)
           end
         end
         if channel then
           local _, _, _, _, endTime = UnitChannelInfo("player")
-          local castExpirationTIme = endTime and endTime > 0 and (endTime / 1000) or 0
-          if castExpirationTIme > 0 then
-            result = min(result, now + value - castExpirationTIme)
+          local castExpirationTime = endTime and endTime > 0 and (endTime / 1000) or 0
+          if castExpirationTime > 0 then
+            result = min(result, now + value - castExpirationTime)
           end
         end
 
@@ -1157,7 +1121,7 @@ local target_unit_types = {
   focus = L["Focus"],
 }
 
-Private.unit_types = WeakAuras.Mixin({
+Private.unit_types = Private.Mixin({
   player = L["Player"],
   group = L["Group"],
   member = L["Specific Unit"],
@@ -1165,7 +1129,7 @@ Private.unit_types = WeakAuras.Mixin({
   multi = L["Multi-target"]
 }, target_unit_types)
 
-Private.unit_types_bufftrigger_2 = WeakAuras.Mixin({
+Private.unit_types_bufftrigger_2 = Private.Mixin({
   player = L["Player"],
   group = L["Smart Group"],
   raid = L["Raid"],
@@ -1180,18 +1144,18 @@ if WeakAuras.IsAwesomeEnabled() then
   Private.unit_types_bufftrigger_2.nameplate = L["Nameplate"]
 end
 
-Private.actual_unit_types = WeakAuras.Mixin({
+Private.actual_unit_types = Private.Mixin({
   player = L["Player"],
   pet = L["Pet"],
 }, target_unit_types)
 
-Private.actual_unit_types_with_specific = WeakAuras.Mixin({
+Private.actual_unit_types_with_specific = Private.Mixin({
   player = L["Player"],
   pet = L["Pet"],
   member = L["Specific Unit"]
 }, target_unit_types)
 
-Private.actual_unit_types_cast = WeakAuras.Mixin({
+Private.actual_unit_types_cast = Private.Mixin({
   player = L["Player"],
   group = L["Smart Group"],
   party = L["Party"],
@@ -1207,7 +1171,7 @@ end
 
 Private.actual_unit_types_cast_tooltip = L["• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.\n• |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.\n|cffff0000Note|r: The game will not fire events for all valid unitIDs, making some untrackable by this trigger.\n• |cffffff00Party|r, |cffffff00Raid|r, |cffffff00Boss|r, |cffffff00Arena|r, and |cffffff00Nameplate|r can match multiple corresponding unitIDs.\n• |cffffff00Smart Group|r adjusts to your current group type, matching just the \"player\" when solo, \"party\" units (including \"player\") in a party or \"raid\" units in a raid.\n\n|cffffff00*|r Yellow Unit settings will create clones for each matching unit while this trigger is providing Dynamic Info to the Aura."]
 
-Private.threat_unit_types = WeakAuras.Mixin({
+Private.threat_unit_types = Private.Mixin({
   boss = L["Boss"],
   member = L["Specific Unit"],
   none = L["At Least One Enemy"]
@@ -1216,7 +1180,7 @@ if WeakAuras.IsAwesomeEnabled() then
   Private.threat_unit_types.nameplate = L["Nameplate"]
 end
 
-Private.unit_types_range_check = WeakAuras.Mixin({
+Private.unit_types_range_check = Private.Mixin({
   pet = L["Pet"],
   member = L["Specific Unit"]
 }, target_unit_types)
@@ -1233,66 +1197,34 @@ WeakAuras.class_types = {}
 for i, class in ipairs(CLASS_SORT_ORDER) do
   WeakAuras.class_types[class] = WrapTextInColorCode(LOCALIZED_CLASS_NAMES_MALE[class], WA_GetClassColor(class))
 end
-if WeakAuras.IsClassicPlusOrTBC() then
+if WeakAuras.IsClassicPlus() then
   WeakAuras.class_types["DEATHKNIGHT"] = nil
 end
 
--- missing localisation
-WeakAuras.race_types = {
-  Human = L["Human"],
-  Dwarf = L["Dwarf"],
-  Gnome = L["Gnome"],
-  Draenei = L["Drenei"],
-  Worgen = L["Vorgen"],
-  NightElf = L["NightElf"],
-  Queldo = L["Queldo"],
-  VoidElf = L["VoidElf"],
-  DarkIronDwarf = L["DarkIronDwarf"],
-  Lightforged = L["Lightforged"],
-  Pandaren = L["Pandaren"],
-  Vulpera = L["Vulpera"],
-  Orc = L["Orc"],
-  Scourge = L["Scourge"],
-  Tauren = L["Tauren"],
-  Troll = L["Troll"],
-  Goblin = L["Goblin"],
-  Naga = L["Naga"],
-  BloodElf = L["BloodElf"],
-  Nightborne = L["NightBorn"],
-  Eredar = L["Eredar"],
-  ZandalariTroll = L["ZandalariTroll"],
-  Dracthyr = L["Dracthyr"],
-}
-Private.constellation_type = {
-  [371788] = L["BloodElfConstellation"],
-  [371789] = L["DarkIronDwarfConstellation"],
-  [371790] = L["DracthyrConstellation"],
-  [371791] = L["DreneiConstellation"],
-  [371792] = L["DwarfConstellation"],
-  [371793] = L["EredarConstellation"],
-  [371794] = L["GnomeConstellation"],
-  [371795] = L["GoblinConstellation"],
-  [371796] = L["HumanConstellation"],
-  [371797] = L["LightforgedConstellation"],
-  [371798] = L["NagaConstellation"],
-  [371799] = L["NightBornConstellation"],
-  [371800] = L["NightElfConstellation"],
-  [371801] = L["OrcConstellation"],
-  [371802] = L["PandarenConstellation"],
-  [371803] = L["QueldoConstellation"],
-  [371804] = L["ScourgeConstellation"],
-  [371805] = L["TaurenConstellation"],
-  [371806] = L["TrollConstellation"],
-  [371807] = L["VoidElfConstellation"],
-  [371808] = L["VulperaConstellation"],
-  [371809] = L["VorgenConstellation"],
-  [371810] = L["ZandalariTrollConstellation"],
-}
+-- Extract Race names from faction IDs
+WeakAuras.race_types = {}
+do
+  local race_ids = {
+    [1]="Human", [2]="Orc", [3]="Dwarf", [4]="NightElf", [5]="Undead",
+    [6]="Tauren", [8]="Gnome", [9]="Troll", [914]="BloodElf", [927]="Draenei",
+  }
+  for id, key in pairs(race_ids) do
+    local raw = GetFactionInfoByID(id)
+    local name = type(raw) == "string"
+              and (raw:match("^[^,:]*[,:](.+)$") or raw)
+              :match("^%s*(.-)%s*$")
+              or key
+    WeakAuras.race_types[key] = (name == "" and key) or name
+  end
+  if WeakAuras.IsClassicPlus() then
+    WeakAuras.race_types["Draenei"] = nil
+    WeakAuras.race_types["BloodElf"] = nil
+  end
+end
 
 Private.faction_group = {
   Alliance = L["Alliance"],
   Horde = L["Horde"],
-  Renegade = L["Renegade"],
   Neutral = L["Neutral"]
 }
 
@@ -1504,15 +1436,6 @@ Private.power_types = {
   [1] = RAGE,
   [2] = FOCUS,
   [3] = ENERGY,
-  [6] = RUNIC_POWER,
-  [27] = HAPPINESS,
-}
-
-Private.power_types_player = {
-  [0] = MANA,
-  [1] = RAGE,
-  [2] = FOCUS,
-  [3] = ENERGY,
   [4] = COMBAT_TEXT_SHOW_COMBO_POINTS_TEXT,
   [6] = RUNIC_POWER,
   [27] = HAPPINESS,
@@ -1646,8 +1569,12 @@ function Private.ExecEnv.GetTotalCountCurrencies(currencyID)
 end
 
 local function InitializeCurrencies()
-  if Private.discovered_currencies and next(Private.discovered_currencies) then
-    return
+  if Private.discovered_currencies then
+    for key in pairs(Private.discovered_currencies) do
+      if key ~= "member" then
+        return
+      end
+    end
   end
   Private.discovered_currencies = {}
   Private.discovered_currencies_sorted = {}
@@ -2654,31 +2581,6 @@ Private.role_types = {
   caster = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:22:41|t "..L["Ranged"],
   healer = "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:16:16:0:0:64:64:20:39:1:20|t "..HEALER,
 }
-Private.constellation_type = {
-  [371788] = L["BloodElfConstellation"],
-  [371789] = L["DarkIronDwarfConstellation"],
-  [371790] = L["DracthyrConstellation"],
-  [371791] = L["DreneiConstellation"],
-  [371792] = L["DwarfConstellation"],
-  [371793] = L["EredarConstellation"],
-  [371794] = L["GnomeConstellation"],
-  [371795] = L["GoblinConstellation"],
-  [371796] = L["HumanConstellation"],
-  [371797] = L["LightforgedConstellation"],
-  [371798] = L["NagaConstellation"],
-  [371799] = L["NightBornConstellation"],
-  [371800] = L["NightElfConstellation"],
-  [371801] = L["OrcConstellation"],
-  [371802] = L["PandarenConstellation"],
-  [371803] = L["QueldoConstellation"],
-  [371804] = L["ScourgeConstellation"],
-  [371805] = L["TaurenConstellation"],
-  [371806] = L["TrollConstellation"],
-  [371807] = L["VoidElfConstellation"],
-  [371808] = L["VulperaConstellation"],
-  [371809] = L["VorgenConstellation"],
-  [371810] = L["ZandalariTrollConstellation"],
-}
 
 Private.group_member_types = {
   LEADER = L["Leader"],
@@ -2912,25 +2814,8 @@ Private.send_chat_message_types = {
   PRINT = L["Chat Frame"],
   ERROR = L["Error Frame"]
 }
-
-Private.tts_voices = {}
-
 if WeakAuras.IsAwesomeEnabled() == 2 then
-
   Private.send_chat_message_types.TTS = L["Text-to-speech"]
-
-  local function updateTts()
-    wipe(Private.tts_voices)
-    for i, voiceInfo in pairs(C_VoiceChat.GetTtsVoices()) do
-      Private.tts_voices[voiceInfo.voiceID] = voiceInfo.name
-    end
-  end
-
-  updateTts()
-
-  local TtsUpdateFrame = CreateFrame("FRAME")
-  TtsUpdateFrame:RegisterEvent("VOICE_CHAT_TTS_VOICES_UPDATE")
-  TtsUpdateFrame:SetScript("OnEvent", updateTts)
 end
 
 Private.group_aura_name_info_types = {
@@ -3215,6 +3100,11 @@ Private.charges_change_condition_type = {
 Private.combat_event_type = {
   PLAYER_REGEN_ENABLED = L["Leaving"],
   PLAYER_REGEN_DISABLED = L["Entering"]
+}
+
+Private.encounter_event_type = {
+  ENCOUNTER_END = L["Leaving"],
+  ENCOUNTER_START = L["Entering"]
 }
 
 Private.bool_types = {
@@ -3692,6 +3582,12 @@ Private.dbm_types = {
   [7] = L["Important"]
 }
 
+Private.bossmods_timerTypes = {
+  PULL = L["Pull"],
+  BREAK = L["Break"],
+  TIMER = L["Timer"],
+}
+
 Private.weapon_enchant_types = {
   showOnActive = L["Enchant Found"],
   showOnMissing = L["Enchant Missing"],
@@ -3703,6 +3599,7 @@ Private.reset_swing_spells = {
   [GetSpellInfo(845)] = true, -- Cleave
   [GetSpellInfo(2973)] = true, -- Raptor Strike
   [GetSpellInfo(6807)] = true, -- Maul
+  [GetSpellInfo(20549)] = true, -- War Stomp
   [GetSpellInfo(56815)] = true, -- Rune Strike
   [GetSpellInfo(5384)] = true, -- Feign Death
   [GetSpellInfo(2764)] = true, -- Throw
@@ -3864,96 +3761,6 @@ do
   end
 end
 
-Private.id_to_faction = {
-  ["21"] = L["Booty Bay"],
-  ["47"] = L["Ironforge"],
-  ["54"] = L["Gnomeregan"],
-  ["59"] = L["Thorium Brotherhood"],
-  ["67"] = L["Horde"],
-  ["68"] = L["Undercity"],
-  ["69"] = L["Darnassus"],
-  ["70"] = L["Syndicate"],
-  ["72"] = L["Stormwind"],
-  ["76"] = L["Orgrimmar"],
-  ["81"] = L["Thunder Bluff"],
-  ["87"] = L["Bloodsail Buccaneers"],
-  ["92"] = L["Gelkis Clan Centaur"],
-  ["93"] = L["Magram Clan Centaur"],
-  ["270"] = L["Zandalar Tribe"],
-  ["349"] = L["Ravenholdt"],
-  ["369"] = L["Gadgetzan"],
-  ["469"] = L["Alliance"],
-  ["470"] = L["Ratchet"],
-  ["509"] = L["The League of Arathor"],
-  ["510"] = L["The Defilers"],
-  ["529"] = L["Argent Dawn"],
-  ["530"] = L["Darkspear Trolls"],
-  ["576"] = L["Timbermaw Hold"],
-  ["577"] = L["Everlook"],
-  ["589"] = L["Wintersaber Trainers"],
-  ["609"] = L["Cenarion Circle"],
-  ["729"] = L["Frostwolf Clan"],
-  ["730"] = L["Stormpike Guard"],
-  ["749"] = L["Hydraxian Waterlords"],
-  ["809"] = L["Shen'dralar"],
-  ["889"] = L["Warsong Outriders"],
-  ["890"] = L["Silverwing Sentinels"],
-  ["909"] = L["Darkmoon Faire"],
-  ["910"] = L["Brood of Nozdormu"],
-  ["911"] = L["Silvermoon City"],
-  ["922"] = L["Tranquillien"],
-  ["930"] = L["Exodar"],
-  ["932"] = L["The Aldor"],
-  ["933"] = L["The Consortium"],
-  ["934"] = L["The Scryers"],
-  ["935"] = L["The Sha'tar"],
-  ["941"] = L["The Mag'har"],
-  ["942"] = L["Cenarion Expedition"],
-  ["946"] = L["Honor Hold"],
-  ["947"] = L["Thrallmar"],
-  ["967"] = L["The Violet Eye"],
-  ["970"] = L["Sporeggar"],
-  ["978"] = L["Kurenai"],
-  ["989"] = L["Keepers of Time"],
-  ["990"] = L["The Scale of the Sands"],
-  ["1011"] = L["Lower City"],
-  ["1012"] = L["Ashtongue Deathsworn"],
-  ["1015"] = L["Netherwing"],
-  ["1031"] = L["Sha'tari Skyguard"],
-  ["1037"] = L["Alliance Vanguard"],
-  ["1038"] = L["Ogri'la"],
-  ["1050"] = L["Valiance Expedition"],
-  ["1052"] = L["Horde Expedition"],
-  ["1064"] = L["The Taunka"],
-  ["1067"] = L["The Hand of Vengeance"],
-  ["1068"] = L["Explorers' League"],
-  ["1073"] = L["The Kalu'ak"],
-  ["1077"] = L["Shattered Sun Offensive"],
-  ["1085"] = L["Warsong Offensive"],
-  ["1090"] = L["Kirin Tor"],
-  ["1091"] = L["The Wyrmrest Accord"],
-  ["1094"] = L["The Silver Covenant"],
-  ["1098"] = L["Knights of the Ebon Blade"],
-  ["1104"] = L["Frenzyheart Tribe"],
-  ["1105"] = L["The Oracles"],
-  ["1106"] = L["Argent Crusade"],
-  ["1119"] = L["The Sons of Hodir"],
-  ["1124"] = L["The Sunreavers"],
-  ["1126"] = L["The Frostborn"],
-  ["1133"] = L["Bilgewater Cartel"],
-  ["1134"] = L["Gilneas"],
-  ["1135"] = L["The Earthen Ring"],
-  ["1156"] = L["The Ashen Verdict"],
-  ["1158"] = L["Guardians of Hyjal"],
-  ["1171"] = L["Therazane"],
-  ["1172"] = L["Dragonmaw Clan"],
-  ["1173"] = L["Ramkahen"],
-  ["1174"] = L["Wildhammer Clan"],
-  ["1177"] = L["Baradin's Wardens"],
-  ["1178"] = L["Hellscream's Reach"],
-  ["10000"] = L["Winterfin Retreat"],
-}
-
 Private.faction_to_id = {}
 do
   local factionIDs = {
@@ -3968,7 +3775,7 @@ do
       Private.faction_to_id[GetFactionInfoByID(id) or ""] = id
   end
 end
--- TODO NEW SIRUS FACTIONS
+
 do
   local classData = {
     DEATHKNIGHT = {
@@ -4053,6 +3860,9 @@ do
       }
     },
   }
+  if WeakAuras.IsClassicPlus() then
+    classData.DEATHKNIGHT = nil
+  end
   -- Creates the options layout. Due to CUSTOM_CLASS_COLORS, it needs to be created dynamically.
   local function createSpecString(class, specID)
     local data = classData[class]
@@ -4064,10 +3874,11 @@ do
   end
 
   Private.spec_types_all = {}
-  Private.spec = {}
+  Private.specid_to_class = {}
   for class, data in pairs(classData) do
     for specID in pairs(data.specs) do
       Private.spec_types_all[specID] = createSpecString(class, specID)
+      Private.specid_to_class[specID] = class
     end
   end
   wipe(classData)

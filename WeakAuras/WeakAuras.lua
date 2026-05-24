@@ -1,35 +1,39 @@
 local AddonName = ...
 local Private = select(2, ...)
 
-local internalVersion = 85
+local internalVersion = 89
 
 -- Lua APIs
 local insert = table.insert
+local ipairs_reverse = Private.ipairs_reverse
 
 -- WoW APIs
 local IsAddOnLoaded, LoadAddOn
   = IsAddOnLoaded, LoadAddOn
 local UnitName, GetRealmName, GetGuildInfo, UnitRace, UnitFactionGroup, UnitClass
   = UnitName, GetRealmName, GetGuildInfo, UnitRace, UnitFactionGroup, UnitClass
-local IsInRaid, UnitIsPartyLeader, UnitIsRaidOfficer, GetRaidRosterInfo, UnitInRaid, UnitInParty
-  = IsInRaid, UnitIsPartyLeader, UnitIsRaidOfficer, GetRaidRosterInfo, UnitInRaid, UnitInParty
+local UnitIsPartyLeader, UnitIsRaidOfficer, GetRaidRosterInfo, UnitInRaid, UnitInParty
+  = UnitIsPartyLeader, UnitIsRaidOfficer, GetRaidRosterInfo, UnitInRaid, UnitInParty
 local InCombatLockdown, UnitAffectingCombat, GetInstanceInfo, IsInInstance
   = InCombatLockdown, UnitAffectingCombat, GetInstanceInfo, IsInInstance
+local GetCurrentMapAreaID, GetRealZoneText, GetSubZoneText, SetMapToCurrentZone
+  = GetCurrentMapAreaID, GetRealZoneText, GetSubZoneText, SetMapToCurrentZone
 local GetCurrentMapAreaID, GetRealZoneText, GetSubZoneText, SetMapToCurrentZone
   = GetCurrentMapAreaID, GetRealZoneText, GetSubZoneText, SetMapToCurrentZone
 local UnitIsPVPFreeForAll, UnitIsPVP, UnitOnTaxi, IsMounted
   = UnitIsPVPFreeForAll, UnitIsPVP, UnitOnTaxi, IsMounted
 local UnitInVehicle, UnitHasVehicleUI, UnitIsUnit, UnitIsDeadOrGhost
   = UnitInVehicle, UnitHasVehicleUI, UnitIsUnit, UnitIsDeadOrGhost
-local SendChatMessage, UnitInBattleground
-  = SendChatMessage, UnitInBattleground
-local GetTime, UpdateAddOnCPUUsage, GetFrameCPUUsage, debugprofilestop
-  = GetTime, UpdateAddOnCPUUsage, GetFrameCPUUsage, debugprofilestop
-local GetNumTalentTabs, GetNumTalents, MAX_NUM_TALENTS
-  = GetNumTalentTabs, GetNumTalents, MAX_NUM_TALENTS or 40
+local SendChatMessage, UnitInBattleground, GetZoneText
+  = SendChatMessage, UnitInBattleground, GetZoneText
+local GetTime, UpdateAddOnCPUUsage, GetFrameCPUUsage, debugprofilestop, MAX_BOSS_FRAMES
+  = GetTime, UpdateAddOnCPUUsage, GetFrameCPUUsage, debugprofilestop, MAX_BOSS_FRAMES or 5
 local CreateFrame, IsShiftKeyDown, GetScreenWidth, GetScreenHeight, GetCursorPosition
   = CreateFrame, IsShiftKeyDown, GetScreenWidth, GetScreenHeight, GetCursorPosition
 local debugstack, wipe, GetSpellInfo = debugstack, wipe, GetSpellInfo
+local IsInRaid, IsInGroup = Private.IsInRaid, Private.IsInGroup
+local GetNumGroupMembers = Private.GetNumGroupMembers
+local Round, MergeTable = Private.Round, Private.MergeTable
 
 local ADDON_NAME = "WeakAuras"
 local WeakAuras = WeakAuras
@@ -42,7 +46,7 @@ LibStub("AceTimer-3.0"):Embed(WeakAurasTimers)
 
 WeakAuras.LGT = LibStub("LibGroupTalents-1.0") or {
   GetUnitTalentSpec = function(_) end,
-  GetUnitRole = function(_) end
+  GetUnitRole = function(_) end,
 }
 
 Private.maxTimerDuration = 604800; -- A week, in seconds
@@ -110,7 +114,7 @@ do
     if data then
       Private.AuraWarnings.UpdateWarning(data.uid, "LuaError", "error",
         L["This aura has caused a Lua error."] .. "\n" .. L["Install the addons BugSack and BugGrabber for detailed error logs."], true)
-      table.insert(juicedMessage, L["Lua error in aura '%s': %s"]:format(data.id, currentErrorHandlerContext or L["unknown location"]))
+      table.insert(juicedMessage, L["Lua error in Aura '%s': %s"]:format(data.id, currentErrorHandlerContext or L["unknown location"]))
     else
       table.insert(juicedMessage, L["Lua error"])
     end
@@ -334,7 +338,11 @@ Private.triggerTypesOptions = {};
 --  changed: Whether this trigger state was recently changed and its properties
 --           need to be applied to a region. The glue code resets this
 --           after syncing the region to the trigger state
---  show: Whether the region for this trigger state should be shown
+--  show: used to be a required field
+--        Whether the region for this trigger state should be shown
+--        true = show, false = hide
+--        nil: If the compability option is enabled, hide (with warning)
+--             otherwise show
 --  progressType: Either "timed", "static"
 --    duration: The duration if the progressType is timed
 --    expirationTime: The expirationTime if the progressType is timed
@@ -952,23 +960,6 @@ local function LoadCustomActionFunctions(data)
   end
 end
 
-Private.talent_types_specific = {}
-function Private.CreateTalentCache()
-  local _, player_class = UnitClass("player")
-
-  Private.talent_types_specific[player_class] = Private.talent_types_specific[player_class] or {};
-
-  for tab = 1, GetNumTalentTabs() do
-    for num_talent = 1, GetNumTalents(tab) do
-      local talentName, talentIcon = GetTalentInfo(tab, num_talent);
-      local talentId = (tab - 1) * MAX_NUM_TALENTS + num_talent
-      if (talentName and talentIcon) then
-        Private.talent_types_specific[player_class][talentId] = "|T"..talentIcon..":0|t "..talentName
-      end
-    end
-  end
-end
-
 Private.CompanionData = {}
 -- use this function to not overwrite data from other companion compatible addons
 -- when using this function, do not name your global data table "WeakAurasCompanion"
@@ -1165,6 +1156,24 @@ function Private.LoginMessage()
   return loginMessage
 end
 
+local function CheckForPreviousEncounter()
+  if (UnitAffectingCombat ("player") or InCombatLockdown()) then
+    for i = 1, MAX_BOSS_FRAMES do
+      if (UnitExists ("boss" .. i)) then
+        local guid = UnitGUID ("boss" .. i)
+        if (guid and db.CurrentEncounter.boss_guids [guid]) then
+          -- we are in the same encounter
+          WeakAuras.CurrentEncounter = db.CurrentEncounter
+          return true
+        end
+      end
+    end
+    db.CurrentEncounter = nil
+  else
+    db.CurrentEncounter = nil
+  end
+end
+
 function Private.Login(takeNewSnapshots)
   local loginThread = coroutine.create(function()
     Private.Pause();
@@ -1201,6 +1210,10 @@ function Private.Login(takeNewSnapshots)
     Private.AddMany(toAdd, takeNewSnapshots);
     coroutine.yield(1000);
 
+    -- check in case of a disconnect during an encounter.
+    if (db.CurrentEncounter) then
+      CheckForPreviousEncounter()
+    end
     coroutine.yield(1000);
     Private.RegisterLoadEvents();
     coroutine.yield(10000);
@@ -1235,7 +1248,7 @@ end
 local WeakAurasFrame = CreateFrame("Frame", "WeakAurasFrame", UIParent);
 Private.frames["WeakAuras Main Frame"] = WeakAurasFrame;
 WeakAurasFrame:SetAllPoints(UIParent);
-WeakAurasFrame:SetFrameStrata("BACKGROUND");
+WeakAurasFrame:SetFrameLevel(0)
 
 local loadedFrame = CreateFrame("Frame");
 Private.frames["Addon Initialization Handler"] = loadedFrame;
@@ -1315,6 +1328,7 @@ loadedFrame:SetScript("OnEvent", function(self, event, ...)
         if remainingSquelch > 0 then
           timer:ScheduleTimer(function() squelch_actions = false; end, remainingSquelch); -- No sounds while loading
         end
+        Private.InitializeEncounterAndZoneLists()
       end
       if not isInitialLogin then
         isInitialLogin = true
@@ -1395,6 +1409,42 @@ function Private.ResumeAllDynamicGroups(suspended)
   end
 end
 
+-- Encounter stuff
+local function StoreBossGUIDs()
+  Private.StartProfileSystem("boss_guids")
+  if (WeakAuras.CurrentEncounter and WeakAuras.CurrentEncounter.boss_guids) then
+    for i = 1, MAX_BOSS_FRAMES do
+      if (UnitExists ("boss" .. i)) then
+        local guid = UnitGUID ("boss" .. i)
+        if (guid) then
+          WeakAuras.CurrentEncounter.boss_guids [guid] = true
+        end
+      end
+    end
+    db.CurrentEncounter = WeakAuras.CurrentEncounter
+  end
+  Private.StopProfileSystem("boss_guids")
+end
+
+local function DestroyEncounterTable()
+  if (WeakAuras.CurrentEncounter) then
+    wipe(WeakAuras.CurrentEncounter)
+  end
+  WeakAuras.CurrentEncounter = nil
+  db.CurrentEncounter = nil
+end
+
+local function CreateEncounterTable(encounter_id)
+  WeakAuras.CurrentEncounter = {
+    id = encounter_id,
+    zone_id = GetCurrentMapAreaID(),
+    boss_guids = {},
+  }
+  timer:ScheduleTimer(StoreBossGUIDs, 2)
+
+  return WeakAuras.CurrentEncounter
+end
+
 local pausedOptionsProcessing = false;
 function Private.pauseOptionsProcessing(enable)
   pausedOptionsProcessing = enable;
@@ -1421,6 +1471,10 @@ local function GetInstanceTypeAndSize()
   if inInstance or instanceType ~= "none" then
     local ZoneMapID = GetCurrentMapAreaID()
     size = Type
+    -- WORKAROUND Tol'Viron arena returning a difficulty index of 1
+    if Type == "arena" or Type == "pvp" then
+      difficultyIndex = 0
+    end
     if Type == "raid" then
       if maxPlayers == 10 then
         size = "ten"
@@ -1471,6 +1525,19 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
     playerLevel = arg1;
   end
 
+  -- encounter id stuff, we are holding the current combat id to further load checks.
+  -- there is three ways to unload: encounter_end / zone changed (hearthstone used) / reload or disconnect
+  -- regen_enabled isn't good due to combat drop abilities such invisibility, vanish, fake death, etc.
+  local encounter_id = WeakAuras.CurrentEncounter and WeakAuras.CurrentEncounter.id or 0
+
+  if (event == "ENCOUNTER_START") then
+    encounter_id = tonumber(arg1)
+    CreateEncounterTable(encounter_id)
+  elseif (event == "ENCOUNTER_END") then
+    encounter_id = 0
+    DestroyEncounterTable()
+  end
+
   if toCheck == nil or next(toCheck) == nil then
     return
   end
@@ -1489,6 +1556,7 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   local _, class = UnitClass("player");
 
   local inCombat = UnitAffectingCombat("player")
+  local inEncounter = encounter_id ~= 0;
   local alive = not UnitIsDeadOrGhost('player')
   local pvp = UnitIsPVPFreeForAll("player") or UnitIsPVP("player")
   local vehicle = UnitInVehicle("player") or UnitOnTaxi("player") or false
@@ -1506,6 +1574,14 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   end
 
   local size, difficulty = GetInstanceTypeAndSize()
+
+  if (WeakAuras.CurrentEncounter) then
+    if (zoneId ~= WeakAuras.CurrentEncounter.zone_id and not inCombat) then
+      encounter_id = 0
+      DestroyEncounterTable()
+    end
+  end
+
   local group = Private.ExecEnv.GroupType()
   local groupSize = GetNumGroupMembers()
 
@@ -1520,8 +1596,8 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
     if (data and not data.controlledChildren) then
       local loadFunc = loadFuncs[id];
       local loadOpt = loadFuncsForOptions[id];
-      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, constellation, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
-      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, constellation, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, size, difficulty);
+      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, inEncounter, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, constellation, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, encounter_id, size, difficulty);
+      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, inEncounter, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, constellation, faction, playerLevel, role, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, encounter_id, size, difficulty);
 
       if(shouldBeLoaded and not loaded[id]) then
         changed = changed + 1;
@@ -2139,7 +2215,7 @@ local function RepairDatabase()
     -- set db version to current code version
     db.dbVersion = WeakAuras.InternalVersion()
     -- reinstall snapshots from history
-    local newDB = WeakAuras.Mixin({}, db.displays)
+    local newDB = Private.Mixin({}, db.displays)
     coroutine.yield(1000)
     for id, data in pairs(db.displays) do
       local snapshot = Private.GetMigrationSnapshot(data.uid)
@@ -2168,10 +2244,11 @@ StaticPopupDialogs["WEAKAURAS_CONFIRM_REPAIR"] = {
     local AutomaticRepairText = L["WeakAuras has detected that it has been downgraded.\nYour saved auras may no longer work properly.\nWould you like to run the |cffff0000EXPERIMENTAL|r repair tool? This will overwrite any changes you have made since the last database upgrade.\nLast upgrade: %s\n\n|cffff0000You should BACKUP your WTF folder BEFORE pressing this button.|r"]
     local ManualRepairText = L["Are you sure you want to run the |cffff0000EXPERIMENTAL|r repair tool?\nThis will overwrite any changes you have made since the last database upgrade.\nLast upgrade: %s"]
 
+    local text = self.Text or self.text
     if self.data.reason == "user" then
-      self.text:SetText(ManualRepairText:format(LastUpgrade()))
+      text:SetText(ManualRepairText:format(LastUpgrade()))
     else
-      self.text:SetText(AutomaticRepairText:format(LastUpgrade()))
+      text:SetText(AutomaticRepairText:format(LastUpgrade()))
     end
   end,
   OnCancel = function(self)
@@ -2183,7 +2260,7 @@ StaticPopupDialogs["WEAKAURAS_CONFIRM_REPAIR"] = {
   whileDead = 1,
   showAlert = 1,
   timeout = 0,
-  preferredindex = STATICPOPUP_NUMDIALOGS
+  preferredindex = 4
 }
 
 function Private.ValidateUniqueDataIds(silent)
@@ -2446,6 +2523,37 @@ function Private.AddMany(tbl, takeSnapshots)
     end
     coroutine.yield(1000, "addmany reload dynamic group");
   end
+end
+
+do
+  local function FixGroupChildren()
+    for _, data in pairs(Private.regions) do
+      if data
+      and data.regionType == "dynamicgroup"
+      and data.region
+      and data.region.ReloadControlledChildren
+      then
+        data.region:ReloadControlledChildren()
+      end
+    end
+  end
+
+  local f = CreateFrame("Frame")
+  local elapsed = 0
+
+  f:RegisterEvent("PLAYER_ENTERING_WORLD")
+  f:SetScript("OnEvent", function(self)
+    self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+
+    self:SetScript("OnUpdate", function(self, elaps)
+      elapsed = elapsed + elaps
+
+      if GetZoneText() ~= "" or elapsed > 30 then
+        self:SetScript("OnUpdate", nil)
+        FixGroupChildren()
+      end
+    end)
+  end)
 end
 
 local function customOptionIsValid(option)
@@ -2724,6 +2832,15 @@ local oldDataStub2 = {
   },
   conditions = {},
 }
+
+function Private.WarnEncounterEvent(data)
+  if data.load and (data.load.use_encounter ~= nil or data.load.use_encounterid) then
+    Private.AuraWarnings.UpdateWarning(data.uid, "dbm_required_for_load_encounter", "error",
+            L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"])
+  else
+    Private.AuraWarnings.UpdateWarning(data.uid, "dbm_required_for_load_encounter")
+  end
+end
 
 function Private.UpdateSoundIcon(data)
   local function testConditions()
@@ -3023,6 +3140,9 @@ function pAdd(data, simpleChange)
     end
 
     Private.UpdateSoundIcon(data)
+    if not WeakAuras.IsDBMRegistered() then
+      Private.WarnEncounterEvent(data)
+    end
     Private.callbacks:Fire("Add", data.uid, data.id, data, simpleChange)
   end
 end
@@ -3230,10 +3350,9 @@ end
 function Private.SetAllStatesHidden(id, triggernum)
   local triggerState = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
   local changed = false
-  for _, state in pairs(triggerState) do
-    changed = changed or state.show
-    state.show = false;
-    state.changed = true;
+  for cloneId in pairs(triggerState) do
+    changed = true
+    triggerState[cloneId] = nil
   end
   return changed
 end
@@ -3242,8 +3361,7 @@ function Private.SetAllStatesHiddenExcept(id, triggernum, list)
   local triggerState = WeakAuras.GetTriggerStateForTrigger(id, triggernum);
   for cloneId, state in  pairs(triggerState) do
     if (not (list[cloneId])) then
-      state.show = false;
-      state.changed = true;
+      triggerState[cloneId] = nil
     end
   end
 end
@@ -3261,20 +3379,21 @@ function Private.ReleaseClone(id, cloneId, regionType)
   end
 end
 
-function Private.HandleChatAction(message_type, message, message_dest, message_dest_isunit, message_channel, r, g, b, region, customFunc, when, formatters, voice)
+function Private.HandleChatAction(message_type, message, message_dest, message_dest_isunit, message_channel, r, g, b, region, customCache, when, formatters)
   local useHiddenStates = when == "finish"
   if (message:find('%%')) then
-    message = Private.ReplacePlaceHolders(message, region, customFunc, useHiddenStates, formatters);
+    message = Private.ReplacePlaceHolders(message, region, customCache, useHiddenStates, formatters);
   end
   if(message_type == "PRINT") then
     DEFAULT_CHAT_FRAME:AddMessage(message, r or 1, g or 1, b or 1);
   elseif message_type == "TTS" then
     if WeakAuras.IsAwesomeEnabled() == 2 then
-      local validVoice = voice and Private.tts_voices[voice]
       if not Private.SquelchingActions() then
         pcall(function()
+        local voice = C_TTSSettings and C_TTSSettings.GetSpeechVoiceID()
+        if not voice then return end
           C_VoiceChat.SpeakText(
-            validVoice and voice or next(Private.tts_voices) or 0,
+            voice,
             message,
             1,
             C_TTSSettings and C_TTSSettings.GetSpeechRate() or 0,
@@ -3292,7 +3411,7 @@ function Private.HandleChatAction(message_type, message, message_dest, message_d
   elseif(message_type == "WHISPER") then
     if(message_dest) then
       if (message_dest:find('%%')) then
-        message_dest = Private.ReplacePlaceHolders(message_dest, region, customFunc, useHiddenStates, formatters);
+        message_dest = Private.ReplacePlaceHolders(message_dest, region, customCache, useHiddenStates, formatters);
       end
       if message_dest_isunit == true then
         message_dest = UnitName(message_dest)
@@ -3558,7 +3677,7 @@ function Private.PerformActions(data, when, region)
 
   if(actions.do_message and actions.message_type and actions.message) then
     local customFunc = Private.customActionsFunctions[data.id][when .. "_message"];
-    Private.HandleChatAction(actions.message_type, actions.message, actions.message_dest, actions.message_dest_isunit, actions.message_channel, actions.r, actions.g, actions.b, region, customFunc, when, formatters, actions.message_tts_voice);
+    Private.HandleChatAction(actions.message_type, actions.message, actions.message_dest, actions.message_dest_isunit, actions.message_channel, actions.r, actions.g, actions.b, region, {customFunc = customFunc}, when, formatters);
   end
 
   if (actions.stop_sound) then
@@ -3882,7 +4001,6 @@ local function CreateFallbackState(id, triggernum)
     state.trigger = data.triggers[triggernum].trigger
     state.triggernum = triggernum
   else
-    state.show = true;
     state.changed = true;
     state.progressType = "timed";
     state.duration = 0;
@@ -3910,18 +4028,22 @@ function Private.ShowMouseoverTooltip(region, owner)
   GameTooltip:SetPoint("LEFT", owner, "RIGHT");
   GameTooltip:ClearLines();
 
-  local triggerType;
-  if (region.state) then
-    triggerType = region.state.trigger.type;
+  local trigger
+  local state = region.state
+  if state and state.id and state.triggernum then
+    local data = WeakAuras.GetData(state.id)
+    if data then
+      trigger = data.triggers[state.triggernum].trigger
+    end
   end
 
-  local triggerSystem = triggerType and triggerTypes[triggerType];
+  local triggerSystem = trigger and trigger.type and triggerTypes[trigger.type]
   if (not triggerSystem) then
     GameTooltip:Hide();
     return;
   end
 
-  if (triggerSystem.SetToolTip(region.state.trigger, region.state)) then
+  if (triggerSystem.SetToolTip(trigger, region.state)) then
     GameTooltip:Show();
   else
     GameTooltip:Hide();
@@ -4050,55 +4172,55 @@ function Private.ValueToPath(data, path, value)
   end
 end
 
-Private.frameLevels = {};
+Private.frameLevels = {}
 local function SetFrameLevel(id, frameLevel)
-  if (Private.frameLevels[id] == frameLevel) then
-    return;
+  frameLevel = math.min(120, frameLevel)
+  if Private.frameLevels[id] == frameLevel then
+    return
   end
-  if (Private.regions[id] and Private.regions[id].region) then
+  if Private.regions[id] and Private.regions[id].region then
     Private.ApplyFrameLevel(Private.regions[id].region, frameLevel)
   end
-  if (clones[id]) then
-    for i,v in pairs(clones[id]) do
+  if clones[id] then
+    for _, v in pairs(clones[id]) do
       Private.ApplyFrameLevel(v, frameLevel)
     end
   end
-  Private.frameLevels[id] = frameLevel;
+  Private.frameLevels[id] = frameLevel
 end
 
-local function FixGroupChildrenOrderImpl(data, frameLevel)
+-- DepthBasedFrameLevels:
+-- Root Group (0)
+-- ├─ Aura (4)
+-- ├─ Child Group (4)
+-- │  ├─ Aura (8)
+-- │  └─ Aura (8)
+-- Root Aura (0)
+local function ApplyDepthBasedFrameLevels(data, depth)
+  local frameLevel = depth * 4
   SetFrameLevel(data.id, frameLevel)
-  local offset
-  if data.sharedFrameLevel then
-    offset = 0
-  else
-    offset = 4
+
+  if not data.controlledChildren then
+    return
   end
+
   for _, childId in ipairs(data.controlledChildren) do
     local childData = WeakAuras.GetData(childId)
-    if childData.regionType ~= "group" and childData.regionType ~= "dynamicgroup" then
-      frameLevel = frameLevel + offset
-      SetFrameLevel(childId, frameLevel)
-    else
-      frameLevel = frameLevel + offset
-      local endFrameLevel = FixGroupChildrenOrderImpl(childData, frameLevel)
-      if not data.sharedFrameLevel then
-        frameLevel = endFrameLevel
-      end
+    if childData then
+      ApplyDepthBasedFrameLevels(childData, depth + 1)
     end
   end
-  return frameLevel
 end
 
 function Private.FixGroupChildrenOrderForGroup(data)
   if data.parent then
     return
   end
-  FixGroupChildrenOrderImpl(data, 0)
+  ApplyDepthBasedFrameLevels(data, 0)
 end
 
 local function GetFrameLevelFor(id)
-  return Private.frameLevels[id] or 5;
+  return Private.frameLevels[id] or 5
 end
 
 function Private.ApplyFrameLevel(region, frameLevel)
@@ -4275,7 +4397,7 @@ function WeakAuras.GetTriggerStateForTrigger(id, triggernum)
     return Private.GetGlobalConditionState();
   end
   if triggerState[id][triggernum] == nil then
-    triggerState[id][triggernum] = setmetatable({}, Private.allstatesMetatable)
+    triggerState[id][triggernum] = Private.GetNewAllStates(WeakAuras.GetData(id))
   end
   return triggerState[id][triggernum];
 end
@@ -4398,7 +4520,7 @@ do
   end
 end
 
-local function stopAutoHideTimer(id, triggernum, cloneId)
+local function stopAutoHideTimerForTrigger(id, triggernum, cloneId)
   if(timers[id] and timers[id][triggernum] and timers[id][triggernum][cloneId]) then
     local record = timers[id][triggernum][cloneId];
     if (record.handle) then
@@ -4410,9 +4532,29 @@ local function stopAutoHideTimer(id, triggernum, cloneId)
   end
 end
 
-local function startStopTimers(id, cloneId, triggernum, state)
-  if not state.show or not state.autoHide then
-    stopAutoHideTimer(id, triggernum, cloneId)
+-- For collapse in RegionPrototype
+--- @type fun(id: auraId, cloneId: string)
+function Private.StopAutoHideTimer(id, cloneId)
+  if timers[id] then
+    for triggerNum, triggerData in pairs(timers[id]) do
+      local record = triggerData[cloneId]
+      if record then
+        if (record.handle) then
+          timer:CancelTimer(record.handle);
+        end
+        record.handle = nil;
+        record.expirationTime = nil;
+        record.state = nil
+      end
+    end
+  end
+end
+
+--- @type fun(states: table<any, state>, id: auraId, triggernum: integer, cloneId: string)
+local function startStopTimers(states, id, cloneId, triggernum)
+  local state = states[cloneId]
+  if not state.autoHide then
+    stopAutoHideTimerForTrigger(id, triggernum, cloneId)
     return
   end
 
@@ -4421,7 +4563,7 @@ local function startStopTimers(id, cloneId, triggernum, state)
   local expirationTime
   if type(state.autoHide) == "boolean" then
     if state.paused then
-      stopAutoHideTimer(id, triggernum, cloneId)
+      stopAutoHideTimerForTrigger(id, triggernum, cloneId)
       return
     else
       if state.expirationTime == nil and type(state.duration) == "number" then
@@ -4446,9 +4588,8 @@ local function startStopTimers(id, cloneId, triggernum, state)
     if expirationTime and type(expirationTime) == "number" then
       record.handle = timer:ScheduleTimer(
         function()
-          if (state.show ~= false and state.show ~= nil) then
-            state.show = false;
-            state.changed = true;
+          if states[cloneId] then
+            states[cloneId] = nil
 
             -- if the trigger has updated then check to see if it is flagged for WatchedTrigger and send to queue if it is
             if Private.watched_trigger_events[id] and Private.watched_trigger_events[id][triggernum] then
@@ -4538,32 +4679,39 @@ local function ApplyStatesToRegions(id, activeTrigger, states)
     parent:Suspend()
   end
   for cloneId, state in pairs(states) do
-    if (state.show) then
-      local region = Private.EnsureRegion(id, cloneId);
-      local applyChanges = not region.toShow or state.changed or region.state ~= state
-      region.state = state
-      region.states = region.states or {}
-      for triggernum = -1, triggerState[id].numTriggers do
-        local triggerState
-        if triggernum == activeTrigger then
-          triggerState = state
-        else
-          local triggerStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum)
-          triggerState = triggerStates[cloneId] or triggerStates[""] or {}
+    local region = Private.EnsureRegion(id, cloneId);
+    local applyChanges = not region.toShow or state.changed or region.state ~= state
+    region.state = state
+    region.states = region.states or {}
+    for triggernum = -1, triggerState[id].numTriggers do
+      local triggerState
+      if triggernum == activeTrigger then
+        triggerState = state
+      else
+        local triggerStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum)
+        triggerState = triggerStates[cloneId]
+        if not triggerState then
+          local pos = type(cloneId) == "string" and cloneId:find('.', 1, true) or nil
+          if pos then
+            local cloneIdPrefix = cloneId:sub(1, pos - 1)
+            triggerState = triggerStates[cloneIdPrefix] or triggerStates[""] or {}
+          else
+            triggerState = triggerStates[""] or {}
+          end
         end
-        if triggernum > 0 then
-          applyChanges = applyChanges or region.states[triggernum] ~= triggerState or (triggerState and triggerState.changed)
-                       or region.states[triggernum] ~= triggerState
-                       or (triggerState and triggerState.changed)
-        end
-
-        region.states[triggernum] = triggerState
+      end
+      if triggernum > 0 then
+        applyChanges = applyChanges or region.states[triggernum] ~= triggerState or (triggerState and triggerState.changed)
+                      or region.states[triggernum] ~= triggerState
+                      or (triggerState and triggerState.changed)
       end
 
-      if (applyChanges) then
-        ApplyStateToRegion(id, cloneId, region, parent);
-        Private.RunConditions(region, data.uid, not state.show)
-      end
+      region.states[triggernum] = triggerState
+    end
+
+    if (applyChanges) then
+      ApplyStateToRegion(id, cloneId, region, parent);
+      Private.RunConditions(region, data.uid, false)
     end
   end
   if parent and parent.Resume then
@@ -4606,9 +4754,20 @@ function Private.UpdatedTriggerState(id)
     return;
   end
 
+  -- Still support setting show to false
+  for triggernum = 1, triggerState[id].numTriggers do
+    if triggerState[id][triggernum] then
+      for cloneId, state in pairs(triggerState[id][triggernum]) do
+        if state.show == false then
+          triggerState[id][triggernum][cloneId] = nil
+        end
+      end
+    end
+  end
+
   local changed = false;
   for triggernum = 1, triggerState[id].numTriggers do
-    triggerState[id][triggernum] = triggerState[id][triggernum] or setmetatable({}, Private.allstatesMetatable)
+    triggerState[id][triggernum] = triggerState[id][triggernum] or Private.GetNewAllStates(WeakAuras.GetData(id))
 
     local anyStateShown = false;
 
@@ -4618,9 +4777,9 @@ function Private.UpdatedTriggerState(id)
       state.id = id;
 
       if (state.changed) then
-        startStopTimers(id, cloneId, triggernum, state);
+        startStopTimers(triggerState[id][triggernum], id, cloneId, triggernum);
       end
-      anyStateShown = anyStateShown or state.show;
+      anyStateShown = true
     end
     -- Update triggerState.triggers
     changed = applyToTriggerStateTriggers(anyStateShown, id, triggernum) or changed;
@@ -4657,14 +4816,7 @@ function Private.UpdatedTriggerState(id)
       activeTriggerState = emptyState;
     end
   elseif (show) then
-    local needsFallback = true;
-    for _, state in pairs(activeTriggerState) do
-      if (state.show) then
-        needsFallback = false;
-        break;
-      end
-    end
-    if (needsFallback) then
+    if not next(activeTriggerState) then
       activeTriggerState = CreateFallbackState(id, newActiveTrigger)
     end
   end
@@ -4684,11 +4836,11 @@ function Private.UpdatedTriggerState(id)
   elseif (show and oldShow) then -- Already shown, update regions
     -- Hide old clones
     for cloneId, clone in pairs(clones[id]) do
-      if (not activeTriggerState[cloneId] or not activeTriggerState[cloneId].show) then
+      if not activeTriggerState[cloneId] then
         clone:Collapse()
       end
     end
-    if (not activeTriggerState[""] or not activeTriggerState[""].show) then
+    if not activeTriggerState[""] then
       if Private.regions[id] and Private.regions[id].region then
         Private.regions[id].region:Collapse()
       end
@@ -4699,12 +4851,10 @@ function Private.UpdatedTriggerState(id)
 
   for triggernum = 1, triggerState[id].numTriggers do
     for cloneId, state in pairs(triggerState[id][triggernum]) do
-      if (not state.show) then
-        triggerState[id][triggernum][cloneId] = nil;
-      end
       state.changed = false;
     end
   end
+
   -- once updatedTriggerStates is complete, and empty states removed, etc., then check for queued watched triggers update
   Private.SendDelayedWatchedTriggers()
 end
@@ -4749,17 +4899,23 @@ function Private.RunCustomTextFunc(region, customFunc)
   return custom
 end
 
-local function ReplaceValuePlaceHolders(textStr, region, customFunc, state, formatter, trigger)
+local function ReplaceValuePlaceHolders(textStr, region, customCache, state, formatter, trigger)
   local value;
-  if string.sub(textStr, 1, 1) == "c" then
+
+  local customIndexSubStr = textStr:match("^c(%d*)$")
+
+  if customIndexSubStr then
     local custom
-    if customFunc then
-      custom = Private.RunCustomTextFunc(region, customFunc)
+    if customCache then
+      if not customCache.custom then
+        customCache.custom = Private.RunCustomTextFunc(region, customCache.customFunc)
+      end
+      custom = customCache.custom
     else
       custom = region.values.custom
     end
 
-    local index = tonumber(textStr:match("^c(%d+)$") or 1)
+    local index = tonumber(customIndexSubStr) or 1
 
     if custom then
       value = custom[index]
@@ -4908,12 +5064,12 @@ end
 
 Private.ContainsPlaceHoldersPredicate = ContainsPlaceHolders
 
-local function ValueForSymbol(symbol, region, customFunc, regionState, regionStates, useHiddenStates, formatters)
+local function ValueForSymbol(symbol, region, customCache, regionState, regionStates, useHiddenStates, formatters)
   local triggerNum, sym = string.match(symbol, "(.+)%.(.+)")
   triggerNum = triggerNum and tonumber(triggerNum)
   if triggerNum and sym then
     if regionStates[triggerNum] then
-      if (useHiddenStates or regionStates[triggerNum].show) then
+      if useHiddenStates or regionStates[triggerNum].show ~= false then
         if regionStates[triggerNum][sym] then
           local value = regionStates[triggerNum][sym]
           if formatters[symbol] then
@@ -4922,14 +5078,14 @@ local function ValueForSymbol(symbol, region, customFunc, regionState, regionSta
             return tostring(value) or ""
           end
         else
-          local value = ReplaceValuePlaceHolders(sym, region, customFunc, regionStates[triggerNum], formatters[symbol], triggerNum);
+          local value = ReplaceValuePlaceHolders(sym, region, customCache, regionStates[triggerNum], formatters[symbol], triggerNum);
           return value or ""
         end
       end
     end
     return ""
   elseif regionState[symbol] then
-    if(useHiddenStates or regionState.show) then
+    if useHiddenStates or regionState.show ~= false then
       local value = regionState[symbol]
       if formatters[symbol] then
         return tostring(formatters[symbol](value, regionState, regionState.triggernum) or "") or ""
@@ -4939,13 +5095,13 @@ local function ValueForSymbol(symbol, region, customFunc, regionState, regionSta
     end
     return ""
   else
-    local value = (useHiddenStates or regionState.show)
-                  and ReplaceValuePlaceHolders(symbol, region, customFunc, regionState, formatters[symbol], regionState.triggernum)
+    local value = (useHiddenStates or regionState.show ~= false)
+                  and ReplaceValuePlaceHolders(symbol, region, customCache, regionState, formatters[symbol], regionState.triggernum)
     return value or ""
   end
 end
 
-function Private.ReplacePlaceHolders(textStr, region, customFunc, useHiddenStates, formatters)
+function Private.ReplacePlaceHolders(textStr, region, customCache, useHiddenStates, formatters)
   local regionValues = region.values;
   local regionState = region.state or {};
   local regionStates = region.states or {};
@@ -4958,13 +5114,13 @@ function Private.ReplacePlaceHolders(textStr, region, customFunc, useHiddenState
     return textStr;
   end
 
-  if (endPos == 2) then
-    if string.byte(textStr, 1) == 37 then
+  if (endPos == 2) then -- Two byte string, quickly check for all cases
+    if string.byte(textStr, 1) == 37 then -- "%"
       local symbol = string.sub(textStr, 2)
       if symbol == "%" then
         return "%" -- Double % input
       end
-      local value = ValueForSymbol(symbol, region, customFunc, regionState, regionStates, useHiddenStates, formatters);
+      local value = ValueForSymbol(symbol, region, customCache, regionState, regionStates, useHiddenStates, formatters);
       if (value) then
         textStr = tostring(value);
       end
@@ -4997,7 +5153,7 @@ function Private.ReplacePlaceHolders(textStr, region, customFunc, useHiddenState
         -- 0-9a-zA-Z or dot character
       else -- End of variable
         local symbol = string.sub(textStr, start, currentPos - 1)
-        result = result .. ValueForSymbol(symbol, region, customFunc, regionState, regionStates, useHiddenStates, formatters)
+        result = result .. ValueForSymbol(symbol, region, customCache, regionState, regionStates, useHiddenStates, formatters)
 
         if char == 37 then
           -- Do nothing
@@ -5008,7 +5164,7 @@ function Private.ReplacePlaceHolders(textStr, region, customFunc, useHiddenState
     elseif state == 3 then
       if char == 125 then -- } closing brace
         local symbol = string.sub(textStr, start, currentPos - 1)
-        result = result .. ValueForSymbol(symbol, region, customFunc, regionState, regionStates, useHiddenStates, formatters)
+        result = result .. ValueForSymbol(symbol, region, customCache, regionState, regionStates, useHiddenStates, formatters)
         start = currentPos + 1
       end
     end
@@ -5020,7 +5176,7 @@ function Private.ReplacePlaceHolders(textStr, region, customFunc, useHiddenState
     result = result .. string.sub(textStr, start, currentPos - 1)
   elseif state == 2 and currentPos > start then
     local symbol = string.sub(textStr, start, currentPos - 1)
-    result = result .. ValueForSymbol(symbol, region, customFunc, regionState, regionStates, useHiddenStates, formatters)
+    result = result .. ValueForSymbol(symbol, region, customCache, regionState, regionStates, useHiddenStates, formatters)
   elseif state == 1 then
     result = result .. "%"
   end

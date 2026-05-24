@@ -982,8 +982,13 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
                 end
                 WeakAuras.Add(data);
                 if (reloadOptions) then
+                  -- Hack specifally for Mini talent widgets
+                  -- That widget needs to be informed before and
+                  -- after a reload
+                  OptionsPrivate.Private.callbacks:Fire("BeforeReload")
                   WeakAuras.ClearAndUpdateOptions(data.id)
                   WeakAuras.FillOptions()
+                  OptionsPrivate.Private.callbacks:Fire("AfterReload")
                 end
                 OptionsPrivate.Private.ScanForLoads({[data.id] = true});
                 WeakAuras.UpdateThumbnail(data);
@@ -1097,13 +1102,13 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
   end
   if prototype.timedrequired then
     options.unevent = {
-      type = "select",
+      type = "toggle",
+      disabled = true,
       width = WeakAuras.normalWidth,
-      name = L["Hide"],
+      name = L["Hide After"],
       order = order,
-      values = OptionsPrivate.Private.timedeventend_types,
       get = function()
-        return "timed"
+        return true
       end,
       set = function(info, v)
         -- unevent is no longer used

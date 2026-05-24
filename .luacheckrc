@@ -36,10 +36,12 @@ globals = {
 	"_G",
 	"bit",
 	"Constants",
+	"OKAY",
 
 	-- misc custom
 	"AceGUIWeakAurasMultiLineEditBoxInsertLink",
 	"AceGUIWeakAurasMultiLineEditBoxWithEnterInsertLink",
+	"AceGUIWeakAurasInputWithIndentationInsertLink",
 	"AceGUIWidgetLSMlists",
 	"CUSTOM_CLASS_COLORS",
 	"LibStub",
@@ -125,7 +127,6 @@ globals = {
 	"SlashCmdList",
 	"WA_SearchBoxTemplate_OnTextChanged",
 	"SmoothStatusBarMixin",
-	"STATICPOPUP_NUMDIALOGS",
 	"StaticPopup_Show",
 	"StaticPopupDialogs",
 	"TableHasAnyEntries",
@@ -154,6 +155,7 @@ globals = {
 	-- FrameXML globals
 	"ChatFontNormal",
 	"GameFontNormal",
+	"GameFontNormalLarge",
 	"GameFontNormalHuge",
 	"GameFontNormalSmall",
 	"GameFontNormalSmall2",
@@ -13612,7 +13614,6 @@ globals = {
 	"OFFICER",
 	"OFFICER_CHAT",
 	"OFFICER_NOTE_COLON",
-	"OKAY",
 	"OLD_GUILD_NAME",
 	"OLD_TITLE_LOST",
 	"ONLY_EMPTY_BAGS",
@@ -19567,10 +19568,10 @@ globals = {
 	"FixedSizeFramePoolCollectionMixin", "CreateFixedSizeFramePoolCollection",
 	"SecondsToMinutes", "MinutesToSeconds", "HasTimePassed",
 	"SecondsFormatterConstants", "ConvertSecondsToUnits", "SecondsToClock",
-	"MinutesToTime", "FormatShortDate", "NUMBER_ABBREVIATION_DATA", "WeakAurasProfilingReportTitleText",
-	"WeakAurasRealTimeProfiling", "WeakAurasRealTimeProfilingTitleText", "seconds", "NUM_CHAT_WINDOWS",
-	"GetNumGlyphSockets", "GetGlyphLink", "GetGlyphSocketInfo", "APIDocumentationMixin", "BaseAPIMixin",
-    "EventsAPIMixin", "FieldsAPIMixin", "FunctionsAPIMixin", "SystemsAPIMixin", "TablesAPIMixin",
-	"CopyToClipboard", "ChatFrame_OpenChat", "ChatTypeInfo", "EditBox_ClearFocus", "EditBox_ClearHighlight",
-	"EditBox_HighlightText"
+	"MinutesToTime", "FormatShortDate", "NUMBER_ABBREVIATION_DATA", "GetLocalizedNumberAbbreviationData",
+	"WeakAurasProfilingReportTitleText", "WeakAurasRealTimeProfiling", "WeakAurasRealTimeProfilingTitleText",
+	"seconds", "NUM_CHAT_WINDOWS","GetNumGlyphSockets", "GetGlyphLink", "GetGlyphSocketInfo",
+	"APIDocumentationMixin", "BaseAPIMixin","EventsAPIMixin", "FieldsAPIMixin", "FunctionsAPIMixin",
+	"SystemsAPIMixin", "TablesAPIMixin", "CopyToClipboard", "ChatFrame_OpenChat", "ChatTypeInfo",
+	"EditBox_ClearFocus", "EditBox_ClearHighlight", "EditBox_HighlightText", "AwesomeCVar"
 }

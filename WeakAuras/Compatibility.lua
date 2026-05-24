@@ -1,3 +1,6 @@
+local AddonName = ...
+local Private = select(2, ...)
+
 local ipairs = ipairs
 local pairs = pairs
 local ceil, floor = math.ceil, math.floor

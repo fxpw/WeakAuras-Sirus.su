@@ -425,8 +425,6 @@ end
 WeakAuras.createSpinner = createSpinner;
 
 local function create(parent)
-  local font = "GameFontHighlight";
-
   local region = CreateFrame("Frame", nil, parent);
   region.regionType = "progresstexture"
   region:SetMovable(true);
@@ -449,7 +447,7 @@ local function create(parent)
   -- Use a dummy object for the SmoothStatusBarMixin, because our SetValue
   -- is used for a different purpose
   region.smoothProgress = {};
-  WeakAuras.Mixin(region.smoothProgress, Private.SmoothStatusBarMixin);
+  Private.Mixin(region.smoothProgress, Private.SmoothStatusBarMixin);
   region.smoothProgress.SetValue = function(self, progress)
     region:SetValueOnTexture(progress);
   end
@@ -556,6 +554,7 @@ local function modify(parent, region, data)
 
   region.startAngle = data.startAngle or 0;
   region.endAngle = data.endAngle or 360;
+  region.inverseDirection = data.inverse;
 
   local function orientHorizontal()
     foreground:ClearAllPoints();

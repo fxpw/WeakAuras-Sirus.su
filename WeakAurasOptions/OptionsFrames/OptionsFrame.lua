@@ -114,14 +114,14 @@ function OptionsPrivate.CreateFrame()
   frame:SetMinResize(minWidth, minHeight)
   frame:SetFrameStrata("DIALOG")
 
---   local now = time()
---   local y = date("*t", now).year
---   local inJune = now >= time{year=y, month=6, day=1, hour=0} and now < time{year=y, month=7, day=1, hour=0}
---   if inJune then
---     frame.PortraitContainer.portrait:SetTexture([[Interface\AddOns\WeakAuras\Media\Textures\logo_256_round_pride.tga]])
---   else
+  local now = time()
+  local y = date("*t", now).year
+  local inJune = now >= time{year=y, month=6, day=1, hour=0} and now < time{year=y, month=7, day=1, hour=0}
+  if inJune then
+    frame.PortraitContainer.portrait:SetTexture([[Interface\AddOns\WeakAuras\Media\Textures\logo_256_round_pride.tga]])
+  else
     frame.PortraitContainer.portrait:SetTexture([[Interface\AddOns\WeakAuras\Media\Textures\logo_256_round.tga]])
---   end
+  end
 
   frame.window = "default"
 
@@ -178,8 +178,12 @@ function OptionsPrivate.CreateFrame()
       OptionsPrivate.Private.personalRessourceDisplayFrame:OptionsClosed()
     end
 
-    if frame.dynamicTextCodesFrame  then
+    if frame.dynamicTextCodesFrame then
       frame.dynamicTextCodesFrame:Hide()
+    end
+
+    if frame.moversizer then
+      frame.moversizer:OptionsClosed()
     end
   end)
 
@@ -490,7 +494,7 @@ function OptionsPrivate.CreateFrame()
   local thanksListCJ = lineWrapDiscordList(OptionsPrivate.Private.DiscordListCJ)
   local thanksListK = lineWrapDiscordList(OptionsPrivate.Private.DiscordListK)
 
-  local discordButton = addFooter(L["Discord"], [[Interface\AddOns\WeakAuras\Media\Textures\discord.tga]], "https://discord.gg/addony-dlia-sirus-su-914079030125420565",
+  local discordButton = addFooter(L["Discord"], [[Interface\AddOns\WeakAuras\Media\Textures\discord.tga]], "https://discord.gg/UXSc7nt",
                                   L["Chat with WeakAuras experts on our Discord server."])
   discordButton:SetParent(tipFrame)
   discordButton:SetPoint("LEFT", tipFrame, "LEFT")
@@ -520,31 +524,31 @@ function OptionsPrivate.CreateFrame()
     changelogButton:SetPoint("LEFT", thanksButton, "RIGHT", footerSpacing, 0)
   end
 
---   local awesomeWotlkButton
---   if not WeakAuras.IsAwesomeEnabled() then
---     awesomeWotlkButton = addFooter("Awesome WotLK", [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/FrostAtom/awesome_wotlk/releases",
---                                     L["Unlock nameplate anchoring & units in WeakAuras with the Awesome WotLK client patch"])
---     awesomeWotlkButton:SetParent(tipFrame)
---     awesomeWotlkButton:SetPoint("LEFT", changelogButton or thanksButton, "RIGHT", footerSpacing, 0)
---   end
+  local awesomeWotlkButton
+  if not WeakAuras.IsAwesomeEnabled() then
+    awesomeWotlkButton = addFooter("Awesome WotLK", [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/someweirdhuman/awesome_wotlk",
+                                    L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."])
+    awesomeWotlkButton:SetParent(tipFrame)
+    awesomeWotlkButton:SetPoint("LEFT", changelogButton or thanksButton, "RIGHT", footerSpacing, 0)
+  end
 
-  local reportbugButton = addFooter(L["Found a Bug?"], [[Interface\AddOns\WeakAuras\Media\Textures\bug_report.tga]], "https://discord.gg/addony-dlia-sirus-su-914079030125420565",
+  local reportbugButton = addFooter(L["Found a Bug?"], [[Interface\AddOns\WeakAuras\Media\Textures\bug_report.tga]], "https://github.com/NoM0Re/WeakAuras-WotLK/issues",
                                     L["Report bugs on our issue tracker."], nil, nil, true)
   reportbugButton:SetParent(tipFrame)
   reportbugButton:SetPoint("RIGHT", tipFrame, "RIGHT")
 
---   local wagoButton = addFooter(L["Find Auras"], [[Interface\AddOns\WeakAuras\Media\Textures\wago.tga]], "https://discord.gg/addony-dlia-sirus-su-914079030125420565",
---                                 L["Browse Wago, the largest collection of auras."], nil, nil, true)
---   wagoButton:SetParent(tipFrame)
---   wagoButton:SetPoint("RIGHT", reportbugButton, "LEFT", -footerSpacing, 0)
+  local wagoButton = addFooter(L["Find Auras"], [[Interface\AddOns\WeakAuras\Media\Textures\wago.tga]], "https://wago.io/search/imports/wow/all?q=3.3.5",
+                                L["Browse Wago, the largest collection of auras."], nil, nil, true)
+  wagoButton:SetParent(tipFrame)
+  wagoButton:SetPoint("RIGHT", reportbugButton, "LEFT", -footerSpacing, 0)
 
---   local companionButton
---   if not OptionsPrivate.Private.CompanionData.slugs then
---     companionButton = addFooter(L["Update Auras"], [[Interface\AddOns\WeakAuras\Media\Textures\wagoupdate_refresh.tga]], "https://weakauras.wtf",
---             L["Keep your Wago imports up to date with the Companion App."])
---     companionButton:SetParent(tipFrame)
---     companionButton:SetPoint("RIGHT", wagoButton, "LEFT", -footerSpacing, 0)
---   end
+  local companionButton
+  if not OptionsPrivate.Private.CompanionData.slugs then
+    companionButton = addFooter(L["Update Auras"], [[Interface\AddOns\WeakAuras\Media\Textures\wagoupdate_refresh.tga]], "https://weakauras.wtf",
+            L["Keep your Wago imports up to date with the Companion App."])
+    companionButton:SetParent(tipFrame)
+    companionButton:SetPoint("RIGHT", wagoButton, "LEFT", -footerSpacing, 0)
+  end
 
   frame.ShowTip = function(self)
     self.tipFrame:Show()
@@ -1612,6 +1616,41 @@ function OptionsPrivate.CreateFrame()
   local w, h = frame:GetSize()
   local left, right, top, bottom = w/2,-w/2, 0, h-25
   frame:SetClampRectInsets(left, right, top, bottom)
+
+  --[[ Add warning about Midnight support ending, to notify users about possible coming changes
+  local midnightWarning = CreateFrame("Frame", nil, frame)
+  midnightWarning:SetBackdrop({
+    bgFile = "Interface\\Addons\\WeakAuras\\Media\\Textures\\Square_FullWhite.tga",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true,
+    tileSize = 16,
+    edgeSize = 16,
+    insets = { left = 4, right = 4, top = 4, bottom = 4 }
+  })
+
+  midnightWarning:SetBackdropBorderColor(1, 0, 0, 1);
+  midnightWarning:SetBackdropColor(0, 0, 0, 1)
+
+  midnightWarning:SetPoint("TOPLEFT", frame, "BOTTOMLEFT")
+  midnightWarning:SetPoint("TOPRIGHT", frame, "BOTTOMRIGHT")
+  midnightWarning:SetHeight(50)
+
+  local text = midnightWarning:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+  text:SetPoint("LEFT", midnightWarning, "LEFT", 10, 0)
+  text:SetText(L["WeakAuras will not support Midnight. On release of the prepatch, WeakAuras will be disabled.\nRead more on our Patreon page https://patreon.com/WeakAuras"])
+
+  -- Fade-out animation and hide for rest of the session
+  local fade = midnightWarning:CreateAnimationGroup()
+  local alpha = fade:CreateAnimation("Alpha")
+  alpha:SetChange(-1)
+  alpha:SetDuration(0.5)
+  alpha:SetStartDelay(5) -- hide after 5 second
+  alpha:SetSmoothing("OUT")
+  fade:SetScript("OnFinished", function()
+    midnightWarning:Hide()
+  end)
+
+  fade:Play()]]
 
   return frame
 end
