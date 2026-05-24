@@ -10,7 +10,7 @@ Repository store type. This is a meta-archive of sorts.
 --]]
 
 local Archivist = select(2, ...).Archivist
-local Mixin = select(2, ...).Mixin
+-- local Mixin = select(2, ...).Mixin
 
 local subStoreMethods = {
   Validate = function(self)
