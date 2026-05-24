@@ -166,15 +166,15 @@ end
 local simpleFormatters = {
   AbbreviateNumbers = function(value)
     if type(value) == "string" then value = tonumber(value) end
-    return (type(value) == "number") and Private.AbbreviateNumbers(value) or value
+    return (type(value) == "number") and AbbreviateNumbers(value) or value
   end,
   AbbreviateLargeNumbers = function(value)
     if type(value) == "string" then value = tonumber(value) end
-    return (type(value) == "number") and Private.AbbreviateLargeNumbers(Round(value)) or value
+    return (type(value) == "number") and AbbreviateLargeNumbers(Round(value)) or value
   end,
   BreakUpLargeNumbers = function(value)
     if type(value) == "string" then value = tonumber(value) end
-    return (type(value) == "number") and Private.BreakUpLargeNumbers(value) or value
+    return (type(value) == "number") and BreakUpLargeNumbers(value) or value
   end,
   floor = function(value)
     if type(value) == "string" then value = tonumber(value) end
