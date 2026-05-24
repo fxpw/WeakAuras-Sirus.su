@@ -5,9 +5,9 @@ local Private = select(2, ...)
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
-local IsInRaid = Private.IsInRaid
-local GetNumSubgroupMembers = Private.GetNumSubgroupMembers
-local GetNumGroupMembers = Private.GetNumGroupMembers
+-- local IsInRaid = Private.IsInRaid
+-- local GetNumSubgroupMembers = Private.GetNumSubgroupMembers
+-- local GetNumGroupMembers = Private.GetNumGroupMembers
 
 local LibSerialize = LibStub("LibSerialize")
 local LibDeflate = LibStub:GetLibrary("LibDeflate")
@@ -534,9 +534,9 @@ local overridden = {
   ActionButton_HideOverlayGlow = WeakAuras.HideOverlayGlow,
   WeakAuras = FakeWeakAuras
 }
-for k, v in pairs(Private.AuraEnvOverrides) do
-  overridden[k] = v
-end
+-- for k, v in pairs(Private.AuraEnvOverrides) do
+--   overridden[k] = v
+-- end
 
 -- WORKAROUND API which return Mixin'd values need those mixin "rawgettable" in caller's fenv #5071
 local mixins = {}

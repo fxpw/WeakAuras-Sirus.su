@@ -8,7 +8,7 @@ local L = WeakAuras.L;
 -- Create region options table
 local function createOptions(id, data)
   local statusbarList = {}
-  OptionsPrivate.Mixin(statusbarList, SharedMedia:HashTable("statusbar"))
+  OptionsMixin(statusbarList, SharedMedia:HashTable("statusbar"))
 
   -- Region options
   local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;

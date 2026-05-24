@@ -6,7 +6,7 @@ local WeakAuras = WeakAuras
 local L = WeakAuras.L
 local SharedMedia = LibStub("LibSharedMedia-3.0")
 
-local tIndexOf = Private.tIndexOf
+-- local tIndexOf = Private.tIndexOf
 
 local default = {
   controlledChildren = {},
@@ -90,7 +90,7 @@ local controlPointFunctions = {
 
 local function createControlPoint(self)
   local controlPoint = CreateFrame("Frame", nil, self.parent)
-  Private.Mixin(controlPoint, controlPointFunctions)
+  Mixin(controlPoint, controlPointFunctions)
 
   controlPoint:SetWidth(16)
   controlPoint:SetHeight(16)

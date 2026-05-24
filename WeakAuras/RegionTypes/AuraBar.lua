@@ -1158,7 +1158,7 @@ local function create(parent)
 
   -- Create statusbar (inherit prototype)
   local bar = CreateFrame("Frame", nil, region);
-  Private.Mixin(bar, Private.SmoothStatusBarMixin);
+  Mixin(bar, Private.SmoothStatusBarMixin);
   fgMask:SetAllPoints(bar);
 
   -- Now create a bunch of textures

@@ -624,7 +624,7 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
     if propertyType == "textureLSM" then
       dialogControl = "WA_LSM30_StatusbarAtlas"
       local statusbarList = {}
-      OptionsPrivate.Mixin(statusbarList, SharedMedia:HashTable("statusbar"))
+      OptionsMixin(statusbarList, SharedMedia:HashTable("statusbar"))
       values = statusbarList
     end
 

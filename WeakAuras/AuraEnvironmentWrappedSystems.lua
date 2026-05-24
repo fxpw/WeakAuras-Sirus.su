@@ -50,7 +50,7 @@ local function Wrap(id, cloneId, system, funcs)
     local func = system[data.name]
     if type(func) == "function" then
       wrappedSystem[data.name] = function(...)
-        local packed = Private.SafePack(...)
+        -- local packed = Private.SafePack(...)
         local oldArg = select(data.arg, ...)
         if type(oldArg) == "function" then
           packed[data.arg] = function(...)

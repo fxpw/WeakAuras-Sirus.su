@@ -5,7 +5,7 @@ local internalVersion = 89
 
 -- Lua APIs
 local insert = table.insert
-local ipairs_reverse = Private.ipairs_reverse
+-- local ipairs_reverse = Private.ipairs_reverse
 
 -- WoW APIs
 local IsAddOnLoaded, LoadAddOn
@@ -31,9 +31,9 @@ local GetTime, UpdateAddOnCPUUsage, GetFrameCPUUsage, debugprofilestop, MAX_BOSS
 local CreateFrame, IsShiftKeyDown, GetScreenWidth, GetScreenHeight, GetCursorPosition
   = CreateFrame, IsShiftKeyDown, GetScreenWidth, GetScreenHeight, GetCursorPosition
 local debugstack, wipe, GetSpellInfo = debugstack, wipe, GetSpellInfo
-local IsInRaid, IsInGroup = Private.IsInRaid, Private.IsInGroup
-local GetNumGroupMembers = Private.GetNumGroupMembers
-local Round, MergeTable = Private.Round, Private.MergeTable
+-- local IsInRaid, IsInGroup = Private.IsInRaid, Private.IsInGroup
+-- local GetNumGroupMembers = Private.GetNumGroupMembers
+-- local Round, MergeTable = Private.Round, Private.MergeTable
 
 local ADDON_NAME = "WeakAuras"
 local WeakAuras = WeakAuras
@@ -2215,7 +2215,7 @@ local function RepairDatabase()
     -- set db version to current code version
     db.dbVersion = WeakAuras.InternalVersion()
     -- reinstall snapshots from history
-    local newDB = Private.Mixin({}, db.displays)
+    local newDB = Mixin({}, db.displays)
     coroutine.yield(1000)
     for id, data in pairs(db.displays) do
       local snapshot = Private.GetMigrationSnapshot(data.uid)

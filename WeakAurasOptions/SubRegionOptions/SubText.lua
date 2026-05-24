@@ -297,7 +297,7 @@ local function createOptions(parentData, data, index, subIndex)
   -- sub regions
   local anchors = {}
   for child in OptionsPrivate.Private.TraverseLeafsOrAura(parentData) do
-    OptionsPrivate.Mixin(anchors, OptionsPrivate.Private.GetAnchorsForData(child, "point"))
+    OptionsMixin(anchors, OptionsPrivate.Private.GetAnchorsForData(child, "point"))
   end
 
   -- Anchor Options
