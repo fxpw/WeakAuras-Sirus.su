@@ -2566,7 +2566,8 @@ Private.group_types = {
 Private.difficulty_types = {
   none = L["None"],
   normal = PLAYER_DIFFICULTY1,
-  heroic = PLAYER_DIFFICULTY2
+  heroic = PLAYER_DIFFICULTY2,
+  mythic = PLAYER_DIFFICULTY3
 }
 
 Private.raid_role_types = {
