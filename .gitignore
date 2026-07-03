@@ -1,4 +1,37 @@
-.release/
+# Local environment
 .env
+.env.*
+!.env.example
+
+# Local editor/OS files
+.vscode/
+.idea/
+.codex/
+*.suo
+*.user
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+
+# Release/package output
+.release/
 .release-changelog.md
+.release-changelog-section.md
+.discord-release.md
+*.zip
+*.tar.gz
+*.tgz
+
+# Generated local context dumps
 prompt.txt
