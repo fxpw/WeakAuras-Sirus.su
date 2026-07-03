@@ -60,4 +60,9 @@ For some examples of what WeakAuras can do, take a look at [wago.io](https://wag
 * You're a programmer yourself and want to contribute? Check out our [contributing guidelines](CONTRIBUTING.md) to get started!
 * Feel free to join our [Discord Community](https://discord.gg/UXSc7nt) to talk, get help and discuss everything WeakAuras!
 
+## Official Repository and License
+
+This is the official WeakAuras WotLK 3.3.5a port maintained at [NoM0Re/WeakAuras-WotLK](https://github.com/NoM0Re/WeakAuras-WotLK).
+WeakAuras WotLK is derived from WeakAuras2 and is distributed under the GNU General Public License version 2, as included in [LICENSE](LICENSE). Forks, copies, modified versions, and redistributions are permitted under the GPL, but redistributors must preserve the applicable copyright and license notices, keep source code available as required by the GPL, and clearly mark modified versions so they are not confused with the official release from this repository.
+Additional attribution and redistribution notes are available in [NOTICE](NOTICE).
 
