@@ -9,11 +9,17 @@ manual-changelog:
 ignore:
   - .codex
   - .github
+  - .discord-release.md
+  - .editorconfig
+  - .gitattributes
   - .gitignore
+  - .release
+  - .release-changelog-section.md
   - .luacheckrc
   - .luarc.json
   - .vscode
   - AGENTS.md
+  - CHANGELOG.md
   - CODE_OF_CONDUCT.md
   - CONTRIBUTING.md
   - README.md
