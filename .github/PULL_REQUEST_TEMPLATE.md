@@ -4,12 +4,23 @@ Please include a summary of the change and which issue is fixed. Please also inc
 <!-- A #ticketNumber will be sufficient. -->
 Fixes #(issue)
 
+## Scope
+
+This repository is maintained as a close WotLK 3.3.5a port of upstream WeakAuras2. Changes are easiest to review when they fix this WotLK port, improve 3.3.5a compatibility, or port existing upstream WeakAuras2 behavior.
+Maintainer policy: if a feature does not exist in upstream WeakAuras2, it is not accepted in this WotLK port. Please propose new feature ideas upstream first at [WeakAuras/WeakAuras2](https://github.com/WeakAuras/WeakAuras2).
+- [ ] This change fixes a bug in the WotLK port
+- [ ] This change is required for WotLK 3.3.5a compatibility
+- [ ] This change ports existing upstream WeakAuras2 behavior
+- [ ] This change was discussed with the maintainer before implementation
+- [ ] This change is not a port-only custom feature
+
 ## Type of change
 
 Please delete options that are not relevant.
 
 - [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Upstream behavior port (ports existing WeakAuras2 behavior)
+- [ ] WotLK compatibility fix
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] This change requires a documentation update
 
