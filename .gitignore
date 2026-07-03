@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+# Local agent/tool caches
+.agents-cache/
+
 # Local editor/OS files
 .vscode/
 .idea/
