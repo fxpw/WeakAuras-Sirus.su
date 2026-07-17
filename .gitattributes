@@ -29,7 +29,7 @@ prompt.txt          export-ignore
 *COPYING*           -export-ignore
 *NOTICE*            -export-ignore
 
-* text=auto
+* text=auto eol=lf
 
 # GitHub
 .github         text
