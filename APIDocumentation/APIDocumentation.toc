@@ -1,9 +1,9 @@
 ## Interface: 30300
 ## Title: APIDocumentation
 ## Author: Blizzard Entertainment
-## LoadOnDemand: 1
-## DefaultState: Enabled
-## Version: 1.0.1
+## Version: 1.0.2
+## IconTexture: Interface\Icons\INV_Misc_Book_09.blp
+## X-Flavor: 3.3.5
 ## Notes: A comprehensive documentation of the Blizzard API, including constants, functions, and events.
 ## Notes-deDE: Eine umfassende Dokumentation der Blizzard-API, einschließlich Konstanten, Funktionen und Ereignissen.
 ## Notes-frFR: Une documentation complète de l'API Blizzard, y compris les constantes, les fonctions et les événements.
@@ -12,8 +12,10 @@
 ## Notes-ruRU: Полная документация API Blizzard, включая константы, функции и события.
 ## Notes-zhTW: 一個全面的暴雪 API 文檔，包括常量、函數和事件。
 ## Notes-zhCN: 一份全面的暴雪 API 文档，包括常量、函数和事件。
-## X-Flavor: 3.3.5
 ## X-Category: Documentation
+## X-Website: https://www.github.com/NoM0Re/WeakAuras-WotLK
+## DefaultState: Enabled
+## LoadOnDemand: 1
 
 ## AddOn files
 BaseAPIMixin.lua
