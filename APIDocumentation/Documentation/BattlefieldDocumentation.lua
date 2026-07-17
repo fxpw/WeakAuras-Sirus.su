@@ -14,6 +14,7 @@ local Battlefield =
 		{
 			Name = "AcceptBattlefieldPort",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

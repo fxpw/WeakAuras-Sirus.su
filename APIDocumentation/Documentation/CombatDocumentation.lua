@@ -9,6 +9,7 @@ local Combat =
 		{
 			Name = "StartAttack",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -20,6 +21,7 @@ local Combat =
 		{
 			Name = "StopAttack",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{

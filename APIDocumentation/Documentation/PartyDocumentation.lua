@@ -14,6 +14,7 @@ local Party =
 		{
 			Name = "ClearPartyAssignment",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -183,6 +184,7 @@ local Party =
 		{
 			Name = "SetPartyAssignment",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

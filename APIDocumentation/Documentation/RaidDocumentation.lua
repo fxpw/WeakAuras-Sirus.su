@@ -14,6 +14,7 @@ local Raid =
 		{
 			Name = "ClearPartyAssignment",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -236,6 +237,7 @@ local Raid =
 		{
 			Name = "SetPartyAssignment",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

@@ -191,26 +191,31 @@ local MacClient =
 		{
 			Name = "MusicPlayer_BackTrack",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "MusicPlayer_NextTrack",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "MusicPlayer_PlayPause",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "MusicPlayer_VolumeDown",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "MusicPlayer_VolumeUp",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 	},

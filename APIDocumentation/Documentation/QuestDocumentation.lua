@@ -1041,6 +1041,7 @@ local Quest =
 		{
 			Name = "UseQuestLogSpecialItem",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

@@ -258,11 +258,13 @@ local Vehicle =
 		{
 			Name = "VehicleAimDownStart",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "VehicleAimDownStop",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
@@ -322,11 +324,13 @@ local Vehicle =
 		{
 			Name = "VehicleAimUpStart",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "VehicleAimUpStop",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{

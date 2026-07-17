@@ -701,6 +701,7 @@ local FrameAPI =
 		{
 			Name = "SetAttribute",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 			-- Documentation = { "Sets an attribute on the given frame" },
 
 			Arguments =
@@ -965,4 +966,3 @@ local FrameAPI =
 };
 
 APIDocumentation:AddDocumentationTable(FrameAPI);
-

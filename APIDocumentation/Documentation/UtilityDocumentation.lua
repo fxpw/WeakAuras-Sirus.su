@@ -245,11 +245,13 @@ local Utility =
 		{
 			Name = "RegisterForSave",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "RegisterForSavePerCharacter",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{

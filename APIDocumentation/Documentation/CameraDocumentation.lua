@@ -9,11 +9,13 @@ local Camera =
 		{
 			Name = "CameraOrSelectOrMoveStart",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "CameraOrSelectOrMoveStop",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

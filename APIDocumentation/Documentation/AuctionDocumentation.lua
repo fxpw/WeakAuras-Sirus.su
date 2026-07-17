@@ -52,6 +52,7 @@ local Auction =
 		{
 			Name = "CancelAuction",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

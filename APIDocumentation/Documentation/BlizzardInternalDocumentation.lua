@@ -119,16 +119,19 @@ local BlizzardInternal =
 		{
 			Name = "TargetDirectionEnemy",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "TargetDirectionFinished",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "TargetDirectionFriend",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{

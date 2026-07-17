@@ -9,6 +9,7 @@ local Spell =
 		{
 			Name = "CastSpell",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -20,6 +21,7 @@ local Spell =
 		{
 			Name = "CastSpellByID",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -31,6 +33,7 @@ local Spell =
 		{
 			Name = "CastSpellByName",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -527,16 +530,19 @@ local Spell =
 		{
 			Name = "SpellStopCasting",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "SpellStopTargeting",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "SpellTargetItem",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -549,6 +555,7 @@ local Spell =
 		{
 			Name = "SpellTargetUnit",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
