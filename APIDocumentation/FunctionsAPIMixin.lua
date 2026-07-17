@@ -19,7 +19,11 @@ function FunctionsAPIMixin:GetLinkHexColor()
 end
 
 function FunctionsAPIMixin:GetFullName(decorateOptionals, includeColorCodes)
-	return ("%s(%s)"):format(self:GetName(), self:GetArgumentString(decorateOptionals, includeColorCodes));
+	local functionName = self:GetName();
+	if self.System and self.System.Type == "ScriptObject" then
+		functionName = ("%s:%s"):format(self.System:GetName(), functionName);
+	end
+	return ("%s(%s)"):format(functionName, self:GetArgumentString(decorateOptionals, includeColorCodes));
 end
 
 function FunctionsAPIMixin:MatchesSearchString(searchString)

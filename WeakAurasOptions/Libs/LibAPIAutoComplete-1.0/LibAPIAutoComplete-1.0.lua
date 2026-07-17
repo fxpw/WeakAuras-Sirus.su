@@ -1025,6 +1025,8 @@ function lib:addLine(lines, apiInfo)
   local name
   if apiInfo.Type == "System" then
     name = apiInfo.Namespace
+  elseif apiInfo.Type == "ScriptObject" then
+    name = apiInfo.Name
   elseif apiInfo.Type == "Function" then
     name = apiInfo:GetFullName()
   elseif apiInfo.Type == "Event" then
@@ -1045,14 +1047,16 @@ function lib:Search(word, config)
   if word and #word > 3 then
     local lowerWord = word:lower();
     local nsName, rest = lowerWord:match("^([%w%_]+)(.*)")
-    local funcName = rest and rest:match("^%.([%w%_]+)")
+    local funcName = rest and rest:match("^[%.:]([%w%_]+)")
     for _, systemInfo in ipairs(APIDocumentation.systems) do
+      local systemName = systemInfo.Namespace or (systemInfo.Type == "ScriptObject" and systemInfo.Name)
       local systemMatch = (not config.disableSystems)
         and (nsName and #nsName >= 4)
-        and (systemInfo.Namespace and systemInfo.Namespace:lower():match(nsName))
+        and (systemName and systemName:lower():match(nsName))
 
       if not config.disableFunctions then
-        for _, apiInfo in ipairs(systemInfo.Functions) do
+        local functions = systemMatch and systemInfo.Type == "ScriptObject" and systemInfo:ListAllAPI().functions or systemInfo.Functions
+        for _, apiInfo in ipairs(functions) do
           if systemMatch then
             if funcName then
               if apiInfo:MatchesSearchString(funcName) then
@@ -1099,7 +1103,7 @@ function lib:ListSystems()
   end
   local lines = {}
   for i, systemInfo in ipairs(APIDocumentation.systems) do
-    if systemInfo.Namespace and #systemInfo.Functions > 0 then
+    if (systemInfo.Namespace or systemInfo.Type == "ScriptObject") and #systemInfo.Functions > 0 then
       self:addLine(lines, systemInfo)
     end
   end

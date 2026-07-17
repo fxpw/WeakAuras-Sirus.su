@@ -7,6 +7,7 @@ function APIDocumentationMixin:OnLoad()
 	self.tables = {};
 	self.functions = {};
 	self.systems = {};
+	self.scriptObjects = {};
 	self.fields = {};
 	self.events = {};
 	self.callbacks = {};
@@ -69,6 +70,11 @@ end
 
 function APIDocumentationMixin:HandleOpenDump(apiInfo)
 	if apiInfo.Type == "Function" then
+		if apiInfo.System and apiInfo.System.Type == "ScriptObject" then
+			self:WriteLine("Cannot /dump a script object method without an object instance");
+			return;
+		end
+
 		local dumpString;
 		local systemNamespace = apiInfo.System and apiInfo.System:GetNamespaceName() or nil;
 		if systemNamespace and systemNamespace ~= "" then
@@ -103,6 +109,8 @@ function APIDocumentationMixin:GetAPITableByTypeName(apiType)
 		return self.tables;
 	elseif apiType == "system" then
 		return self.systems;
+	elseif apiType == "scriptobject" then
+		return self.scriptObjects;
 	elseif apiType == "field" then
 		return self.fields;
 	elseif apiType == "event" then
@@ -144,6 +152,7 @@ end
 function APIDocumentationMixin:OutputStats()
 	self:WriteLine("Stats:");
 	self:WriteLineF("Total systems: %d", #self.systems);
+	self:WriteLineF("Total script objects: %d", #self.scriptObjects);
 	local totalFunctions = 0;
 	local totalEvents = 0;
 	local totalTables = 0;
@@ -377,7 +386,12 @@ function APIDocumentationMixin:AddField(documentationInfo)
 end
 
 function APIDocumentationMixin:AddSystem(documentationInfo)
-	Private.Mixin(documentationInfo, SystemsAPIMixin);
+	if documentationInfo.Type == "ScriptObject" then
+		Private.Mixin(documentationInfo, ScriptObjectsAPIMixin);
+		table.insert(self.scriptObjects, documentationInfo);
+	else
+		Private.Mixin(documentationInfo, SystemsAPIMixin);
+	end
 
 	table.insert(self.systems, documentationInfo);
 

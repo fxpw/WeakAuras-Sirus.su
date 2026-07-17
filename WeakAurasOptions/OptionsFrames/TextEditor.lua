@@ -602,6 +602,8 @@ local function ConstructTextEditor(frame)
     local name
     if apiInfo.Type == "System" then
       name = apiInfo.Namespace
+    elseif apiInfo.Type == "ScriptObject" then
+      name = apiInfo.Name
     elseif apiInfo.Type == "Function" then
       name = apiInfo:GetFullName()
     elseif apiInfo.Type == "Event" then
@@ -613,7 +615,7 @@ local function ConstructTextEditor(frame)
   local function APIListSystems()
     local results = {}
     for i, systemInfo in ipairs(APIDocumentation.systems) do
-      if systemInfo.Namespace and #systemInfo.Functions > 0 then
+      if (systemInfo.Namespace or systemInfo.Type == "ScriptObject") and #systemInfo.Functions > 0 then
         addLine(results, systemInfo)
       end
     end
@@ -631,14 +633,16 @@ local function ConstructTextEditor(frame)
     -- if search is composed with name of a namespace and a word separated by a dot, show matching function for matching namespace
 
     local nsName, rest = lowerWord:match("^([%w%_]+)(.*)")
-    local funcName = rest and rest:match("^%.([%w%_]+)")
+    local funcName = rest and rest:match("^[%.:]([%w%_]+)")
 
     for _, systemInfo in ipairs(APIDocumentation.systems) do
       -- search for namespaceName or namespaceName.functionName
+      local systemName = systemInfo.Namespace or (systemInfo.Type == "ScriptObject" and systemInfo.Name)
       local systemMatch = nsName and #nsName >= 4
-        and systemInfo.Namespace and systemInfo.Namespace:lower():match(nsName)
+        and systemName and systemName:lower():match(nsName)
 
-      for _, apiInfo in ipairs(systemInfo.Functions) do
+      local functions = systemMatch and systemInfo.Type == "ScriptObject" and systemInfo:ListAllAPI().functions or systemInfo.Functions
+      for _, apiInfo in ipairs(functions) do
         if systemMatch then
           if funcName then
             if apiInfo:MatchesSearchString(funcName) then
@@ -694,7 +698,7 @@ local function ConstructTextEditor(frame)
         button:SetEditable(false)
         button:SetHeight(20)
         button:SetRelativeWidth(1)
-        if apiInfo.Type ~= "System" and apiInfo.GetDetailedOutputLines then
+        if apiInfo.Type ~= "System" and apiInfo.Type ~= "ScriptObject" and apiInfo.GetDetailedOutputLines then
           local desc = table.concat(apiInfo:GetDetailedOutputLines(), "\n")
           button:SetDescription(desc)
         else
@@ -702,7 +706,7 @@ local function ConstructTextEditor(frame)
         end
         button.name = element.name
         button.editor = editor
-        button.isSystem = apiInfo.Type == "System"
+        button.isSystem = apiInfo.Type == "System" or apiInfo.Type == "ScriptObject"
         button:SetCallback("OnClick", snippetOnClickCallback)
         apiSearchScroll:AddChild(button)
       end
