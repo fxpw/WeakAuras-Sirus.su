@@ -619,6 +619,14 @@ local Spell =
 				{ Name = "notInterruptible", Type = "bool", Nilable = false },
 			},
 		},
+		{
+			Name = "IsSelectedSpell",
+			Type = "Function",
+		},
+		{
+			Name = "UpdateSpells",
+			Type = "Function",
+		},
 	},
 
 	Events =
@@ -784,6 +792,16 @@ local Spell =
 				{ Name = "rank", Type = "string", Nilable = false },
 				{ Name = "?", Type = "number", Nilable = false },
 				{ Name = "spellID", Type = "number", Nilable = false },
+			},
+		},
+		{
+			Name = "KnownCurrencyTypesUpdate",
+			Type = "Event",
+			LiteralName = "KNOWN_CURRENCY_TYPES_UPDATE",
+			Payload =
+			{
+				{ Name = "currencyType", Type = "string", Nilable = false },
+				{ Name = "count", Type = "number", Nilable = false },
 			},
 		},
 	},

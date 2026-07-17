@@ -173,11 +173,7 @@ local Targeting =
 			{
 				{ Name = "unit", Type = "UnitToken", Nilable = true },
 				{ Name = "name", Type = "string", Nilable = true },
-			},
-
-			Returns =
-			{
-				{ Name = "canTarget", Type = "bool", Nilable = false },
+				{ Name = "exactMatch", Type = "bool", Nilable = true },
 			},
 		},
 	},

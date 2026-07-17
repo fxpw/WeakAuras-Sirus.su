@@ -441,9 +441,10 @@ local Battlefield =
 			Name = "JoinBattlefield",
 			Type = "Function",
 
-			Returns =
+			Arguments =
 			{
-				{ Name = "canGroupJoin", Type = "bool", Nilable = false },
+				{ Name = "index", Type = "number", Nilable = false },
+				{ Name = "asGroup", Type = "bool", Nilable = false },
 			},
 		},
 		{
@@ -550,6 +551,14 @@ local Battlefield =
 			{
 				{ Name = "raidNum", Type = "number", Nilable = false },
 			},
+		},
+		{
+			Name = "GetBattlefieldInfo",
+			Type = "Function",
+		},
+		{
+			Name = "IsBattlefieldArena",
+			Type = "Function",
 		},
 	},
 

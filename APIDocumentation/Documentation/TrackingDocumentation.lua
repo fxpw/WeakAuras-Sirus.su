@@ -43,6 +43,10 @@ local Tracking =
 			},
 
 		},
+		{
+			Name = "GetTrackingTexture",
+			Type = "Function",
+		},
 	},
 
 	Events =

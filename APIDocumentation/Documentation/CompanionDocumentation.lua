@@ -7,6 +7,11 @@ local Companion =
 	Functions =
 	{
 		{
+			Name = "SummonRandomCritter",
+			Type = "Function",
+
+		},
+		{
 			Name = "CallCompanion",
 			Type = "Function",
 
@@ -86,11 +91,6 @@ local Companion =
 				{ Name = "type", Type = "string", Nilable = false },
 				{ Name = "index", Type = "luaIndex", Nilable = false },
 			},
-
-		},
-		{
-			Name = "SummonRandomCritter",
-			Type = "Function",
 
 		},
 	},

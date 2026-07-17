@@ -58,11 +58,6 @@ local Auction =
 			{
 				{ Name = "index", Type = "luaIndex", Nilable = false },
 			},
-
-			Returns =
-			{
-				{ Name = "canCancel", Type = "bool", Nilable = false },
-			},
 		},
 		{
 			Name = "ClickAuctionSellItemButton",

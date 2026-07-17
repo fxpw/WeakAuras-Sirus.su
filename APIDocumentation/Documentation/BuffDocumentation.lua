@@ -96,11 +96,37 @@ local Buff =
 				{ Name = "rank", Type = "string", Nilable = false },
 				{ Name = "icon", Type = "string", Nilable = false },
 				{ Name = "count", Type = "number", Nilable = false },
-				{ Name = "dispelType", Type = "string", Nilable = false },
-				{ Name = "duration", Type = "time_t", Nilable = false },
+				{ Name = "dispelType", Type = "string", Nilable = true },
+				{ Name = "duration", Type = "number", Nilable = false },
 				{ Name = "expires", Type = "number", Nilable = false },
-				{ Name = "caster", Type = "string", Nilable = false },
-				{ Name = "isStealable", Type = "1nil", Nilable = false },
+				{ Name = "caster", Type = "UnitToken", Nilable = true },
+				{ Name = "isStealable", Type = "bool", Nilable = true },
+			},
+		},
+		{
+			Name = "UnitBuff",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "unit", Type = "UnitToken", Nilable = false },
+				{ Name = "index", Type = "luaIndex", Nilable = true },
+				{ Name = "name", Type = "string", Nilable = true },
+				{ Name = "rank", Type = "string", Nilable = true },
+				{ Name = "filter", Type = "string", Nilable = true },
+			},
+
+			Returns =
+			{
+				{ Name = "name", Type = "string", Nilable = false },
+				{ Name = "rank", Type = "string", Nilable = false },
+				{ Name = "icon", Type = "string", Nilable = false },
+				{ Name = "count", Type = "number", Nilable = false },
+				{ Name = "dispelType", Type = "string", Nilable = true },
+				{ Name = "duration", Type = "number", Nilable = false },
+				{ Name = "expires", Type = "number", Nilable = false },
+				{ Name = "caster", Type = "UnitToken", Nilable = true },
+				{ Name = "isStealable", Type = "bool", Nilable = true },
 			},
 		},
 	},

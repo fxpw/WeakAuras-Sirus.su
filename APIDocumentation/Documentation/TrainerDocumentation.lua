@@ -273,6 +273,34 @@ local Trainer =
 			},
 
 		},
+		{
+			Name = "CollapseTrainerSkillLine",
+			Type = "Function",
+		},
+		{
+			Name = "ExpandTrainerSkillLine",
+			Type = "Function",
+		},
+		{
+			Name = "GetTrainerServiceStepIncrease",
+			Type = "Function",
+		},
+		{
+			Name = "GetTrainerSkillLineFilter",
+			Type = "Function",
+		},
+		{
+			Name = "GetTrainerSkillLines",
+			Type = "Function",
+		},
+		{
+			Name = "IsTrainerServiceSkillStep",
+			Type = "Function",
+		},
+		{
+			Name = "UnitCharacterPoints",
+			Type = "Function",
+		},
 	},
 
 	Events =

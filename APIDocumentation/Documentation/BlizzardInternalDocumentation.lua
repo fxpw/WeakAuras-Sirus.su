@@ -229,6 +229,10 @@ local BlizzardInternal =
 				{ Name = "userdata", Type = "userdata", Nilable = false },
 			},
 		},
+		{
+			Name = "GetTexLodBias",
+			Type = "Function",
+		},
 	},
 
 	Events =

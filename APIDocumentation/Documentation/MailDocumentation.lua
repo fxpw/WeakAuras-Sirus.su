@@ -356,6 +356,12 @@ local Mail =
 			Name = "SendMail",
 			Type = "Function",
 
+			Arguments =
+			{
+				{ Name = "recipient", Type = "string", Nilable = false },
+				{ Name = "subject", Type = "string", Nilable = false },
+				{ Name = "body", Type = "string", Nilable = false },
+			},
 		},
 		{
 			Name = "SetSendMailCOD",

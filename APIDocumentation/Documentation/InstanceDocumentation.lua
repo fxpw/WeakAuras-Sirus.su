@@ -46,6 +46,16 @@ local Instance =
 			Name = "GetInstanceInfo",
 			Type = "Function",
 
+			Returns =
+			{
+				{ Name = "name", Type = "string", Nilable = false },
+				{ Name = "type", Type = "string", Nilable = false },
+				{ Name = "difficulty", Type = "number", Nilable = false },
+				{ Name = "difficultyName", Type = "string", Nilable = false },
+				{ Name = "maxPlayers", Type = "number", Nilable = false },
+				{ Name = "playerDifficulty", Type = "number", Nilable = false },
+				{ Name = "isDynamicInstance", Type = "bool", Nilable = false },
+			},
 		},
 		{
 			Name = "GetInstanceLockTimeRemaining",
@@ -149,11 +159,6 @@ local Instance =
 		{
 			Name = "ResetInstances",
 			Type = "Function",
-
-			Returns =
-			{
-				{ Name = "canResetInstances", Type = "bool", Nilable = false },
-			},
 		},
 		{
 			Name = "RespondInstanceLock",

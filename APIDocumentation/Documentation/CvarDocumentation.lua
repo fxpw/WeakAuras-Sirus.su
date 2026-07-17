@@ -116,6 +116,14 @@ local Cvar =
 			},
 
 		},
+		{
+			Name = "GetCVarAbsoluteMax",
+			Type = "Function",
+		},
+		{
+			Name = "GetCVarMax",
+			Type = "Function",
+		},
 	},
 
 	Events =

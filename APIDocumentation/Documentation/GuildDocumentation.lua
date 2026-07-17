@@ -393,9 +393,9 @@ local Guild =
 			Name = "GuildDemote",
 			Type = "Function",
 
-			Returns =
+			Arguments =
 			{
-				{ Name = "canDemote", Type = "bool", Nilable = false },
+				{ Name = "name", Type = "string", Nilable = false },
 			},
 		},
 		{
@@ -406,19 +406,14 @@ local Guild =
 		{
 			Name = "GuildInfo",
 			Type = "Function",
-
-			Returns =
-			{
-				{ Name = "canEdit", Type = "bool", Nilable = false },
-			},
 		},
 		{
 			Name = "GuildInvite",
 			Type = "Function",
 
-			Returns =
+			Arguments =
 			{
-				{ Name = "canInvite", Type = "bool", Nilable = false },
+				{ Name = "name", Type = "string", Nilable = false },
 			},
 		},
 		{
@@ -430,9 +425,9 @@ local Guild =
 			Name = "GuildPromote",
 			Type = "Function",
 
-			Returns =
+			Arguments =
 			{
-				{ Name = "canPromote", Type = "bool", Nilable = false },
+				{ Name = "name", Type = "string", Nilable = false },
 			},
 		},
 		{

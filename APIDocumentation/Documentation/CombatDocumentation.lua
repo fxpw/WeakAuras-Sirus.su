@@ -38,6 +38,10 @@ local Combat =
 				{ Name = "inCombat", Type = "bool", Nilable = false },
 			},
 		},
+		{
+			Name = "AttackTarget",
+			Type = "Function",
+		},
 	},
 
 	Events =

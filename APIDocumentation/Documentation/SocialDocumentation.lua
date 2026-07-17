@@ -53,9 +53,8 @@ local Social =
 
 			Arguments =
 			{
-				{ Name = "fullname", Type = "string", Nilable = false },
+				{ Name = "name", Type = "string", Nilable = false },
 			},
-
 		},
 		{
 			Name = "GetFriendInfo",
@@ -63,25 +62,19 @@ local Social =
 
 			Arguments =
 			{
-				{ Name = "friendIndex", Type = "luaIndex", Nilable = false },
+				{ Name = "index", Type = "number", Nilable = false },
 			},
 
 			Returns =
 			{
-				{ Name = "presenceID", Type = "number", Nilable = false },
-				{ Name = "givenName", Type = "Kstring", Nilable = false },
-				{ Name = "surname", Type = "Kstring", Nilable = false },
-				{ Name = "toonName", Type = "string", Nilable = false },
-				{ Name = "toonID", Type = "number", Nilable = false },
-				{ Name = "client", Type = "string", Nilable = false },
-				{ Name = "isOnline", Type = "bool", Nilable = false },
-				{ Name = "lastOnline", Type = "number", Nilable = false },
-				{ Name = "isAFK", Type = "bool", Nilable = false },
-				{ Name = "isDND", Type = "bool", Nilable = false },
-				{ Name = "messageText", Type = "string", Nilable = false },
-				{ Name = "noteText", Type = "string", Nilable = false },
-				{ Name = "isFriend", Type = "bool", Nilable = false },
-				{ Name = "unknown", Type = "number", Nilable = false },
+				{ Name = "name", Type = "string", Nilable = false },
+				{ Name = "level", Type = "number", Nilable = false },
+				{ Name = "class", Type = "string", Nilable = false },
+				{ Name = "area", Type = "string", Nilable = false },
+				{ Name = "connected", Type = "bool", Nilable = true },
+				{ Name = "status", Type = "string", Nilable = false },
+				{ Name = "note", Type = "string", Nilable = false },
+				{ Name = "RAF", Type = "bool", Nilable = true },
 			},
 		},
 		{
@@ -104,8 +97,7 @@ local Social =
 
 			Returns =
 			{
-				{ Name = "totalBNet", Type = "number", Nilable = false },
-				{ Name = "numBNetOnline", Type = "number", Nilable = false },
+				{ Name = "numFriends", Type = "number", Nilable = false },
 			},
 		},
 		{
@@ -133,7 +125,7 @@ local Social =
 
 			Returns =
 			{
-				{ Name = "friendIndex", Type = "luaIndex", Nilable = false },
+				{ Name = "index", Type = "number", Nilable = false },
 			},
 		},
 		{
@@ -187,9 +179,7 @@ local Social =
 			Arguments =
 			{
 				{ Name = "name", Type = "string", Nilable = false },
-				{ Name = "note", Type = "string", Nilable = false },
 			},
-
 		},
 		{
 			Name = "SendWho",
@@ -205,6 +195,10 @@ local Social =
 			Name = "SetSelectedFriend",
 			Type = "Function",
 
+			Arguments =
+			{
+				{ Name = "index", Type = "number", Nilable = false },
+			},
 		},
 		{
 			Name = "SetSelectedIgnore",
@@ -240,6 +234,17 @@ local Social =
 				{ Name = "sortType", Type = "string", Nilable = false },
 			},
 
+		},
+		{
+			Name = "SetFriendNotes",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "index", Type = "number", Nilable = false },
+				{ Name = "name", Type = "string", Nilable = false },
+				{ Name = "note", Type = "string", Nilable = false },
+			},
 		},
 	},
 

@@ -65,11 +65,6 @@ local Vehicle =
 			{
 				{ Name = "seat", Type = "number", Nilable = false },
 			},
-
-			Returns =
-			{
-				{ Name = "canEject", Type = "bool", Nilable = false },
-			},
 		},
 		{
 			Name = "IsUsingVehicleControls",
@@ -200,16 +195,6 @@ local Vehicle =
 		{
 			Name = "UnitVehicleSeatCount",
 			Type = "Function",
-
-			Arguments =
-			{
-				{ Name = "unit", Type = "UnitToken", Nilable = false },
-			},
-
-			Returns =
-			{
-				{ Name = "numSeats", Type = "number", Nilable = false },
-			},
 		},
 		{
 			Name = "UnitVehicleSeatInfo",

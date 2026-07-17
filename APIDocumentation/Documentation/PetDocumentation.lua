@@ -349,6 +349,10 @@ local Pet =
 			},
 
 		},
+		{
+			Name = "GetPetHappiness",
+			Type = "Function",
+		},
 	},
 
 	Events =

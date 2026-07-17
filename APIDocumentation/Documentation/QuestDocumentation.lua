@@ -1049,6 +1049,10 @@ local Quest =
 			},
 
 		},
+		{
+			Name = "GetQuestLogRewardHonor",
+			Type = "Function",
+		},
 	},
 
 	Events =
