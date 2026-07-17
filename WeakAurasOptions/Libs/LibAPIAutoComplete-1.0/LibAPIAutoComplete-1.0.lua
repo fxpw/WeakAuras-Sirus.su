@@ -1031,6 +1031,8 @@ function lib:addLine(lines, apiInfo)
     name = apiInfo:GetFullName()
   elseif apiInfo.Type == "Event" then
     name = apiInfo.LiteralName
+  elseif apiInfo.Type == "CVar" then
+    name = apiInfo.Name
   end
   tinsert(lines, { name = name, apiInfo = apiInfo })
 end
@@ -1080,6 +1082,20 @@ function lib:Search(word, config)
           end
         else
           for _, apiInfo in ipairs(systemInfo.Events) do
+            if apiInfo:MatchesSearchString(lowerWord) then
+              self:addLine(lines, apiInfo)
+            end
+          end
+        end
+      end
+
+      if systemInfo.CVars then
+        if systemMatch and rest == "" then
+          for _, apiInfo in ipairs(systemInfo.CVars) do
+            self:addLine(lines, apiInfo)
+          end
+        else
+          for _, apiInfo in ipairs(systemInfo.CVars) do
             if apiInfo:MatchesSearchString(lowerWord) then
               self:addLine(lines, apiInfo)
             end

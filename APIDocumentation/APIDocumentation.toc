@@ -19,6 +19,7 @@
 BaseAPIMixin.lua
 FieldsAPIMixin.lua
 FunctionsAPIMixin.lua
+CVarsAPIMixin.lua
 SystemsAPIMixin.lua
 ScriptObjectsAPIMixin.lua
 TablesAPIMixin.lua

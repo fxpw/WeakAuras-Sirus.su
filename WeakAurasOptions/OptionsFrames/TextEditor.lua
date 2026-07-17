@@ -608,6 +608,8 @@ local function ConstructTextEditor(frame)
       name = apiInfo:GetFullName()
     elseif apiInfo.Type == "Event" then
       name = apiInfo.LiteralName
+    elseif apiInfo.Type == "CVar" then
+      name = apiInfo.Name
     end
     table.insert(results, { name = name, apiInfo = apiInfo })
   end
@@ -666,6 +668,20 @@ local function ConstructTextEditor(frame)
         for _, apiInfo in ipairs(systemInfo.Events) do
           if apiInfo:MatchesSearchString(lowerWord) then
             addLine(results, apiInfo)
+          end
+        end
+      end
+
+      if systemInfo.CVars then
+        if systemMatch and rest == "" then
+          for _, apiInfo in ipairs(systemInfo.CVars) do
+            addLine(results, apiInfo)
+          end
+        else
+          for _, apiInfo in ipairs(systemInfo.CVars) do
+            if apiInfo:MatchesSearchString(lowerWord) then
+              addLine(results, apiInfo)
+            end
           end
         end
       end

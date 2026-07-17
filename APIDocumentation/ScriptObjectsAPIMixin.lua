@@ -47,6 +47,7 @@ local function CollectScriptObjectAPI(scriptObject, searchString)
 		functions = {},
 		events = {},
 		tables = {},
+		cvars = {},
 	};
 	local seen = {
 		functions = {},
