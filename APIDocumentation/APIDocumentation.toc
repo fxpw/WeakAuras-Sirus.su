@@ -120,6 +120,7 @@ Documentation\TradeDocumentation.lua
 Documentation\TradeskillDocumentation.lua
 Documentation\TrainerDocumentation.lua
 Documentation\TutorialDocumentation.lua
+Documentation\FrameXMLDocumentation.lua
 Documentation\UivisualDocumentation.lua
 Documentation\UncategorizedDocumentation.lua
 Documentation\UncategorizedeventsDocumentation.lua
