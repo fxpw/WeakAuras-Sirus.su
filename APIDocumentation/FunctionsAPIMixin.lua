@@ -1,6 +1,7 @@
 local addonName, Private = ...
 
-FunctionsAPIMixin = Private.CreateFromMixins(BaseAPIMixin);
+local FunctionsAPIMixin = Private.CreateFromMixins(Private.BaseAPIMixin);
+Private.FunctionsAPIMixin = FunctionsAPIMixin;
 
 function FunctionsAPIMixin:GetParentName()
 	if self.System then

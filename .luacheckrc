@@ -19573,7 +19573,6 @@ globals = {
 	"MinutesToTime", "FormatShortDate", "NUMBER_ABBREVIATION_DATA", "GetLocalizedNumberAbbreviationData",
 	"WeakAurasProfilingReportTitleText", "WeakAurasRealTimeProfiling", "WeakAurasRealTimeProfilingTitleText",
 	"seconds", "NUM_CHAT_WINDOWS","GetNumGlyphSockets", "GetGlyphLink", "GetGlyphSocketInfo",
-	"APIDocumentationMixin", "BaseAPIMixin","EventsAPIMixin", "FieldsAPIMixin", "FunctionsAPIMixin",
-	"SystemsAPIMixin", "ScriptObjectsAPIMixin", "CVarsAPIMixin", "TablesAPIMixin", "CopyToClipboard", "ChatFrame_OpenChat", "ChatTypeInfo",
+	"CopyToClipboard", "ChatFrame_OpenChat", "ChatTypeInfo",
 	"EditBox_ClearFocus", "EditBox_ClearHighlight", "EditBox_HighlightText", "AwesomeCVar"
 }

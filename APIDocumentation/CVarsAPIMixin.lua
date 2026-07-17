@@ -1,6 +1,7 @@
 local addonName, Private = ...
 
-CVarsAPIMixin = Private.CreateFromMixins(BaseAPIMixin);
+local CVarsAPIMixin = Private.CreateFromMixins(Private.BaseAPIMixin);
+Private.CVarsAPIMixin = CVarsAPIMixin;
 
 function CVarsAPIMixin:GetParentName()
 	if self.System then

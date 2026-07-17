@@ -1,6 +1,15 @@
 local addonName, Private = ...
 
-APIDocumentationMixin = {};
+local TablesAPIMixin = Private.TablesAPIMixin;
+local FunctionsAPIMixin = Private.FunctionsAPIMixin;
+local CVarsAPIMixin = Private.CVarsAPIMixin;
+local EventsAPIMixin = Private.EventsAPIMixin;
+local FieldsAPIMixin = Private.FieldsAPIMixin;
+local ScriptObjectsAPIMixin = Private.ScriptObjectsAPIMixin;
+local SystemsAPIMixin = Private.SystemsAPIMixin;
+
+Private.APIDocumentationMixin = {};
+local APIDocumentationMixin = Private.APIDocumentationMixin;
 
 -- "public"
 function APIDocumentationMixin:OnLoad()

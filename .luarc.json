@@ -12,8 +12,6 @@
     "invisible"
   ],
   "diagnostics.globals": [
-    "ScriptObjectsAPIMixin",
-    "CVarsAPIMixin",
     "AbbreviateLargeNumbers",
     "ACCEPT",
     "AceGUIWeakAurasMultiLineEditBoxInsertLink",

@@ -1,6 +1,8 @@
 local addonName, Private = ...
 
-SystemsAPIMixin = Private.CreateFromMixins(BaseAPIMixin);
+local BaseAPIMixin = Private.BaseAPIMixin;
+local SystemsAPIMixin = Private.CreateFromMixins(BaseAPIMixin);
+Private.SystemsAPIMixin = SystemsAPIMixin;
 
 function SystemsAPIMixin:GetType()
 	return "system";
@@ -103,10 +105,10 @@ function SystemsAPIMixin:FindAllAPIMatches(apiToSearchFor)
 		cvars = {},
 	};
 
-	APIDocumentationMixin:AddAllMatches(self.Tables, matches.tables, apiToSearchFor);
-	APIDocumentationMixin:AddAllMatches(self.Functions, matches.functions, apiToSearchFor);
-	APIDocumentationMixin:AddAllMatches(self.Events, matches.events, apiToSearchFor);
-	APIDocumentationMixin:AddAllMatches(self.CVars, matches.cvars, apiToSearchFor);
+	Private.APIDocumentationMixin:AddAllMatches(self.Tables, matches.tables, apiToSearchFor);
+	Private.APIDocumentationMixin:AddAllMatches(self.Functions, matches.functions, apiToSearchFor);
+	Private.APIDocumentationMixin:AddAllMatches(self.Events, matches.events, apiToSearchFor);
+	Private.APIDocumentationMixin:AddAllMatches(self.CVars, matches.cvars, apiToSearchFor);
 
 	-- Only return something if we matched anything
 	for name, subTable in pairs(matches) do

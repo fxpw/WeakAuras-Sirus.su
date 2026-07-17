@@ -1,6 +1,8 @@
 local addonName, Private = ...
 
-ScriptObjectsAPIMixin = Private.CreateFromMixins(SystemsAPIMixin);
+local SystemsAPIMixin = Private.SystemsAPIMixin;
+local ScriptObjectsAPIMixin = Private.CreateFromMixins(SystemsAPIMixin);
+Private.ScriptObjectsAPIMixin = ScriptObjectsAPIMixin;
 
 function ScriptObjectsAPIMixin:GetType()
 	return "scriptobject";
