@@ -98,7 +98,7 @@ local function SearchBoxTemplateClearButton_OnClick(self)
 end
 
 local function GetParentName(frame)
-  return frame:GetName() or frame
+  return frame:GetName() or tostring(frame)
 end
 
 WeakAuras.XMLTemplates = {
@@ -156,7 +156,7 @@ WeakAuras.XMLTemplates = {
     instructions:SetTextColor(0.35, 0.35, 0.35)
     frame.Instructions = instructions
 
-    -- Skripts
+    -- Scripts
     frame:SetScript("OnTextChanged", InputBoxInstructions_OnTextChanged)
     frame:SetScript("OnDisable", InputBoxInstructions_OnDisable)
     frame:SetScript("OnEnable", InputBoxInstructions_OnEnable)
@@ -389,7 +389,7 @@ WeakAuras.XMLTemplates = {
     frame:SetFrameLevel(125)
 
     -- Maximize Button
-    local maximizeButton = CreateFrame("Button", "MaximizeButton", frame)
+    local maximizeButton = CreateFrame("Button", (GetParentName(frame)) .. "MaximizeButton", frame)
     maximizeButton:SetFrameLevel(frame:GetFrameLevel() + 1)
     maximizeButton:SetAllPoints(frame)
     maximizeButton:Hide()
@@ -408,7 +408,7 @@ WeakAuras.XMLTemplates = {
     maximizeButton:GetHighlightTexture():SetTexCoord(0.449219, 0.589844, 0.0078125, 0.304688)
 
     -- Minimize Button
-    local minimizeButton = CreateFrame("Button", "MinimizeButton", frame)
+    local minimizeButton = CreateFrame("Button", (GetParentName(frame)) .. "MinimizeButton", frame)
     minimizeButton:SetFrameLevel(frame:GetFrameLevel() + 1)
     minimizeButton:SetAllPoints(frame)
     frame.MinimizeButton = minimizeButton
