@@ -35,7 +35,7 @@ end
 
 do
 	local widgetType = "Dropdown-Pullout"
-	local widgetVersion = 6
+	local widgetVersion = 7
 
 	--[[ Static data ]]--
 
@@ -350,7 +350,7 @@ end
 
 do
 	local widgetType = "Dropdown"
-	local widgetVersion = 37
+	local widgetVersion = 38
 
 	--[[ Static data ]]--
 
