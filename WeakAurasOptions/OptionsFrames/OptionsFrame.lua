@@ -493,7 +493,12 @@ function OptionsPrivate.CreateFrame()
                      .. "• " .. L["Our translators (too many to name)"] .. "\n"
                      .. "• " .. L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] .. "\n"
 
-  thanksList = thanksList .. lineWrapDiscordList(OptionsPrivate.Private.DiscordList)
+  thanksList = thanksList .. lineWrapDiscordList(OptionsPrivate.Private.DiscordList) .. "\n"
+                     .. "• " .. L["And our Community Heroes:"] .. "\n"
+                     .. "• " .. L["Awesome WotLK: FrostAtom, Widget, noname"] .. "\n"
+                     .. "• " .. L["DBM Warmane: Zidras"] .. "\n"
+                     .. "• " .. L["MerfinUI: Merfin"] .. "\n"
+                     .. "• " .. L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"]
 
   local footerSpacing = 4
   local thanksListCJ = lineWrapDiscordList(OptionsPrivate.Private.DiscordListCJ)
@@ -505,7 +510,7 @@ function OptionsPrivate.CreateFrame()
   discordButton:SetPoint("LEFT", tipFrame, "LEFT")
 
   local documentationButton = addFooter(L["Documentation"], [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/NoM0Re/WeakAuras-WotLK/wiki",
-            L["Check out our wiki for a large collection of examples and snippets."])
+            L["Check out our wiki for a large collection of examples and snippets."], nil, nil, nil, 420)
   documentationButton:SetParent(tipFrame)
   documentationButton:SetPoint("LEFT", discordButton, "RIGHT", footerSpacing, 0)
 
@@ -531,8 +536,8 @@ function OptionsPrivate.CreateFrame()
 
   local awesomeWotlkButton
   if not WeakAuras.IsAwesomeEnabled() then
-    awesomeWotlkButton = addFooter("Awesome WotLK", [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/noname08662/awesome_wotlk",
-                                    L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."])
+    awesomeWotlkButton = addFooter("Awesome WotLK", [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/awesome_wotlk",
+                                    L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."], nil, nil, nil, 670)
     awesomeWotlkButton:SetParent(tipFrame)
     awesomeWotlkButton:SetPoint("LEFT", changelogButton or thanksButton, "RIGHT", footerSpacing, 0)
   end
