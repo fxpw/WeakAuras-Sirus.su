@@ -236,6 +236,7 @@ end
 
 local function CreateTrimScrollBarButton(parent, direction)
   local button = CreateFrame("Button", nil, parent)
+  button:SetFrameLevel(parent:GetFrameLevel() + 1)
   button.direction = direction
   button:SetSize(trimScrollBarButtonSize, trimScrollBarButtonHeight)
 
@@ -333,6 +334,7 @@ local function CreateTrimScrollBarArtwork(scrollBar)
   scrollBar.Backplate = backplate
 
   local background = CreateFrame("Frame", nil, scrollBar)
+  background:SetFrameLevel(scrollBar:GetFrameLevel() + 1)
   background:SetAllPoints(scrollBar)
   scrollBar.Background = background
 
@@ -350,12 +352,14 @@ local function CreateTrimScrollBarArtwork(scrollBar)
   SetTrimTexture(background.Middle, trimScrollBarProportionalVerticalTexture, 25, 32, 0.0078125, 0.203125, 0, 0.03125, 25, 32)
 
   local track = CreateFrame("Frame", nil, scrollBar)
+  track:SetFrameLevel(scrollBar:GetFrameLevel() + 1)
   track:SetPoint("TOPLEFT", scrollBar, "TOPLEFT", trimScrollBarTrackInsetLeft, -trimScrollBarTrackInsetTop)
   track:SetPoint("BOTTOMRIGHT", scrollBar, "BOTTOMRIGHT", -trimScrollBarTrackInsetRight, trimScrollBarTrackInsetBottom)
   track:EnableMouse(true)
   scrollBar.Track = track
 
   local thumb = CreateFrame("Frame", nil, track)
+  thumb:SetFrameLevel(track:GetFrameLevel() + 1)
   thumb:SetWidth(trimScrollBarButtonSize)
   thumb:SetPoint("LEFT", track, "LEFT", trimScrollBarThumbOffsetX, 0)
   thumb:EnableMouse(true)
@@ -473,6 +477,7 @@ end
 local function CreateLegacyScrollBox()
   local scrollBox = CreateFrame("ScrollFrame", nil, UIParent)
   local content = CreateFrame("Frame", nil, scrollBox)
+  content:SetFrameLevel(scrollBox:GetFrameLevel() + 1)
   scrollBox:SetScrollChild(content)
   scrollBox:SetSize(400, 150)
   scrollBox:EnableMouseWheel(true)
@@ -534,6 +539,7 @@ local function CreateLegacyScrollBox()
       local button = self.buttons[index]
       if not button then
         button = CreateFrame("Button", nil, content)
+        button:SetFrameLevel(content:GetFrameLevel() + 1)
         button:SetHeight(lineHeight)
         button:SetNormalFontObject(GameFontNormalSmall)
         local fontString = button:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")

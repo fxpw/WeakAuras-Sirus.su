@@ -67,27 +67,33 @@ end
 
 local function ConstructMover(frame)
   local topAndBottom = CreateFrame("Frame", nil, frame)
+  topAndBottom:SetFrameLevel(frame:GetFrameLevel() + 1)
   topAndBottom:SetClampedToScreen(true)
   topAndBottom:SetSize(25, 45)
   topAndBottom:SetPoint("LEFT", frame, "RIGHT", 1, 0)
   local top = CreateFrame("Button", nil, topAndBottom)
+  top:SetFrameLevel(topAndBottom:GetFrameLevel() + 1)
   top:SetSize(25, 25)
   top:SetPoint("TOP", topAndBottom)
   top:SetFrameStrata("BACKGROUND")
   local bottom = CreateFrame("Button", nil, topAndBottom)
+  bottom:SetFrameLevel(topAndBottom:GetFrameLevel() + 1)
   bottom:SetSize(25, 25)
   bottom:SetPoint("BOTTOM", topAndBottom)
   bottom:SetFrameStrata("BACKGROUND")
 
   local leftAndRight = CreateFrame("Frame", nil, frame)
+  leftAndRight:SetFrameLevel(frame:GetFrameLevel() + 1)
   leftAndRight:SetClampedToScreen(true)
   leftAndRight:SetSize(55, 35)
   leftAndRight:SetPoint("TOP", frame, "BOTTOM", 0, 1)
   local left = CreateFrame("Button", nil, leftAndRight)
+  left:SetFrameLevel(leftAndRight:GetFrameLevel() + 1)
   left:SetSize(35, 35)
   left:SetPoint("LEFT", leftAndRight, 0, 0.9)
   left:SetFrameStrata("BACKGROUND")
   local right = CreateFrame("Button", nil, leftAndRight)
+  right:SetFrameLevel(leftAndRight:GetFrameLevel() + 1)
   right:SetSize(35, 35)
   right:SetPoint("RIGHT", leftAndRight)
   right:SetFrameStrata("BACKGROUND")
@@ -145,6 +151,7 @@ local function ConstructSizer(frame)
   -- topright, bottomright, bottomleft, topleft
 
   local topright = CreateFrame("Frame", nil, frame)
+  topright:SetFrameLevel(frame:GetFrameLevel() + 1)
   topright:EnableMouse()
   topright:SetWidth(16)
   topright:SetHeight(16)
@@ -177,6 +184,7 @@ local function ConstructSizer(frame)
   end
 
   local bottomright = CreateFrame("Frame", nil, frame)
+  bottomright:SetFrameLevel(frame:GetFrameLevel() + 1)
   bottomright:EnableMouse()
   bottomright:SetWidth(16)
   bottomright:SetHeight(16)
@@ -209,6 +217,7 @@ local function ConstructSizer(frame)
   end
 
   local bottomleft = CreateFrame("Frame", nil, frame)
+  bottomleft:SetFrameLevel(frame:GetFrameLevel() + 1)
   bottomleft:EnableMouse()
   bottomleft:SetSize(16, 16)
   bottomleft:SetHeight(16)
@@ -241,6 +250,7 @@ local function ConstructSizer(frame)
   end
 
   local topleft = CreateFrame("Frame", nil, frame)
+  topleft:SetFrameLevel(frame:GetFrameLevel() + 1)
   topleft:EnableMouse()
   topleft:SetWidth(16)
   topleft:SetHeight(16)
@@ -275,6 +285,7 @@ local function ConstructSizer(frame)
   -- top, right, bottom, left
 
   local top = CreateFrame("Frame", nil, frame)
+  top:SetFrameLevel(frame:GetFrameLevel() + 1)
   top:EnableMouse()
   top:SetHeight(8)
   top:SetPoint("TOPRIGHT", topright, "TOPLEFT")
@@ -297,6 +308,7 @@ local function ConstructSizer(frame)
   end
 
   local right = CreateFrame("Frame", nil, frame)
+  right:SetFrameLevel(frame:GetFrameLevel() + 1)
   right:EnableMouse()
   right:SetWidth(8)
   right:SetPoint("BOTTOMRIGHT", bottomright, "TOPRIGHT")
@@ -319,6 +331,7 @@ local function ConstructSizer(frame)
   end
 
   local bottom = CreateFrame("Frame", nil, frame)
+  bottom:SetFrameLevel(frame:GetFrameLevel() + 1)
   bottom:EnableMouse()
   bottom:SetHeight(8)
   bottom:SetPoint("BOTTOMLEFT", bottomleft, "BOTTOMRIGHT")
@@ -342,6 +355,7 @@ local function ConstructSizer(frame)
   end
 
   local left = CreateFrame("Frame", nil, frame)
+  left:SetFrameLevel(frame:GetFrameLevel() + 1)
   left:EnableMouse()
   left:SetWidth(8)
   left:SetPoint("TOPLEFT", topleft, "BOTTOMLEFT")
@@ -1017,6 +1031,7 @@ end
 
 local function ConstructMoverSizer(parent)
   local frame = CreateFrame("Frame", nil, parent)
+  frame:SetFrameLevel(parent:GetFrameLevel() + 1)
   frame:SetBackdrop({
     edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
     edgeSize = 12,
@@ -1039,6 +1054,7 @@ local function ConstructMoverSizer(parent)
   frame.topleft.Clear()
 
   local mover = CreateFrame("Frame", nil, frame)
+  mover:SetFrameLevel(frame:GetFrameLevel() + 1)
   mover:EnableMouse()
   mover.moving = {}
   mover.interims = {}

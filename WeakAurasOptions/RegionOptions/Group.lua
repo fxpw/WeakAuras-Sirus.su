@@ -678,6 +678,7 @@ end
 local function createDefaultIcon(parent)
   -- default Icon
   local defaultIcon = CreateFrame("Frame", nil, parent);
+  defaultIcon:SetFrameLevel(parent:GetFrameLevel() + 1)
   parent.defaultIcon = defaultIcon;
 
   local t1 = defaultIcon:CreateTexture(nil, "ARTWORK");

@@ -2237,6 +2237,7 @@ local function ConstructUpdateFrame(frame)
   ---@class GroupUpdateFrame: AceGUIFrame
   local group = AceGUI:Create("ScrollFrame");
   group.frame:SetParent(frame);
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -63);
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -16, 46);
   group.frame:Hide();
@@ -2248,7 +2249,7 @@ local function ConstructUpdateFrame(frame)
   local viewCodeButton = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
   viewCodeButton:SetScript("OnClick", function() OptionsPrivate.OpenCodeReview(group.scamCheckResult) end);
   viewCodeButton:SetPoint("BOTTOMLEFT", 20, -24);
-  viewCodeButton:SetFrameLevel(viewCodeButton:GetFrameLevel() + 1)
+  viewCodeButton:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   viewCodeButton:SetHeight(20);
   viewCodeButton:SetWidth(160);
   viewCodeButton:SetText(L["View custom code"])
@@ -2256,7 +2257,7 @@ local function ConstructUpdateFrame(frame)
   local importButton = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
   importButton:SetScript("OnClick", function() group:Import() end);
   importButton:SetPoint("BOTTOMRIGHT", -190, -24);
-  importButton:SetFrameLevel(importButton:GetFrameLevel() + 1)
+  importButton:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   importButton:SetHeight(20);
   importButton:SetWidth(160);
   importButton:SetText(L["Import"])
@@ -2264,7 +2265,7 @@ local function ConstructUpdateFrame(frame)
   local closeButton = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
   closeButton:SetScript("OnClick", function() group:Close(false) end);
   closeButton:SetPoint("BOTTOMRIGHT", -20, -24);
-  closeButton:SetFrameLevel(closeButton:GetFrameLevel() + 1)
+  closeButton:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   closeButton:SetHeight(20);
   closeButton:SetWidth(160);
   closeButton:SetText(L["Close"])

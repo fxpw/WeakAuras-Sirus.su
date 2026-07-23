@@ -377,6 +377,7 @@ local function createThumbnail()
   border:SetTexCoord(0.2, 0.8, 0.2, 0.8);
 
   local region = CreateFrame("Frame", nil, borderframe);
+  region:SetFrameLevel(borderframe:GetFrameLevel() + 1)
   borderframe.region = region;
   region:SetWidth(32);
   region:SetHeight(32);

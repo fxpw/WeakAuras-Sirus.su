@@ -100,6 +100,7 @@ Constructor
 -------------------------------------------------------------------------------]]
 local function Constructor()
 	local frame = CreateFrame("Frame", string.format("%s%d", Type, AceGUI:GetNextWidgetNum(Type)), InterfaceOptionsFramePanelContainer)
+	frame:SetFrameLevel(InterfaceOptionsFramePanelContainer:GetFrameLevel() + 1)
 	frame:Hide()
 
 	-- support functions for the Blizzard Interface Options
@@ -124,6 +125,7 @@ local function Constructor()
 
 	--Container Support
 	local content = CreateFrame("Frame", nil, frame)
+	content:SetFrameLevel(frame:GetFrameLevel() + 1)
 	content:SetPoint("TOPLEFT", 10, -10)
 	content:SetPoint("BOTTOMRIGHT", -10, 10)
 

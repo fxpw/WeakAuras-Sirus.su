@@ -1236,6 +1236,7 @@ local methods = {
         self:RestoreIcon();
       end
       self.frame:SetParent(self.frame.temp.parent)
+      self.frame:SetFrameLevel(self.frame.temp.parent:GetFrameLevel() + 1)
       self.frame:SetFrameStrata(self.frame.temp.strata)
       self.frame.temp = nil
     end
@@ -1376,6 +1377,7 @@ local methods = {
       iconButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
       tinsert(self.statusIcons.buttons, iconButton)
       iconButton:SetParent(self.statusIcons)
+      iconButton:SetFrameLevel(self.statusIcons:GetFrameLevel() + 1)
       iconButton.key = key
       iconButton:SetSize(16, 16)
     end
@@ -1771,6 +1773,7 @@ local function Constructor()
   button.data = {};
 
   local offset = CreateFrame("Frame", nil, button)
+  offset:SetFrameLevel(button:GetFrameLevel() + 1)
   button.offset = offset
   offset:SetPoint("TOP", button, "TOP");
   offset:SetPoint("BOTTOM", button, "BOTTOM");
@@ -1805,6 +1808,7 @@ local function Constructor()
 
   ---@class Button
   local view = CreateFrame("Button", nil, button);
+  view:SetFrameLevel(button:GetFrameLevel() + 1)
   button.view = view;
   view:SetWidth(16);
   view:SetHeight(16);
@@ -1822,6 +1826,7 @@ local function Constructor()
   view.visibility = 0;
 
   local renamebox = CreateFrame("EditBox", nil, button);
+  renamebox:SetFrameLevel(button:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["InputBoxTemplate"](renamebox)
   renamebox:SetHeight(14);
   renamebox:SetPoint("TOP", button, "TOP");
@@ -1850,6 +1855,7 @@ local function Constructor()
   end);
 
   local group = CreateFrame("Button", nil, button);
+  group:SetFrameLevel(button:GetFrameLevel() + 1)
   button.group = group;
   group:SetWidth(16);
   group:SetHeight(16);
@@ -1865,6 +1871,7 @@ local function Constructor()
   group:SetScript("OnLeave", Hide_Tooltip);
 
   local ungroup = CreateFrame("Button", nil, button);
+  ungroup:SetFrameLevel(button:GetFrameLevel() + 1)
   button.ungroup = ungroup;
   ungroup:SetWidth(11);
   ungroup:SetHeight(11);
@@ -1880,6 +1887,7 @@ local function Constructor()
   ungroup:Hide();
 
   local upgroup = CreateFrame("Button", nil, button);
+  upgroup:SetFrameLevel(button:GetFrameLevel() + 1)
   button.upgroup = upgroup;
   upgroup:SetWidth(11);
   upgroup:SetHeight(11);
@@ -1897,6 +1905,7 @@ local function Constructor()
   upgroup:Hide();
 
   local downgroup = CreateFrame("Button", nil, button);
+  downgroup:SetFrameLevel(button:GetFrameLevel() + 1)
   button.downgroup = downgroup;
   downgroup:SetWidth(11);
   downgroup:SetHeight(11);
@@ -1916,6 +1925,7 @@ local function Constructor()
 
   ---@class Button
   local expand = CreateFrame("Button", nil, button);
+  expand:SetFrameLevel(button:GetFrameLevel() + 1)
   button.expand = expand;
   expand.expanded = true;
   expand.disabled = true;
@@ -1933,6 +1943,7 @@ local function Constructor()
   expand:SetScript("OnLeave", Hide_Tooltip);
 
   local statusIcons = CreateFrame("Frame", nil, button);
+  statusIcons:SetFrameLevel(button:GetFrameLevel() + 1)
   button.statusIcons = statusIcons
   statusIcons:SetPoint("BOTTOM", button, "BOTTOM", 0, 1);
   statusIcons:SetPoint("LEFT", icon, "RIGHT");

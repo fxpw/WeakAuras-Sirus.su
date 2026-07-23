@@ -82,6 +82,7 @@ local function Constructor()
   label:SetPoint("TOP", frame, "TOP");
 
   local background = CreateFrame("Frame", nil, frame)
+  background:SetFrameLevel(frame:GetFrameLevel() + 1)
   background:SetSize(frameWidth, frameHeight)
   background:SetPoint("TOP", frame, "TOP", 0, -(titleHeight + 4))
   background:SetBackdrop({
@@ -99,6 +100,7 @@ local function Constructor()
   local buttons = {}
   for _, direction in ipairs(directions) do
     local button = CreateFrame("Button", nil, frame)
+    button:SetFrameLevel(frame:GetFrameLevel() + 1)
     button:SetSize(buttonSize, buttonSize)
     button:SetPoint(
       "CENTER",

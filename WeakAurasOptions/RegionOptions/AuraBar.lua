@@ -565,12 +565,14 @@ local function createThumbnail()
 
   -- Main region
   local region = CreateFrame("Frame", nil, borderframe);
+  region:SetFrameLevel(borderframe:GetFrameLevel() + 1)
   borderframe.region = region;
   region:SetWidth(32);
   region:SetHeight(32);
 
   -- Status-bar frame
   local bar = CreateFrame("Frame", nil, region);
+  bar:SetFrameLevel(region:GetFrameLevel() + 1)
   borderframe.bar = bar;
 
   -- Fake status-bar
@@ -592,6 +594,7 @@ local function modifyThumbnail(parent, borderframe, data, fullModify, width, hei
   local region, bar, texture, icon = borderframe.region, borderframe.bar, borderframe.texture, borderframe.icon;
 
   borderframe:SetParent(parent)
+  borderframe:SetFrameLevel(parent:GetFrameLevel() + 1)
 
   -- Default size
   width  = width or 26;

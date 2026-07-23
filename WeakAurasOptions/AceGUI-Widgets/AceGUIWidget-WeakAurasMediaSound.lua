@@ -77,6 +77,7 @@ local function constructor()
   local frame = self.frame
 
   local sndButton = CreateFrame("Button", nil, frame)
+  sndButton:SetFrameLevel(frame:GetFrameLevel() + 1)
   sndButton:SetWidth(16)
   sndButton:SetHeight(16)
   sndButton:SetPoint("RIGHT", frame, "RIGHT", -3, -1)

@@ -261,6 +261,7 @@ local function createThumbnail()
 
   ---@class Model
   local model = CreateFrame("PlayerModel", nil, borderframe);
+  model:SetFrameLevel(borderframe:GetFrameLevel() + 1)
   borderframe.model = model;
   model:SetFrameStrata("FULLSCREEN");
 
@@ -269,12 +270,14 @@ end
 
 local function modifyThumbnail(parent, region, data)
   region:SetParent(parent)
+  region:SetFrameLevel(parent:GetFrameLevel() + 1)
 
   local model = region.model
   region:SetScript("OnUpdate", function()
     local optionsFrame = OptionsPrivate.Private.OptionsFrame();
     if optionsFrame then
       model:SetParent(optionsFrame)
+      model:SetFrameLevel(optionsFrame:GetFrameLevel() + 1)
       region:SetScript("OnUpdate", nil)
     end
   end);

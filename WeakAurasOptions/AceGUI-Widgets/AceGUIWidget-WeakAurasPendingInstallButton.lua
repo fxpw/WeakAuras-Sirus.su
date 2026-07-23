@@ -191,6 +191,7 @@ local function Constructor()
   button.description = {}
 
   local update = CreateFrame("Button", nil, button)
+  update:SetFrameLevel(button:GetFrameLevel() + 1)
   button.update = update
   update.disabled = true
   update.func = function()

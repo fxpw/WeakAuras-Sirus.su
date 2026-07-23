@@ -465,6 +465,7 @@ end
 local function createThumbnail(parent)
   -- Preview frame
   local borderframe = CreateFrame("Frame", nil, parent);
+  borderframe:SetFrameLevel(parent:GetFrameLevel() + 1)
   --- @cast borderframe table|Frame
   borderframe:SetWidth(32);
   borderframe:SetHeight(32);
@@ -477,6 +478,7 @@ local function createThumbnail(parent)
 
   -- Main region
   local region = CreateFrame("Frame", nil, borderframe);
+  region:SetFrameLevel(borderframe:GetFrameLevel() + 1)
   --- @cast region table|Frame
   borderframe.region = region;
 
@@ -1236,6 +1238,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
 
   local newView = AceGUI:Create("InlineGroup");
   newView.frame:SetParent(frame);
+  newView.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   newView.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 42);
   newView.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -50);
   newView.frame:Hide();
@@ -1751,6 +1754,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
   end
 
   local batchModeLabel = CreateFrame("Frame", "batchModeLabel", newView.frame);
+  batchModeLabel:SetFrameLevel(newView.frame:GetFrameLevel() + 1)
   batchModeLabel:SetSize(300, 20);
   local batchModeLabelString = batchModeLabel:CreateFontString(nil, "ARTWORK");
   batchModeLabelString:SetFont(STANDARD_TEXT_FONT, 10, ""); -- "OUTLINE"
@@ -1762,6 +1766,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
   newView.batchModeLabel = batchModeLabel;
 
   local newViewMakeBatch = CreateFrame("Button", nil, newView.frame, "UIPanelButtonTemplate");
+  newViewMakeBatch:SetFrameLevel(newView.frame:GetFrameLevel() + 1)
   newViewMakeBatch:SetScript("OnClick", function()
     local saveData = CopyTable(newView.data);
     for item in pairs(newView.chosenItemBatch) do
@@ -1792,6 +1797,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
   newView.makeBatchButton:Hide();
 
   local newViewBatch = CreateFrame("Button", nil, newView.frame, "UIPanelButtonTemplate");
+  newViewBatch:SetFrameLevel(newView.frame:GetFrameLevel() + 1)
   newViewBatch:SetScript("OnClick", function()
     newView.batchStep = true;
     newView.batchButton:Hide();
@@ -1805,6 +1811,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
   newView.batchButton:Hide();
 
   local newViewBack = CreateFrame("Button", nil, newView.frame, "UIPanelButtonTemplate");
+  newViewBack:SetFrameLevel(newView.frame:GetFrameLevel() + 1)
   newViewBack:SetScript("OnClick", function()
     if (newView.existingAura) then
       if newView.chosenSubType then
@@ -1841,6 +1848,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
   newView.backButton = newViewBack;
 
   local newViewCancel = CreateFrame("Button", nil, newView.frame, "UIPanelButtonTemplate");
+  newViewCancel:SetFrameLevel(newView.frame:GetFrameLevel() + 1)
   newViewCancel:SetScript("OnClick", function() newView:CancelClose() end);
   newViewCancel:SetPoint("BOTTOMRIGHT", -27, -23);
   newViewCancel:SetHeight(20);

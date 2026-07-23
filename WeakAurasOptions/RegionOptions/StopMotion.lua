@@ -515,6 +515,7 @@ end
 
 local function modifyThumbnail(parent, region, data, fullModify, size)
     region:SetParent(parent)
+    region:SetFrameLevel(parent:GetFrameLevel() + 1)
 
     size = size or 30;
     local scale;

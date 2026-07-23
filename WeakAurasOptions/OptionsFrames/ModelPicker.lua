@@ -55,12 +55,14 @@ local function ConstructModelPicker(frame)
 
   local group = AceGUI:Create("SimpleGroup");
   group.frame:SetParent(frame);
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 87);
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
   group.frame:Hide();
   group:SetLayout("flow");
 
   local filterInput = CreateFrame("EditBox", "WeakAurasFilterInput", group.frame)
+  filterInput:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["SearchBoxTemplate"](filterInput)
   filterInput:SetScript("OnTextChanged", function(self)
     WA_SearchBoxTemplate_OnTextChanged(self)
@@ -80,6 +82,7 @@ local function ConstructModelPicker(frame)
   modelPickerZ:SetSliderValues(-20, 20, 0.05);
   modelPickerZ:SetLabel(L["Z Offset"]);
   modelPickerZ.frame:SetParent(group.frame);
+  modelPickerZ.frame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   modelPickerZ:SetCallback("OnValueChanged", function()
     group:Pick(nil, modelPickerZ:GetValue());
   end);
@@ -88,6 +91,7 @@ local function ConstructModelPicker(frame)
   modelPickerX:SetSliderValues(-20, 20, 0.05);
   modelPickerX:SetLabel(L["X Offset"]);
   modelPickerX.frame:SetParent(group.frame);
+  modelPickerX.frame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   modelPickerX:SetCallback("OnValueChanged", function()
     group:Pick(nil, nil, modelPickerX:GetValue());
   end);
@@ -96,6 +100,7 @@ local function ConstructModelPicker(frame)
   modelPickerY:SetSliderValues(-20, 20, 0.05);
   modelPickerY:SetLabel(L["Y Offset"]);
   modelPickerY.frame:SetParent(group.frame);
+  modelPickerY.frame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   modelPickerY:SetCallback("OnValueChanged", function()
     group:Pick(nil, nil, nil, modelPickerY:GetValue());
   end);
@@ -104,6 +109,7 @@ local function ConstructModelPicker(frame)
   modelPickerRotation:SetSliderValues(0, 360, 0.05);
   modelPickerRotation:SetLabel(L["Rotation"]);
   modelPickerRotation.frame:SetParent(group.frame);
+  modelPickerRotation.frame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   modelPickerRotation:SetCallback("OnValueChanged", function()
     group:Pick(nil, nil, nil, nil, modelPickerRotation:GetValue());
   end);
@@ -139,6 +145,7 @@ local function ConstructModelPicker(frame)
   group:AddChild(modelTree);
 
   local model = CreateFrame("PlayerModel", nil, group.content);
+  model:SetFrameLevel(group.content:GetFrameLevel() + 1)
   -- model.SetTransformFixed = OptionsPrivate.Private.ModelSetTransformFixed
   model:SetAllPoints(modelTree.content);
   model:SetFrameStrata("FULLSCREEN");
@@ -308,6 +315,7 @@ local function ConstructModelPicker(frame)
   end
 
   local cancel = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
+  cancel:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   cancel:SetScript("OnClick", group.CancelClose);
   cancel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -27, 20);
   cancel:SetHeight(20);
@@ -315,6 +323,7 @@ local function ConstructModelPicker(frame)
   cancel:SetText(L["Cancel"]);
 
   local close = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
+  close:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   close:SetScript("OnClick", group.Close);
   close:SetPoint("RIGHT", cancel, "LEFT", -10, 0);
   close:SetHeight(20);

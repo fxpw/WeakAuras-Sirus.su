@@ -23,6 +23,7 @@ local spellCache = WeakAuras.spellCache
 local function ConstructIconPicker(frame)
   local group = AceGUI:Create("InlineGroup");
   group.frame:SetParent(frame);
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -50);
   group.frame:Hide();
@@ -104,6 +105,7 @@ local function ConstructIconPicker(frame)
   end
 
   local input = CreateFrame("EditBox", "WeakAurasFilterInput", group.frame)
+  input:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["SearchBoxTemplate"](input)
   input:SetScript("OnTextChanged", function(self)
     WA_SearchBoxTemplate_OnTextChanged(self)
@@ -119,6 +121,7 @@ local function ConstructIconPicker(frame)
   local icon = AceGUI:Create("WeakAurasIconButton");
   icon.frame:Disable();
   icon.frame:SetParent(group.frame);
+  icon.frame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   icon.frame:SetPoint("BOTTOMLEFT", group.frame, "TOPLEFT", 44, -15);
   icon:SetHeight(36)
   icon:SetWidth(36)
@@ -203,6 +206,7 @@ local function ConstructIconPicker(frame)
   end
 
   local cancel = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
+  cancel:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   cancel:SetScript("OnClick", group.CancelClose);
   cancel:SetPoint("BOTTOMRIGHT", -20, -24)
   cancel:SetHeight(20);
@@ -210,6 +214,7 @@ local function ConstructIconPicker(frame)
   cancel:SetText(L["Cancel"]);
 
   local close = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
+  close:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   close:SetScript("OnClick", group.Close);
   close:SetPoint("RIGHT", cancel, "LEFT", -10, 0);
   close:SetHeight(20);

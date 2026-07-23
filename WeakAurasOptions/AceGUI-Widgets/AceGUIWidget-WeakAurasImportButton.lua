@@ -137,6 +137,7 @@ local function Constructor()
   background:SetAllPoints(button);
 
   local expand = CreateFrame("Button", nil, button);
+  expand:SetFrameLevel(button:GetFrameLevel() + 1)
   button.expand = expand;
   expand.expanded = true;
   expand.disabled = true;
@@ -153,6 +154,7 @@ local function Constructor()
   expand:SetScript("OnLeave", Hide_Tooltip);
 
   local checkbox = CreateFrame("CheckButton", nil, button, "ChatConfigCheckButtonTemplate");
+  checkbox:SetFrameLevel(button:GetFrameLevel() + 1)
   button.checkbox = checkbox;
   checkbox:EnableMouse(false);
   checkbox:SetWidth(18);

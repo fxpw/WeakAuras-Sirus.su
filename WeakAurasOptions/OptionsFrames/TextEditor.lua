@@ -156,6 +156,7 @@ end]=]
 local function ConstructTextEditor(frame)
   local group = AceGUI:Create("WeakAurasInlineGroup")
   group.frame:SetParent(frame)
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
   group.frame:Hide()
@@ -201,7 +202,7 @@ local function ConstructTextEditor(frame)
     end
   )
   cancel:SetPoint("BOTTOMRIGHT", -20, -24)
-  cancel:SetFrameLevel(cancel:GetFrameLevel() + 1)
+  cancel:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   cancel:SetHeight(20)
   cancel:SetWidth(100)
   cancel:SetText(L["Cancel"])
@@ -214,12 +215,13 @@ local function ConstructTextEditor(frame)
     end
   )
   close:SetPoint("RIGHT", cancel, "LEFT", -10, 0)
-  close:SetFrameLevel(close:GetFrameLevel() + 1)
+  close:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   close:SetHeight(20)
   close:SetWidth(100)
   close:SetText(L["Done"])
 
   local settings_frame = CreateFrame("Button", "WASettingsButton", close, "UIPanelButtonTemplate")
+  settings_frame:SetFrameLevel(close:GetFrameLevel() + 1)
   settings_frame:SetPoint("RIGHT", close, "LEFT", -10, 0)
   settings_frame:SetHeight(20)
   settings_frame:SetWidth(100)
@@ -234,6 +236,7 @@ local function ConstructTextEditor(frame)
   helpButton:SetText(L["Help"])
 
   local dropdown = CreateFrame("Frame", "SettingsMenuFrame", settings_frame, "UIDropDownMenuTemplate")
+  dropdown:SetFrameLevel(settings_frame:GetFrameLevel() + 1)
 
 
   local function settings_dropdown_initialize(frame, level, menu)
@@ -429,6 +432,7 @@ local function ConstructTextEditor(frame)
 
   -- Make sidebar for snippets
   local snippetsFrame = CreateFrame("Frame", "WeakAurasSnippets", group.frame)
+  snippetsFrame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["PortraitFrameTemplate"](snippetsFrame)
   snippetsFrame:HidePortrait()
   snippetsFrame:SetPoint("TOPLEFT", group.frame, "TOPRIGHT", 20, 0)
@@ -437,6 +441,7 @@ local function ConstructTextEditor(frame)
 
   -- Add button to save new snippet
   local AddSnippetButton = CreateFrame("Button", nil, snippetsFrame, "UIPanelButtonTemplate")
+  AddSnippetButton:SetFrameLevel(snippetsFrame:GetFrameLevel() + 1)
   AddSnippetButton:SetPoint("TOPLEFT", snippetsFrame, "TOPLEFT", 13, -25)
   AddSnippetButton:SetPoint("TOPRIGHT", snippetsFrame, "TOPRIGHT", -13, -25)
   AddSnippetButton:SetHeight(20)
@@ -450,6 +455,7 @@ local function ConstructTextEditor(frame)
   snippetsScrollContainer:SetFullHeight(true)
   snippetsScrollContainer:SetLayout("Fill")
   snippetsScrollContainer.frame:SetParent(snippetsFrame)
+  snippetsScrollContainer.frame:SetFrameLevel(snippetsFrame:GetFrameLevel() + 1)
   snippetsScrollContainer.frame:SetPoint("TOPLEFT", snippetsFrame, "TOPLEFT", 17, -50)
   snippetsScrollContainer.frame:SetPoint("BOTTOMRIGHT", snippetsFrame, "BOTTOMRIGHT", -10, 10)
   local snippetsScroll = AceGUI:Create("ScrollFrame")
@@ -515,6 +521,7 @@ local function ConstructTextEditor(frame)
 
   -- Make sidebar for apiSearch
   apiSearchFrame = CreateFrame("Frame", "WeakAurasAPISearchFrame", group.frame)
+  apiSearchFrame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["PortraitFrameTemplate"](apiSearchFrame)
   apiSearchFrame:HidePortrait()
   apiSearchFrame:SetWidth(350)
@@ -549,6 +556,7 @@ local function ConstructTextEditor(frame)
   apiSearchScrollContainer:SetFullHeight(true)
   apiSearchScrollContainer:SetLayout("Fill")
   apiSearchScrollContainer.frame:SetParent(apiSearchFrame)
+  apiSearchScrollContainer.frame:SetFrameLevel(apiSearchFrame:GetFrameLevel() + 1)
   apiSearchScrollContainer.frame:SetPoint("TOPLEFT", apiSearchFrame, "TOPLEFT", 17, -50)
   apiSearchScrollContainer.frame:SetPoint("BOTTOMRIGHT", apiSearchFrame, "BOTTOMRIGHT", -10, 10)
 
@@ -864,6 +872,7 @@ local function ConstructTextEditor(frame)
   group.editorError = editorError
 
   local editorLine = CreateFrame("EditBox", nil, group.frame)
+  editorLine:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["InputBoxTemplate"](editorLine)
   -- Set script on enter pressed..
   editorLine:SetPoint("RIGHT", snippetsButton, "LEFT", -10, 0)
@@ -882,6 +891,7 @@ local function ConstructTextEditor(frame)
   editorLineText:SetPoint("RIGHT", editorLine, "LEFT", -8, 0)
 
   local redoButton = CreateFrame("Button", nil, editorLine)
+  redoButton:SetFrameLevel(editorLine:GetFrameLevel() + 1)
   redoButton:SetPoint("RIGHT", editorLineText, "LEFT", -10, 0)
   redoButton:SetSize(20, 20)
   redoButton:SetNormalTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\undo")
@@ -896,6 +906,7 @@ local function ConstructTextEditor(frame)
   redoHighlight:SetBlendMode("BLEND")
 
   local undoButton = CreateFrame("Button", nil, redoButton)
+  undoButton:SetFrameLevel(redoButton:GetFrameLevel() + 1)
   undoButton:SetPoint("RIGHT", redoButton, "LEFT", -10, 0)
   undoButton:SetSize(20, 20)
   undoButton:SetNormalTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\undo")

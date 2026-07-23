@@ -3517,6 +3517,7 @@ end
 local function actionGlowStart(actions, frame, id)
   if not frame.__WAGlowFrame then
     frame.__WAGlowFrame = CreateFrame("Frame", nil, frame)
+    frame.__WAGlowFrame:SetFrameLevel(frame:GetFrameLevel() + 5)
     frame.__WAGlowFrame:SetAllPoints(frame)
     frame.__WAGlowFrame:SetSize(frame:GetSize())
   end
@@ -5504,6 +5505,7 @@ local function ensureMouseFrame()
   mouseFrame:SetHeight(1);
 
   local moverFrame = CreateFrame("Frame", "WeakAurasMousePointerFrame", mouseFrame);
+  moverFrame:SetFrameLevel(mouseFrame:GetFrameLevel() + 1)
   mouseFrame.moverFrame = moverFrame;
   moverFrame:SetPoint("TOPLEFT", mouseFrame, "CENTER");
   moverFrame:SetWidth(32);
@@ -5645,6 +5647,7 @@ function Private.ensurePRDFrame()
   Private.personalRessourceDisplayFrame = personalRessourceDisplayFrame;
 
   local moverFrame = CreateFrame("Frame", "WeakAurasPRDMoverFrame", personalRessourceDisplayFrame);
+  moverFrame:SetFrameLevel(personalRessourceDisplayFrame:GetFrameLevel() + 1)
   personalRessourceDisplayFrame.moverFrame = moverFrame;
   moverFrame:SetPoint("TOPLEFT", personalRessourceDisplayFrame, "TOPLEFT", -2, 2);
   moverFrame:SetPoint("BOTTOMRIGHT", personalRessourceDisplayFrame, "BOTTOMRIGHT", 2, -2);

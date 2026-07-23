@@ -422,11 +422,13 @@ local function createThumbnail()
   border:SetTexCoord(0.2, 0.8, 0.2, 0.8);
 
   local mask = CreateFrame("ScrollFrame", nil, borderframe);
+  mask:SetFrameLevel(borderframe:GetFrameLevel() + 1)
   borderframe.mask = mask;
   mask:SetPoint("BOTTOMLEFT", borderframe, "BOTTOMLEFT", 2, 2);
   mask:SetPoint("TOPRIGHT", borderframe, "TOPRIGHT", -2, -2);
 
   local content = CreateFrame("Frame", nil, mask);
+  content:SetFrameLevel(mask:GetFrameLevel() + 1)
   borderframe.content = content;
   content:SetPoint("CENTER", mask, "CENTER");
   mask:SetScrollChild(content);

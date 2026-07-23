@@ -86,6 +86,7 @@ local texturePicker
 local function ConstructTexturePicker(frame)
   local group = AceGUI:Create("SimpleGroup");
   group.frame:SetParent(frame);
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -50);
   group.frame:Hide();
@@ -168,6 +169,7 @@ local function ConstructTexturePicker(frame)
 
         textureWidget.frame:Show()
         textureWidget.frame:SetParent(scroll.content)
+        textureWidget.frame:SetFrameLevel(scroll.content:GetFrameLevel() + 1)
         textureWidget.frame:SetPoint("TOPLEFT", textureX, textureY)
       end
     end
@@ -216,6 +218,7 @@ local function ConstructTexturePicker(frame)
   end
 
   local input = CreateFrame("EditBox", "TexturePickerFilterInput", group.frame);
+  input:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["SearchBoxTemplate"](input)
   input:SetScript("OnTextChanged", function(self, ...)
     WA_SearchBoxTemplate_OnTextChanged(self)
@@ -358,12 +361,14 @@ local function ConstructTexturePicker(frame)
   end
 
   local cancel = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate")
+  cancel:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   cancel:SetScript("OnClick", group.CancelClose)
   cancel:SetPoint("BOTTOMRIGHT", -20, -24)
   cancel:SetSize(100, 20)
   cancel:SetText(L["Cancel"])
 
   local close = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate")
+  close:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   close:SetScript("OnClick", group.Close)
   close:SetPoint("RIGHT", cancel, "LEFT", -10, 0)
   close:SetSize(100, 20)

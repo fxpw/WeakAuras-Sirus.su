@@ -185,6 +185,7 @@ WeakAuras.XMLTemplates = {
     frame.searchIcon = searchIcon
     -- Clear-Button
     local clearButton = CreateFrame("Button", GetParentName(frame) .. "ClearButton", frame)
+    clearButton:SetFrameLevel(frame:GetFrameLevel() + 1)
     clearButton:SetSize(17, 17)
     clearButton:SetPoint("RIGHT", -3, 0)
     clearButton:Hide()
@@ -389,6 +390,7 @@ WeakAuras.XMLTemplates = {
 
     -- Maximize Button
     local maximizeButton = CreateFrame("Button", "MaximizeButton", frame)
+    maximizeButton:SetFrameLevel(frame:GetFrameLevel() + 1)
     maximizeButton:SetAllPoints(frame)
     maximizeButton:Hide()
     frame.MaximizeButton = maximizeButton
@@ -407,6 +409,7 @@ WeakAuras.XMLTemplates = {
 
     -- Minimize Button
     local minimizeButton = CreateFrame("Button", "MinimizeButton", frame)
+    minimizeButton:SetFrameLevel(frame:GetFrameLevel() + 1)
     minimizeButton:SetAllPoints(frame)
     frame.MinimizeButton = minimizeButton
 

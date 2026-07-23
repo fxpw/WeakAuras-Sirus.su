@@ -65,6 +65,7 @@ local function Constructor()
 
   --Container Support
   local content = CreateFrame("Frame", nil, frame)
+  content:SetFrameLevel(frame:GetFrameLevel() + 1)
   content:SetPoint("TOPLEFT", 20, 0)
   content:SetPoint("BOTTOMRIGHT", 0, 15)
 

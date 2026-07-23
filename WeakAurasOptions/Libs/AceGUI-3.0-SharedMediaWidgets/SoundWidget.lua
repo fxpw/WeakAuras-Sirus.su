@@ -51,6 +51,7 @@ do
 			frame.check = check
 
 			local soundbutton = CreateFrame("Button", nil, frame)
+				soundbutton:SetFrameLevel(frame:GetFrameLevel() + 1)
 				soundbutton:SetWidth(16)
 				soundbutton:SetHeight(16)
 				soundbutton:SetPoint("RIGHT",frame,"RIGHT",-1,0)
@@ -219,6 +220,7 @@ do
 
 
 		local soundbutton = CreateFrame("Button", nil, frame)
+		soundbutton:SetFrameLevel(frame:GetFrameLevel() + 1)
 			soundbutton:SetWidth(16)
 			soundbutton:SetHeight(16)
 			soundbutton:SetPoint("LEFT",frame.DLeft,"LEFT",26,1)

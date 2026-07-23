@@ -21,6 +21,7 @@ local buttonSizePadded = 45
 
 local function CreateTalentButton(parent)
   local button = CreateFrame("Button", nil, parent)
+  button:SetFrameLevel(parent:GetFrameLevel() + 1)
   button.obj = parent
   button:SetSize(buttonSize, buttonSize)
 
@@ -289,6 +290,7 @@ local function Constructor()
   toggle.icon:SetSize(25, 36)
   toggle.frame:SetPoint("BOTTOMRIGHT", talentFrame, "TOPRIGHT", 0, 2)
   toggle.frame:SetParent(talentFrame)
+  toggle.frame:SetFrameLevel(talentFrame:GetFrameLevel() + 1)
   toggle.frame.obj.text:SetVertexColor(1, 1, 1, 1)
   toggle.frame:Show()
 

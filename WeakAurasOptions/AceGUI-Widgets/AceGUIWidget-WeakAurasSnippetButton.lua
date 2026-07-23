@@ -148,6 +148,7 @@ local function Constructor()
   button:SetWidth(170)
 
   local deleteButton = CreateFrame("Button", nil, button)
+  deleteButton:SetFrameLevel(button:GetFrameLevel() + 1)
   deleteButton:SetPoint("RIGHT", button, "RIGHT", -3, 0)
   deleteButton:SetSize(20, 20)
   local deleteTex = deleteButton:CreateTexture()
@@ -195,6 +196,7 @@ local function Constructor()
   button.deleteHighlight = delHighlight
 
   local renameEditBox = CreateFrame("EditBox", nil, button)
+  renameEditBox:SetFrameLevel(button:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["InputBoxTemplate"](renameEditBox)
   renameEditBox:SetHeight(14)
   renameEditBox:SetPoint("TOPLEFT", title, "TOPLEFT")

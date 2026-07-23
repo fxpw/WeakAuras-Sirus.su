@@ -299,6 +299,7 @@ local function Constructor()
 
   -- follow link button
   local followLink = CreateFrame("Button", nil, button)
+  followLink:SetFrameLevel(button:GetFrameLevel() + 1)
   button.followLink = followLink
   followLink:SetNormalTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\loottoast-arrow-green") -- "loottoast-arrow-green"
   followLink:GetNormalTexture():SetRotation(math.rad(-90))
@@ -315,6 +316,7 @@ local function Constructor()
   followLink:SetScript("OnLeave", Hide_Tooltip)
 
   local update = CreateFrame("Button", nil, button)
+  update:SetFrameLevel(button:GetFrameLevel() + 1)
   button.update = update
   update.disabled = true
   update.func = function()

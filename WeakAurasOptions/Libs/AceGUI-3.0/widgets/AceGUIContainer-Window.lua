@@ -257,6 +257,7 @@ do
 		right:SetTexCoord(0.1171875, 0.2421875, 0, 1)
 
 		local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+		close:SetFrameLevel(frame:GetFrameLevel() + 1)
 		close:SetPoint("TOPRIGHT", 2, 1)
 		close:SetScript("OnClick", closeOnClick)
 		self.closebutton = close
@@ -269,6 +270,7 @@ do
 		self.titletext = titletext
 
 		local title = CreateFrame("Button", nil, frame)
+		title:SetFrameLevel(frame:GetFrameLevel() + 1)
 		title:SetPoint("TOPLEFT", titlebg)
 		title:SetPoint("BOTTOMRIGHT", titlebg)
 		title:EnableMouse()
@@ -277,6 +279,7 @@ do
 		self.title = title
 
 		local sizer_se = CreateFrame("Frame",nil,frame)
+		sizer_se:SetFrameLevel(frame:GetFrameLevel() + 1)
 		sizer_se:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",0,0)
 		sizer_se:SetWidth(25)
 		sizer_se:SetHeight(25)
@@ -304,6 +307,7 @@ do
 		line2:SetTexCoord(0.05 - x, 0.5, 0.05, 0.5 + x, 0.05, 0.5 - x, 0.5 + x, 0.5)
 
 		local sizer_s = CreateFrame("Frame",nil,frame)
+		sizer_s:SetFrameLevel(frame:GetFrameLevel() + 1)
 		sizer_s:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-25,0)
 		sizer_s:SetPoint("BOTTOMLEFT",frame,"BOTTOMLEFT",0,0)
 		sizer_s:SetHeight(25)
@@ -313,6 +317,7 @@ do
 		self.sizer_s = sizer_s
 
 		local sizer_e = CreateFrame("Frame",nil,frame)
+		sizer_e:SetFrameLevel(frame:GetFrameLevel() + 1)
 		sizer_e:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",0,25)
 		sizer_e:SetPoint("TOPRIGHT",frame,"TOPRIGHT",0,0)
 		sizer_e:SetWidth(25)
@@ -323,6 +328,7 @@ do
 
 		--Container Support
 		local content = CreateFrame("Frame",nil,frame)
+		content:SetFrameLevel(frame:GetFrameLevel() + 1)
 		self.content = content
 		content.obj = self
 		content:SetPoint("TOPLEFT",frame,"TOPLEFT",12,-32)

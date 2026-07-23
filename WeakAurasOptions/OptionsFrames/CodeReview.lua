@@ -62,6 +62,7 @@ local colorScheme = {
 local function ConstructCodeReview(frame)
   local group = AceGUI:Create("WeakAurasInlineGroup");
   group.frame:SetParent(frame);
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
   group.frame:Hide();
@@ -101,6 +102,7 @@ local function ConstructCodeReview(frame)
   end);
 
   local cancel = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
+  cancel:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   cancel:SetScript("OnClick", function() group:Close() end);
   cancel:SetPoint("BOTTOMRIGHT", -20, -24);
   cancel:SetHeight(20);

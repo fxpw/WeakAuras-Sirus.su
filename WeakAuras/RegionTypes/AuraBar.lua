@@ -1308,6 +1308,7 @@ local function modify(parent, region, data)
     -- Create and enable tooltip-hover frame
     if not region.tooltipFrame then
       region.tooltipFrame = CreateFrame("Frame", nil, region);
+      region.tooltipFrame:SetFrameLevel(region:GetFrameLevel() + 1)
       region.tooltipFrame:SetScript("OnEnter", function()
         Private.ShowMouseoverTooltip(region, region.tooltipFrame);
       end);

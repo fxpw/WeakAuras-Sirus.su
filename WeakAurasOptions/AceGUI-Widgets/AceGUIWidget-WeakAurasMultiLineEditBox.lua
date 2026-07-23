@@ -167,6 +167,7 @@ local function OnFrameShow(frame)
     for index, data in ipairs(option.arg.extraFunctions) do
       if (not self.extraButtons[index]) then
         local extraButton = CreateFrame("Button", ("%s%dExpandButton%d"):format(Type, self.widgetNum, index), frame, "UIPanelButtonTemplate")
+        extraButton:SetFrameLevel(frame:GetFrameLevel() + 1)
         extraButton:SetPoint("LEFT", self.extraButtons[index - 1], "RIGHT");
         extraButton:SetHeight(22)
         extraButton:SetWidth(100);
@@ -327,6 +328,7 @@ local function Constructor()
   label:SetHeight(10)
 
   local button = CreateFrame("Button", ("%s%dButton"):format(Type, widgetNum), frame, "UIPanelButtonTemplate")
+  button:SetFrameLevel(frame:GetFrameLevel() + 1)
   button:SetPoint("BOTTOMLEFT", 0, 4)
   button:SetHeight(22)
   button:SetWidth(100)
@@ -338,12 +340,14 @@ local function Constructor()
   extraButtons[0] = button;
 
   local scrollBG = CreateFrame("Frame", nil, frame)
+  scrollBG:SetFrameLevel(frame:GetFrameLevel() + 1)
   scrollBG:SetBackdrop(backdrop)
   scrollBG:SetBackdropColor(0, 0, 0)
   scrollBG:SetBackdropBorderColor(0.4, 0.4, 0.4)
 
   local scrollFrame = CreateFrame("ScrollFrame", ("%s%dScrollFrame"):format(Type, widgetNum),
                                   frame, "UIPanelScrollFrameTemplate")
+  scrollFrame:SetFrameLevel(frame:GetFrameLevel() + 1)
   scrollFrame:EnableMouseWheel(false);
 
   local scrollBar = _G[scrollFrame:GetName() .. "ScrollBar"]
@@ -365,6 +369,7 @@ local function Constructor()
   scrollFrame:HookScript("OnVerticalScroll", OnVerticalScroll)
 
   local editBox = CreateFrame("EditBox", ("%s%dEdit"):format(Type, widgetNum), scrollFrame)
+  editBox:SetFrameLevel(scrollFrame:GetFrameLevel() + 1)
   editBox:SetAllPoints()
   editBox:SetFontObject(ChatFontNormal)
   editBox:SetMultiLine(true)

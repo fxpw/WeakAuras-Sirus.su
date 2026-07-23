@@ -18,6 +18,7 @@ local importexport
 local function ConstructImportExport(frame)
   local group = AceGUI:Create("WeakAurasInlineGroup");
   group.frame:SetParent(frame);
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -63);
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -16, 46);
   group.frame:Hide();
@@ -33,7 +34,7 @@ local function ConstructImportExport(frame)
   local close = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
   close:SetScript("OnClick", function() group:Close() end);
   close:SetPoint("BOTTOMRIGHT", -20, -24);
-  close:SetFrameLevel(close:GetFrameLevel() + 1)
+  close:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   close:SetHeight(20);
   close:SetWidth(100);
   close:SetText(L["Close"])

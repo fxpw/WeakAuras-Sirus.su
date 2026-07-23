@@ -91,10 +91,12 @@ local function CreateProfilePopup()
   end)
 
   local scrollFrame = CreateFrame("ScrollFrame", "WeakAurasProfilingReportScrollFrame", frame, "UIPanelScrollFrameTemplate")
+  scrollFrame:SetFrameLevel(frame:GetFrameLevel() + 1)
   scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -28)
   scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -27, 15)
 
   local messageFrame = CreateFrame("EditBox", nil, scrollFrame)
+  messageFrame:SetFrameLevel(scrollFrame:GetFrameLevel() + 1)
   frame.messageFrame = messageFrame
   messageFrame:SetMultiLine(true)
   messageFrame:SetAutoFocus(false)
@@ -507,6 +509,7 @@ function RealTimeProfilingWindow:GetBar(name)
     return self.bars[name]
   else
     local bar = CreateFrame("Frame", nil, self.barsFrame)
+    bar:SetFrameLevel(self.barsFrame:GetFrameLevel() + 1)
     self.bars[name] = bar
     Private.Mixin(bar, Private.SmoothStatusBarMixin)
     bar.name = name
@@ -644,6 +647,7 @@ function RealTimeProfilingWindow:Init()
   WeakAurasRealTimeProfilingTitleText:SetText(L["WeakAuras Profiling"])
 
   local barsFrame = CreateFrame("Frame", nil, self)
+  barsFrame:SetFrameLevel(self:GetFrameLevel() + 1)
   self.barsFrame = barsFrame
   barsFrame:SetPoint("TOPLEFT", 7, -20)
   barsFrame:SetPoint("BOTTOMRIGHT", -3, 30)

@@ -319,6 +319,7 @@ local function modifyThumbnail(parent, frame, data)
   local texWidth = 0.25 * data.zoom;
   frame.icon:SetTexCoord(texWidth, 1 - texWidth, texWidth, 1 - texWidth);
   frame:SetParent(parent)
+  frame:SetFrameLevel(parent:GetFrameLevel() + 1)
 
   function frame:SetIcon(path)
     local iconPath
