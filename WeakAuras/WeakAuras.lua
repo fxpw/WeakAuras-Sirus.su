@@ -1280,7 +1280,6 @@ end
 local WeakAurasFrame = CreateFrame("Frame", "WeakAurasFrame", UIParent);
 Private.frames["WeakAuras Main Frame"] = WeakAurasFrame;
 WeakAurasFrame:SetAllPoints(UIParent);
-WeakAurasFrame:SetFrameLevel(0)
 
 local loadedFrame = CreateFrame("Frame");
 Private.frames["Addon Initialization Handler"] = loadedFrame;
