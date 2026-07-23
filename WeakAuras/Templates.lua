@@ -152,7 +152,8 @@ WeakAuras.XMLTemplates = {
     local instructions = frame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     instructions:SetJustifyH("LEFT")
     instructions:SetJustifyV("MIDDLE")
-    instructions:SetAllPoints(frame)
+    instructions:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, 0)
+    instructions:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, 0)
     instructions:SetTextColor(0.35, 0.35, 0.35)
     frame.Instructions = instructions
 
@@ -172,9 +173,6 @@ WeakAuras.XMLTemplates = {
     frame:SetTextInsets(16, 20, 0, 0);
     frame.instructionText = SEARCH
     frame.Instructions:SetText(frame.instructionText);
-    frame.Instructions:ClearAllPoints();
-    frame.Instructions:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, 0);
-    frame.Instructions:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, 0);
     -- Search-Icon
     local searchIcon = frame:CreateTexture(GetParentName(frame) .. "SearchIcon", "OVERLAY")
     searchIcon:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\CommonSearch")
