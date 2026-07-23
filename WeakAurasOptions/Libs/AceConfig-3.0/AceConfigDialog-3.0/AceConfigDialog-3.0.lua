@@ -1,13 +1,13 @@
 --- AceConfigDialog-3.0 generates AceGUI-3.0 based windows based on option tables.
 -- @class file
 -- @name AceConfigDialog-3.0
--- @release $Id: AceConfigDialog-3.0.lua 1351 2024-07-24 18:23:24Z funkehdude $
+-- @release $Id: AceConfigDialog-3.0.lua 1386 2025-12-11 18:25:02Z nevcairiel $
 
 local LibStub = LibStub
 local gui = LibStub("AceGUI-3.0")
 local reg = LibStub("AceConfigRegistry-3.0")
 
-local MAJOR, MINOR = "AceConfigDialog-3.0", 87
+local MAJOR, MINOR = "AceConfigDialog-3.0", 92
 local AceConfigDialog, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceConfigDialog then return end
@@ -22,32 +22,57 @@ AceConfigDialog.frame.closing = AceConfigDialog.frame.closing or {}
 AceConfigDialog.frame.closeAllOverride = AceConfigDialog.frame.closeAllOverride or {}
 
 -- Lua APIs
-local tinsert, tsort, tremove, wipe = table.insert, table.sort, table.remove, table.wipe
+local tconcat, tinsert, tsort, tremove, wipe = table.concat, table.insert, table.sort, table.remove, table.wipe
 local strmatch, format = string.match, string.format
-local error = error
+local assert, loadstring, error = assert, loadstring, error
 local pairs, next, select, type, unpack, ipairs = pairs, next, select, type, unpack, ipairs
-local tostring, tonumber = tostring, tonumber
+local rawset, tostring, tonumber = rawset, tostring, tonumber
 local math_min, math_max, math_floor = math.min, math.max, math.floor
 
 local emptyTbl = {}
 
 --[[
-	 pcall safecall implementation
+	 xpcall safecall implementation
 ]]
-local pcall = pcall
+local xpcall = xpcall
 
 local function errorhandler(err)
 	return geterrorhandler()(err)
 end
 
-local function safecall(func, ...)
-	if func then
-		local ret = {pcall(func, ...)}
-		if not ret[1] then
-			errorhandler(ret[2])
+local function CreateDispatcher(argCount)
+	local code = [[
+		local xpcall, eh = ...
+		local method, ARGS
+		local function call() return method(ARGS) end
+
+		local function dispatch(func, ...)
+			method = func
+			if not method then return end
+			ARGS = ...
+			return xpcall(call, eh)
 		end
-		return unpack(ret)
-	end
+
+		return dispatch
+	]]
+
+	local ARGS = {}
+	for i = 1, argCount do ARGS[i] = "arg"..i end
+	code = code:gsub("ARGS", tconcat(ARGS, ", "))
+	return assert(loadstring(code, "safecall Dispatcher["..argCount.."]"))(xpcall, errorhandler)
+end
+
+local Dispatchers = setmetatable({}, {__index=function(self, argCount)
+	local dispatcher = CreateDispatcher(argCount)
+	rawset(self, argCount, dispatcher)
+	return dispatcher
+end})
+Dispatchers[0] = function(func)
+	return xpcall(func, errorhandler)
+end
+
+local function safecall(func, ...)
+	return Dispatchers[select("#", ...)](func, ...)
 end
 
 local width_multiplier = 170
@@ -521,16 +546,16 @@ local function OptionOnMouseOver(widget, event)
 
 	if descStyle and descStyle ~= "tooltip" then return end
 
-	tooltip:SetText(name, 1, .82, 0, 1)
+	tooltip:SetText(name, 1, .82, 0, 1, true)
 
 	if opt.type == "multiselect" then
-		tooltip:AddLine(user.text, 0.5, 0.5, 0.8, 1)
+		tooltip:AddLine(user.text, 0.5, 0.5, 0.8, true)
 	end
 	if type(desc) == "string" then
-		tooltip:AddLine(desc, 1, 1, 1, 1)
+		tooltip:AddLine(desc, 1, 1, 1, true)
 	end
 	if type(usage) == "string" then
-		tooltip:AddLine("Usage: "..usage, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
+		tooltip:AddLine(usage, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, true)
 	end
 
 	tooltip:Show()
@@ -1110,6 +1135,11 @@ local function InjectInfo(control, options, option, path, rootframe, appName)
 	control:SetCallback("OnRelease", CleanUserData)
 	control:SetCallback("OnLeave", OptionOnMouseLeave)
 	control:SetCallback("OnEnter", OptionOnMouseOver)
+
+	-- forward custom arg data directly
+	if control.SetCustomData and option.arg then
+		safecall(control.SetCustomData, control, option.arg)
+	end
 end
 
 local function CreateControl(userControlType, fallbackControlType)
@@ -1463,12 +1493,15 @@ local function FeedOptions(appName, options,container,rootframe,path,group,inlin
 				if control then
 					if control.width ~= "fill" then
 						local width = GetOptionsMemberValue("width",v,options,path,appName)
+						local relWidth = GetOptionsMemberValue("relWidth",v,options,path,appName)
 						if width == "double" then
 							control:SetWidth(width_multiplier * 2)
 						elseif width == "half" then
 							control:SetWidth(width_multiplier / 2)
 						elseif (type(width) == "number") then
 							control:SetWidth(width_multiplier * width)
+						elseif width == "relative" and relWidth then
+							control:SetRelativeWidth(relWidth)
 						elseif width == "full" then
 							control.width = "fill"
 						else
@@ -1533,7 +1566,7 @@ local function TreeOnButtonEnter(widget, event, uniquevalue, button)
 		tooltip:SetPoint("LEFT",button,"RIGHT")
 	end
 
-	tooltip:SetText(name, 1, .82, 0, true)
+	tooltip:SetText(name, 1, .82, 0, 1, true)
 
 	if type(desc) == "string" then
 		tooltip:AddLine(desc, 1, 1, 1, true)
@@ -2000,7 +2033,7 @@ end
 -- @param parent The parent to use in the interface options tree.
 -- @param ... The path in the options table to feed into the interface options panel.
 -- @return The reference to the frame registered into the Interface Options.
--- @return The category ID to pass to Settings.OpenToCategory (or InterfaceOptionsFrame_OpenToCategory)
+-- @return The category name to pass to InterfaceOptionsFrame_OpenToCategory
 function AceConfigDialog:AddToBlizOptions(appName, name, parent, ...)
 	local BlizOptions = AceConfigDialog.BlizOptions
 
@@ -2028,29 +2061,8 @@ function AceConfigDialog:AddToBlizOptions(appName, name, parent, ...)
 		end
 		group:SetCallback("OnShow", FeedToBlizPanel)
 		group:SetCallback("OnHide", ClearBlizPanel)
-		if Settings and Settings.RegisterCanvasLayoutCategory then
-			local categoryName = name or appName
-			if parent then
-				local category = Settings.GetCategory(parent)
-				if not category then
-					error(("The parent category '%s' was not found"):format(parent), 2)
-				end
-				local subcategory = Settings.RegisterCanvasLayoutSubcategory(category, group.frame, categoryName)
-
-				-- force the generated ID to be used for subcategories, as these can have very simple names like "Profiles"
-				group:SetName(subcategory.ID, parent)
-			else
-				local category = Settings.RegisterCanvasLayoutCategory(group.frame, categoryName)
-				-- using appName here would be cleaner, but would not be 100% compatible
-				-- but for top-level categories it should be fine, as these are typically addon names
-				category.ID = categoryName
-				group:SetName(categoryName, parent)
-				Settings.RegisterAddOnCategory(category)
-			end
-		else
-			group:SetName(name or appName, parent)
-			InterfaceOptions_AddCategory(group.frame)
-		end
+		group:SetName(name or appName, parent)
+		InterfaceOptions_AddCategory(group.frame)
 		return group.frame, group.frame.name
 	else
 		error(("%s has already been added to the Blizzard Options Window with the given path"):format(appName), 2)
