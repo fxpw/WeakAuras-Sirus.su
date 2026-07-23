@@ -2,7 +2,8 @@
 -- AceTimer supports one-shot timers and repeating timers. All timers are stored in an efficient
 -- data structure that allows easy dispatching and fast rescheduling. Timers can be registered
 -- or canceled at any time, even from within a running timer, without conflict or large overhead.\\
--- AceTimer is currently limited to firing timers at a frequency of 0.01s.
+-- AceTimer is currently limited to firing timers at a frequency of 0.01s as this is what the WoW timer API
+-- restricts us to.
 --
 -- All `:Schedule` functions will return a handle to the current timer, which you will need to store if you
 -- need to cancel the timer you just registered.
@@ -14,9 +15,9 @@
 -- make into AceTimer.
 -- @class file
 -- @name AceTimer-3.0
--- @release $Id$
+-- @release $Id: AceTimer-3.0.lua 1342 2024-05-26 11:49:35Z nevcairiel $
 
-local MAJOR, MINOR = "AceTimer-3.0", 1017 -- Bump minor on changes
+local MAJOR, MINOR = "AceTimer-3.0", 1018 -- Bump minor on changes
 local AceTimer, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceTimer then return end -- No upgrade needed
@@ -91,13 +92,14 @@ local function new(self, loop, func, delay, ...)
 	}
 
 	activeTimers[timer] = timer
+	AceTimer.frame:Show()
 
 	return timer
 end
 
 --- Schedule a new one-shot timer.
 -- The timer will fire once in `delay` seconds, unless canceled before.
--- @param callback Callback function for the timer pulse (funcref or method name).
+-- @param func Callback function for the timer pulse (funcref or method name).
 -- @param delay Delay for the timer, in seconds.
 -- @param ... An optional, unlimited amount of arguments to pass to the callback function.
 -- @usage
@@ -126,7 +128,7 @@ end
 
 --- Schedule a repeating timer.
 -- The timer will fire every `delay` seconds, until canceled.
--- @param callback Callback function for the timer pulse (funcref or method name).
+-- @param func Callback function for the timer pulse (funcref or method name).
 -- @param delay Delay for the timer, in seconds.
 -- @param ... An optional, unlimited amount of arguments to pass to the callback function.
 -- @usage
@@ -171,6 +173,9 @@ function AceTimer:CancelTimer(id)
 	else
 		timer.cancelled = true
 		activeTimers[id] = nil
+		if not next(activeTimers) then
+			AceTimer.frame:Hide()
+		end
 		return true
 	end
 end
@@ -191,7 +196,7 @@ end
 function AceTimer:TimeLeft(id)
 	local timer = activeTimers[id]
 	if not timer then
-		return
+		return 0
 	else
 		return timer.ends - GetTime()
 	end
@@ -201,7 +206,7 @@ end
 -- ---------------------------------------------------------------------
 -- Upgrading
 
--- Upgrade from old hash-bucket based timers to C_Timer.After timers.
+-- Upgrade from old hash-bucket based timers to OnUpdate timers.
 if oldminor and oldminor < 10 then
 	-- disable old timer logic
 	AceTimer.frame:SetScript("OnUpdate", nil)
@@ -228,7 +233,7 @@ if oldminor and oldminor < 10 then
 	AceTimer.hash = nil
 	AceTimer.debug = nil
 elseif oldminor and oldminor < 17 then
-	-- Upgrade from old animation based timers to C_Timer.After timers.
+	-- Upgrade from old animation based timers to OnUpdate timers.
 	AceTimer.inactiveTimers = nil
 	local oldTimers = AceTimer.activeTimers
 	-- Clear old timer table and update upvalue
@@ -295,33 +300,64 @@ for addon in next, AceTimer.embeds do
 	AceTimer:Embed(addon)
 end
 
+local pendingTimers = {}
+local pendingHandles = {}
+
 AceTimer.frame:SetScript("OnUpdate", function(self, elapsed)
-	for _, timer in next, activeTimers do
+	local pendingCount = 0
+
+	-- Collect expired timers first, so callbacks can safely add or cancel
+	-- timers without modifying the table being traversed.
+	for handle, timer in next, activeTimers do
 		if not timer.cancelled then
 			if timer.timeleft > elapsed then
 				timer.timeleft = timer.timeleft - elapsed
 			else
-				if type(timer.func) == "string" then
-					-- We manually set the unpack count to prevent issues with an arg set that contains nil and ends with nil
-					-- e.g. local t = {1, 2, nil, 3, nil} print(#t) will result in 2, instead of 5. This fixes said issue.
-					safecall(timer.object[timer.func], timer.object, unpack(timer, 1, timer.argsCount))
-				else
-					safecall(timer.func, unpack(timer, 1, timer.argsCount))
-				end
-
-				if timer.looping and not timer.cancelled then
-					-- Compensate delay to get a perfect average delay, even if individual times don't match up perfectly
-					-- due to fps differences
-					local time = GetTime()
-					local delay = timer.delay - (time - timer.ends)
-					-- Ensure the delay doesn't go below the threshold
-					if delay < 0.01 then delay = 0.01 end
-					timer.ends = time + delay
-					timer.timeleft = timer.delay
-				else
-					activeTimers[timer.handle or timer] = nil
-				end
+				pendingCount = pendingCount + 1
+				pendingTimers[pendingCount] = timer
+				pendingHandles[pendingCount] = handle
 			end
 		end
 	end
+
+	for i = 1, pendingCount do
+		local timer = pendingTimers[i]
+		local handle = pendingHandles[i]
+		pendingTimers[i] = nil
+		pendingHandles[i] = nil
+
+		-- Another timer callback may have cancelled this timer already.
+		if activeTimers[handle] == timer and not timer.cancelled then
+			if type(timer.func) == "string" then
+				-- We manually set the unpack count to prevent issues with an arg set that contains nil and ends with nil
+				-- e.g. local t = {1, 2, nil, 3, nil} print(#t) will result in 2, instead of 5. This fixes said issue.
+				safecall(timer.object[timer.func], timer.object, unpack(timer, 1, timer.argsCount))
+			else
+				safecall(timer.func, unpack(timer, 1, timer.argsCount))
+			end
+
+			if timer.looping and not timer.cancelled and activeTimers[handle] == timer then
+				-- Compensate delay to get a perfect average delay, even if individual times don't match up perfectly
+				-- due to fps differences
+				local time = GetTime()
+				local delay = timer.delay - (time - timer.ends)
+				-- Ensure the delay doesn't go below the threshold
+				if delay < 0.01 then delay = 0.01 end
+				timer.ends = time + delay
+				timer.timeleft = delay
+			else
+				activeTimers[handle] = nil
+			end
+		end
+	end
+
+	if not next(activeTimers) then
+		self:Hide()
+	end
 end)
+
+if next(activeTimers) then
+	AceTimer.frame:Show()
+else
+	AceTimer.frame:Hide()
+end
