@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 74
+local MINOR_VERSION = 75
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -102,6 +102,8 @@ local defaultFramePriorities = {
   "^DandersFlatRaidHeader$", -- Danders (alternative style name)
   "^DandersFlatRaidHeaderUnitButton%d+$", -- Danders (alternative style name)
   "^DandersRaidFrame", -- Danders
+  "^ERFGroupHeader%dUnitButton%d+$", -- EllesmereUI (separated groups)
+  "^ERFFlatHeaderUnitButton%d+$", -- EllesmereUI (merged groups)
   -- party frames
   "^AleaUI_GroupHeader", -- Alea
   "^SUFHeaderparty", --suf
@@ -114,6 +116,8 @@ local defaultFramePriorities = {
   "^DandersPartyHeaderUnitButton%d$", -- Danders
   "^DandersFrames_Party", -- Danders
   "^DandersFrames_Player$", -- Danders (used for party frames)
+  "^ERFPartyHeaderUnitButton%d+$", -- EllesmereUI
+  "^ERFPartySelfButton$", -- EllesmereUI (static self frame)
   "^CompactRaid", -- blizz
   "^CompactParty", -- blizz
   "^PartyFrame", -- blizz
@@ -124,6 +128,7 @@ local defaultFramePriorities = {
   "^LUFHeaderbossUnitButton%d$", -- luf
   "^Boss%dTargetFrame$", -- blizz
   "^UUF_Boss%d$", -- unhalted
+  "^EllesmereUIUnitFrames_Boss%d$", -- EllesmereUI
   -- player frame
   "^InvenUnitFrames_Player$",
   "^SUFUnitplayer$",
@@ -133,6 +138,7 @@ local defaultFramePriorities = {
   "^oUF_.-Player$",
   "^XPerl_Player$",
   "^UUF_Player$",
+  "^EllesmereUIUnitFrames_Player$", -- EllesmereUI
   "^PlayerFrame$",
 }
 local getDefaultFramePriorities = function()
@@ -150,6 +156,7 @@ local defaultPlayerFrames = {
   "^oUF_PlayerPlate$",
   "^XPerl_Player$",
   "^UUF_Player$",
+  "^EllesmereUIUnitFrames_Player$", -- EllesmereUI
   "^PlayerFrame$",
 }
 local getDefaultPlayerFrames = function()
@@ -166,6 +173,7 @@ local defaultTargetFrames = {
   "^TargetFrame$",
   "^hbExtra_HealUnit$",
   "^UUF_Target$",
+  "^EllesmereUIUnitFrames_Target$", -- EllesmereUI
   "^XPerl_Target$"
 }
 local getDefaultTargetFrames = function()
@@ -183,6 +191,7 @@ local defaultTargettargetFrames = {
   "^UUF_TargetTarget$",
   "^TargetTargetFrame$",
   "^XPerl_TargetTarget$",
+  "^EllesmereUIUnitFrames_TargetTarget$", -- EllesmereUI
   "^TargetFrameToT$"
 }
 local getDefaultTargettargetFrames = function()
@@ -202,6 +211,8 @@ local defaultPartyFrames = {
   "^DandersPartyHeaderUnitButton%d$",
   "^DandersFrames_Player$", -- depricated?
   "^DandersFrames_Party", -- depricated?
+  "^ERFPartyHeaderUnitButton%d+$", -- EllesmereUI
+  "^ERFPartySelfButton$", -- EllesmereUI (static self frame)
   "^PartyFrame",
   "^CompactParty",
   "^PartyMemberFrame",
@@ -226,6 +237,7 @@ local defaultFocusFrames = {
   "^FocusFrame$",
   "^hbExtra_HealUnit$",
   "^UUF_Focus$",
+  "^EllesmereUIUnitFrames_Focus$", -- EllesmereUI
   "^XPerl_Focus$"
 }
 local getDefaultFocusFrames = function()
@@ -255,6 +267,8 @@ local defaultRaidFrames = {
   "^DandersFlatRaidHeader$", -- alternative style name
   "^DandersFlatRaidHeaderUnitButton%d+$", -- alternative style name
   "^DandersRaidFrame", -- depricated
+  "^ERFGroupHeader%dUnitButton%d+$", -- EllesmereUI (separated groups)
+  "^ERFFlatHeaderUnitButton%d+$", -- EllesmereUI (merged groups)
   "^CompactRaid",
   "^RaidPullout",
 }
@@ -267,6 +281,7 @@ local defaultBossFrames = {
   "^SUFHeaderbossUnitButton%d$",
   "^LUFHeaderbossUnitButton%d$",
   "^UUF_Boss%d$",
+  "^EllesmereUIUnitFrames_Boss%d$", -- EllesmereUI
   "^Boss%dTargetFrame$",
 }
 local getDefaultBossFrames = function()
@@ -426,10 +441,6 @@ local function recurseGetName(frame)
   end
 end
 
---local notAUnitFrameTypeAttribute = {
---  cancelaura = true
---}
-
 local function ScanFrames(depth, frame, ...)
   coroutine.yield()
   if not frame then
@@ -441,17 +452,14 @@ local function ScanFrames(depth, frame, ...)
       ScanFrames(depth + 1, frame:GetChildren())
     end
     if frameType == "Button" then
-      --local typeAttribute = frame:GetAttribute("type")
-      --if not notAUnitFrameTypeAttribute[typeAttribute] then
-        local unit = SecureButton_GetUnit(frame)
-        if unit and frame:IsVisible() then
-          local name = recurseGetName(frame)
-          if name then
-            FrameToFrameName:Add(frame, name)
-            FrameToUnit:Add(frame, unit)
-          end
+      local unit = SecureButton_GetUnit(frame)
+      if unit and frame:IsVisible() then
+        local name = recurseGetName(frame)
+        if name then
+          FrameToFrameName:Add(frame, name)
+          FrameToUnit:Add(frame, unit)
         end
-      --end
+      end
     end
   end
   ScanFrames(depth, ...)
@@ -624,7 +632,7 @@ lib.getDefaultOptions = getDefaultOptions
 
 local IterateGroupMembers = function(reversed, forceParty)
   local unit = (not forceParty and GetNumRaidMembers() > 0) and 'raid' or 'party'
-  local numGroupMembers = unit == 'party' and GetNumPartyMembers() or GetNumRaidMembers()
+  local numGroupMembers = unit == 'party' and (GetNumPartyMembers() + 1) or (GetNumRaidMembers())
   local i = reversed and numGroupMembers or (unit == 'party' and 0 or 1)
   return function()
     local ret
