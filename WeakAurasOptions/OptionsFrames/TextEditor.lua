@@ -438,6 +438,10 @@ local function ConstructTextEditor(frame)
   snippetsFrame:SetPoint("TOPLEFT", group.frame, "TOPRIGHT", 20, 0)
   snippetsFrame:SetPoint("BOTTOMLEFT", group.frame, "BOTTOMRIGHT", 20, 0)
   snippetsFrame:SetWidth(250)
+  if snippetsFrame.Bg then
+    local r, g, b = 0.1215686275, 0.1176470588, 0.1294117647 -- PANEL_BACKGROUND_COLOR
+    snippetsFrame.Bg:SetTexture(r, g, b, 0.8)
+  end
 
   -- Add button to save new snippet
   local AddSnippetButton = CreateFrame("Button", nil, snippetsFrame, "UIPanelButtonTemplate")
@@ -525,6 +529,10 @@ local function ConstructTextEditor(frame)
   WeakAuras.XMLTemplates["PortraitFrameTemplate"](apiSearchFrame)
   apiSearchFrame:HidePortrait()
   apiSearchFrame:SetWidth(350)
+  if apiSearchFrame.Bg then
+    local r, g, b = 0.1215686275, 0.1176470588, 0.1294117647 -- PANEL_BACKGROUND_COLOR
+    apiSearchFrame.Bg:SetTexture(r, g, b, 0.8)
+  end
 
   local makeAPISearch
   local APISearchTextChangeDelay = 0.3

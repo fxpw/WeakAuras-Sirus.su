@@ -676,6 +676,7 @@ local function Constructor()
 	dragger:SetScript("OnLeave", Dragger_OnLeave)
 	dragger:SetScript("OnMouseDown", Dragger_OnMouseDown)
 	dragger:SetScript("OnMouseUp", Dragger_OnMouseUp)
+	dragger:EnableMouse(true)
 
 	local scrollbar = CreateFrame("Slider", ("AceConfigDialogTreeGroup%dScrollBar"):format(num), treeframe, "UIPanelScrollBarTemplate")
 	scrollbar:SetFrameLevel(treeframe:GetFrameLevel() + 1)

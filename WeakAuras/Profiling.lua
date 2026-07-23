@@ -89,6 +89,7 @@ local function CreateProfilePopup()
       self.is_moving = nil
     end
   end)
+  frame:EnableMouse(true)
 
   local scrollFrame = CreateFrame("ScrollFrame", "WeakAurasProfilingReportScrollFrame", frame, "UIPanelScrollFrameTemplate")
   scrollFrame:SetFrameLevel(frame:GetFrameLevel() + 1)

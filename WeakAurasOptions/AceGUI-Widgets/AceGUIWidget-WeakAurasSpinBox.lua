@@ -69,11 +69,11 @@ end
 
 local function UpdateHandleColor(self)
   if self.progressBarHandle.mouseDown then
-    self.progressBarHandleTexture:SetVertexColor(0.6, 0.6, 0, 1)
+    self.progressBarHandleTexture:SetTexture(0.6, 0.6, 0, 1)
   elseif MouseIsOver(self.progressBarHandle) then
-    self.progressBarHandleTexture:SetVertexColor(0.8, 0.8, 0, 1)
+    self.progressBarHandleTexture:SetTexture(0.8, 0.8, 0, 1)
   else
-    self.progressBarHandleTexture:SetVertexColor(0.4, 0.4, 0, 1)
+    self.progressBarHandleTexture:SetTexture(0.4, 0.4, 0, 1)
   end
 end
 
@@ -282,6 +282,7 @@ local function Constructor()
   local widgetName = ("%s%d"):format(Type, AceGUI:GetNextWidgetNum(Type))
   local frame = CreateFrame("Frame", widgetName, UIParent)
   frame:SetScript("OnEnter", Frame_OnEnter)
+  frame:EnableMouse(true)
 
   local label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   label:SetPoint("TOPLEFT")
@@ -353,8 +354,7 @@ local function Constructor()
   progressBarHandle:SetScript("OnUpdate", ProgressBarHandle_OnUpdate)
 
   local progressBarHandleTexture = progressBarHandle:CreateTexture(nil, "ARTWORK")
-  progressBarHandleTexture:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\Square_White")
-  progressBarHandleTexture:SetVertexColor(0.8, 0.8, 0, 0.8)
+  progressBarHandleTexture:SetTexture(0.8, 0.8, 0, 0.8)
   progressBarHandleTexture:SetPoint("TOPLEFT", progressBarHandle, "TOPLEFT", 2, -2)
   progressBarHandleTexture:SetPoint("BOTTOMRIGHT", progressBarHandle, "BOTTOMRIGHT", -2, 2)
 

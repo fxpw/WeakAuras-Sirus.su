@@ -52,7 +52,7 @@ local function CreateFrameSizer(frame, callback, position)
   handle:SetFrameLevel(frame:GetFrameLevel() + 1)
   handle:SetPoint(position, frame)
   handle:SetSize(25, 25)
-  handle:EnableMouse()
+  handle:EnableMouse(false)
 
   handle:SetScript("OnMouseDown", function()
     frame:StartSizing(position)
@@ -62,6 +62,7 @@ local function CreateFrameSizer(frame, callback, position)
     frame:StopMovingOrSizing()
     callback()
   end)
+  handle:EnableMouse(true)
 
   local normal = handle:CreateTexture(nil, "OVERLAY")
   normal:SetTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
@@ -102,6 +103,9 @@ function OptionsPrivate.CreateFrame()
 
   frame = CreateFrame("Frame", "WeakAurasOptions", UIParent)
   WeakAuras.XMLTemplates["PortraitFrameTemplate"](frame)
+  local r, g, b = 0.1215686275, 0.1176470588, 0.1294117647 -- PANEL_BACKGROUND_COLOR
+  frame.Bg:SetTexture(r, g, b, 0.8)
+  frame.Bg.colorTexture = {r, g, b, 0.8}
 
   function OptionsPrivate.SetTitle(title)
     local text = "WeakAuras " .. WeakAuras.versionString
@@ -1054,6 +1058,7 @@ function OptionsPrivate.CreateFrame()
   local dynamicTextCodesFrame = CreateFrame("Frame", "WeakAurasTextReplacements", sidegroup.frame)
   dynamicTextCodesFrame:SetFrameLevel(sidegroup.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["PortraitFrameTemplate"](dynamicTextCodesFrame)
+  dynamicTextCodesFrame.Bg:SetTexture(unpack(frame.Bg.colorTexture))
   dynamicTextCodesFrame:HidePortrait()
   dynamicTextCodesFrame:SetPoint("TOPLEFT", sidegroup.frame, "TOPRIGHT", 20, 0)
   dynamicTextCodesFrame:SetPoint("BOTTOMLEFT", sidegroup.frame, "BOTTOMRIGHT", 20, 0)

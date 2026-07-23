@@ -358,7 +358,6 @@ WeakAuras.XMLTemplates = {
     topTileStreaks:SetTexCoord(0.0, 1.0, 0.0078125, 0.34375)
     frame.TopTileStreaks = topTileStreaks
     -- Mixin
-    frame.Bg:SetVertexColor(0.5882, 0.6275, 0.6706, 0.8) -- approx. PANEL_BACKGROUND_COLOR #ff1f1e21
     frame.layoutType = "PortraitMode"
     frame.ShowPortrait = function(self)
       self.PortraitContainer:Show();

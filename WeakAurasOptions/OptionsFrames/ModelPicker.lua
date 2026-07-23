@@ -159,7 +159,7 @@ local function ConstructModelPicker(frame)
     rotation = (rotation + 180 / screenW * diffX) % 360
     model:SetFacing(rad(rotation))
   end
-  model:EnableMouse()
+  model:EnableMouse(false)
   model:SetScript("OnMouseDown", function(self)
     startX = GetCursorPosition()
     rotation = group.selectedValues.rotation or 0
@@ -169,6 +169,7 @@ local function ConstructModelPicker(frame)
     self:SetScript("OnUpdate", nil)
     group:Pick(nil, nil, nil, nil, rotation)
   end)
+  model:EnableMouse(true)
 
   local function SetOnObject(object, model_fileId, model_z, model_x, model_y, rotation)
     if model_fileId then
