@@ -1,5 +1,5 @@
 -- Widget created by Yssaril
-local DataVersion = 9003
+local DataVersion = 9004
 local AGSMW = LibStub:NewLibrary("AceGUISharedMediaWidgets-1.0", DataVersion)
 
 if not AGSMW then
@@ -160,7 +160,7 @@ do
 	local function AddFrame(self, frame)
 		frame:SetParent(self.contentframe)
 		frame:SetFrameStrata(self:GetFrameStrata())
-		frame:SetFrameLevel(math.min(126, self:GetFrameLevel() + 100))
+		frame:SetFrameLevel(math.min(126, self:GetFrameLevel() + 80))
 
 		if next(self.contentRepo) then
 			frame:SetPoint("TOPLEFT", self.contentRepo[#self.contentRepo], "BOTTOMLEFT", 0, 0)
