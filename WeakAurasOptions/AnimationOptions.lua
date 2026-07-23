@@ -971,7 +971,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not data.animation.start.use_alpha
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "start_alphaFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#alpha-opacity",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#alpha-opacity",
                           35.3, hideStartAlphaFunc, {"animation", "start", "alphaFunc"}, false);
 
   local function hideStartTranslate()
@@ -980,7 +980,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not data.animation.start.use_translate
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "start_translateFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#translate-position",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#translate-position",
                           39.3, hideStartTranslate, {"animation", "start", "translateFunc"}, false);
 
   local function hideStartScale()
@@ -989,7 +989,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not (data.animation.start.use_scale and OptionsPrivate.Private.EnsureRegion(id).Scale)
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "start_scaleFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#scale-size",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#scale-size",
                           43.3, hideStartScale, {"animation", "start", "scaleFunc"}, false);
 
   local function hideStartRotateFunc()
@@ -998,7 +998,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not (data.animation.start.use_rotate and OptionsPrivate.Private.EnsureRegion(id).SetAnimRotation)
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "start_rotateFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#rotate",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#rotate",
                           47.3, hideStartRotateFunc, {"animation", "start", "rotateFunc"}, false);
 
   local function hideStartColorFunc()
@@ -1007,7 +1007,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not (data.animation.start.use_color and OptionsPrivate.Private.EnsureRegion(id).Color)
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "start_colorFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#color",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#color",
                           48.7, hideStartColorFunc, {"animation", "start", "colorFunc"}, false);
 
   -- Text Editors for "main"
@@ -1018,7 +1018,7 @@ function OptionsPrivate.GetAnimationOptions(data)
   end
   local mainCodeOptions = { extraSetFunction = extraSetFunction }
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "main_alphaFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#alpha-opacity",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#alpha-opacity",
                           55.3, hideMainAlphaFunc, {"animation", "main", "alphaFunc"}, false, mainCodeOptions);
 
   local function hideMainTranslate()
@@ -1027,7 +1027,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not data.animation.main.use_translate
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "main_translateFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#translate-position",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#translate-position",
                           59.3, hideMainTranslate, {"animation", "main", "translateFunc"}, false, mainCodeOptions);
 
   local function hideMainScale()
@@ -1036,7 +1036,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not (data.animation.main.use_scale and OptionsPrivate.Private.EnsureRegion(id).Scale)
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "main_scaleFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#scale-sizes",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#scale-sizes",
                           63.3, hideMainScale, {"animation", "main", "scaleFunc"}, false, mainCodeOptions);
 
   local function hideMainRotateFunc()
@@ -1045,7 +1045,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not (data.animation.main.use_rotate and OptionsPrivate.Private.EnsureRegion(id).SetAnimRotation)
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "main_rotateFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#rotate",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#rotate",
                           67.3, hideMainRotateFunc, {"animation", "main", "rotateFunc"}, false, mainCodeOptions);
 
   local function hideMainColorFunc()
@@ -1054,7 +1054,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not (data.animation.main.use_color and OptionsPrivate.Private.EnsureRegion(id).Color)
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "main_colorFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#color",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#color",
                           68.7, hideMainColorFunc, {"animation", "main", "colorFunc"}, false, mainCodeOptions);
 
   -- Text Editors for "finish"
@@ -1064,7 +1064,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not data.animation.finish.use_alpha
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "finish_alphaFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#alpha-opacity",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#alpha-opacity",
                           75.3, hideFinishAlphaFunc, {"animation", "finish", "alphaFunc"}, false);
 
   local function hideFinishTranslate()
@@ -1073,7 +1073,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not data.animation.finish.use_translate
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "finish_translateFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#translate-position",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#translate-position",
                           79.3, hideFinishTranslate, {"animation", "finish", "translateFunc"}, false);
 
   local function hideFinishScale()
@@ -1082,7 +1082,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not (data.animation.finish.use_scale and OptionsPrivate.Private.EnsureRegion(id).Scale)
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "finish_scaleFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#scale-size",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#scale-size",
                           83.3, hideFinishScale, {"animation", "finish", "scaleFunc"}, false);
 
   local function hideFinishRotateFunc()
@@ -1091,7 +1091,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not (data.animation.finish.use_rotate and OptionsPrivate.Private.EnsureRegion(id).SetAnimRotation)
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "finish_rotateFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#rotate",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#rotate",
                           87.3, hideFinishRotateFunc, {"animation", "finish", "rotateFunc"}, false);
 
   local function hideFinishColorFunc()
@@ -1100,7 +1100,7 @@ function OptionsPrivate.GetAnimationOptions(data)
            or not (data.animation.finish.use_color and OptionsPrivate.Private.EnsureRegion(id).Color)
   end
   OptionsPrivate.commonOptions.AddCodeOption(animation.args, data, L["Custom Function"], "finish_colorFunc",
-                          "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#color",
+                          "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#color",
                           88.7, hideFinishColorFunc, {"animation", "finish", "colorFunc"}, false);
 
   if(data.controlledChildren) then

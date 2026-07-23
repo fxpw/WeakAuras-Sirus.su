@@ -339,7 +339,7 @@ local function createOptions(id, data)
     },
   };
 
-  OptionsPrivate.commonOptions.AddCodeOption(options, data, L["Custom Function"], "customText", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-text",
+  OptionsPrivate.commonOptions.AddCodeOption(options, data, L["Custom Function"], "customText", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#custom-text",
                           37, hideCustomTextOption, {"customText"}, false);
 
   -- Add Text Format Options

@@ -989,11 +989,11 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       if region:IsProtected() then
         if InCombatLockdown() then
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame_error", "error",
-          L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
+          L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"],
             true)
         else
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame", "warning",
-            L["Secure frame detected. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"])
+            L["Secure frame detected. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"])
           region:Hide()
         end
       else
@@ -1020,11 +1020,11 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       if region:IsProtected() then
         if InCombatLockdown() then
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame_error", "error",
-          L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
+          L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"],
             true)
         else
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame", "warning",
-            L["Secure frame detected. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"])
+            L["Secure frame detected. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"])
           region:Hide()
         end
       else
@@ -1074,11 +1074,11 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       if region:IsProtected() then
         if InCombatLockdown() then
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame_error", "error",
-            L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
+            L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"],
             true)
         else
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame", "warning",
-            L["Secure frame detected. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"])
+            L["Secure frame detected. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"])
           region:Show()
         end
       else
@@ -1141,11 +1141,11 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       if region:IsProtected() then
         if InCombatLockdown() then
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame_error", "error",
-            L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
+            L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"],
             true)
         else
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame", "warning",
-            L["Secure frame detected. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"])
+            L["Secure frame detected. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"])
           region:Show()
         end
       else

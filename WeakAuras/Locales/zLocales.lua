@@ -2,6 +2,39 @@ local L = WeakAuras.L
 
 local locale = GAME_LOCALE or GetLocale()
 
+-- English fallbacks for port-specific keys that do not exist in upstream locales.
+-- Keep an existing upstream translation if one is added in a future release.
+if L["Aberration"] == nil then
+  L["Aberration"] = "Aberration"
+end
+if L["Air"] == nil then
+  L["Air"] = "Air"
+end
+if L["Earth"] == nil then
+  L["Earth"] = "Earth"
+end
+if L["Install AwesomeCVar to open the Voice Chat settings."] == nil then
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "Install AwesomeCVar to open the Voice Chat settings."
+end
+if L["LibGroupTalents: Zek"] == nil then
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+end
+if L["Open the Voice Chat settings to configure the TTS."] == nil then
+  L["Open the Voice Chat settings to configure the TTS."] = "Open the Voice Chat settings to configure the TTS."
+end
+if L["Ranged Attack Power"] == nil then
+  L["Ranged Attack Power"] = "Ranged Attack Power"
+end
+if L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] == nil then
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."
+end
+if L["Water"] == nil then
+  L["Water"] = "Water"
+end
+if L["Wild Pet"] == nil then
+  L["Wild Pet"] = "Wild Pet"
+end
+
 -- This File adds Custom Localization for
 -- Specializations, Creature Types, Creature Families, TimeUtils and BossNames
 if (locale == "enUS" or locale == "enGB") then

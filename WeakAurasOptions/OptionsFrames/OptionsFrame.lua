@@ -489,6 +489,7 @@ function OptionsPrivate.CreateFrame()
                      .. "• " .. L["LibDeflate: Yoursafety"] .. "\n"
                      .. "• " .. L["LibDispel: Simpy"] .. "\n"
                      .. "• " .. L["LibSerialize: Sanjo"] .. "\n"
+                     .. "• " .. L["LibGroupTalents: Zek"] .. "\n"
                      .. "• " .. L["Our translators (too many to name)"] .. "\n"
                      .. "• " .. L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] .. "\n"
 
@@ -503,7 +504,7 @@ function OptionsPrivate.CreateFrame()
   discordButton:SetParent(tipFrame)
   discordButton:SetPoint("LEFT", tipFrame, "LEFT")
 
-  local documentationButton = addFooter(L["Documentation"], [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/WeakAuras/WeakAuras2/wiki",
+  local documentationButton = addFooter(L["Documentation"], [[Interface\AddOns\WeakAuras\Media\Textures\GitHub.tga]], "https://github.com/NoM0Re/WeakAuras-WotLK/wiki",
             L["Check out our wiki for a large collection of examples and snippets."])
   documentationButton:SetParent(tipFrame)
   documentationButton:SetPoint("LEFT", discordButton, "RIGHT", footerSpacing, 0)

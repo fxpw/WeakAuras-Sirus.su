@@ -1357,7 +1357,7 @@ Private.load_prototype = {
       test = "checker:Check(zone)",
       events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
+        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone"] .. "\n", GetRealZoneText(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
       end,
       optional = true,
     },
@@ -1375,7 +1375,7 @@ Private.load_prototype = {
       multiline = true,
       events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-	    return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
+	    return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone"] .. "\n", GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
 	    end,
       preamble = "local zoneChecker = Private.ExecEnv.ParseZoneCheck(%q)",
       test = "zoneChecker:Check(zoneId)",
@@ -1391,7 +1391,7 @@ Private.load_prototype = {
       test = "subzoneChecker:Check(subzone)",
       events = { "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetMinimapZoneText(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
+        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone"] .. "\n", GetMinimapZoneText(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
       end,
       optional = true,
     },
@@ -8779,7 +8779,7 @@ Private.event_prototypes = {
         name = "zoneIds",
         display = L["Player Location ID(s)"],
         desc = function()
-          return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
+          return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone"] .. "\n", GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
         end,
         type = "string",
         multiline = true,
@@ -8806,7 +8806,7 @@ Private.event_prototypes = {
         name = "zone",
         display = L["Zone Name"],
         desc = function()
-          return ("|cffffd200%s|r%s"):format(L["Current Zone\n"], GetRealZoneText())
+          return ("|cffffd200%s|r%s"):format(L["Current Zone"] .. "\n", GetRealZoneText())
         end,
         type = "string",
         conditionType = "string",
@@ -8820,7 +8820,7 @@ Private.event_prototypes = {
         name = "subzone",
         display = L["Subzone Name"],
         desc = function()
-          return ("%s\n\n|cffffd200%s|r%s"):format(L["Name of the (sub-)zone currently shown above the minimap."], L["Current Zone\n"], GetMinimapZoneText())
+          return ("%s\n\n|cffffd200%s|r%s"):format(L["Name of the (sub-)zone currently shown above the minimap."], L["Current Zone"] .. "\n", GetMinimapZoneText())
         end,
         type = "string",
         conditionType = "string",
