@@ -324,7 +324,7 @@ local barPrototype = {
     if (self.horizontal) then
       local xProgress = self:GetRealSize() * progress;
       local show = xProgress > 0.0001
-      self.fgMask:SetWidth(show and (xProgress + 0.1) or 0.1);
+      self.fgMask:SetWidth(show and xProgress or 0.1);
       if show then
         self.fg:Show()
       else
@@ -333,13 +333,17 @@ local barPrototype = {
     else
       local yProgress = select(2, self:GetRealSize()) * progress;
       local show = yProgress > 0.0001
-      self.fgMask:SetHeight(show and (yProgress + 0.1) or 0.1);
+      self.fgMask:SetHeight(show and yProgress or 0.1);
       if show then
         self.fg:Show()
       else
         self.fg:Hide()
       end
     end
+
+    -- Crop texture
+    local TLx_, TLy_, BLx_, BLy_, TRx_, TRy_, BRx_, BRy_ = self.GetTexCoord(0, progress);
+    self.fg:SetTexCoord(TLx_, TLy_, BLx_, BLy_, TRx_, TRy_, BRx_, BRy_);
 
     local sparkHidden = self.spark.sparkHidden;
     local sparkVisible = sparkHidden == "NEVER"
