@@ -185,9 +185,10 @@ function SecondsFormatterMixin:GetFormatString(interval, abbreviation, convertTo
   return strip and formatString:gsub(" ", "") or formatString
 end
 
-function SecondsFormatterMixin:FormatZero(abbreviation, toLower)
-  local minInterval = self:GetMinInterval(seconds) -- intended for addons to modify
-  local formatString = self:GetFormatString(minInterval, abbreviation)
+function SecondsFormatterMixin:FormatZero(abbreviation, convertToLower)
+  local seconds = 0
+  local minInterval = self:GetMinInterval(seconds)
+  local formatString = self:GetFormatString(minInterval, abbreviation, convertToLower)
   return formatString:format(0)
 end
 
@@ -204,7 +205,7 @@ function SecondsFormatterMixin:Format(seconds, abbreviation)
   abbreviation = abbreviation or self:GetDefaultAbbreviation()
 
   if (seconds <= 0) then
-      return self:FormatZero(abbreviation)
+      return self:FormatZero(abbreviation, self.convertToLower)
   end
 
   local minInterval = self:GetMinInterval(seconds)
@@ -291,7 +292,7 @@ function SecondsFormatterMixin:Format(seconds, abbreviation)
 
   -- Return the zero format if an acceptable representation couldn't be formed.
   if (output == "") then
-      return self:FormatZero(abbreviation)
+      return self:FormatZero(abbreviation, self.convertToLower)
   end
 
   return output
