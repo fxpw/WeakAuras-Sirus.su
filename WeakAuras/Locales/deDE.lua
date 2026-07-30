@@ -1544,6 +1544,10 @@ L["Slide to Right"] = "Nach rechts entgleiten"
 L["Slide to Top"] = "Nach oben entgleiten"
 --[[Translation missing --]]
 L["Slider"] = "Slider"
+--[[Translation missing --]]
+L["Slug"] = "Slug"
+--[[Translation missing --]]
+L["Slug Outline"] = "Slug Outline"
 L["Small"] = "Klein"
 --[[Translation missing --]]
 L["Smart Group"] = "Smart Group"

@@ -150,9 +150,9 @@ local L = WeakAuras.L
 	--[[Translation missing --]]
 	L["|cFFffcc00Extra:|r %s and %s %s"] = "|cFFffcc00Extra:|r %s and %s %s"
 	--[[Translation missing --]]
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"] = "|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"
+	L["|cFFffcc00Font Flags:|r"] = "|cFFffcc00Font Flags:|r"
 	--[[Translation missing --]]
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s%s"] = "|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s%s"
+	L["|cFFffcc00Font Flags:|r none"] = "|cFFffcc00Font Flags:|r none"
 	--[[Translation missing --]]
 	L["|cffffcc00Format Options|r"] = "|cffffcc00Format Options|r"
 	--[[Translation missing --]]
@@ -211,6 +211,10 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	--[[Translation missing --]]
 	L["Affected Unit Filters and Info"] = "Affected Unit Filters and Info"
 	L["Align"] = "Alinhar"
+	--[[Translation missing --]]
+	L["Aligned left"] = "Aligned left"
+	--[[Translation missing --]]
+	L["Aligned right"] = "Aligned right"
 	L["Alignment"] = "Alinhamento"
 	--[[Translation missing --]]
 	L["All maintainers of the libraries we use, especially:"] = "All maintainers of the libraries we use, especially:"
@@ -227,12 +231,14 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["and"] = "and"
 	--[[Translation missing --]]
 	L["and %s"] = "and %s"
-	L["and aligned left"] = "e alinhado à esquerda"
-	L["and aligned right"] = "e alinhado à direita"
 	--[[Translation missing --]]
 	L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] = "And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"
 	L["and rotated left"] = "e girado para a esquerda"
 	L["and rotated right"] = "e girado para a direita"
+	--[[Translation missing --]]
+	L["and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
+	--[[Translation missing --]]
+	L["and smooth scaling"] = "and smooth scaling"
 	L["and with width |cFFFF0000%s|r and %s"] = "e com largura |cFFFF0000%s|r e %s"
 	L["Angle"] = "Ângulo"
 	--[[Translation missing --]]
@@ -1125,6 +1131,10 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Rotate Out"] = "Girar para fora"
 	L["Rotate Text"] = "Girar o texto"
 	--[[Translation missing --]]
+	L["Rotated left"] = "Rotated left"
+	--[[Translation missing --]]
+	L["Rotated right"] = "Rotated right"
+	--[[Translation missing --]]
 	L["Rotation Mode"] = "Rotation Mode"
 	--[[Translation missing --]]
 	L["Row Space"] = "Row Space"
@@ -1165,6 +1175,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	--[[Translation missing --]]
 	L["Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."] = "Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."
 	L["Settings"] = "Configurações"
+	--[[Translation missing --]]
+	L["Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
 	--[[Translation missing --]]
 	L["Shadow Color"] = "Shadow Color"
 	--[[Translation missing --]]
@@ -1253,7 +1265,13 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	--[[Translation missing --]]
 	L["Small Icon"] = "Small Icon"
 	--[[Translation missing --]]
+	L["Smooth Font"] = "Smooth Font"
+	--[[Translation missing --]]
 	L["Smooth Progress"] = "Smooth Progress"
+	--[[Translation missing --]]
+	L["Smooth scaling"] = "Smooth scaling"
+	--[[Translation missing --]]
+	L["Smooths text height, preventing it from snapping to the nearest whole number when scaled."] = "Smooths text height, preventing it from snapping to the nearest whole number when scaled."
 	--[[Translation missing --]]
 	L["Snippets"] = "Snippets"
 	--[[Translation missing --]]
@@ -1528,6 +1546,8 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["What do you want to do?"] = "What do you want to do?"
 	--[[Translation missing --]]
 	L["Whole Area"] = "Whole Area"
+	--[[Translation missing --]]
+	L["Width |cFFFF0000%s|r and %s"] = "Width |cFFFF0000%s|r and %s"
 	--[[Translation missing --]]
 	L["wrapping"] = "wrapping"
 	L["X Offset"] = "X Posicionamento"

@@ -92,8 +92,10 @@ local L = WeakAuras.L
 	L["|cFFffcc00Anchors:|r Anchored to frame's |cFFFF0000%s|r with offset |cFFFF0000%s/%s|r"] = "|cFFffcc00對齊:|r 對齊到框架的|cFFFF0000%s|r，位移|cFFFF0000%s/%s|r"
 	L["|cFFffcc00Extra Options:|r"] = "|cFFffcc00額外選項:|r"
 	L["|cFFffcc00Extra:|r %s and %s %s"] = "|cFFffcc00額外:|r %s和%s%s"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"] = "|cFFffcc00文字樣式:|r |cFFFF0000%s|r和陰影|c%s顏色|r，位移|cFFFF0000%s/%s|r%s%s"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s%s"] = "|cFFffcc00文字樣式:|r |cFFFF0000%s|r和陰影|c%s顏色|r，位移|cFFFF0000%s/%s|r%s%s%s"
+	--[[Translation missing --]]
+	L["|cFFffcc00Font Flags:|r"] = "|cFFffcc00Font Flags:|r"
+	--[[Translation missing --]]
+	L["|cFFffcc00Font Flags:|r none"] = "|cFFffcc00Font Flags:|r none"
 	L["|cffffcc00Format Options|r"] = "|cffffcc00格式選項|r"
 	L[ [=[• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.
 • |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.
@@ -134,6 +136,10 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["Advanced"] = "進階"
 	L["Affected Unit Filters and Info"] = "受影響的單位過濾器和訊息"
 	L["Align"] = "對齊"
+	--[[Translation missing --]]
+	L["Aligned left"] = "Aligned left"
+	--[[Translation missing --]]
+	L["Aligned right"] = "Aligned right"
 	L["Alignment"] = "對齊方式"
 	L["All maintainers of the libraries we use, especially:"] = "我們使用函數庫的所有維護者，特別是："
 	L["All of"] = "全部的"
@@ -145,11 +151,13 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["And "] = "和 "
 	L["and"] = "和"
 	L["and %s"] = "以及 %s"
-	L["and aligned left"] = "和靠左對齊"
-	L["and aligned right"] = "和靠右對齊"
 	L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] = "還有我們的訂閱者、Discord常客和訂閱者以及插件之友："
 	L["and rotated left"] = "和向左旋轉"
 	L["and rotated right"] = "和向右旋轉"
+	--[[Translation missing --]]
+	L["and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
+	--[[Translation missing --]]
+	L["and smooth scaling"] = "and smooth scaling"
 	L["and with width |cFFFF0000%s|r and %s"] = "、寬度 |cFFFF0000%s|r 和 %s"
 	L["Angle"] = "角度"
 	L["Angle Between Auras"] = "提醒效果之間的角度"
@@ -690,6 +698,10 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件發�
 	L["Rotate In"] = "旋轉進入"
 	L["Rotate Out"] = "旋轉退出"
 	L["Rotate Text"] = "旋轉文字"
+	--[[Translation missing --]]
+	L["Rotated left"] = "Rotated left"
+	--[[Translation missing --]]
+	L["Rotated right"] = "Rotated right"
 	L["Rotation Mode"] = "旋轉模式"
 	L["Row Space"] = "列間距"
 	L["Row Width"] = "列寬度"
@@ -712,6 +724,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件發�
 	L["Set Thumbnail Icon"] = "設定縮圖圖示"
 	L["Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."] = "將對齊到的框架設為提醒效果的上一層框架，讓提醒效果能夠繼承像是顯示和縮放大小等屬性。"
 	L["Settings"] = "設定"
+	--[[Translation missing --]]
+	L["Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
 	L["Shadow Color"] = "陰影顏色"
 	L["Shadow X Offset"] = "陰影水平位移"
 	L["Shadow Y Offset"] = "陰影垂直位移"
@@ -762,7 +776,13 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件發�
 	L["Slide Out"] = "滑出"
 	L["Slider Step Size"] = "滑桿數值間距"
 	L["Small Icon"] = "小圖示"
+	--[[Translation missing --]]
+	L["Smooth Font"] = "Smooth Font"
 	L["Smooth Progress"] = "平順顯示進度"
+	--[[Translation missing --]]
+	L["Smooth scaling"] = "Smooth scaling"
+	--[[Translation missing --]]
+	L["Smooths text height, preventing it from snapping to the nearest whole number when scaled."] = "Smooths text height, preventing it from snapping to the nearest whole number when scaled."
 	L["Snippets"] = "程式碼片段"
 	L["Soft Max"] = "最大軟上限"
 	L["Soft Min"] = "最小軟上限"
@@ -913,6 +933,8 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["WeakAuras recommends using spell ids instead of names. Spell ids are automatically localized."] = "WeakAuras 建議使用法術ID而不是名稱。法術ID會自動本地化。"
 	L["What do you want to do?"] = "你想要怎麼做?"
 	L["Whole Area"] = "整個區域"
+	--[[Translation missing --]]
+	L["Width |cFFFF0000%s|r and %s"] = "Width |cFFFF0000%s|r and %s"
 	L["wrapping"] = "自動換行"
 	L["X Offset"] = "水平位置"
 	L["X Rotation"] = "水平旋轉"

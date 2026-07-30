@@ -3,6 +3,34 @@
 Write release notes under a heading that matches the tag version, for example `## 5.0.0`.
 Use [:WALurk:1341460510360604673] or when in June [:WALurkPride:1379014370197110916]
 
+## 5.21.9
+
+[:WALurk:1341460510360604673] 5.21.9
+
+New Features:
+- Added Slug font flags and Smooth Font to Text and Sub-Element Text; both are disabled on WotLK 3.3.5a
+
+Fixes:
+- Text and SubText now use dedicated FontObjects
+- Improve login and bulk aura loading responsiveness with more accurate coroutine workload estimates
+
+Backport New Features:
+- Expand APIDocumentation with Widget APIs, FrameXML functions, and CVars
+- Add locale pruning to remove unused localization keys
+
+Backport Fixes:
+- Fix Spell Usable checks for numeric spell IDs and unresolved spell data
+- Fix a few missing custom localization keys
+- Fix child frame levels across regions, tooltips, glows, profiling, options widgets, pickers, and templates
+- Remove the explicit frame level from WeakAurasFrame so child frame levels can follow the intended hierarchy
+- Fix options frame colors
+- Fix option widgets not enabling mouse input when mouse scripts such as OnEnter are set
+- Fix MaximizeMinimizeButtonFrameTemplate and InputBoxInstructionsTemplate
+- Fix Progress Bar textures being compressed instead of cropped as progress changes
+- Update TimeUtil
+- Update libraries: AceComm, AceTimer, CallbackHandler, LibGetFrame, AceConfig, AceGUI and AceGUI-SharedMedia
+- Update credits, the Awesome WotLK link, and the Thanks tooltip layout
+
 ## 5.21.8
 
 [:WALurkPride:1379014370197110916] 5.21.8

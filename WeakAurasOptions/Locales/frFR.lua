@@ -94,9 +94,9 @@ local L = WeakAuras.L
 	L["|cFFffcc00Extra Options:|r"] = "|cFFffcc00Options supplémentaires :|r"
 	L["|cFFffcc00Extra:|r %s and %s %s"] = "|cFFffcc00Extra:|r %s et %s %s"
 	--[[Translation missing --]]
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"] = "|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"
+	L["|cFFffcc00Font Flags:|r"] = "|cFFffcc00Font Flags:|r"
 	--[[Translation missing --]]
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s%s"] = "|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s%s"
+	L["|cFFffcc00Font Flags:|r none"] = "|cFFffcc00Font Flags:|r none"
 	L["|cffffcc00Format Options|r"] = "|cffffcc00Options de formatage|r"
 	L[ [=[• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.
 • |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.
@@ -138,6 +138,10 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	--[[Translation missing --]]
 	L["Affected Unit Filters and Info"] = "Affected Unit Filters and Info"
 	L["Align"] = "Aligner"
+	--[[Translation missing --]]
+	L["Aligned left"] = "Aligned left"
+	--[[Translation missing --]]
+	L["Aligned right"] = "Aligned right"
 	L["Alignment"] = "Alignement"
 	L["All maintainers of the libraries we use, especially:"] = "Tous les mainteneurs des bibliothèques que nous utilisons, en particulier :"
 	L["All of"] = "Tous vos"
@@ -149,11 +153,13 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["And "] = "Et"
 	L["and"] = "et"
 	L["and %s"] = "et %s"
-	L["and aligned left"] = "et aligné à gauche"
-	L["and aligned right"] = "et aligné à droite"
 	L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] = "Et nos Patreon, habitués de Discord, abonnés et amis de l’addon :"
 	L["and rotated left"] = "et tourné vers la gauche"
 	L["and rotated right"] = "et tourné vers la droite"
+	--[[Translation missing --]]
+	L["and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
+	--[[Translation missing --]]
+	L["and smooth scaling"] = "and smooth scaling"
 	L["and with width |cFFFF0000%s|r and %s"] = "et avec une largeur de |cFFFF0000%s|r et %s"
 	L["Angle"] = "Angle"
 	L["Angle Between Auras"] = "Angle entre les auras"
@@ -884,6 +890,10 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Rotate In"] = "Rotation entrante"
 	L["Rotate Out"] = "Rotation sortante"
 	L["Rotate Text"] = "Tourner le texte"
+	--[[Translation missing --]]
+	L["Rotated left"] = "Rotated left"
+	--[[Translation missing --]]
+	L["Rotated right"] = "Rotated right"
 	L["Rotation Mode"] = "Mode de rotation"
 	--[[Translation missing --]]
 	L["Row Space"] = "Row Space"
@@ -918,6 +928,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	--[[Translation missing --]]
 	L["Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."] = "Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."
 	L["Settings"] = "Paramètres"
+	--[[Translation missing --]]
+	L["Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
 	--[[Translation missing --]]
 	L["Shadow Color"] = "Shadow Color"
 	L["Shadow X Offset"] = "Décalage X de l'ombre"
@@ -991,7 +1003,13 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	--[[Translation missing --]]
 	L["Slider Step Size"] = "Slider Step Size"
 	L["Small Icon"] = "Petite icône"
+	--[[Translation missing --]]
+	L["Smooth Font"] = "Smooth Font"
 	L["Smooth Progress"] = "Progrès Doux"
+	--[[Translation missing --]]
+	L["Smooth scaling"] = "Smooth scaling"
+	--[[Translation missing --]]
+	L["Smooths text height, preventing it from snapping to the nearest whole number when scaled."] = "Smooths text height, preventing it from snapping to the nearest whole number when scaled."
 	--[[Translation missing --]]
 	L["Snippets"] = "Snippets"
 	--[[Translation missing --]]
@@ -1218,6 +1236,8 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["What do you want to do?"] = "What do you want to do?"
 	--[[Translation missing --]]
 	L["Whole Area"] = "Whole Area"
+	--[[Translation missing --]]
+	L["Width |cFFFF0000%s|r and %s"] = "Width |cFFFF0000%s|r and %s"
 	--[[Translation missing --]]
 	L["wrapping"] = "wrapping"
 	L["X Offset"] = "Décalage X"

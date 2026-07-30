@@ -92,8 +92,10 @@ local L = WeakAuras.L
 	L["|cFFffcc00Anchors:|r Anchored to frame's |cFFFF0000%s|r with offset |cFFFF0000%s/%s|r"] = "|cFFffcc00고정:|r 프레임의 |cFFFF0000%s|r에 |cFFFF0000%s/%s|r의 위치 조정을 적용해서 고정"
 	L["|cFFffcc00Extra Options:|r"] = "|cFFffcc00추가 옵션:|r"
 	L["|cFFffcc00Extra:|r %s and %s %s"] = "|cFFffcc00추가:|r %s 및 %s %s"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"] = "|cFFffcc00글꼴 속성:|r |cFFFF0000%s|r 및 그림자 |c%s색|r, 위치 조정 |cFFFF0000%s/%s|r%s%s 적용"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s%s"] = "|cFFffcc00글꼴 속성:|r |cFFFF0000%s|r 및 그림자 |c%s색|r, 위치 조정 |cFFFF0000%s/%s|r%s%s%s 적용"
+	--[[Translation missing --]]
+	L["|cFFffcc00Font Flags:|r"] = "|cFFffcc00Font Flags:|r"
+	--[[Translation missing --]]
+	L["|cFFffcc00Font Flags:|r none"] = "|cFFffcc00Font Flags:|r none"
 	L["|cffffcc00Format Options|r"] = "|cffffcc00형식 옵션|r"
 	L[ [=[• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.
 • |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.
@@ -149,6 +151,10 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["Advanced"] = "고급 제작"
 	L["Affected Unit Filters and Info"] = "오라에 걸린 유닛의 필터 및 정보"
 	L["Align"] = "정렬"
+	--[[Translation missing --]]
+	L["Aligned left"] = "Aligned left"
+	--[[Translation missing --]]
+	L["Aligned right"] = "Aligned right"
 	L["Alignment"] = "정렬"
 	L["All maintainers of the libraries we use, especially:"] = "특히 우리가 사용 중인 라이브러리를 관리하시는 모든 분들:"
 	L["All of"] = "모두 만족"
@@ -160,11 +166,13 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["And "] = "And"
 	L["and"] = "그리고"
 	L["and %s"] = "and %s"
-	L["and aligned left"] = ", 왼쪽 정렬"
-	L["and aligned right"] = ", 오른쪽 정렬"
 	L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] = "그리고 우리의 Patreon, Discord의 정기 방문자 및 구독자와 애드온의 친구분들:"
 	L["and rotated left"] = ", 왼쪽으로 회전"
 	L["and rotated right"] = ", 오른쪽으로 회전"
+	--[[Translation missing --]]
+	L["and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
+	--[[Translation missing --]]
+	L["and smooth scaling"] = "and smooth scaling"
 	L["and with width |cFFFF0000%s|r and %s"] = ", 너비 |cFFFF0000%s|r, %s"
 	L["Angle"] = "각도"
 	L["Angle Between Auras"] = "위크오라들 간의 각도"
@@ -716,6 +724,10 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[이벤트 
 	L["Rotate In"] = "시계방향 회전"
 	L["Rotate Out"] = "반시계방향 회전"
 	L["Rotate Text"] = "텍스트 회전"
+	--[[Translation missing --]]
+	L["Rotated left"] = "Rotated left"
+	--[[Translation missing --]]
+	L["Rotated right"] = "Rotated right"
 	L["Rotation Mode"] = "회전 모드"
 	L["Row Space"] = "행 간격"
 	L["Row Width"] = "행 너비"
@@ -738,6 +750,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[이벤트 
 	L["Set Thumbnail Icon"] = "썸네일 아이콘을 설정합니다"
 	L["Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."] = "위치가 고정된 프레임을 위크오라의 부모로 설정하여 외관이나 크기 등의 속성을 상속받도록 합니다."
 	L["Settings"] = "설정"
+	--[[Translation missing --]]
+	L["Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
 	L["Shadow Color"] = "그림자색"
 	L["Shadow X Offset"] = "그림자 X 위치 조정"
 	L["Shadow Y Offset"] = "그림자 Y 위치 조정"
@@ -788,7 +802,13 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[이벤트 
 	L["Slide Out"] = "바깥으로 슬라이드"
 	L["Slider Step Size"] = "슬라이더 간격 크기"
 	L["Small Icon"] = "작은 아이콘"
+	--[[Translation missing --]]
+	L["Smooth Font"] = "Smooth Font"
 	L["Smooth Progress"] = "부드러운 진행"
+	--[[Translation missing --]]
+	L["Smooth scaling"] = "Smooth scaling"
+	--[[Translation missing --]]
+	L["Smooths text height, preventing it from snapping to the nearest whole number when scaled."] = "Smooths text height, preventing it from snapping to the nearest whole number when scaled."
 	L["Snippets"] = "스니펫"
 	L["Soft Max"] = "최대 슬라이더 값"
 	L["Soft Min"] = "최소 슬라이더 값"
@@ -934,6 +954,8 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["WeakAuras recommends using spell ids instead of names. Spell ids are automatically localized."] = "WeakAuras는 주문 이름 대신 주문 ID 사용을 권장합니다. 주문 ID는 언어에 맞게 자동 번역됩니다."
 	L["What do you want to do?"] = "무엇을 할까요?"
 	L["Whole Area"] = "전체 구역"
+	--[[Translation missing --]]
+	L["Width |cFFFF0000%s|r and %s"] = "Width |cFFFF0000%s|r and %s"
 	L["wrapping"] = "줄바꿈"
 	L["X Offset"] = "X 위치 조정"
 	L["X Rotation"] = "X 회전"

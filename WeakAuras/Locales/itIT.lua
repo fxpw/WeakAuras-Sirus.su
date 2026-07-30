@@ -1749,6 +1749,10 @@ L["Slide to Top"] = "Slide to Top"
 --[[Translation missing --]]
 L["Slider"] = "Slider"
 --[[Translation missing --]]
+L["Slug"] = "Slug"
+--[[Translation missing --]]
+L["Slug Outline"] = "Slug Outline"
+--[[Translation missing --]]
 L["Small"] = "Small"
 --[[Translation missing --]]
 L["Smart Group"] = "Smart Group"

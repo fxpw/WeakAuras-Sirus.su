@@ -1355,6 +1355,10 @@ L["Slide to Right"] = "Glisser à droite"
 L["Slide to Top"] = "Glisser en haut"
 --[[Translation missing --]]
 L["Slider"] = "Slider"
+--[[Translation missing --]]
+L["Slug"] = "Slug"
+--[[Translation missing --]]
+L["Slug Outline"] = "Slug Outline"
 L["Small"] = "Petit"
 --[[Translation missing --]]
 L["Smart Group"] = "Smart Group"

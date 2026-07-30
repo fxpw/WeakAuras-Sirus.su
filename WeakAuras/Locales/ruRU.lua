@@ -1052,6 +1052,10 @@ L["Slide to Left"] = "Сдвиг влево"
 L["Slide to Right"] = "Сдвиг вправо"
 L["Slide to Top"] = "Сдвиг вверх"
 L["Slider"] = "Ползунок"
+--[[Translation missing --]]
+L["Slug"] = "Slug"
+--[[Translation missing --]]
+L["Slug Outline"] = "Slug Outline"
 L["Small"] = "Мелкий"
 L["Smart Group"] = "Рейд > Группа > Игрок"
 L["Sound"] = "Звук"

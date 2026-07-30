@@ -92,8 +92,10 @@ local L = WeakAuras.L
 	L["|cFFffcc00Anchors:|r Anchored to frame's |cFFFF0000%s|r with offset |cFFFF0000%s/%s|r"] = "|cFFffcc00锚点：|r对齐至框架的|cFFFF0000%s|r，偏移|cFFFF0000%s/%s|r"
 	L["|cFFffcc00Extra Options:|r"] = "|cFFffcc00额外选项：|r"
 	L["|cFFffcc00Extra:|r %s and %s %s"] = "|cFFffcc00额外：|r%s 并且 %s %s"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"] = "|cFFffcc00字体样式：|r|cFFFF0000%s|r，阴影|c%s颜色|r、偏移量|cFFFF0000%s/%s|r%s%s"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s%s"] = "|cFFffcc00字体样式：|r|cFFFF0000%s|r，阴影|c%s颜色|r、偏移量|cFFFF0000%s/%s|r%s%s%s"
+	--[[Translation missing --]]
+	L["|cFFffcc00Font Flags:|r"] = "|cFFffcc00Font Flags:|r"
+	--[[Translation missing --]]
+	L["|cFFffcc00Font Flags:|r none"] = "|cFFffcc00Font Flags:|r none"
 	L["|cffffcc00Format Options|r"] = "|cffffcc00格式选项|r"
 	L[ [=[• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.
 • |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.
@@ -142,6 +144,10 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["Advanced"] = "高级"
 	L["Affected Unit Filters and Info"] = "受影响单位过滤器与信息"
 	L["Align"] = "对齐"
+	--[[Translation missing --]]
+	L["Aligned left"] = "Aligned left"
+	--[[Translation missing --]]
+	L["Aligned right"] = "Aligned right"
 	L["Alignment"] = "对齐"
 	L["All maintainers of the libraries we use, especially:"] = "我们使用的库的所有维护者，特别是："
 	L["All of"] = "全部"
@@ -153,11 +159,13 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["And "] = "和"
 	L["and"] = "和"
 	L["and %s"] = "并且 %s"
-	L["and aligned left"] = "并且左对齐"
-	L["and aligned right"] = "并且右对齐"
 	L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] = "还有我们的 Patreon 订阅者、 Discord 的常客和订阅者以及这些插件的朋友们："
 	L["and rotated left"] = "并且向左旋转"
 	L["and rotated right"] = "并且向右旋转"
+	--[[Translation missing --]]
+	L["and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
+	--[[Translation missing --]]
+	L["and smooth scaling"] = "and smooth scaling"
 	L["and with width |cFFFF0000%s|r and %s"] = "并且宽度|cFFFF0000%s|r 并且%s"
 	L["Angle"] = "角度"
 	L["Angle Between Auras"] = "光环间角度"
@@ -699,6 +707,10 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件发�
 	L["Rotate In"] = "旋转进入"
 	L["Rotate Out"] = "旋转退出"
 	L["Rotate Text"] = "旋转文字"
+	--[[Translation missing --]]
+	L["Rotated left"] = "Rotated left"
+	--[[Translation missing --]]
+	L["Rotated right"] = "Rotated right"
 	L["Rotation Mode"] = "旋转模式"
 	L["Row Space"] = "列空间"
 	L["Row Width"] = "列宽度"
@@ -721,6 +733,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件发�
 	L["Set Thumbnail Icon"] = "设置缩略图标"
 	L["Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."] = "将锚点框体设置为光环的父框体，使得光环继承锚点框体的一些属性（例如：可见性和缩放）"
 	L["Settings"] = "设置"
+	--[[Translation missing --]]
+	L["Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
 	L["Shadow Color"] = "阴影颜色"
 	L["Shadow X Offset"] = "阴影 X 轴偏移"
 	L["Shadow Y Offset"] = "阴影 Y 轴偏移"
@@ -771,7 +785,13 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件发�
 	L["Slide Out"] = "滑出"
 	L["Slider Step Size"] = "滑动条步进尺寸"
 	L["Small Icon"] = "小图标"
+	--[[Translation missing --]]
+	L["Smooth Font"] = "Smooth Font"
 	L["Smooth Progress"] = "过程平滑"
+	--[[Translation missing --]]
+	L["Smooth scaling"] = "Smooth scaling"
+	--[[Translation missing --]]
+	L["Smooths text height, preventing it from snapping to the nearest whole number when scaled."] = "Smooths text height, preventing it from snapping to the nearest whole number when scaled."
 	L["Snippets"] = "片段"
 	L["Soft Max"] = "软上限"
 	L["Soft Min"] = "软下限"
@@ -786,10 +806,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件发�
 	L["Specific Currency ID"] = "特定货币ID"
 	L["Spell Selection Filters"] = "法术选择过滤器"
 	L["Spells found:"] = "找到法术:"
-	--[[Translation missing --]]
-	L["Squelch Sounds/Actions on Load"] = "Squelch Sounds/Actions on Load"
-	--[[Translation missing --]]
-	L["Squelched"] = "Squelched"
+	L["Squelch Sounds/Actions on Load"] = "加载时的吱吱声/动作"
+	L["Squelched"] = "压制"
 	L["Stack Info"] = "层数信息"
 	L["Stacks - The number of stacks of an aura (usually)"] = "堆叠 - 光环的堆叠层数（通常是）"
 	L["Standby"] = "已就绪"
@@ -821,10 +839,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件发�
 	L["Texture X Offset"] = "材质 X 轴偏移"
 	L["Texture Y Offset"] = "材质 Y 轴偏移"
 	L["Thanks"] = "感谢"
-	--[[Translation missing --]]
-	L["The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings."] = "The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings."
-	--[[Translation missing --]]
-	L["The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings."] = "The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings."
+	L["The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings."] = "插件ElvUI已启用。它可能会在滑动条添加冷却数字。您可以在ElvUI设置中配置这些内容。"
+	L["The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings."] = "插件OmniCC已启用。它可能会在滑动条添加冷却数字。您可以在OmniCC设置中配置这些内容。"
 	L["The duration of the animation in seconds."] = "动画持续秒数"
 	L["The duration of the animation in seconds. The finish animation does not start playing until after the display would normally be hidden."] = "动画时长秒时。直到图示可以被正常隐藏之后，结束动画才会播放。"
 	L["The group and all direct children will share the same base frame level."] = "此组与直接子元素将共享同一个框体层级。"
@@ -922,6 +938,8 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["WeakAuras recommends using spell ids instead of names. Spell ids are automatically localized."] = "WA建议使用法术id而不是法术名称。法术id会自动本地化。"
 	L["What do you want to do?"] = "你想要做什么？"
 	L["Whole Area"] = "整个区域"
+	--[[Translation missing --]]
+	L["Width |cFFFF0000%s|r and %s"] = "Width |cFFFF0000%s|r and %s"
 	L["wrapping"] = "折叠"
 	L["X Offset"] = "X 偏移"
 	L["X Rotation"] = "X轴旋转"

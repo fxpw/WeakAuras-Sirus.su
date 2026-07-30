@@ -94,8 +94,10 @@ local L = WeakAuras.L
 	L["|cFFffcc00Anchors:|r Anchored to frame's |cFFFF0000%s|r with offset |cFFFF0000%s/%s|r"] = "|cFFFFCC00Крепление.|r Элемент привязан к кадру в точке |cFFE6CC80%s|r со смещением (%s, %s)"
 	L["|cFFffcc00Extra Options:|r"] = "|cFFFFCC00Дополнительные параметры:|r"
 	L["|cFFffcc00Extra:|r %s and %s %s"] = "|cFFFFCC00Дополнительные параметры:|r %s; %s%s"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"] = "|cFFFFCC00Атрибуты текста:|r |cFFE6CC80%s|r; Тень |c%sO|r цвета со смещением (%s, %s);%s%s"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s%s"] = "|cFFFFCC00Атрибуты текста:|r |cFFE6CC80%s|r; Тень |c%sO|r цвета со смещением (%s, %s);%s%s%s"
+	--[[Translation missing --]]
+	L["|cFFffcc00Font Flags:|r"] = "|cFFffcc00Font Flags:|r"
+	--[[Translation missing --]]
+	L["|cFFffcc00Font Flags:|r none"] = "|cFFffcc00Font Flags:|r none"
 	L["|cffffcc00Format Options|r"] = "|cFFFFCC00Параметры форматирования|r"
 	L[ [=[• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.
 • |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.
@@ -139,6 +141,10 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["Advanced"] = "Комплексный подход"
 	L["Affected Unit Filters and Info"] = "Фильтры и информация о задействованных единицах"
 	L["Align"] = "Выравнивание"
+	--[[Translation missing --]]
+	L["Aligned left"] = "Aligned left"
+	--[[Translation missing --]]
+	L["Aligned right"] = "Aligned right"
 	L["Alignment"] = "Выравнивание"
 	L["All maintainers of the libraries we use, especially:"] = "Все поддерживающие библиотеки, которые мы используем, особенно:"
 	L["All of"] = "И (все условия)"
@@ -150,11 +156,13 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["And "] = "И "
 	L["and"] = "и"
 	L["and %s"] = "и %s"
-	L["and aligned left"] = "Выранивание по левому краю;"
-	L["and aligned right"] = "Выранивание по правому краю;"
 	L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] = "И наши Patreons, регулярные участники Discord, подписчики и друзья аддона:"
 	L["and rotated left"] = "Текст повернут вверх;"
 	L["and rotated right"] = "Текст повернут вниз;"
+	--[[Translation missing --]]
+	L["and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
+	--[[Translation missing --]]
+	L["and smooth scaling"] = "and smooth scaling"
 	L["and with width |cFFFF0000%s|r and %s"] = "Ширина поля %s; %s"
 	L["Angle"] = "Угол"
 	L["Angle Between Auras"] = "Угол между индикациями"
@@ -707,6 +715,10 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = "Время �
 	L["Rotate Out"] = [=[Поворот из
 (исходного положения)]=]
 	L["Rotate Text"] = "Повернуть текст"
+	--[[Translation missing --]]
+	L["Rotated left"] = "Rotated left"
+	--[[Translation missing --]]
+	L["Rotated right"] = "Rotated right"
 	L["Rotation Mode"] = "Режим вращения"
 	L["Row Space"] = "Отступ между строками"
 	L["Row Width"] = "Ширина строки"
@@ -730,6 +742,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = "Время �
 	L["Set Thumbnail Icon"] = "Задает иконку миниатюры"
 	L["Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."] = "Устанавливает данный кадр в качестве родителя для кадра индикации. При этом индикация наследует такие атрибуты, как видимость и масштаб"
 	L["Settings"] = "Параметры"
+	--[[Translation missing --]]
+	L["Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
 	L["Shadow Color"] = "Цвет тени"
 	L["Shadow X Offset"] = "Смещение тени по X"
 	L["Shadow Y Offset"] = "Смещение тени по Y"
@@ -784,7 +798,13 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = "Время �
 	L["Slide Out"] = "Отдаление"
 	L["Slider Step Size"] = "Размер шага ползунка"
 	L["Small Icon"] = "Маленькая иконка"
+	--[[Translation missing --]]
+	L["Smooth Font"] = "Smooth Font"
 	L["Smooth Progress"] = "Плавный прогресс"
+	--[[Translation missing --]]
+	L["Smooth scaling"] = "Smooth scaling"
+	--[[Translation missing --]]
+	L["Smooths text height, preventing it from snapping to the nearest whole number when scaled."] = "Smooths text height, preventing it from snapping to the nearest whole number when scaled."
 	L["Snippets"] = "Фрагменты кода"
 	L["Soft Max"] = "Макс. значение ползунка"
 	L["Soft Min"] = "Мин. значение ползунка"
@@ -948,6 +968,8 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["WeakAuras recommends using spell ids instead of names. Spell ids are automatically localized."] = "WeakAuras recommends using spell ids instead of names. Spell ids are automatically localized."
 	L["What do you want to do?"] = "Что вы хотите сделать?"
 	L["Whole Area"] = "Вся область"
+	--[[Translation missing --]]
+	L["Width |cFFFF0000%s|r and %s"] = "Width |cFFFF0000%s|r and %s"
 	L["wrapping"] = "Перенос слов при переполнении"
 	L["X Offset"] = "Смещение по X"
 	L["X Rotation"] = "Поворот по X"

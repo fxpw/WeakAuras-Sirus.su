@@ -1027,6 +1027,10 @@ L["Slide to Left"] = "滑動到左邊"
 L["Slide to Right"] = "滑動到右邊"
 L["Slide to Top"] = "滑動到上面"
 L["Slider"] = "滑桿"
+--[[Translation missing --]]
+L["Slug"] = "Slug"
+--[[Translation missing --]]
+L["Slug Outline"] = "Slug Outline"
 L["Small"] = "小"
 L["Smart Group"] = "智慧型群組"
 L["Sound"] = "音效"

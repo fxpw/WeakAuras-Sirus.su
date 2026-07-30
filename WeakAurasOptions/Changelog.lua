@@ -4,30 +4,29 @@ local AddonName = ...
 ---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 OptionsPrivate.changelog = {
-  versionString = '5.21.8',
-  dateString = '2026-06-29',
-  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.21.7...5.21.8',
+  versionString = '5.21.9',
+  dateString = '2026-07-28',
+  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.21.8...5.21.9',
   highlightText = [==[
-TOC bumps and regression fixes]==],  commitText = [==[InfusOnWoW (7):
+Font fixes and Hardcore login fix]==],  commitText = [==[InfusOnWoW (4):
 
-- Adjust Code options on Action tab to TimeMachine
-- Update Discord List
-- Fix Renaming of Auras that are used as anchors to other auras
-- Custom Options: Fix setting of min/max values
-- Fix manual progress if the user never sets the total
-- Update Item Cooldowns on SPELL_UPDATE_USABLE
+- Remove AbbreviateNumbers workaround since it's no longer needed
+- Remove usage of GetTalentInfo in MiniTalent
+- Use FontObjects in Text/SubText
 - Update Discord List
 
-Jettie (1):
+NoM0Re (10):
 
-- Fix bug: AdditionalProgress is not showing up when using circular mode. (#6243)
-
-NoM0Re (4):
-
-- Mists: TOC Bump
-- TBC: TOC Bump
-- TBC/Mists: Disable AssistedCombat Trigger
-- Titan: Update Shadow Priest Talents
+- Remove redundant fontObject creation
+- Fix font object naming in SubText regions
+- Upgrade API and Fixes for Vanilla
+- Vanilla: Add Assigned Role to Load Options
+- Vanilla: Use PLAYER_TALENT_UPDATE
+- Vanilla: Use C_SpecializationInfo.GetTalentInfo
+- Vanilla: disable AssistedCombat
+- TOC Bump
+- Add Font Flag Slug and Smooth Scaling
+- Titan: Update Balance Druid Talents
 
 Stanzilla (3):
 
@@ -35,11 +34,24 @@ Stanzilla (3):
 - Update WeakAurasModelPaths from wago.tools
 - Update WeakAurasModelPaths from wago.tools
 
-dependabot[bot] (3):
+dependabot[bot] (7):
 
-- Bump Stanzilla/cat from 2.0.2 to 2.0.3
-- Bump cbrgm/mastodon-github-action from 2.2.0 to 2.2.1
-- Bump actions/checkout from 6.0.2 to 6.0.3
+- Bump cbrgm/mastodon-github-action from 2.2.1 to 2.2.2
+- Bump actions/checkout from 7.0.0 to 7.0.1
+- Bump myConsciousness/bluesky-post from 5 to 6
+- Bump actions/setup-python from 6.3.0 to 7.0.0
+- Bump actions/setup-python from 6.2.0 to 6.3.0
+- Bump BigWigsMods/packager
+- Bump actions/checkout from 6.0.3 to 7.0.0
+
+emptyrivers (1):
+
+- use better measurements for login chunks
+
+github-actions[bot] (2):
+
+- Update Discord List (#6250)
+- Update WeakAurasModelPaths from wago.tools (#6260)
 
 ]==]
 }
