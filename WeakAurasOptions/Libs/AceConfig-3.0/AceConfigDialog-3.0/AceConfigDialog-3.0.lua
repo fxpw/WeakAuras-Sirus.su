@@ -1805,9 +1805,6 @@ function AceConfigDialog:FeedGroup(appName,options,container,rootframe,path, isR
 	end
 end
 
-local old_CloseSpecialWindows
-
-
 local function RefreshOnUpdate(this)
 	for appName in pairs(this.closing) do
 		if AceConfigDialog.OpenFrames[appName] then
@@ -1903,13 +1900,6 @@ end
 -- @param container An optional container frame to feed the options into
 -- @param ... The path to open after creating the options window (see `:SelectGroup` for details)
 function AceConfigDialog:Open(appName, container, ...)
-	if not old_CloseSpecialWindows then
-		old_CloseSpecialWindows = CloseSpecialWindows
-		CloseSpecialWindows = function()
-			local found = old_CloseSpecialWindows()
-			return self:CloseAll() or found
-		end
-	end
 	local app = reg:GetOptionsTable(appName)
 	if not app then
 		error(("%s isn't registed with AceConfigRegistry, unable to open config"):format(appName), 2)
@@ -1967,6 +1957,10 @@ function AceConfigDialog:Open(appName, container, ...)
 			self.OpenFrames[appName] = f
 		else
 			f = self.OpenFrames[appName]
+		end
+		if not f.usesUISpecialFrames then
+			tinsert(UISpecialFrames, f.frame:GetName())
+			f.usesUISpecialFrames = true
 		end
 		f:ReleaseChildren()
 		f:SetCallback("OnClose", FrameOnClose)
