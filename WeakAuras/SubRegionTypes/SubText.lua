@@ -130,7 +130,7 @@ local function create()
   text:SetWordWrap(true)
   text:SetNonSpaceWrap(true)
 
-  local fontObject = CreateFont("WeakAuras-SubText-Font"..fontObjectCounter)
+  local fontObject = CreateFont("WeakAuras-SubText-Font" .. fontObjectCounter)
   fontObjectCounter =  fontObjectCounter + 1
   region.text:SetFontObject(fontObject)
   region.fontObject = fontObject
@@ -156,8 +156,6 @@ local function modify(parent, region, parentData, data, first)
   local fontType = data.text_fontType == "None" and "" or data.text_fontType
   text:SetFont(fontPath, fontSize, fontType);
   if not text:GetFont() and fontPath then -- workaround font not loading correctly
-    local objectName = "WeakAuras-Font-" .. data.text_font
-    local fontObject = _G[objectName] or CreateFont(objectName)
     fontObject:SetFont(fontPath, fontSize, fontType)
     text:SetFontObject(fontObject)
   end
