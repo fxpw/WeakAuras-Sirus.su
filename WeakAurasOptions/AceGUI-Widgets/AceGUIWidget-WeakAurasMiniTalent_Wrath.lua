@@ -9,7 +9,7 @@ end
 
 local keepOpenForReload = {}
 
-local widgetType, widgetVersion = "WeakAurasMiniTalent", 5
+local widgetType, widgetVersion = "WeakAurasMiniTalent", 6
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(widgetType) or 0) >= widgetVersion then
   return
@@ -122,7 +122,7 @@ local function TalentFrame_Update(self)
         if spellId == nil then
           local talentId = button.index - (button.tab - 1) * MAX_NUM_TALENTS
           local name = GetTalentInfo(button.tab, talentId)
-          print("Please report on WeakAuras Discord:\nspell missing", button.tab, tier, column, name)
+          WeakAuras.prettyPrint("Please report on WeakAuras Discord:\nspell missing", button.tab, tier, column, name)
         end
         button.tier = tier
         button.column = column
