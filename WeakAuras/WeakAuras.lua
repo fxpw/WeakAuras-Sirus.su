@@ -1209,14 +1209,14 @@ end
 function Private.Login(takeNewSnapshots)
   local loginThread = coroutine.create(function()
     Private.Pause();
-    coroutine.yield(100)
+    coroutine.yield(0.1, "login check history")
     if db.history then
       local histRepo = WeakAuras.LoadFromArchive("Repository", "history")
       local migrationRepo = WeakAuras.LoadFromArchive("Repository", "migration")
       for uid, hist in pairs(db.history) do
         local histStore = histRepo:Set(uid, hist.data)
         local migrationStore = migrationRepo:Set(uid, hist.migration)
-        coroutine.yield(1000, "login move old history")
+        coroutine.yield(10, "login move old history")
       end
       -- history is now in archive so we can shrink WeakAurasSaved
       db.history = nil
@@ -1224,7 +1224,7 @@ function Private.Login(takeNewSnapshots)
 
 
     Private.Features:Hydrate()
-    coroutine.yield(3000, "login check uid corruption")
+    coroutine.yield(50, "login check uid corruption")
 
     local toAdd = {};
     loginFinished = false
@@ -1237,20 +1237,20 @@ function Private.Login(takeNewSnapshots)
 
       tinsert(toAdd, data);
     end
-    coroutine.yield(8000);
+    coroutine.yield(50, "login add many");
 
     Private.AddMany(toAdd, takeNewSnapshots);
-    coroutine.yield(1000);
+    coroutine.yield(0.05, "login check encounter");
 
     -- check in case of a disconnect during an encounter.
     if (db.CurrentEncounter) then
       CheckForPreviousEncounter()
     end
-    coroutine.yield(1000);
+    coroutine.yield(0.5, "login register load events");
     Private.RegisterLoadEvents();
-    coroutine.yield(10000);
+    coroutine.yield(50, "login resume");
     Private.Resume();
-    coroutine.yield(100);
+    coroutine.yield(10, "login run callbacks");
 
     local nextCallback = loginQueue[1];
     while nextCallback do
@@ -1260,7 +1260,7 @@ function Private.Login(takeNewSnapshots)
       else
         nextCallback()
       end
-      coroutine.yield(1000, "login post login callbacks");
+      coroutine.yield(10, "login post login callbacks");
       nextCallback = loginQueue[1];
     end
 
@@ -1269,12 +1269,12 @@ function Private.Login(takeNewSnapshots)
     for _, region in pairs(Private.regions) do
       if (region.region and region.region.RunDelayedActions) then
         region.region:RunDelayedActions();
-        coroutine.yield(500, "login delayed region actions");
+        coroutine.yield(0.3, "login delayed region actions");
       end
     end
   end)
 
-  Private.Threads:Immediate('login', loginThread, 15000, 1000)
+  Private.Threads:Immediate('login', loginThread, Private.GetUrgentThreadBudget())
 end
 
 local WeakAurasFrame = CreateFrame("Frame", "WeakAurasFrame", UIParent);
@@ -2277,13 +2277,13 @@ local function RepairDatabase()
     db.dbVersion = WeakAuras.InternalVersion()
     -- reinstall snapshots from history
     local newDB = Private.Mixin({}, db.displays)
-    coroutine.yield(1000)
+    coroutine.yield(50, "repair scan snapshots")
     for id, data in pairs(db.displays) do
       local snapshot = Private.GetMigrationSnapshot(data.uid)
       if snapshot then
         newDB[id] = nil
         newDB[snapshot.id] = snapshot
-        coroutine.yield(1000, "repair get snapshot")
+        coroutine.yield(10, "repair get snapshot")
       end
     end
     db.displays = newDB
@@ -2453,9 +2453,9 @@ local function loadOrder(tbl, idtable)
           if not(loaded[data.parent]) then
             local dependsOut = CopyTable(depends)
             dependsOut[data.parent] = true
-            coroutine.yield(100, "sort deps")
+            coroutine.yield(0.05, "sort deps")
             load(data.parent, dependsOut)
-            coroutine.yield(100, "sort deps")
+            coroutine.yield(0.05, "sort deps")
           end
         end
       else
@@ -2463,7 +2463,7 @@ local function loadOrder(tbl, idtable)
       end
     end
     if not(loaded[id]) then
-      coroutine.yield(100, "sort deps");
+      coroutine.yield(0.05, "sort deps");
       loaded[id] = true;
       tinsert(order, idtable[id])
     end
@@ -2471,7 +2471,7 @@ local function loadOrder(tbl, idtable)
 
   for id in pairs(idtable) do
     load(id, {});
-    coroutine.yield(100, "sort deps")
+    coroutine.yield(0.05, "sort deps")
   end
 
   return order
@@ -2501,7 +2501,7 @@ function Private.AddMany(tbl, takeSnapshots)
   end
 
   local order = loadOrder(tbl, idtable)
-  coroutine.yield(5000)
+  coroutine.yield(2, "addmany begin snapshots")
 
   local oldSnapshots = {}
   local copies = {}
@@ -2511,7 +2511,7 @@ function Private.AddMany(tbl, takeSnapshots)
         oldSnapshots[data.uid] = Private.GetMigrationSnapshot(data.uid)
       end
       copies[data.uid] = CopyTable(data)
-      coroutine.yield(200, "addmany prepare snapshot")
+      coroutine.yield(10, "addmany prepare snapshot")
     end
     if #order > 0 then
       Private.Threads:Add("snapshot", coroutine.create(function()
@@ -2549,7 +2549,7 @@ function Private.AddMany(tbl, takeSnapshots)
       elseif data.regionType == "dynamicgroup" or data.regionType == "group" then
         groups[data] = true
       end
-      coroutine.yield(1000, "addmany modernize")
+      coroutine.yield(1, "addmany modernize")
     end
   end
 
@@ -2565,14 +2565,14 @@ function Private.AddMany(tbl, takeSnapshots)
         end
       end
     end
-    coroutine.yield(2000, "addmany add")
+    coroutine.yield(2, "addmany add")
   end
 
   for id in pairs(anchorTargets) do
     local data = idtable[id]
     if data and not bads[data.id] and (data.parent == nil or idtable[data.parent].regionType ~= "dynamicgroup") then
       Private.EnsureRegion(id)
-      coroutine.yield(100, "addmany ensure anchor")
+      coroutine.yield(0.05, "addmany ensure anchor")
     end
   end
 
@@ -2586,7 +2586,7 @@ function Private.AddMany(tbl, takeSnapshots)
         Private.Add(data)
       end
     end
-    coroutine.yield(1000, "addmany reload dynamic group");
+    coroutine.yield(0.2, "addmany reload dynamic group");
   end
 end
 
@@ -4350,6 +4350,11 @@ local threads = {
     instant = {},
   },
 };
+
+function Private.GetUrgentThreadBudget()
+  return 15000, 1000
+end
+
 do
 
   ---@type table<threadPriority, true>
@@ -4461,7 +4466,8 @@ do
   threads.frame:Hide();
   threads.frame:SetScript("OnUpdate", function()
     local start = debugprofilestop();
-    runThreadPool(threads.pools.urgent, start + 15000, 1000)
+    local urgentLimit, urgentDefaultEstimate = Private.GetUrgentThreadBudget()
+    runThreadPool(threads.pools.urgent, start + urgentLimit, urgentDefaultEstimate)
     runThreadPool(threads.pools.normal, start + 20, 1)
     runThreadPool(threads.pools.background, start + 2, 0.5)
   end);
