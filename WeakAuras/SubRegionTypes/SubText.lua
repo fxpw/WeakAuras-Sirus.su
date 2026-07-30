@@ -111,6 +111,8 @@ local properties = {
   },
 }
 
+local fontObjectCounter = 0
+
 local function create()
   local region = CreateFrame("Frame", nil, UIParent);
 
@@ -128,6 +130,11 @@ local function create()
   text:SetWordWrap(true)
   text:SetNonSpaceWrap(true)
 
+  local fontObject = CreateFont("WeakAuras-Text-Font"..fontObjectCounter)
+  fontObjectCounter =  fontObjectCounter + 1
+  region.text:SetFontObject(fontObject)
+  region.fontObject = fontObject
+
   return region;
 end
 
@@ -142,6 +149,7 @@ end
 local function modify(parent, region, parentData, data, first)
   region:SetParent(parent)
   local text = region.text;
+  local fontObject = region.fontObject
 
   local fontPath = SharedMedia:Fetch("font", data.text_font);
   local fontSize = data.text_fontSize < 33 and data.text_fontSize or 33
@@ -157,14 +165,15 @@ local function modify(parent, region, parentData, data, first)
     text:SetFont(STANDARD_TEXT_FONT, fontSize, fontType);
   end
   if text:GetFont() then
+    text:SetText("") -- SetJustifyH is broken unless the text changes
     text:SetText(WeakAuras.ReplaceRaidMarkerSymbols(data.text_text));
   end
 
   text:SetTextHeight(data.text_fontSize);
 
-  text:SetShadowColor(unpack(data.text_shadowColor))
-  text:SetShadowOffset(data.text_shadowXOffset, data.text_shadowYOffset)
-  text:SetJustifyH(data.text_justify or "CENTER")
+  fontObject:SetShadowColor(unpack(data.text_shadowColor))
+  fontObject:SetShadowOffset(data.text_shadowXOffset, data.text_shadowYOffset)
+  fontObject:SetJustifyH(data.text_justify or "CENTER")
 
   if (data.text_automaticWidth == "Fixed") then
     if (data.text_wordWrap == "WordWrap") then
