@@ -2608,18 +2608,32 @@ do
   local f = CreateFrame("Frame")
   local elapsed = 0
 
+  local function FixGroupChildrenWhenSafe(self)
+    self:SetScript("OnUpdate", nil)
+    if InCombatLockdown() then
+      self:RegisterEvent("PLAYER_REGEN_ENABLED")
+    else
+      self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+      self:SetScript("OnEvent", nil)
+      FixGroupChildren()
+    end
+  end
+
+  local function OnUpdate(self, elaps)
+    elapsed = elapsed + elaps
+    if GetZoneText() ~= "" or elapsed > 30 then
+      FixGroupChildrenWhenSafe(self)
+    end
+  end
+
   f:RegisterEvent("PLAYER_ENTERING_WORLD")
-  f:SetScript("OnEvent", function(self)
-    self:UnregisterEvent("PLAYER_ENTERING_WORLD")
-
-    self:SetScript("OnUpdate", function(self, elaps)
-      elapsed = elapsed + elaps
-
-      if GetZoneText() ~= "" or elapsed > 30 then
-        self:SetScript("OnUpdate", nil)
-        FixGroupChildren()
-      end
-    end)
+  f:SetScript("OnEvent", function(self, event)
+    if event == "PLAYER_ENTERING_WORLD" then
+      self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+      self:SetScript("OnUpdate", OnUpdate)
+    elseif event == "PLAYER_REGEN_ENABLED" then
+      FixGroupChildrenWhenSafe(self)
+    end
   end)
 end
 
