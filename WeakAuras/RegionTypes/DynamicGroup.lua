@@ -1018,6 +1018,19 @@ local function SafeGetPos(region, func)
   end
 end
 
+local function SafeGetRect(region)
+  local left, right, top, bottom = SafeGetPos(region, region.GetLeft), SafeGetPos(region, region.GetRight),
+                                   SafeGetPos(region, region.GetTop), SafeGetPos(region, region.GetBottom)
+  if not (left and right and top and bottom) then
+    -- Querying the size forces WoW to calculate the frame rect immediately
+    SafeGetPos(region, region.GetWidth)
+
+    left, right, top, bottom = SafeGetPos(region, region.GetLeft), SafeGetPos(region, region.GetRight),
+                               SafeGetPos(region, region.GetTop), SafeGetPos(region, region.GetBottom)
+  end
+  return left, right, top, bottom
+end
+
 local function isDifferent(regionData, cache, events)
   local id = regionData.id
   local cloneId = regionData.cloneId or ""
@@ -1061,28 +1074,6 @@ local function clearCache(cache, id, cloneId)
     cache[id][cloneId] = nil
   end
 end
-
--- Resize queue
-local RunNextFrame = CreateFrame("Frame")
-local q = {}
-RunNextFrame:Hide()
-
-local function QueueResize(g)
-  if not g then return end
-  q[#q+1] = g
-  RunNextFrame:Show()
-end
-
-RunNextFrame:SetScript("OnUpdate", function(self)
-  self:Hide()
-  for i = 1, #q do
-    local g = q[i]
-    q[i] = nil
-    if g and g.Resize then
-      g:Resize()
-    end
-  end
-end)
 
 local function modify(parent, region, data)
   Private.FixGroupChildrenOrderForGroup(data)
@@ -1563,7 +1554,7 @@ local function modify(parent, region, data)
 
     Private.StopProfileSystem("dynamicgroup")
     Private.StopProfileAura(data.id)
-    QueueResize(self)
+    self:Resize()
   end
 
 
@@ -1575,24 +1566,27 @@ local function modify(parent, region, data)
       Private.StartProfileSystem("dynamicgroup")
       Private.StartProfileAura(data.id)
       local numVisible, minX, maxX, maxY, minY = 0, nil, nil, nil, nil
+      local hasInvalidRect = false
       for active, regionData in ipairs(self.sortedChildren) do
         if regionData.shown then
           numVisible = numVisible + 1
           local childRegion = regionData.region
-          local regionLeft, regionRight, regionTop, regionBottom
-             = SafeGetPos(childRegion, childRegion.GetLeft), SafeGetPos(childRegion, childRegion.GetRight),
-               SafeGetPos(childRegion, childRegion.GetTop), SafeGetPos(childRegion, childRegion.GetBottom)
+          local regionLeft, regionRight, regionTop, regionBottom = SafeGetRect(childRegion)
 
           if(regionLeft and regionRight and regionTop and regionBottom) then
             minX = minX and min(regionLeft, minX) or regionLeft
             maxX = maxX and max(regionRight, maxX) or regionRight
             minY = minY and min(regionBottom, minY) or regionBottom
             maxY = maxY and max(regionTop, maxY) or regionTop
+          else
+            hasInvalidRect = true
           end
         end
       end
 
-      if numVisible > 0 then
+      if hasInvalidRect then
+        self.needToResize = true
+      elseif numVisible > 0 then
         self:Show()
         minX, maxX, minY, maxY = (minX or 0), (maxX or 0), (minY or 0), (maxY or 0)
 
