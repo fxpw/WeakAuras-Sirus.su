@@ -1022,7 +1022,7 @@ local function SafeGetRect(region)
   local left, right, top, bottom = SafeGetPos(region, region.GetLeft), SafeGetPos(region, region.GetRight),
                                    SafeGetPos(region, region.GetTop), SafeGetPos(region, region.GetBottom)
   if not (left and right and top and bottom) then
-    -- Querying the size forces WoW to calculate the frame rect immediately
+    -- Workaround for 3.3.5a: Querying the size can force WoW to calculate a missing frame rect
     SafeGetPos(region, region.GetWidth)
 
     left, right, top, bottom = SafeGetPos(region, region.GetLeft), SafeGetPos(region, region.GetRight),
@@ -1570,6 +1570,12 @@ local function modify(parent, region, data)
       for active, regionData in ipairs(self.sortedChildren) do
         if regionData.shown then
           numVisible = numVisible + 1
+
+          -- Workaround for 3.3.5a: WoW does not update the child rect after moving its control point.
+          -- Query the control point first so the child returns the correct position.
+          local controlPoint = regionData.controlPoint
+          SafeGetPos(controlPoint, controlPoint.GetRect)
+
           local childRegion = regionData.region
           local regionLeft, regionRight, regionTop, regionBottom = SafeGetRect(childRegion)
 

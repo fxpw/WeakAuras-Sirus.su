@@ -23,8 +23,8 @@ local UnitIsPVPFreeForAll, UnitIsPVP, UnitOnTaxi, IsMounted
   = UnitIsPVPFreeForAll, UnitIsPVP, UnitOnTaxi, IsMounted
 local UnitInVehicle, UnitHasVehicleUI, UnitIsUnit, UnitIsDeadOrGhost
   = UnitInVehicle, UnitHasVehicleUI, UnitIsUnit, UnitIsDeadOrGhost
-local SendChatMessage, UnitInBattleground, GetZoneText
-  = SendChatMessage, UnitInBattleground, GetZoneText
+local SendChatMessage, UnitInBattleground
+  = SendChatMessage, UnitInBattleground
 local GetTime, UpdateAddOnCPUUsage, GetFrameCPUUsage, debugprofilestop, MAX_BOSS_FRAMES
   = GetTime, UpdateAddOnCPUUsage, GetFrameCPUUsage, debugprofilestop, MAX_BOSS_FRAMES or 5
 local CreateFrame, IsShiftKeyDown, GetScreenWidth, GetScreenHeight, GetCursorPosition
@@ -2588,53 +2588,6 @@ function Private.AddMany(tbl, takeSnapshots)
     end
     coroutine.yield(0.2, "addmany reload dynamic group");
   end
-end
-
--- Workaround dynamic groups not being dimmed correctly on initial login.
--- Use GetZoneText as a late-login signal to trigger one final refresh.
-do
-  local function FixGroupChildren()
-    for _, data in pairs(Private.regions) do
-      if data
-      and data.regionType == "dynamicgroup"
-      and data.region
-      and data.region.ReloadControlledChildren
-      then
-        data.region:ReloadControlledChildren()
-      end
-    end
-  end
-
-  local f = CreateFrame("Frame")
-  local elapsed = 0
-
-  local function FixGroupChildrenWhenSafe(self)
-    self:SetScript("OnUpdate", nil)
-    if InCombatLockdown() then
-      self:RegisterEvent("PLAYER_REGEN_ENABLED")
-    else
-      self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-      self:SetScript("OnEvent", nil)
-      FixGroupChildren()
-    end
-  end
-
-  local function OnUpdate(self, elaps)
-    elapsed = elapsed + elaps
-    if GetZoneText() ~= "" or elapsed > 30 then
-      FixGroupChildrenWhenSafe(self)
-    end
-  end
-
-  f:RegisterEvent("PLAYER_ENTERING_WORLD")
-  f:SetScript("OnEvent", function(self, event)
-    if event == "PLAYER_ENTERING_WORLD" then
-      self:UnregisterEvent("PLAYER_ENTERING_WORLD")
-      self:SetScript("OnUpdate", OnUpdate)
-    elseif event == "PLAYER_REGEN_ENABLED" then
-      FixGroupChildrenWhenSafe(self)
-    end
-  end)
 end
 
 local function customOptionIsValid(option)
