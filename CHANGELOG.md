@@ -3,6 +3,25 @@
 Write release notes under a heading that matches the tag version, for example `## 5.0.0`.
 Use <:WALurk:1341460510360604673> or when in June <:WALurkPride:1379014370197110916>
 
+## 5.21.10
+
+<:WALurk:1341460510360604673> 5.21.10
+
+New Features:
+
+
+Fixes:
+Migrate fallback and thumbnail text to FontObjects
+
+Backport New Features:
+
+
+Backport Fixes:
+Fix CloseSpecialWindows taint when closing the options window
+Fix Dynamic Group sizing and stale child positions on WotLK 3.3.5a
+Greatly reduce memory churn caused by frequent aura environment activations
+Reduce LibGetFrame event spam by delaying and combining repeated frame scans while keeping combat scans immediate
+
 ## 5.21.9
 
 <:WALurk:1341460510360604673> 5.21.9
