@@ -704,6 +704,7 @@ local funcs = {
     self.scaley = scaley
 
     self:ForAllSpinners(self.foregroundSpinner.SetScale, self.scalex, self.scaley)
+    self:ForAllLinears(self.foreground.SetScale, self.scalex, self.scaley)
     self:ForAllSpinners(self.foregroundSpinner.SetMirrorHV, self.mirror_h, self.mirror_v)
     self:ForAllLinears(self.foreground.SetMirrorHV, self.mirror_h, self.mirror_v)
     self:DoPosition()

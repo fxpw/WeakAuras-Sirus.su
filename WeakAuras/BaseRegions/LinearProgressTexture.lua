@@ -26,6 +26,8 @@ Private.LinearProgressTextureBase = {}
 --- @field offset number
 --- @field width number
 --- @field height number
+--- @field scalex number
+--- @field scaley number
 --- @field compress boolean
 --- @field slanted boolean
 --- @field slant number
@@ -64,9 +66,12 @@ local orientationToAnchorPoint = {
 }
 
 local function ApplyGeometry(self, startProgress, endProgress)
-  local width = self.renderWidth or self.width or 0
-  local height = self.renderHeight or self.height or 0
-  local offset = self.offset or 0
+  local scalex = self.scalex or 1
+  local scaley = self.scaley or 1
+  local width = (self.renderWidth or self.width or 0) * scalex
+  local height = (self.renderHeight or self.height or 0) * scaley
+  local offsetX = (self.offset or 0) * scalex
+  local offsetY = (self.offset or 0) * scaley
 
   if width == 0 or height == 0 then
     return
@@ -109,11 +114,11 @@ local function ApplyGeometry(self, startProgress, endProgress)
   top = Clamp(top, 0, 1)
   bottom = Clamp(bottom, 0, 1)
 
-  local fullWidth = width + 2 * offset
-  local fullHeight = height + 2 * offset
+  local fullWidth = width + 2 * offsetX
+  local fullHeight = height + 2 * offsetY
 
   self.texture:ClearAllPoints()
-  self.texture:SetPoint("TOPLEFT", self.parentFrame, "TOPLEFT", -offset + left * fullWidth, offset - top * fullHeight)
+  self.texture:SetPoint("TOPLEFT", self.parentFrame, "TOPLEFT", -offsetX + left * fullWidth, offsetY - top * fullHeight)
   self.texture:SetWidth(math.max((right - left) * fullWidth, 0.0001))
   self.texture:SetHeight(math.max((bottom - top) * fullHeight, 0.0001))
 end
@@ -404,6 +409,10 @@ local funcs = {
   SetHeight = function(self, height)
     self.height = height
   end,
+
+  SetScale = function(self, scalex, scaley)
+    self.scalex, self.scaley = scalex, scaley
+  end,
 }
 
 --- @type fun(frame:Frame) : LinearProgressTextureInstance
@@ -417,6 +426,8 @@ function Private.LinearProgressTextureBase.create(frame, layer, drawLayer)
   linearTexture.orientation = "HORIZONTAL"
   linearTexture.width = 0
   linearTexture.height = 0
+  linearTexture.scalex = 1
+  linearTexture.scaley = 1
   linearTexture.offset = 0
 
   local texture = frame:CreateTexture(nil, layer)
