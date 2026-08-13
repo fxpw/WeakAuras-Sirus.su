@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 75
+local MINOR_VERSION = 76
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -466,6 +466,7 @@ local function ScanFrames(depth, frame, ...)
 end
 
 local status = "ready"
+local delayedScanPending = false
 local co
 local coroutineFrame = CreateFrame("Frame")
 coroutineFrame:Hide()
@@ -529,17 +530,18 @@ coroutineFrame:SetScript("OnUpdate", function()
 end)
 
 local function ScanForUnitFrames(noDelay)
-  if status == "ready" then
-    if noDelay then
+  if noDelay then
+    if status == "ready" then
       doScanForUnitFrames()
-    else
-      status = "scan_delay"
-      C_Timer.After(1, function()
-        doScanForUnitFrames()
-      end)
+    elseif status == "scanning" then
+      status = "scan_queued"
     end
-  elseif status == "scanning" then
-    status = "scan_queued"
+  elseif not delayedScanPending then
+    delayedScanPending = true
+    C_Timer.After(1, function()
+      delayedScanPending = false
+      ScanForUnitFrames(true)
+    end)
   end
 end
 
@@ -687,7 +689,8 @@ local function Init(noDelay)
         unitPetState[unit] = exists
       end
     end
-    ScanForUnitFrames(false)
+    local noDelay = event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED"
+    ScanForUnitFrames(noDelay)
   end)
   ScanForUnitFrames(noDelay)
 end
