@@ -3,6 +3,13 @@
 Write release notes under a heading that matches the tag version, for example `## 5.0.0`.
 Use <:WALurk:1341460510360604673> or when in June <:WALurkPride:1379014370197110916>
 
+## 5.21.11
+
+<:WALurk:1341460510360604673> 5.21.11
+
+Backport Fixes:
+Fix Progress Texture scale animations
+
 ## 5.21.10
 
 <:WALurk:1341460510360604673> 5.21.10

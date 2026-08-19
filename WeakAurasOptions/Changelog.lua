@@ -4,27 +4,23 @@ local AddonName = ...
 ---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 OptionsPrivate.changelog = {
-  versionString = '5.21.10',
-  dateString = '2026-08-13',
-  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.21.9...5.21.10',
+  versionString = '5.21.11',
+  dateString = '2026-08-16',
+  fullChangeLogUrl = 'https://github.com/WeakAuras/WeakAuras2/compare/5.21.10...5.21.11',
   highlightText = [==[
-Titan updates and regression fix for queued spell]==],  commitText = [==[InfusOnWoW (1):
+]==],  commitText = [==[Putro (2):
 
-- Fix MOP loading
+- fix: Move Interface to the top in .toc files (#6280)
+- fix: Use GetMasteryEffect() to get Mastery percentages on Mists of Pandaria
 
-NoM0Re (4):
-
-- Titan: Update EncounterAndZoneLists for Phase 5
-- Titan: Update Frost Death Knight Talents
-- Fix regression in queued spell detection
-- Migrate fallback and thumbnail text to FontObjects
-
-Stanzilla (4):
+Stanzilla (1):
 
 - Update WeakAurasModelPaths from wago.tools
-- ci: track only the Titan Wrath interface
-- ci: address TOC updater review feedback
-- ci: automate WoW TOC interface updates
+
+dependabot[bot] (2):
+
+- Bump cbrgm/mastodon-github-action from 2.2.2 to 2.2.3
+- Bump myConsciousness/bluesky-post
 
 ]==]
 }

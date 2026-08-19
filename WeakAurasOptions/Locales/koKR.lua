@@ -9,7 +9,7 @@ local L = WeakAuras.L
 -- WeakAuras/Options
 	L[" and |cFFFF0000mirrored|r"] = "그리고 |cFFFF0000대칭 반복|r"
 	L["-- Do not remove this comment, it is part of this aura: "] = "-- 이 주석을 제거하지 마세요, 이 위크오라의 일부입니다:"
-	L[" rotated |cFFFF0000%s|r degrees"] = "|cFFFF0000%s|r도 회전"
+	L[" rotated |cFFFF0000%s|r degrees"] = "|cFFFF0000%s|r도로 회전됨"
 	L["% - To show a percent sign"] = "% - 백분율 기호 표시"
 	L["% of Progress"] = "진행 %"
 	L["%d |4aura:auras; added"] = "%d개의 위크오라가 추가됨"
@@ -92,10 +92,8 @@ local L = WeakAuras.L
 	L["|cFFffcc00Anchors:|r Anchored to frame's |cFFFF0000%s|r with offset |cFFFF0000%s/%s|r"] = "|cFFffcc00고정:|r 프레임의 |cFFFF0000%s|r에 |cFFFF0000%s/%s|r의 위치 조정을 적용해서 고정"
 	L["|cFFffcc00Extra Options:|r"] = "|cFFffcc00추가 옵션:|r"
 	L["|cFFffcc00Extra:|r %s and %s %s"] = "|cFFffcc00추가:|r %s 및 %s %s"
-	--[[Translation missing --]]
-	L["|cFFffcc00Font Flags:|r"] = "|cFFffcc00Font Flags:|r"
-	--[[Translation missing --]]
-	L["|cFFffcc00Font Flags:|r none"] = "|cFFffcc00Font Flags:|r none"
+	L["|cFFffcc00Font Flags:|r"] = "|cFFffcc00글꼴 속성:|r"
+	L["|cFFffcc00Font Flags:|r none"] = "|cFFffcc00글꼴 속성:|r 없음"
 	L["|cffffcc00Format Options|r"] = "|cffffcc00형식 옵션|r"
 	L[ [=[• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.
 • |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.
@@ -151,10 +149,8 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["Advanced"] = "고급 제작"
 	L["Affected Unit Filters and Info"] = "오라에 걸린 유닛의 필터 및 정보"
 	L["Align"] = "정렬"
-	--[[Translation missing --]]
-	L["Aligned left"] = "Aligned left"
-	--[[Translation missing --]]
-	L["Aligned right"] = "Aligned right"
+	L["Aligned left"] = "왼쪽 정렬됨"
+	L["Aligned right"] = "오른쪽 정렬됨"
 	L["Alignment"] = "정렬"
 	L["All maintainers of the libraries we use, especially:"] = "특히 우리가 사용 중인 라이브러리를 관리하시는 모든 분들:"
 	L["All of"] = "모두 만족"
@@ -167,12 +163,10 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["and"] = "그리고"
 	L["and %s"] = "and %s"
 	L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] = "그리고 우리의 Patreon, Discord의 정기 방문자 및 구독자와 애드온의 친구분들:"
-	L["and rotated left"] = ", 왼쪽으로 회전"
-	L["and rotated right"] = ", 오른쪽으로 회전"
-	--[[Translation missing --]]
-	L["and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
-	--[[Translation missing --]]
-	L["and smooth scaling"] = "and smooth scaling"
+	L["and rotated left"] = "및 왼쪽으로 회전"
+	L["and rotated right"] = "및 오른쪽으로 회전"
+	L["and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "및 그림자 |c%s색상|r이 |cFFFF0000%s/%s|r 위치 조정됨"
+	L["and smooth scaling"] = "및 매끄러운 크기 조정"
 	L["and with width |cFFFF0000%s|r and %s"] = ", 너비 |cFFFF0000%s|r, %s"
 	L["Angle"] = "각도"
 	L["Angle Between Auras"] = "위크오라들 간의 각도"
@@ -280,7 +274,7 @@ Off Screen]=] ] = "위크오라가 화면 밖에 있습니다"
 	L["Counts the number of matches over all units."] = "모든 유닛중 일치하는 유닛을 셉니다."
 	L["Counts the number of matches per unit."] = "유닛당 일치하는 개수를 셉니다."
 	L["Create a Copy"] = "사본 생성"
-	L["Creating buttons: "] = "버튼 생성 중:"
+	L["Creating buttons: "] = "버튼 제작:"
 	L["Creating options: "] = "옵션 생성:"
 	L["Custom - Allows you to define a custom Lua function that returns a list of string values. %c1 will be replaced by the first value returned, %c2 by the second, etc."] = "사용자 정의 - 문자열 값의 목록을 반환하는 맞춤형 Lua 함수를 정의할 수 있습니다. %c1는 첫번째 값 반환, %c2는 두번째 값 같은 식으로 대체됩니다."
 	L["Custom Code"] = "사용자 정의 코드"
@@ -724,10 +718,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[이벤트 
 	L["Rotate In"] = "시계방향 회전"
 	L["Rotate Out"] = "반시계방향 회전"
 	L["Rotate Text"] = "텍스트 회전"
-	--[[Translation missing --]]
-	L["Rotated left"] = "Rotated left"
-	--[[Translation missing --]]
-	L["Rotated right"] = "Rotated right"
+	L["Rotated left"] = "왼쪽으로 회전됨"
+	L["Rotated right"] = "오른쪽으로 회전됨"
 	L["Rotation Mode"] = "회전 모드"
 	L["Row Space"] = "행 간격"
 	L["Row Width"] = "행 너비"
@@ -750,8 +742,7 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[이벤트 
 	L["Set Thumbnail Icon"] = "썸네일 아이콘을 설정합니다"
 	L["Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."] = "위치가 고정된 프레임을 위크오라의 부모로 설정하여 외관이나 크기 등의 속성을 상속받도록 합니다."
 	L["Settings"] = "설정"
-	--[[Translation missing --]]
-	L["Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
+	L["Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "그림자 |c%s색상|r이 |cFFFF0000%s/%s|r 위치 조정됨"
 	L["Shadow Color"] = "그림자색"
 	L["Shadow X Offset"] = "그림자 X 위치 조정"
 	L["Shadow Y Offset"] = "그림자 Y 위치 조정"
@@ -802,13 +793,10 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[이벤트 
 	L["Slide Out"] = "바깥으로 슬라이드"
 	L["Slider Step Size"] = "슬라이더 간격 크기"
 	L["Small Icon"] = "작은 아이콘"
-	--[[Translation missing --]]
-	L["Smooth Font"] = "Smooth Font"
+	L["Smooth Font"] = "매끄러운 글꼴"
 	L["Smooth Progress"] = "부드러운 진행"
-	--[[Translation missing --]]
-	L["Smooth scaling"] = "Smooth scaling"
-	--[[Translation missing --]]
-	L["Smooths text height, preventing it from snapping to the nearest whole number when scaled."] = "Smooths text height, preventing it from snapping to the nearest whole number when scaled."
+	L["Smooth scaling"] = "매끄러운 크기 조정"
+	L["Smooths text height, preventing it from snapping to the nearest whole number when scaled."] = "텍스트 크기를 매끄럽게 다듬어서 크기 조정 시 입력값과 가장 가까운 정수값에 맞추지 않습니다."
 	L["Snippets"] = "스니펫"
 	L["Soft Max"] = "최대 슬라이더 값"
 	L["Soft Min"] = "최소 슬라이더 값"
@@ -823,7 +811,7 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[이벤트 
 	L["Specific Currency ID"] = "화폐 ID 지정"
 	L["Spell Selection Filters"] = "주문 선정 필터"
 	L["Spells found:"] = "발견된 주문:"
-	L["Squelch Sounds/Actions on Load"] = "불러올 때 소음/동작 억제"
+	L["Squelch Sounds/Actions on Load"] = "불러올 때 효과음/동작 실행 방지"
 	L["Squelched"] = "억제"
 	L["Stack Info"] = "중첩 정보"
 	L["Stacks - The number of stacks of an aura (usually)"] = "중첩 - 오라의 중첩 갯수입니다 (일반적으로)"
@@ -856,8 +844,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[이벤트 
 	L["Texture X Offset"] = "텍스처 X 위치 조정"
 	L["Texture Y Offset"] = "텍스처 Y 위치 조정"
 	L["Thanks"] = "감사 인사"
-	L["The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings."] = "ElvUI 애드온이 활성화되어 있습니다. 이로 인해 회전 표시에 재사용 대기시간 숫자가 표시될 수 있습니다. ElvUI 설정에서 이를 조정할 수 있습니다."
-	L["The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings."] = "OmniCC 애드온이 활성화되어 있습니다. 이 애드온은 회전 표시에 재사용 대기시간 숫자를 표시할 수 있습니다. OmniCC 설정에서 이를 구성할 수 있습니다."
+	L["The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings."] = "ElvUI 애드온이 활성화되어 있습니다. 이 애드온이 쿨타임 애니메이션에 남은 시간을 표시할 것입니다. 관련 설정은 ElvUI 설정에서 조정할 수 있습니다."
+	L["The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings."] = "OmniCC 애드온이 활성화되어 있습니다. 이 애드온이 쿨타임 애니메이션에 남은 시간을 표시할 것입니다. 관련 설정은 OmniCC 설정에서 조정할 수 있습니다."
 	L["The duration of the animation in seconds."] = "애니메이션 지속시간 (초)"
 	L["The duration of the animation in seconds. The finish animation does not start playing until after the display would normally be hidden."] = "애니메이션의 초단위 지속시간입니다. 종료 애니메이션은 일반적으로는 디스플레이가 숨겨지기 전까진 재생을 시작하지 않습니다."
 	L["The group and all direct children will share the same base frame level."] = "이 그룹과 모든 직속 자식 위크오라는 같은 기반의 프레임 레벨을 공유합니다."
@@ -954,8 +942,7 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["WeakAuras recommends using spell ids instead of names. Spell ids are automatically localized."] = "WeakAuras는 주문 이름 대신 주문 ID 사용을 권장합니다. 주문 ID는 언어에 맞게 자동 번역됩니다."
 	L["What do you want to do?"] = "무엇을 할까요?"
 	L["Whole Area"] = "전체 구역"
-	--[[Translation missing --]]
-	L["Width |cFFFF0000%s|r and %s"] = "Width |cFFFF0000%s|r and %s"
+	L["Width |cFFFF0000%s|r and %s"] = "너비 |cFFFF0000%s|r 및 %s"
 	L["wrapping"] = "줄바꿈"
 	L["X Offset"] = "X 위치 조정"
 	L["X Rotation"] = "X 회전"
