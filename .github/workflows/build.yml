@@ -75,7 +75,6 @@ jobs:
             echo
             if [[ -s "$changelog_section" ]]; then
               cat "$changelog_section"
-              echo
             fi
             echo "## Commits"
             echo
