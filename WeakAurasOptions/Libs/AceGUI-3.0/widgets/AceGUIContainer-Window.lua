@@ -17,7 +17,7 @@ local CreateFrame, UIParent = CreateFrame, UIParent
 ]]
 do
 	local Type = "Window"
-	local Version = 9
+	local Version = 10
 
 	local function frameOnShow(this)
 		this.obj:Fire("OnShow")
@@ -174,11 +174,12 @@ do
 		frame:SetWidth(700)
 		frame:SetHeight(500)
 		frame:SetPoint("CENTER",UIParent,"CENTER",0,0)
-		frame:EnableMouse()
+		frame:EnableMouse(false)
 		frame:SetMovable(true)
 		frame:SetResizable(true)
 		frame:SetFrameStrata("FULLSCREEN_DIALOG")
 		frame:SetScript("OnMouseDown", frameOnMouseDown)
+		frame:EnableMouse(true)
 
 		frame:SetScript("OnShow",frameOnShow)
 		frame:SetScript("OnHide",frameOnClose)
@@ -257,6 +258,7 @@ do
 		right:SetTexCoord(0.1171875, 0.2421875, 0, 1)
 
 		local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+		close:SetFrameLevel(frame:GetFrameLevel() + 1)
 		close:SetPoint("TOPRIGHT", 2, 1)
 		close:SetScript("OnClick", closeOnClick)
 		self.closebutton = close
@@ -269,20 +271,24 @@ do
 		self.titletext = titletext
 
 		local title = CreateFrame("Button", nil, frame)
+		title:SetFrameLevel(frame:GetFrameLevel() + 1)
 		title:SetPoint("TOPLEFT", titlebg)
 		title:SetPoint("BOTTOMRIGHT", titlebg)
-		title:EnableMouse()
+		title:EnableMouse(false)
 		title:SetScript("OnMouseDown",titleOnMouseDown)
 		title:SetScript("OnMouseUp", frameOnMouseUp)
+		title:EnableMouse(true)
 		self.title = title
 
 		local sizer_se = CreateFrame("Frame",nil,frame)
+		sizer_se:SetFrameLevel(frame:GetFrameLevel() + 1)
 		sizer_se:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",0,0)
 		sizer_se:SetWidth(25)
 		sizer_se:SetHeight(25)
-		sizer_se:EnableMouse()
+		sizer_se:EnableMouse(false)
 		sizer_se:SetScript("OnMouseDown",sizerseOnMouseDown)
 		sizer_se:SetScript("OnMouseUp", sizerOnMouseUp)
+		sizer_se:EnableMouse(true)
 		self.sizer_se = sizer_se
 
 		local line1 = sizer_se:CreateTexture(nil, "BACKGROUND")
@@ -304,25 +310,30 @@ do
 		line2:SetTexCoord(0.05 - x, 0.5, 0.05, 0.5 + x, 0.05, 0.5 - x, 0.5 + x, 0.5)
 
 		local sizer_s = CreateFrame("Frame",nil,frame)
+		sizer_s:SetFrameLevel(frame:GetFrameLevel() + 1)
 		sizer_s:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-25,0)
 		sizer_s:SetPoint("BOTTOMLEFT",frame,"BOTTOMLEFT",0,0)
 		sizer_s:SetHeight(25)
-		sizer_s:EnableMouse()
+		sizer_s:EnableMouse(false)
 		sizer_s:SetScript("OnMouseDown",sizersOnMouseDown)
 		sizer_s:SetScript("OnMouseUp", sizerOnMouseUp)
+		sizer_s:EnableMouse(true)
 		self.sizer_s = sizer_s
 
 		local sizer_e = CreateFrame("Frame",nil,frame)
+		sizer_e:SetFrameLevel(frame:GetFrameLevel() + 1)
 		sizer_e:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",0,25)
 		sizer_e:SetPoint("TOPRIGHT",frame,"TOPRIGHT",0,0)
 		sizer_e:SetWidth(25)
-		sizer_e:EnableMouse()
+		sizer_e:EnableMouse(false)
 		sizer_e:SetScript("OnMouseDown",sizereOnMouseDown)
 		sizer_e:SetScript("OnMouseUp", sizerOnMouseUp)
+		sizer_e:EnableMouse(true)
 		self.sizer_e = sizer_e
 
 		--Container Support
 		local content = CreateFrame("Frame",nil,frame)
+		content:SetFrameLevel(frame:GetFrameLevel() + 1)
 		self.content = content
 		content.obj = self
 		content:SetPoint("TOPLEFT",frame,"TOPLEFT",12,-32)

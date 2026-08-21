@@ -1,6 +1,8 @@
 if not WeakAuras.IsLibsOK() then return end
 
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 local function setCorner(corner, point, relativeTo, x, y, width, height)
@@ -96,7 +98,7 @@ local function SearchBoxTemplateClearButton_OnClick(self)
 end
 
 local function GetParentName(frame)
-  return frame:GetName() or frame
+  return frame:GetName() or tostring(frame)
 end
 
 WeakAuras.XMLTemplates = {
@@ -150,11 +152,12 @@ WeakAuras.XMLTemplates = {
     local instructions = frame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     instructions:SetJustifyH("LEFT")
     instructions:SetJustifyV("MIDDLE")
-    instructions:SetAllPoints(frame)
+    instructions:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, 0)
+    instructions:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, 0)
     instructions:SetTextColor(0.35, 0.35, 0.35)
     frame.Instructions = instructions
 
-    -- Skripts
+    -- Scripts
     frame:SetScript("OnTextChanged", InputBoxInstructions_OnTextChanged)
     frame:SetScript("OnDisable", InputBoxInstructions_OnDisable)
     frame:SetScript("OnEnable", InputBoxInstructions_OnEnable)
@@ -170,9 +173,6 @@ WeakAuras.XMLTemplates = {
     frame:SetTextInsets(16, 20, 0, 0);
     frame.instructionText = SEARCH
     frame.Instructions:SetText(frame.instructionText);
-    frame.Instructions:ClearAllPoints();
-    frame.Instructions:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, 0);
-    frame.Instructions:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, 0);
     -- Search-Icon
     local searchIcon = frame:CreateTexture(GetParentName(frame) .. "SearchIcon", "OVERLAY")
     searchIcon:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\CommonSearch")
@@ -183,6 +183,7 @@ WeakAuras.XMLTemplates = {
     frame.searchIcon = searchIcon
     -- Clear-Button
     local clearButton = CreateFrame("Button", GetParentName(frame) .. "ClearButton", frame)
+    clearButton:SetFrameLevel(frame:GetFrameLevel() + 1)
     clearButton:SetSize(17, 17)
     clearButton:SetPoint("RIGHT", -3, 0)
     clearButton:Hide()
@@ -357,7 +358,6 @@ WeakAuras.XMLTemplates = {
     topTileStreaks:SetTexCoord(0.0, 1.0, 0.0078125, 0.34375)
     frame.TopTileStreaks = topTileStreaks
     -- Mixin
-    frame.Bg:SetVertexColor(0.5882, 0.6275, 0.6706, 0.8) -- approx. PANEL_BACKGROUND_COLOR #ff1f1e21
     frame.layoutType = "PortraitMode"
     frame.ShowPortrait = function(self)
       self.PortraitContainer:Show();
@@ -386,7 +386,8 @@ WeakAuras.XMLTemplates = {
     frame:SetFrameLevel(125)
 
     -- Maximize Button
-    local maximizeButton = CreateFrame("Button", "MaximizeButton", frame)
+    local maximizeButton = CreateFrame("Button", (GetParentName(frame)) .. "MaximizeButton", frame)
+    maximizeButton:SetFrameLevel(frame:GetFrameLevel() + 1)
     maximizeButton:SetAllPoints(frame)
     maximizeButton:Hide()
     frame.MaximizeButton = maximizeButton
@@ -404,7 +405,8 @@ WeakAuras.XMLTemplates = {
     maximizeButton:GetHighlightTexture():SetTexCoord(0.449219, 0.589844, 0.0078125, 0.304688)
 
     -- Minimize Button
-    local minimizeButton = CreateFrame("Button", "MinimizeButton", frame)
+    local minimizeButton = CreateFrame("Button", (GetParentName(frame)) .. "MinimizeButton", frame)
+    minimizeButton:SetFrameLevel(frame:GetFrameLevel() + 1)
     minimizeButton:SetAllPoints(frame)
     frame.MinimizeButton = minimizeButton
 

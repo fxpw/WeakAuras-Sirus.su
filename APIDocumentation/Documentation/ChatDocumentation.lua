@@ -101,12 +101,9 @@ local Chat =
 
 			Arguments =
 			{
-				{ Name = "lineID", Type = "number", Nilable = false },
-			},
-
-			Returns =
-			{
-				{ Name = "canComplain", Type = "bool", Nilable = false },
+				{ Name = "lineID", Type = "number", Nilable = true },
+				{ Name = "name", Type = "string", Nilable = true },
+				{ Name = "text", Type = "string", Nilable = true },
 			},
 		},
 		{
@@ -116,10 +113,9 @@ local Chat =
 			Arguments =
 			{
 				{ Name = "emote", Type = "string", Nilable = false },
-				{ Name = "target", Type = "string", Nilable = false },
+				{ Name = "target", Type = "string", Nilable = true },
 				{ Name = "hold", Type = "bool", Nilable = true },
 			},
-
 		},
 		{
 			Name = "GetChatTypeIndex",

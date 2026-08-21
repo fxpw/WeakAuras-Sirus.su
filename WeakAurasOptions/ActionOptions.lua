@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
@@ -11,13 +13,14 @@ local replaceValuesFuncs = OptionsPrivate.commonOptions.replaceValuesFuncs
 local disabledAll = OptionsPrivate.commonOptions.CreateDisabledAll("action")
 local hiddenAll = OptionsPrivate.commonOptions.CreateHiddenAll("action")
 local getAll = OptionsPrivate.commonOptions.CreateGetAll("action")
-local setAll = OptionsPrivate.commonOptions.CreateSetAll("action", getAll)
+local setAll = OptionsPrivate.commonOptions.CreateSetAllTimeMachine("action", getAll)
 local dynamicTextInputs = {}
 
 local RestrictedChannelCheck = function(data)
   return data.message_type == "SAY" or data.message_type == "YELL" or data.message_type == "SMARTRAID"
 end
 
+--- @type number? the time at which the last sound was played, so that we don't play
 ---  a sound from each setter
 local lastPlayedSoundFromSet
 
@@ -49,16 +52,42 @@ function OptionsPrivate.GetActionOptions(data)
     set = function(info, v, g, b, a)
       local split = info[#info]:find("_");
       local field, value = info[#info]:sub(1, split-1), info[#info]:sub(split+1);
-      data.actions = data.actions or {};
-      data.actions[field] = data.actions[field] or {};
+
       if (info.type == "color") then
-        if not data.actions[field][value] or type(data.actions[field][value]) ~= "table" then
-          data.actions[field][value] = {}
-        end
-        local c = data.actions[field][value]
-        c[1], c[2], c[3], c[4] = v, g, b, a;
+        OptionsPrivate.Private.TimeMachine:AppendMany(
+        {
+          {
+            uid = data.uid,
+            actionType = "set",
+            path = {"actions", field, value, 1},
+            payload = v
+          },
+          {
+            uid = data.uid,
+            actionType = "set",
+            path = {"actions", field, value, 2},
+            payload = g
+          },
+          {
+            uid = data.uid,
+            actionType = "set",
+            path = {"actions", field, value, 3},
+            payload = b
+          },
+          {
+            uid = data.uid,
+            actionType = "set",
+            path = {"actions", field, value, 4},
+            payload = a
+          },
+        })
       else
-        data.actions[field][value] = v;
+        OptionsPrivate.Private.TimeMachine:Append({
+            uid = data.uid,
+            actionType = "set",
+            path = {"actions", field, value},
+            payload = v
+        })
       end
       if(value == "sound" or value == "sound_path") then
         if lastPlayedSoundFromSet ~= GetTime() then
@@ -70,10 +99,6 @@ function OptionsPrivate.GetActionOptions(data)
           pcall(PlaySound, v, "Master")
           lastPlayedSoundFromSet = GetTime()
         end
-      end
-      WeakAuras.Add(data);
-      if(value == "message") then
-        WeakAuras.ClearAndUpdateOptions(data.id)
       end
     end,
     args = {
@@ -116,6 +141,11 @@ function OptionsPrivate.GetActionOptions(data)
         type = "select",
         width = WeakAuras.normalWidth,
         name = L["Message Type"],
+        desc = function()
+          return data.actions.start.message_type == "TTS" and WeakAuras.IsAwesomeEnabled() ~= 2
+            and OptionsPrivate.AddCompatibilityNote(nil, false, L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."])
+            or nil
+        end,
         order = 2,
         values = OptionsPrivate.Private.send_chat_message_types,
         sorting = OptionsPrivate.Private.SortOrderForValues(OptionsPrivate.Private.send_chat_message_types),
@@ -152,10 +182,27 @@ function OptionsPrivate.GetActionOptions(data)
         end,
         get = function() return data.actions.start.r or 1, data.actions.start.g or 1, data.actions.start.b or 1 end,
         set = function(info, r, g, b)
-          data.actions.start.r = r;
-          data.actions.start.g = g;
-          data.actions.start.b = b;
-          WeakAuras.Add(data);
+          OptionsPrivate.Private.TimeMachine:AppendMany(
+            {
+              {
+                uid = data.uid,
+                actionType = "set",
+                path = {"actions", "start", "r"},
+                payload = r
+              },
+              {
+                uid = data.uid,
+                actionType = "set",
+                path = {"actions", "start", "g"},
+                payload = g
+              },
+              {
+                uid = data.uid,
+                actionType = "set",
+                path = {"actions", "start", "b"},
+                payload = b
+              }
+            })
         end
       },
       start_message_dest = {
@@ -214,7 +261,7 @@ function OptionsPrivate.GetActionOptions(data)
         name = "",
         order = 3.19,
         image = function() return "", 0, 0 end,
-        hidden = function() return WeakAuras.IsAwesomeEnabled() ~= 2 or data.actions.start.message_type ~= "TTS" end,
+        hidden = function() return data.actions.start.message_type ~= "TTS" end,
       },
       start_message_tts_settings = {
         type = "execute",
@@ -229,7 +276,7 @@ function OptionsPrivate.GetActionOptions(data)
         name = L["Voice Settings"],
         order = 3.2,
         disabled = function() return WeakAuras.IsAwesomeEnabled() ~= 2 or not data.actions.start.do_message end,
-        hidden = function() return WeakAuras.IsAwesomeEnabled() ~= 2 or data.actions.start.message_type ~= "TTS" end,
+        hidden = function() return data.actions.start.message_type ~= "TTS" end,
       },
       start_message = {
         type = "input",
@@ -356,11 +403,15 @@ function OptionsPrivate.GetActionOptions(data)
         type = "select",
         width = WeakAuras.normalWidth,
         desc = function()
-          return (
+          local desc = (
             data.actions.start.glow_frame_type == "UNITFRAME"
             or data.actions.start.glow_frame_type == "NAMEPLATE"
           )
           and L["Require unit from trigger"] or nil
+          if data.actions.start.glow_frame_type == "NAMEPLATE" and not WeakAuras.IsAwesomeEnabled() then
+            desc = OptionsPrivate.AddCompatibilityNote(desc, false, L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."])
+          end
+          return desc
         end,
         name = L["Glow Frame Type"],
         order = 10.3,
@@ -645,6 +696,11 @@ function OptionsPrivate.GetActionOptions(data)
         type = "select",
         width = WeakAuras.normalWidth,
         name = L["Message Type"],
+        desc = function()
+          return data.actions.finish.message_type == "TTS" and WeakAuras.IsAwesomeEnabled() ~= 2
+            and OptionsPrivate.AddCompatibilityNote(nil, false, L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."])
+            or nil
+        end,
         order = 22,
         values = OptionsPrivate.Private.send_chat_message_types,
         sorting = OptionsPrivate.Private.SortOrderForValues(OptionsPrivate.Private.send_chat_message_types),
@@ -681,10 +737,27 @@ function OptionsPrivate.GetActionOptions(data)
             end,
         get = function() return data.actions.finish.r or 1, data.actions.finish.g or 1, data.actions.finish.b or 1 end,
         set = function(info, r, g, b)
-          data.actions.finish.r = r;
-          data.actions.finish.g = g;
-          data.actions.finish.b = b;
-          WeakAuras.Add(data);
+            OptionsPrivate.Private.TimeMachine:AppendMany(
+            {
+              {
+                uid = data.uid,
+                actionType = "set",
+                path = {"actions", "finish", "r"},
+                payload = r
+              },
+              {
+                uid = data.uid,
+                actionType = "set",
+                path = {"actions", "finish", "g"},
+                payload = g
+              },
+              {
+                uid = data.uid,
+                actionType = "set",
+                path = {"actions", "finish", "b"},
+                payload = b
+              }
+            })
         end
       },
       finish_message_dest = {
@@ -743,7 +816,7 @@ function OptionsPrivate.GetActionOptions(data)
         name = "",
         order = 23.19,
         image = function() return "", 0, 0 end,
-        hidden = function() return WeakAuras.IsAwesomeEnabled() ~= 2 or data.actions.finish.message_type ~= "TTS" end,
+        hidden = function() return data.actions.finish.message_type ~= "TTS" end,
       },
       finish_message_tts_settings = {
         type = "execute",
@@ -758,7 +831,7 @@ function OptionsPrivate.GetActionOptions(data)
         name = L["Voice Settings"],
         order = 23.2,
         disabled = function() return WeakAuras.IsAwesomeEnabled() ~= 2 or not data.actions.finish.do_message end,
-        hidden = function() return WeakAuras.IsAwesomeEnabled() ~= 2 or data.actions.finish.message_type ~= "TTS" end,
+        hidden = function() return data.actions.finish.message_type ~= "TTS" end,
       },
       finish_message = {
         type = "input",
@@ -844,27 +917,27 @@ function OptionsPrivate.GetActionOptions(data)
       finish_stop_sound = {
         type = "toggle",
         width = WeakAuras.doubleWidth,
-        name = L["Stop Sound"],
+        name = OptionsPrivate.SetOptionTextDisabled(L["Stop Sound"], StopSound),
+        desc = OptionsPrivate.AddCompatibilityNote(nil, StopSound, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."]),
         order = 29.1,
-        hidden = function() return not StopSound end,
-        disabled = function() return not StopSound end,
       },
       finish_do_sound_fade = {
         type = "toggle",
         width = WeakAuras.normalWidth,
-        name = L["Fadeout Sound"],
+        name = OptionsPrivate.SetOptionTextDisabled(L["Fadeout Sound"], StopSound),
+        desc = OptionsPrivate.AddCompatibilityNote(nil, StopSound, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."]),
         order = 29.2,
-        hidden = function() return not StopSound end,
-        disabled = function() return not StopSound or not data.actions.finish.stop_sound end,
+        disabled = function() return not data.actions.finish.stop_sound end,
       },
       finish_stop_sound_fade = {
         type = "range",
         control = "WeakAurasSpinBox",
         width = WeakAuras.normalWidth,
-        name = L["Fadeout Time (seconds)"],
+        name = OptionsPrivate.SetOptionTextDisabled(L["Fadeout Time (seconds)"], StopSound),
+        desc = OptionsPrivate.AddCompatibilityNote(nil, StopSound, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."]),
         order = 29.3,
-        hidden = function() return not StopSound or not data.actions.finish.do_sound_fade end,
-        disabled = function() return not StopSound or not data.actions.finish.stop_sound end,
+        hidden = function() return not data.actions.finish.do_sound_fade end,
+        disabled = function() return not data.actions.finish.stop_sound end,
         min = 0,
         softMax = 10,
         bigStep = 1,
@@ -874,8 +947,6 @@ function OptionsPrivate.GetActionOptions(data)
         width = WeakAuras.doubleWidth,
         order = 29.4,
         name = "",
-        hidden = function() return not StopSound end,
-        disabled = function() return not StopSound end,
       },
       finish_do_glow = {
         type = "toggle",
@@ -895,11 +966,15 @@ function OptionsPrivate.GetActionOptions(data)
         type = "select",
         width = WeakAuras.normalWidth,
         desc = function()
-          return (
+          local desc = (
             data.actions.finish.glow_frame_type == "UNITFRAME"
             or data.actions.finish.glow_frame_type == "NAMEPLATE"
           )
           and L["Require unit from trigger"] or nil
+          if data.actions.finish.glow_frame_type == "NAMEPLATE" and not WeakAuras.IsAwesomeEnabled() then
+            desc = OptionsPrivate.AddCompatibilityNote(desc, false, L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."])
+          end
+          return desc
         end,
         name = L["Glow Frame Type"],
         order = 30.3,
@@ -1180,15 +1255,15 @@ function OptionsPrivate.GetActionOptions(data)
 
   -- Text format option helpers
 
-  OptionsPrivate.commonOptions.AddCodeOption(action.args, data, L["Custom Code"], "init", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#on-init",
+  OptionsPrivate.commonOptions.AddCodeOptionTimeMachine(action.args, data, L["Custom Code"], "init", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#on-init",
                           0.21, function() return not data.actions.init.do_custom end, {"actions", "init", "custom"}, true)
 
-  OptionsPrivate.commonOptions.AddCodeOption(action.args, data, L["Custom Code"], "customOnLoad", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#on-load",
+  OptionsPrivate.commonOptions.AddCodeOptionTimeMachine(action.args, data, L["Custom Code"], "customOnLoad", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#on-load",
                           0.31, function() return not data.actions.init.do_custom_load end, {"actions", "init", "customOnLoad"}, true)
-  OptionsPrivate.commonOptions.AddCodeOption(action.args, data, L["Custom Code"], "customOnUnload", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#on-unload",
+  OptionsPrivate.commonOptions.AddCodeOptionTimeMachine(action.args, data, L["Custom Code"], "customOnUnload", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#on-unload",
                           0.41, function() return not data.actions.init.do_custom_unload end, {"actions", "init", "customOnUnload"}, true)
 
-  OptionsPrivate.commonOptions.AddCodeOption(action.args, data, L["Custom Code"], "start_message", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#chat-message---custom-code",
+  OptionsPrivate.commonOptions.AddCodeOptionTimeMachine(action.args, data, L["Custom Code"], "start_message", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#chat-message---custom-code",
                           5, function() return not (data.actions.start.do_message and (OptionsPrivate.Private.ContainsCustomPlaceHolder(data.actions.start.message) or (data.actions.start.message_type == "WHISPER" and OptionsPrivate.Private.ContainsCustomPlaceHolder(data.actions.start.message_dest)))) end, {"actions", "start", "message_custom"}, false);
 
   local startHidden = function()
@@ -1212,14 +1287,13 @@ function OptionsPrivate.GetActionOptions(data)
     usedKeys[key] = true
     option.order = order
     order = order + 0.01
-    local reload = option.reloadOptions
-    option.reloadOptions = nil
     option.set = function(info, v)
-      data.actions.start["message_format_" .. key] = v
-      WeakAuras.Add(data)
-      if reload then
-        WeakAuras.ClearAndUpdateOptions(data.id)
-      end
+      OptionsPrivate.Private.TimeMachine:Append({
+        uid = data.uid,
+        actionType = "set",
+        path = { "actions", "start",  "message_format_" .. key},
+        payload = v
+      })
     end
 
     if option.hidden then
@@ -1249,10 +1323,10 @@ function OptionsPrivate.GetActionOptions(data)
   end
 
 
-  OptionsPrivate.commonOptions.AddCodeOption(action.args, data, L["Custom Code"], "start", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#on-show",
+  OptionsPrivate.commonOptions.AddCodeOptionTimeMachine(action.args, data, L["Custom Code"], "start", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#on-show",
                           13, function() return not data.actions.start.do_custom end, {"actions", "start", "custom"}, true);
 
-  OptionsPrivate.commonOptions.AddCodeOption(action.args, data, L["Custom Code"], "finish_message", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#chat-message---custom-code",
+  OptionsPrivate.commonOptions.AddCodeOptionTimeMachine(action.args, data, L["Custom Code"], "finish_message", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#chat-message---custom-code",
                           25, function() return not (data.actions.finish.do_message and (OptionsPrivate.Private.ContainsCustomPlaceHolder(data.actions.finish.message) or (data.actions.finish.message_type == "WHISPER" and OptionsPrivate.Private.ContainsCustomPlaceHolder(data.actions.finish.message_dest)))) end, {"actions", "finish", "message_custom"}, false);
 
   local finishHidden = function()
@@ -1275,14 +1349,13 @@ function OptionsPrivate.GetActionOptions(data)
     end
     option.order = order
     order = order + 0.01
-    local reload = option.reloadOptions
-    option.reloadOptions = nil
     option.set = function(info, v)
-      data.actions.finish["message_format_" .. key] = v
-      WeakAuras.Add(data)
-      if reload then
-        WeakAuras.ClearAndUpdateOptions(data.id)
-      end
+      OptionsPrivate.Private.TimeMachine:Append({
+        uid = data.uid,
+        actionType = "set",
+        path = { "actions", "finish",  "message_format_" .. key},
+        payload = v
+      })
     end
 
     if option.hidden then
@@ -1310,7 +1383,7 @@ function OptionsPrivate.GetActionOptions(data)
     OptionsPrivate.AddTextFormatOption(data.actions and data.actions.finish.message, true, finishGet, finishAddOption, finishHidden, finishSetHidden, true)
   end
 
-  OptionsPrivate.commonOptions.AddCodeOption(action.args, data, L["Custom Code"], "finish", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#on-hide",
+  OptionsPrivate.commonOptions.AddCodeOptionTimeMachine(action.args, data, L["Custom Code"], "finish", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#on-hide",
                           32, function() return not data.actions.finish.do_custom end, {"actions", "finish", "custom"}, true);
 
   if data.controlledChildren then
@@ -1321,12 +1394,7 @@ function OptionsPrivate.GetActionOptions(data)
 
     action.get = function(info, ...) return getAll(data, info, ...); end;
     action.set = function(info, ...)
-      setAll(data, info, ...);
-      if(type(data.id) == "string") then
-        WeakAuras.Add(data);
-        WeakAuras.UpdateThumbnail(data);
-        OptionsPrivate.ResetMoverSizer();
-      end
+      setAll(data, info, ...)
     end
     action.hidden = function(info, ...) return hiddenAll(data, info, ...); end;
     action.disabled = function(info, ...) return disabledAll(data, info, ...); end;

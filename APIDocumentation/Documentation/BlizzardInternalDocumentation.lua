@@ -119,16 +119,19 @@ local BlizzardInternal =
 		{
 			Name = "TargetDirectionEnemy",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "TargetDirectionFinished",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "TargetDirectionFriend",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
@@ -225,6 +228,10 @@ local BlizzardInternal =
 			{
 				{ Name = "userdata", Type = "userdata", Nilable = false },
 			},
+		},
+		{
+			Name = "GetTexLodBias",
+			Type = "Function",
 		},
 	},
 

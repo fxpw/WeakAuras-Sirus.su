@@ -1,11 +1,13 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local SharedMedia = LibStub("LibSharedMedia-3.0");
 local L = WeakAuras.L;
 
-local screenWidth = math.ceil(GetScreenWidth() / 20) * 20
+local screenWidth = math.ceil(GetScreenWidth() / 20) * 20;
 
 local indentWidth = 0.15
 local hiddenFontExtra = function()
@@ -13,6 +15,8 @@ local hiddenFontExtra = function()
 end
 
 local dynamicTextInputs = {}
+
+
 
 local function createOptions(id, data)
   local function hideCustomTextOption()
@@ -139,28 +143,38 @@ local function createOptions(id, data)
       hasAlpha = true,
       order = 47
     },
-
+    outline = {
+      type = "select",
+      width = WeakAuras.normalWidth,
+      name = L["Outline"],
+      order = 47.5,
+      values = OptionsPrivate.Private.font_flags,
+      desc = function()
+        if data.outline == "SLUG" or data.outline == "OUTLINE|SLUG" then
+          return OptionsPrivate.AddCompatibilityNote(nil, nil, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."])
+        end
+      end,
+    },
     fontFlagsDescription = {
       order = 48,
       width = WeakAuras.doubleWidth,
       type = "execute",
       control = "WeakAurasExpandSmall",
       name = function()
-        local textFlags = OptionsPrivate.Private.font_flags[data.outline]
+        local hideShadow = data.outline == "OUTLINE|SLUG"
         local color = format("%02x%02x%02x%02x",
                              data.shadowColor[4] * 255, data.shadowColor[1] * 255,
                              data.shadowColor[2] * 255, data.shadowColor[3]*255)
 
-        local textJustify = ""
+        local text = ""
         if data.justify == "CENTER" then
           -- CENTER is default
         elseif data.justify == "LEFT" then
-          textJustify = " " .. L["and aligned left"]
+          text = L["Aligned left"]
         elseif data.justify == "RIGHT" then
-          textJustify = " " ..  L["and aligned right"]
+          text =  L["Aligned right"]
         end
 
-        local textWidth = ""
         if data.automaticWidth == "Fixed" then
           local wordWarp = ""
           if data.wordWrap == "WordWrap" then
@@ -168,12 +182,36 @@ local function createOptions(id, data)
           else
             wordWarp = L["eliding"]
           end
-          textWidth = " "..L["and with width |cFFFF0000%s|r and %s"]:format(data.fixedWidth, wordWarp)
+          if text == "" then
+            text = L["Width |cFFFF0000%s|r and %s"]:format(data.fixedWidth, wordWarp)
+          else
+            text = text .. " " .. L["and with width |cFFFF0000%s|r and %s"]:format(data.fixedWidth, wordWarp)
+          end
         end
 
-        local secondline = L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"]:format(textFlags, color, data.shadowXOffset, data.shadowYOffset, textJustify, textWidth)
+        if data.smoothScaling then
+          if text == "" then
+            text = L["Smooth scaling"]
+          else
+            text = text .. " " .. L["and smooth scaling"]
+          end
+        end
 
-        return secondline
+        if not hideShadow then
+          if text == "" then
+            text = text .. " " .. L["Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"]
+                                  :format(color, data.shadowXOffset, data.shadowYOffset)
+          else
+            text = text .. " " .. L["and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"]
+                                  :format(color, data.shadowXOffset, data.shadowYOffset)
+          end
+        end
+
+        if text == "" then
+          return L["|cFFffcc00Font Flags:|r none"]
+        else
+          return L["|cFFffcc00Font Flags:|r"] .. " " .. text
+        end
       end,
       func = function(info, button)
         local collapsed = OptionsPrivate.IsCollapsed("text", "text", "fontflags", true)
@@ -197,28 +235,42 @@ local function createOptions(id, data)
       hidden = hiddenFontExtra,
       width = indentWidth
     },
-    outline = {
-      type = "select",
+    smoothScaling = {
+      type = "toggle",
       width = WeakAuras.normalWidth - indentWidth,
-      name = L["Outline"],
+      name = OptionsPrivate.SetOptionTextDisabled(L["Smooth Font"]),
+      desc = OptionsPrivate.AddCompatibilityNote(L["Smooths text height, preventing it from snapping to the nearest whole number when scaled."], nil, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."]),
       order = 48.2,
-      values = OptionsPrivate.Private.font_flags,
       hidden = hiddenFontExtra
     },
+
     shadowColor = {
       type = "color",
       hasAlpha = true,
       width = WeakAuras.normalWidth,
       name = L["Shadow Color"],
       order = 48.3,
-      hidden = hiddenFontExtra
+      hidden = function()
+        return hiddenFontExtra() or data.outline == "OUTLINE|SLUG"
+      end
+    },
+    shadowColorSpace = {
+      type = "description",
+      name = "",
+      width = WeakAuras.normalWidth,
+      order = 48.3,
+      hidden = function()
+        return hiddenFontExtra() or data.outline ~= "OUTLINE|SLUG"
+      end
     },
 
     text_font_space3 = {
       type = "description",
       name = "",
       order = 48.4,
-      hidden = hiddenFontExtra,
+      hidden = function()
+        return hiddenFontExtra() or data.outline == "OUTLINE|SLUG"
+      end,
       width = indentWidth
     },
     shadowXOffset = {
@@ -230,7 +282,9 @@ local function createOptions(id, data)
       softMax = 15,
       bigStep = 1,
       order = 48.5,
-      hidden = hiddenFontExtra
+      hidden = function()
+        return hiddenFontExtra() or data.outline == "OUTLINE|SLUG"
+      end
     },
     shadowYOffset = {
       type = "range",
@@ -241,7 +295,9 @@ local function createOptions(id, data)
       softMax = 15,
       bigStep = 1,
       order = 48.6,
-      hidden = hiddenFontExtra
+      hidden = function()
+        return hiddenFontExtra() or data.outline == "OUTLINE|SLUG"
+      end
     },
 
     text_font_space4 = {
@@ -335,7 +391,7 @@ local function createOptions(id, data)
     },
   };
 
-  OptionsPrivate.commonOptions.AddCodeOption(options, data, L["Custom Function"], "customText", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-text",
+  OptionsPrivate.commonOptions.AddCodeOption(options, data, L["Custom Function"], "customText", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#custom-text",
                           37, hideCustomTextOption, {"customText"}, false);
 
   -- Add Text Format Options
@@ -418,11 +474,13 @@ local function createThumbnail()
   border:SetTexCoord(0.2, 0.8, 0.2, 0.8);
 
   local mask = CreateFrame("ScrollFrame", nil, borderframe);
+  mask:SetFrameLevel(borderframe:GetFrameLevel() + 1)
   borderframe.mask = mask;
   mask:SetPoint("BOTTOMLEFT", borderframe, "BOTTOMLEFT", 2, 2);
   mask:SetPoint("TOPRIGHT", borderframe, "TOPRIGHT", -2, -2);
 
   local content = CreateFrame("Frame", nil, mask);
+  content:SetFrameLevel(mask:GetFrameLevel() + 1)
   borderframe.content = content;
   content:SetPoint("CENTER", mask, "CENTER");
   mask:SetScrollChild(content);
@@ -442,9 +500,10 @@ local function modifyThumbnail(parent, borderframe, data, fullModify, size)
   size = size or 28;
 
   local fontPath = SharedMedia:Fetch("font", data.font) or data.font;
-  text:SetFont(fontPath, data.fontSize < 33 and data.fontSize or 33, data.outline and "OUTLINE" or nil);
+  local fontSize = data.fontSize < 33 and data.fontSize or 33
+  text:SetFont(fontPath, fontSize, data.outline and "OUTLINE" or "");
   if not text:GetFont() then -- Font invalid, set the font but keep the setting
-    text:SetFont(STANDARD_TEXT_FONT, data.fontSize < 33 and data.fontSize or 33, data.outline and "OUTLINE" or nil);
+    text:SetFont(STANDARD_TEXT_FONT, fontSize, data.outline and "OUTLINE" or "");
   end
   text:SetTextHeight(data.fontSize);
   text:SetText(data.displayText);

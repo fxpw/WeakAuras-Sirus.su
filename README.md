@@ -27,8 +27,8 @@ To open the options window, type `/wa` or `/weakauras` into your chat and hit en
 
 ## Install
 
-1. [Download the package](https://github.com/NoM0Re/WeakAuras-WotLK/archive/refs/heads/master.zip).
-2. Open the archive, then open folder `WeakAuras-WotLK-master`, extract all folders to `Interface\AddOns`.
+1. [Download the latest release package](https://github.com/NoM0Re/WeakAuras-WotLK/releases/latest/download/WeakAuras2.zip).
+2. Open the archive and extract all addon folders to `Interface\AddOns`.
 
 ## Client Extensions
 
@@ -60,4 +60,9 @@ For some examples of what WeakAuras can do, take a look at [wago.io](https://wag
 * You're a programmer yourself and want to contribute? Check out our [contributing guidelines](CONTRIBUTING.md) to get started!
 * Feel free to join our [Discord Community](https://discord.gg/UXSc7nt) to talk, get help and discuss everything WeakAuras!
 
+## Official Repository and License
+
+This is the official WeakAuras WotLK 3.3.5a port maintained at [NoM0Re/WeakAuras-WotLK](https://github.com/NoM0Re/WeakAuras-WotLK).
+WeakAuras WotLK is derived from WeakAuras2 and is distributed under the GNU General Public License version 2, as included in [LICENSE](LICENSE). Forks, copies, modified versions, and redistributions are permitted under the GPL, but redistributors must preserve the applicable copyright and license notices, keep source code available as required by the GPL, and clearly mark modified versions so they are not confused with the official release from this repository.
+Additional attribution and redistribution notes are available in [NOTICE](NOTICE).
 

@@ -478,6 +478,7 @@ local PlayerInformation =
 		{
 			Name = "SetCurrentTitle",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

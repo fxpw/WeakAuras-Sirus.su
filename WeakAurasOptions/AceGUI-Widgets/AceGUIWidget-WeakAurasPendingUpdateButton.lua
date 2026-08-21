@@ -1,6 +1,8 @@
 if not WeakAuras.IsLibsOK() then return end
 
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 local L = WeakAuras.L
 
@@ -295,12 +297,11 @@ local function Constructor()
   icon:SetHeight(32)
   icon:SetPoint("LEFT", button, "LEFT")
 
-  button.description = {}
-
   -- follow link button
   local followLink = CreateFrame("Button", nil, button)
+  followLink:SetFrameLevel(button:GetFrameLevel() + 1)
   button.followLink = followLink
-  followLink:SetNormalTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\loottoast-arrow-green")
+  followLink:SetNormalTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\loottoast-arrow-green") -- "loottoast-arrow-green"
   followLink:GetNormalTexture():SetRotation(math.rad(-90))
   followLink:SetWidth(32)
   followLink:SetHeight(32)
@@ -315,6 +316,7 @@ local function Constructor()
   followLink:SetScript("OnLeave", Hide_Tooltip)
 
   local update = CreateFrame("Button", nil, button)
+  update:SetFrameLevel(button:GetFrameLevel() + 1)
   button.update = update
   update.disabled = true
   update.func = function()
@@ -371,6 +373,8 @@ local function Constructor()
   title:SetPoint("RIGHT", updateLogo, "LEFT", -2, 0)
   title:SetVertexColor(0.6, 0.6, 0.6)
 
+  button.description = {}
+  --- @type table<string, any>
   local widget = {
     frame = button,
     title = title,

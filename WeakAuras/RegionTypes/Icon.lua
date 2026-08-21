@@ -1,16 +1,13 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 local L = WeakAuras.L
-local MSQ, MSQ_Version = LibStub("Masque", true);
+local MSQ = LibStub("Masque", true);
 if MSQ then
-  if MSQ_Version <= 80100 then
-    MSQ = nil
-   WeakAuras.prettyPrint(L["Please upgrade your Masque version"])
-  else
-    MSQ:AddType("WA_Aura", {"Icon", "Cooldown"})
-  end
+  MSQ:AddType("WA_Aura", {"Icon", "Cooldown"})
 end
 
 -- WoW API
@@ -36,7 +33,10 @@ local default = {
   keepAspectRatio = false,
   frameStrata = 1,
   cooldown = true,
-  cooldownEdge = false
+  cooldownTextDisabled = false,
+  cooldownSwipe = true,
+  cooldownEdge = false,
+  useCooldownModRate = true
 };
 
 Private.regionPrototype.AddProgressSourceToDefault(default)
@@ -191,19 +191,6 @@ local function AnchorSubRegion(self, subRegion, anchorType, anchorPoint, selfPoi
   end
 end
 
-local function setDesaturated(self, desaturated, ...)
-  self.isDesaturated = desaturated and 1 or 0
-  return self._SetDesaturated(self, desaturated, ...)
-end
-
-local function setTexture(self, ...)
-  local apply = self._SetTexture(self, ...)
-  if self.isDesaturated ~= nil then
-    self:_SetDesaturated(self.isDesaturated == 1)
-  end
-  return apply
-end
-
 local function cooldown_onUpdate(self, e)
   if self._duration then
     if self._delay then
@@ -262,6 +249,7 @@ local function create(parent, data)
   local font = "GameFontHighlight";
 
   local region = CreateFrame("Frame", nil, parent);
+  --- @cast region table|Frame
   region.regionType = "icon"
   region:SetMovable(true);
   region:SetResizable(true);
@@ -293,6 +281,7 @@ local function create(parent, data)
   local button
   if MSQ then
     button = CreateFrame("Button", nil, region)
+    --- @cast button table|Button
     button.data = data
     region.button = button;
     button:EnableMouse(false);
@@ -301,6 +290,9 @@ local function create(parent, data)
   end
 
   local icon = region:CreateTexture(nil, "BACKGROUND");
+  Private.FixTextureDesaturation(icon)
+  -- icon:SetSnapToPixelGrid(false)
+  -- icon:SetTexelSnappingBias(0)
   if MSQ then
     icon:SetAllPoints(button);
     button:SetScript("OnSizeChanged", region.UpdateInnerOuterSize);
@@ -310,11 +302,6 @@ local function create(parent, data)
   end
   region.icon = icon;
   icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark");
-
-  icon._SetDesaturated = icon.SetDesaturated
-  icon.SetDesaturated = setDesaturated
-  icon._SetTexture = icon.SetTexture
-  icon.SetTexture = setTexture
 
   --This section creates a unique frame id for the cooldown frame so that it can be created with a global reference
   --The reason is so that WeakAuras cooldown frames can interact properly with OmniCC
@@ -413,12 +400,7 @@ local function modify(parent, region, data)
     end
 
     if region.MSQGroup then
-      if region.MSQGroup.ReSkin then
         region.MSQGroup:ReSkin(button)
-      else
-        region.MSQGroup:RemoveButton(button)
-        region.MSQGroup:AddButton(button, {Icon = icon, Cooldown = cooldown}, "WA_Aura", true)
-      end
     end
 
     local ulx, uly, llx, lly, urx, ury, lrx, lry
@@ -455,6 +437,7 @@ local function modify(parent, region, data)
   if(tooltipType and data.useTooltip) then
     if not region.tooltipFrame then
       region.tooltipFrame = CreateFrame("Frame", nil, region);
+      region.tooltipFrame:SetFrameLevel(region:GetFrameLevel() + 1)
       region.tooltipFrame:SetAllPoints(region);
       region.tooltipFrame:SetScript("OnEnter", function()
         Private.ShowMouseoverTooltip(region, region);
@@ -562,7 +545,7 @@ local function modify(parent, region, data)
     end
 
     iconPath = iconPath or self.displayIcon or "Interface\\Icons\\INV_Misc_QuestionMark"
-    Private.SetTextureOrSpellTexture(icon, iconPath)
+    Private.SetTextureOrAtlas(self.icon, iconPath)
   end
 
   function region:Scale(scalex, scaley)
@@ -605,6 +588,8 @@ local function modify(parent, region, data)
   cooldown:Hide()
   if(data.cooldown) then
     function region:UpdateValue()
+      cooldown.expirationTime = nil
+      cooldown.duration = nil
       cooldown.value = self.value
       cooldown.total = self.total
       if (self.value >= 0 and self.value <= self.total) then
@@ -617,6 +602,8 @@ local function modify(parent, region, data)
     end
 
     function region:UpdateTime()
+      cooldown.value = nil
+      cooldown.total = nil
       if self.paused then
         cooldown:Pause()
       else

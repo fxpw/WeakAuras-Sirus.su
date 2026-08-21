@@ -18,4 +18,5 @@
   <Include file="Libs\LibSerialize\lib.xml"/>
   <Include file="Libs\LibGroupTalents-1.0\lib.xml"/>
   <!-- <Script file="Libs\SpecializedAbsorbs-1.0\SpecializedAbsorbs-1.0.lua"/> -->
+  <Include file="Libs\LibResComm-1.0\LibResComm-1.0.xml"/>
 </Ui>

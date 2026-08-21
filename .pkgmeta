@@ -1,0 +1,40 @@
+package-as: WeakAuras
+
+enable-nolib-creation: no
+
+manual-changelog:
+  filename: .release-changelog.md
+  markup-type: markdown
+
+ignore:
+  - .codex
+  - .github
+  - .discord-release.md
+  - .editorconfig
+  - .gitattributes
+  - .gitignore
+  - .release
+  - .release-changelog-section.md
+  - .luacheckrc
+  - .luarc.json
+  - .vscode
+  - AGENTS.md
+  - CHANGELOG.md
+  - CODE_OF_CONDUCT.md
+  - CONTRIBUTING.md
+  - README.md
+  - cspell.json
+  - prompt.txt
+  - stylua.toml
+
+plain-copy:
+  - WeakAurasModelPaths/*.lua
+
+move-folders:
+  WeakAuras/APIDocumentation: APIDocumentation
+  WeakAuras/WeakAuras: WeakAuras
+  WeakAuras/WeakAurasArchive: WeakAurasArchive
+  WeakAuras/WeakAurasModelPaths: WeakAurasModelPaths
+  WeakAuras/WeakAurasOptions: WeakAurasOptions
+  WeakAuras/WeakAurasStopMotion: WeakAurasStopMotion
+  WeakAuras/WeakAurasTemplates: WeakAurasTemplates

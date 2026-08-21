@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 local SharedMedia = LibStub("LibSharedMedia-3.0");
@@ -262,6 +264,8 @@ local anchorAlignment = {
   ["VERTICAL_INVERSE"] = { "BOTTOMLEFT", "BOTTOMRIGHT", "TOP" }
 }
 
+local extraTextureWrapMode = "REPEAT";
+
 -- Emulate blizzard statusbar with advanced features (more grow directions)
 local barPrototype = {
   ["UpdateAnchors"] = function(self)
@@ -320,7 +324,7 @@ local barPrototype = {
     if (self.horizontal) then
       local xProgress = self:GetRealSize() * progress;
       local show = xProgress > 0.0001
-      self.fgMask:SetWidth(show and (xProgress + 0.1) or 0.1);
+      self.fgMask:SetWidth(show and xProgress or 0.1);
       if show then
         self.fg:Show()
       else
@@ -329,13 +333,17 @@ local barPrototype = {
     else
       local yProgress = select(2, self:GetRealSize()) * progress;
       local show = yProgress > 0.0001
-      self.fgMask:SetHeight(show and (yProgress + 0.1) or 0.1);
+      self.fgMask:SetHeight(show and yProgress or 0.1);
       if show then
         self.fg:Show()
       else
         self.fg:Hide()
       end
     end
+
+    -- Crop texture
+    local TLx_, TLy_, BLx_, BLy_, TRx_, TRy_, BRx_, BRy_ = self.GetTexCoord(0, progress);
+    self.fg:SetTexCoord(TLx_, TLy_, BLx_, BLy_, TRx_, TRy_, BRx_, BRy_);
 
     local sparkHidden = self.spark.sparkHidden;
     local sparkVisible = sparkHidden == "NEVER"
@@ -355,6 +363,7 @@ local barPrototype = {
       for index, additionalBar in ipairs(self.additionalBars) do
         if (not self.extraTextures[index]) then
           local extraTexture = self:CreateTexture(nil, "ARTWORK");
+          -- extraTexture:SetTexelSnappingBias(0)
           extraTexture:SetDrawLayer("ARTWORK", min(index, 7));
           self.extraTextures[index] = extraTexture;
         end
@@ -422,9 +431,9 @@ local barPrototype = {
           local texture = self.additionalBarsTextures and self.additionalBarsTextures[index];
           if texture then
             local texturePath = SharedMedia:Fetch("statusbar", texture) or ""
-            extraTexture:SetTexture(texturePath)
+            Private.SetTextureOrAtlas(extraTexture, texturePath, extraTextureWrapMode, extraTextureWrapMode)
           else
-            extraTexture:SetTexture(self:GetStatusBarTexture());
+            Private.SetTextureOrAtlas(extraTexture, self:GetStatusBarTexture(), extraTextureWrapMode, extraTextureWrapMode)
           end
 
           local xOffset = 0;
@@ -570,15 +579,15 @@ local barPrototype = {
 
   -- Blizzard like SetStatusBarTexture
   ["SetStatusBarTexture"] = function(self, texture)
-    self.fg:SetTexture(texture);
-    self.bg:SetTexture(texture);
+    Private.SetTextureOrAtlas(self.fg, texture)
+    Private.SetTextureOrAtlas(self.bg, texture)
     for index, extraTexture in ipairs(self.extraTextures) do
-      extraTexture:SetTexture(texture);
+      Private.SetTextureOrAtlas(extraTexture, texture, extraTextureWrapMode, extraTextureWrapMode)
     end
   end,
 
   ["GetStatusBarTexture"] = function(self)
-    return self.fg:GetTexture();
+    return self.fg:GetTexture()
   end,
 
   -- Set bar color
@@ -1036,7 +1045,7 @@ local funcs = {
     end
 
     iconPath = iconPath or self.displayIcon or "Interface\\Icons\\INV_Misc_QuestionMark"
-    Private.SetTextureOrSpellTexture(self.icon, iconPath)
+    Private.SetTextureOrAtlas(self.icon, iconPath)
   end,
   SetOverlayColor = function(self, id, r, g, b, a)
     self.bar:SetAdditionalBarColor(id, { r, g, b, a});
@@ -1132,23 +1141,11 @@ local funcs = {
   end
 }
 
-local function setDesaturated(self, desaturated, ...)
-  self.isDesaturated = desaturated and 1 or 0
-  return self._SetDesaturated(self, desaturated, ...)
-end
-
-local function setTexture(self, ...)
-  local apply = self._SetTexture(self, ...)
-  if self.isDesaturated ~= nil then
-    self:_SetDesaturated(self.isDesaturated == 1)
-  end
-  return apply
-end
-
 -- Called when first creating a new region/display
 local function create(parent)
   -- Create overall region (containing everything else)
   local region = CreateFrame("Frame", nil, parent);
+  --- @cast region table|Frame
   region.regionType = "aurabar"
   region:SetMovable(true);
   region:SetResizable(true);
@@ -1158,7 +1155,8 @@ local function create(parent)
 
   -- Create statusbar (inherit prototype)
   local bar = CreateFrame("Frame", nil, region);
-  Mixin(bar, Private.SmoothStatusBarMixin);
+  --- @cast bar table|Frame
+  Private.Mixin(bar, Private.SmoothStatusBarMixin);
   fgMask:SetAllPoints(bar);
 
   -- Now create a bunch of textures
@@ -1187,11 +1185,7 @@ local function create(parent)
   local icon = iconFrame:CreateTexture(nil, "OVERLAY");
   region.icon = icon;
   icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark");
-
-  icon._SetDesaturated = icon.SetDesaturated
-  icon.SetDesaturated = setDesaturated
-  icon._SetTexture = icon.SetTexture
-  icon.SetTexture = setTexture
+  Private.FixTextureDesaturation(icon)
 
   local oldSetFrameLevel = region.SetFrameLevel;
   function region.SetFrameLevel(self, frameLevel)
@@ -1270,7 +1264,7 @@ local function modify(parent, region, data)
   region:UpdateStatusBarTexture();
   bar:SetBackgroundColor(data.backgroundColor[1], data.backgroundColor[2], data.backgroundColor[3], data.backgroundColor[4]);
   -- Update spark settings
-  bar.spark:SetTexture(data.sparkTexture);
+  Private.SetTextureOrAtlas(bar.spark, data.sparkTexture);
   bar.spark:SetVertexColor(data.sparkColor[1], data.sparkColor[2], data.sparkColor[3], data.sparkColor[4]);
   bar.spark:SetWidth(data.sparkWidth);
   bar.spark:SetHeight(data.sparkHeight);
@@ -1318,13 +1312,20 @@ local function modify(parent, region, data)
     -- Create and enable tooltip-hover frame
     if not region.tooltipFrame then
       region.tooltipFrame = CreateFrame("Frame", nil, region);
-      region.tooltipFrame:SetAllPoints(icon);
+      region.tooltipFrame:SetFrameLevel(region:GetFrameLevel() + 1)
       region.tooltipFrame:SetScript("OnEnter", function()
         Private.ShowMouseoverTooltip(region, region.tooltipFrame);
       end);
       region.tooltipFrame:SetScript("OnLeave", Private.HideTooltip);
     end
-
+    region.tooltipFrame:ClearAllPoints()
+    if data.toolTipArea == "ICON" then
+      region.tooltipFrame:SetAllPoints(icon)
+    elseif data.toolTipArea == "BAR" then
+      region.tooltipFrame:SetAllPoints(bar)
+    else
+      region.tooltipFrame:SetAllPoints(region)
+    end
     region.tooltipFrame:EnableMouse(true);
   elseif region.tooltipFrame then
     -- Disable tooltip

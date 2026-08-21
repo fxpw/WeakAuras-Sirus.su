@@ -45,9 +45,12 @@
 ---  - action: The action function, called on activating a condition
 --   - type: The type
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
+---@class WeakAuras
 local WeakAuras = WeakAuras;
 local L = WeakAuras.L;
 
@@ -142,6 +145,10 @@ local function blueIfNoValue2(data, object, variable, subvariable, blueString, n
   return normalString or "";
 end
 
+local function blueIfNoValue2OrCompatibilityDisabled(data, object, variable, subvariable, text, check)
+  return blueIfNoValue2(data, object, variable, subvariable, text, OptionsPrivate.SetOptionTextDisabled(text, check))
+end
+
 local function descIfSubset(data, reference, totalAuraCount)
   if (isSubset(data, reference, totalAuraCount)) then
     local desc = L["Used in auras:"];
@@ -208,6 +215,14 @@ local function descIfNoValue2(data, object, variable, subvariable, type, values)
   return nil;
 end
 
+local function descIfNoValue2WithCompatibilityNote(data, object, variable, subvariable, check, type, values)
+  local desc = descIfNoValue2(data, object, variable, subvariable, type, values)
+  if check then
+    return desc
+  end
+  return OptionsPrivate.AddCompatibilityNote(desc, false, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."])
+end
+
 local function filterUsedProperties(indexToProperty, allDisplays, usedProperties, ownProperty)
   local filtered = {};
   for index, value in pairs(allDisplays) do
@@ -222,6 +237,7 @@ local function filterUsedProperties(indexToProperty, allDisplays, usedProperties
   return filtered;
 end
 
+--- @type number? the time at which the last sound was played, so that we don't play
 ---  a sound from each setter
 local lastPlayedSoundFromSet
 local function wrapWithPlaySound(func, kit)
@@ -846,35 +862,34 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
     }
     order = order + 1;
 
-    if StopSound then
-      args["condition" .. i .. "value" .. j .. "sound_fade"] = {
-        type = "range",
-        control = "WeakAurasSpinBox",
-        width = WeakAuras.normalWidth,
-        min = 0,
-        softMax = 10,
-        bigStep = 1,
-        name = blueIfNoValue2(data, conditions[i].changes[j], "value", "sound_fade", L["Fadeout Time (seconds)"], L["Fadeout Time (seconds)"]),
-        desc = descIfNoValue2(data, conditions[i].changes[j], "value", "sound_fade", propertyType),
-        order = order,
-        get = function()
-          return type(conditions[i].changes[j].value) == "table" and conditions[i].changes[j].value.sound_fade;
-        end,
-        set = setValueComplex("sound_fade"),
-        disabled = function() return not anySoundType("Stop") end,
-        hidden = function() return not (anySoundType("Stop")) end
-      }
-      order = order + 1;
+    args["condition" .. i .. "value" .. j .. "sound_fade"] = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      min = 0,
+      softMax = 10,
+      bigStep = 1,
+      name = blueIfNoValue2OrCompatibilityDisabled(data, conditions[i].changes[j], "value", "sound_fade", L["Fadeout Time (seconds)"], StopSound),
+      desc = descIfNoValue2WithCompatibilityNote(data, conditions[i].changes[j], "value", "sound_fade", StopSound, propertyType),
+      order = order,
+      get = function()
+        return type(conditions[i].changes[j].value) == "table" and conditions[i].changes[j].value.sound_fade;
+      end,
+      set = setValueComplex("sound_fade"),
+      disabled = function() return not anySoundType("Stop") end,
+      hidden = function() return not (anySoundType("Stop")) end
+    }
+    order = order + 1;
 
-      args["condition" .. i .. "value" .. j .. "sound_fade_space"] = {
-        type = "description",
-        width = WeakAuras.normalWidth,
-        name = "",
-        order = order,
-        hidden = function() return not (anySoundType("Stop")) end
-      }
-      order = order + 1;
-    end
+    args["condition" .. i .. "value" .. j .. "sound_fade_space"] = {
+      type = "description",
+      width = WeakAuras.normalWidth,
+      name = "",
+      order = order,
+      hidden = function() return not (anySoundType("Stop")) end
+    }
+    order = order + 1;
+
 
   elseif (propertyType == "chat") then
     args["condition" .. i .. "value" .. j .. "message type"] = {
@@ -883,7 +898,14 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       values = OptionsPrivate.Private.send_chat_message_types,
       sorting = OptionsPrivate.Private.SortOrderForValues(OptionsPrivate.Private.send_chat_message_types),
       name = blueIfNoValue2(data, conditions[i].changes[j], "value", "message_type", L["Differences"]),
-      desc = descIfNoValue2(data, conditions[i].changes[j], "value", "message_type", propertyType, OptionsPrivate.Private.send_chat_message_types),
+      desc = function()
+        local desc = descIfNoValue2(data, conditions[i].changes[j], "value", "message_type", propertyType, OptionsPrivate.Private.send_chat_message_types) or ""
+        local messageType = type(conditions[i].changes[j].value) == "table" and conditions[i].changes[j].value.message_type
+        if messageType == "TTS" and WeakAuras.IsAwesomeEnabled() ~= 2 then
+          desc = OptionsPrivate.AddCompatibilityNote(desc, false, L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."])
+        end
+        return desc
+      end,
       order = order,
       get = function()
         return type(conditions[i].changes[j].value) == "table" and conditions[i].changes[j].value.message_type;
@@ -1016,26 +1038,25 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
     }
     order = order + 1;
 
-    if WeakAuras.IsAwesomeEnabled() == 2 then
-      args["condition" .. i .. "value" .. j .. "message voice"] = {
-        type = "execute",
-        name = L["Voice Settings"],
-        order = order,
-        width = WeakAuras.normalWidth,
-        func = function()
-          if AwesomeCVar and AwesomeCVar.ToggleFrame then
-            AwesomeCVar:ToggleFrame("Text to Speech")
-          end
-        end,
-        desc = IsAddOnLoaded("AwesomeCVar") and L["Open the Voice Chat settings to configure the TTS."]
-                or L["Install AwesomeCVar to open the Voice Chat settings."],
-        set = setValueComplex("message_voice"),
-        hidden = function()
-          return not anyMessageType("TTS");
-        end,
-      }
-      order = order + 1;
-    end
+    args["condition" .. i .. "value" .. j .. "message voice"] = {
+      type = "execute",
+      name = L["Voice Settings"],
+      order = order,
+      width = WeakAuras.normalWidth,
+      func = function()
+        if AwesomeCVar and AwesomeCVar.ToggleFrame then
+          AwesomeCVar:ToggleFrame("Text to Speech")
+        end
+      end,
+      desc = IsAddOnLoaded("AwesomeCVar") and L["Open the Voice Chat settings to configure the TTS."]
+              or L["Install AwesomeCVar to open the Voice Chat settings."],
+      set = setValueComplex("message_voice"),
+      disabled = function() return WeakAuras.IsAwesomeEnabled() ~= 2 end,
+      hidden = function()
+        return not anyMessageType("TTS");
+      end,
+    }
+    order = order + 1;
 
     local message_getter = function()
       return type(conditions[i].changes[j].value) == "table" and conditions[i].changes[j].value.message;
@@ -1178,9 +1199,9 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
                   local changeIndex = reference.changeIndex;
                   multipath[id] = {"conditions", conditionIndex, "changes", changeIndex, "value", "custom"};
                 end
-                OptionsPrivate.OpenTextEditor(data, multipath, nil, true, nil, nil, "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#chat-message---custom-code-1");
+                OptionsPrivate.OpenTextEditor(data, multipath, nil, true, nil, nil, "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#chat-message---custom-code-1");
               else
-                OptionsPrivate.OpenTextEditor(data, {"conditions", i, "changes", j, "value", "custom"}, nil, nil, nil, nil, "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#chat-message---custom-code-1");
+                OptionsPrivate.OpenTextEditor(data, {"conditions", i, "changes", j, "value", "custom"}, nil, nil, nil, nil, "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#chat-message---custom-code-1");
               end
             end
           }
@@ -1257,10 +1278,10 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
                   childData.conditions[conditionIndex].changes[changeIndex].value = childData.conditions[conditionIndex].changes[changeIndex].value or {};
                   multipath[id] = {"conditions", conditionIndex, "changes", changeIndex, "value", "custom"};
                 end
-                OptionsPrivate.OpenTextEditor(data, multipath, true, true, nil, nil, "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#run-custom-code");
+                OptionsPrivate.OpenTextEditor(data, multipath, true, true, nil, nil, "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#run-custom-code");
               else
                 data.conditions[i].changes[j].value = data.conditions[i].changes[j].value or {};
-                OptionsPrivate.OpenTextEditor(data, {"conditions", i, "changes", j, "value", "custom"}, true, nil, nil, nil, "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#run-custom-code");
+                OptionsPrivate.OpenTextEditor(data, {"conditions", i, "changes", j, "value", "custom"}, true, nil, nil, nil, "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#run-custom-code");
               end
             end
           }
@@ -1348,7 +1369,14 @@ local function addControlsForChange(args, order, data, conditionVariable, totalA
       values = OptionsPrivate.Private.glow_frame_types,
       width = WeakAuras.normalWidth,
       name = blueIfNoValue2(data, conditions[i].changes[j], "value", "glow_frame_type", L["Glow Frame Type"], L["Glow Frame Type"]),
-      desc = descIfNoValue2(data, conditions[i].changes[j], "value", "glow_frame_type", propertyType, OptionsPrivate.Private.glow_frame_types),
+      desc = function()
+        local desc = descIfNoValue2(data, conditions[i].changes[j], "value", "glow_frame_type", propertyType, OptionsPrivate.Private.glow_frame_types) or ""
+        local glowFrameType = type(conditions[i].changes[j].value) == "table" and conditions[i].changes[j].value.glow_frame_type
+        if glowFrameType == "NAMEPLATE" and not WeakAuras.IsAwesomeEnabled() then
+          desc = OptionsPrivate.AddCompatibilityNote(desc, false, L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."])
+        end
+        return desc
+      end,
       order = order,
       get = function()
         return type(conditions[i].changes[j].value) == "table" and conditions[i].changes[j].value.glow_frame_type;
@@ -2128,12 +2156,16 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
         type = "select",
         width = normalWidth,
         name = blueIfNoValue(data, conditions[i].check, "type", L["Differences"]),
-        desc = descIfNoValue(data, conditions[i].check, "type", currentConditionTemplate.type),
         order = order,
         values = {
           group = L["Group player(s) found"],
-          enemies = WeakAuras.IsAwesomeEnabled() and L["Enemy nameplate(s) found"] or nil
+          enemies = OptionsPrivate.SetOptionTextDisabled(L["Enemy nameplate(s) found"], WeakAuras.IsAwesomeEnabled())
         },
+        desc = function()
+          return check.type == "enemies" and not WeakAuras.IsAwesomeEnabled()
+            and OptionsPrivate.AddCompatibilityNote(nil, false, L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."])
+            or descIfNoValue(data, conditions[i].check, "type", currentConditionTemplate.type)
+        end,
         get = function()
           return check.type
         end,
@@ -2211,7 +2243,7 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
                     end
                     tinsert(multipath[id], "value")
                   end
-                  OptionsPrivate.OpenTextEditor(data, multipath, nil, true, nil, nil, "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-check");
+                  OptionsPrivate.OpenTextEditor(data, multipath, nil, true, nil, nil, "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#custom-check");
                 else
                   local fullPath = { "conditions", i, "check" }
                   for _, v in ipairs(path) do
@@ -2220,7 +2252,7 @@ local function addControlsForIfLine(args, order, data, conditionVariable, totalA
                   end
                   tinsert(fullPath, "value")
 
-                  OptionsPrivate.OpenTextEditor(data, fullPath, nil, nil, nil, nil, "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-check");
+                  OptionsPrivate.OpenTextEditor(data, fullPath, nil, nil, nil, nil, "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#custom-check");
                 end
               end
             }
@@ -2909,7 +2941,7 @@ end
 
 local function SubPropertiesForChange(change)
   if change.property == "sound" then
-    return { "sound", "sound_channel", "sound_path", "sound_kit_id", "sound_repeat", "sound_type"}
+    return { "sound", "sound_channel", "sound_path", "sound_kit_id", "sound_repeat", "sound_type", "sound_fade"}
   elseif change.property == "customcode" then
     return { "custom" }
   elseif change.property == "glowexternal" then

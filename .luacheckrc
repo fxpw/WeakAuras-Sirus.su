@@ -10,6 +10,7 @@ exclude_files = {
 	"WeakAurasOptions/Locales",
 	".luacheckrc",
 	".luarocks",
+	".agents-cache",
 }
 ignore = {
 	"11./SLASH_.*", -- Setting an undefined (Slash handler) global variable
@@ -19563,15 +19564,15 @@ globals = {
 	"ObjectPoolMixin", "FramePoolMixin", "FramePool_Hide", "FramePool_HideAndClearAnchors",
 	"TexturePoolMixin", "TexturePool_Hide", "TexturePool_HideAndClearAnchors", "CreateTexturePool",
 	"FontStringPoolMixin", "FontStringPool_Hide", "FontStringPool_HideAndClearAnchors",
-	"CreateFontStringPool", "ActorPoolMixin", "ActorPool_Hide", "ActorPool_HideAndClearModel",
+	"CreateFontStringPool", "FontStringPoolCollectionMixin", "CreateFontStringPoolCollection",
+	"ActorPoolMixin", "ActorPool_Hide", "ActorPool_HideAndClearModel",
 	"CreateActorPool", "FramePoolCollectionMixin", "CreateFramePoolCollection",
 	"FixedSizeFramePoolCollectionMixin", "CreateFixedSizeFramePoolCollection",
 	"SecondsToMinutes", "MinutesToSeconds", "HasTimePassed",
 	"SecondsFormatterConstants", "ConvertSecondsToUnits", "SecondsToClock",
 	"MinutesToTime", "FormatShortDate", "NUMBER_ABBREVIATION_DATA", "GetLocalizedNumberAbbreviationData",
 	"WeakAurasProfilingReportTitleText", "WeakAurasRealTimeProfiling", "WeakAurasRealTimeProfilingTitleText",
-	"seconds", "NUM_CHAT_WINDOWS","GetNumGlyphSockets", "GetGlyphLink", "GetGlyphSocketInfo",
-	"APIDocumentationMixin", "BaseAPIMixin","EventsAPIMixin", "FieldsAPIMixin", "FunctionsAPIMixin",
-	"SystemsAPIMixin", "TablesAPIMixin", "CopyToClipboard", "ChatFrame_OpenChat", "ChatTypeInfo",
+	"NUM_CHAT_WINDOWS","GetNumGlyphSockets", "GetGlyphLink", "GetGlyphSocketInfo",
+	"CopyToClipboard", "ChatFrame_OpenChat", "ChatTypeInfo",
 	"EditBox_ClearFocus", "EditBox_ClearHighlight", "EditBox_HighlightText", "AwesomeCVar"
 }

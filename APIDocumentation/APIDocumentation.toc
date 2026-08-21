@@ -1,9 +1,9 @@
 ## Interface: 30300
 ## Title: APIDocumentation
 ## Author: Blizzard Entertainment
-## LoadOnDemand: 1
-## DefaultState: Enabled
-## Version: 1.0.1
+## Version: 1.0.2
+## IconTexture: Interface\Icons\INV_Misc_Book_09.blp
+## X-Flavor: 3.3.5
 ## Notes: A comprehensive documentation of the Blizzard API, including constants, functions, and events.
 ## Notes-deDE: Eine umfassende Dokumentation der Blizzard-API, einschließlich Konstanten, Funktionen und Ereignissen.
 ## Notes-frFR: Une documentation complète de l'API Blizzard, y compris les constantes, les fonctions et les événements.
@@ -12,14 +12,18 @@
 ## Notes-ruRU: Полная документация API Blizzard, включая константы, функции и события.
 ## Notes-zhTW: 一個全面的暴雪 API 文檔，包括常量、函數和事件。
 ## Notes-zhCN: 一份全面的暴雪 API 文档，包括常量、函数和事件。
-## X-Flavor: 3.3.5
 ## X-Category: Documentation
+## X-Website: https://www.github.com/NoM0Re/WeakAuras-WotLK
+## DefaultState: Enabled
+## LoadOnDemand: 1
 
 ## AddOn files
 BaseAPIMixin.lua
 FieldsAPIMixin.lua
 FunctionsAPIMixin.lua
+CVarsAPIMixin.lua
 SystemsAPIMixin.lua
+ScriptObjectsAPIMixin.lua
 TablesAPIMixin.lua
 EventsAPIMixin.lua
 Blizzard_APIDocumentation.lua
@@ -118,6 +122,7 @@ Documentation\TradeDocumentation.lua
 Documentation\TradeskillDocumentation.lua
 Documentation\TrainerDocumentation.lua
 Documentation\TutorialDocumentation.lua
+Documentation\FrameXMLDocumentation.lua
 Documentation\UivisualDocumentation.lua
 Documentation\UncategorizedDocumentation.lua
 Documentation\UncategorizedeventsDocumentation.lua
@@ -126,4 +131,36 @@ Documentation\UtilityDocumentation.lua
 Documentation\VehicleDocumentation.lua
 Documentation\VideoDocumentation.lua
 Documentation\VoiceDocumentation.lua
+Documentation\WidgetSharedDocumentation.lua
+Documentation\AnimationAPIDocumentation.lua
+Documentation\AlphaAPIDocumentation.lua
+Documentation\AnimationGroupAPIDocumentation.lua
+Documentation\FrameAPIDocumentation.lua
+Documentation\ButtonAPIDocumentation.lua
+Documentation\CheckButtonAPIDocumentation.lua
+Documentation\ColorSelectAPIDocumentation.lua
+Documentation\ControlPointAPIDocumentation.lua
+Documentation\CooldownAPIDocumentation.lua
+Documentation\ModelAPIDocumentation.lua
+Documentation\PlayerModelAPIDocumentation.lua
+Documentation\DressUpModelAPIDocumentation.lua
+Documentation\EditBoxAPIDocumentation.lua
+Documentation\FontAPIDocumentation.lua
+Documentation\FontStringAPIDocumentation.lua
+Documentation\GameTooltipAPIDocumentation.lua
+Documentation\MessageFrameAPIDocumentation.lua
+Documentation\MinimapAPIDocumentation.lua
+Documentation\MovieFrameAPIDocumentation.lua
+Documentation\PathAPIDocumentation.lua
+Documentation\QuestPOIFrameAPIDocumentation.lua
+Documentation\RotationAPIDocumentation.lua
+Documentation\ScaleAPIDocumentation.lua
+Documentation\ScrollFrameAPIDocumentation.lua
+Documentation\ScrollingMessageFrameAPIDocumentation.lua
+Documentation\SimpleHTMLAPIDocumentation.lua
+Documentation\SliderAPIDocumentation.lua
+Documentation\StatusBarAPIDocumentation.lua
+Documentation\TabardModelAPIDocumentation.lua
+Documentation\TextureAPIDocumentation.lua
+Documentation\TranslationAPIDocumentation.lua
 Documentation\ZoneInformationDocumentation.lua

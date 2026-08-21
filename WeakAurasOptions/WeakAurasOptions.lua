@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 -- Lua APIs
@@ -17,6 +19,7 @@ local tAppendAll = OptionsPrivate.tAppendAll
 
 local AceGUI = LibStub("AceGUI-3.0")
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 local ADDON_NAME = "WeakAurasOptions";
@@ -183,6 +186,7 @@ end
 local frame;
 local db;
 local odb;
+--- @type boolean?
 local reopenAfterCombat = false;
 local loadedFrame = CreateFrame("Frame");
 loadedFrame:RegisterEvent("ADDON_LOADED");
@@ -571,6 +575,7 @@ local function OptionsFrame()
 end
 
 if not WeakAuras.ToggleOptions then
+  ---@type fun(msg: string, Private: Private)
   function WeakAuras.ToggleOptions(msg, Private)
     if not Private then
       return
@@ -598,7 +603,7 @@ if not WeakAuras.ToggleOptions then
 
       OptionsPrivate.Private.callbacks:RegisterCallback("ScanForLoads", AfterScanForLoads)
       OptionsPrivate.Private.callbacks:RegisterCallback("AboutToDelete", OnAboutToDelete)
-      OptionsPrivate.Private.callbacks:RegisterCallback("Rename", OnRename)
+      OptionsPrivate.Private.callbacks:RegisterCallback("RenameFirst", OnRename)
       OptionsPrivate.Private.OpenUpdate = OptionsPrivate.OpenUpdate
     end
 
@@ -894,6 +899,14 @@ function WeakAuras.ShowOptions(msg)
 
   if firstLoad then
     frame:ShowTip()
+    --[[ -- we dont need this
+    for _, font in pairs(AceGUIWidgetLSMlists.font) do
+      local fs = frame:CreateFontString(nil, "OVERLAY", "GameFontWhite")
+      local _, size, outline= fs:GetFont()
+      fs:SetPoint("TOP", UIParent, "TOP")
+      fs:SetFont(font, size, outline)
+    end
+    ]]
   end
 
 end
@@ -907,6 +920,10 @@ function WeakAuras.ClearAndUpdateOptions(id, clearChildren)
 end
 
 function OptionsPrivate.ClearOptions(id)
+  frame:ClearOptions(id)
+end
+
+function WeakAuras.ClearOptions(id)
   frame:ClearOptions(id)
 end
 
@@ -1632,6 +1649,7 @@ end
 function OptionsPrivate.DropIndicator()
   local indicator = frame.dropIndicator
   if not indicator then
+    ---@class Frame
     indicator = CreateFrame("Frame", "WeakAuras_DropIndicator")
     indicator:SetHeight(4)
     indicator:SetFrameStrata("FULLSCREEN")
@@ -1692,8 +1710,8 @@ function WeakAuras.UpdateThumbnail(data)
   button:UpdateThumbnail()
 end
 
-function OptionsPrivate.OpenTexturePicker(baseObject, paths, properties, textures, SetTextureFunc)
-  OptionsPrivate.TexturePicker(frame):Open(baseObject, paths, properties, textures, SetTextureFunc)
+function OptionsPrivate.OpenTexturePicker(baseObject, paths, properties, textures, SetTextureFunc, adjustSize)
+   OptionsPrivate.TexturePicker(frame):Open(baseObject, paths, properties, textures, SetTextureFunc, adjustSize)
 end
 
 function OptionsPrivate.OpenIconPicker(baseObject, paths, groupIcon)
@@ -1961,6 +1979,9 @@ function WeakAuras.NewAura(sourceData, regionType, targetId)
           return
         end
 
+        data.parent = group.data.id;
+        WeakAuras.Add(data);
+
         local children = group.data.controlledChildren;
         local index = target:GetGroupOrder();
         if (ensure(children, index, target.data.id)) then
@@ -1971,8 +1992,7 @@ function WeakAuras.NewAura(sourceData, regionType, targetId)
           -- move source into group as the first child
           tinsert(children, 1, data.id);
         end
-        data.parent = group.data.id;
-        WeakAuras.Add(data);
+
         WeakAuras.Add(group.data);
         OptionsPrivate.Private.AddParents(group.data)
         WeakAuras.NewDisplayButton(data);

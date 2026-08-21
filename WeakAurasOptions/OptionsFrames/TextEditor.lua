@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 -- Lua APIs
@@ -11,8 +13,11 @@ local CreateFrame = CreateFrame
 
 local AceGUI = LibStub("AceGUI-3.0")
 local SharedMedia = LibStub("LibSharedMedia-3.0")
+local LAAC = LibStub("LibAPIAutoComplete-1.0")
+
 local IndentationLib = IndentationLib
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
@@ -151,6 +156,7 @@ end]=]
 local function ConstructTextEditor(frame)
   local group = AceGUI:Create("WeakAurasInlineGroup")
   group.frame:SetParent(frame)
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
   group.frame:Hide()
@@ -163,9 +169,10 @@ local function ConstructTextEditor(frame)
   editor:DisableButton(true)
   local fontPath = SharedMedia:Fetch("font", "Fira Mono Medium")
   if (fontPath) then
-    editor.editBox:SetFont(fontPath, WeakAurasSaved.editor_font_size)
+    editor.editBox:SetFont(fontPath, WeakAurasSaved.editor_font_size, "")
   end
   group:AddChild(editor)
+  -- editor.frame:SetClipsChildren(true)
 
   local originalOnCursorChanged = editor.editBox:GetScript("OnCursorChanged")
   editor.editBox:SetScript("OnCursorChanged", function(self, ...)
@@ -184,6 +191,7 @@ local function ConstructTextEditor(frame)
   local originalGetText = editor.editBox.GetText
   local originalSetText = editor.editBox.SetText
   set_scheme()
+  LAAC:enable(editor.editBox)
   IndentationLib.enable(editor.editBox, color_scheme, WeakAurasSaved.editor_tab_spaces)
 
   local cancel = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate")
@@ -194,7 +202,7 @@ local function ConstructTextEditor(frame)
     end
   )
   cancel:SetPoint("BOTTOMRIGHT", -20, -24)
-  cancel:SetFrameLevel(cancel:GetFrameLevel() + 1)
+  cancel:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   cancel:SetHeight(20)
   cancel:SetWidth(100)
   cancel:SetText(L["Cancel"])
@@ -207,12 +215,13 @@ local function ConstructTextEditor(frame)
     end
   )
   close:SetPoint("RIGHT", cancel, "LEFT", -10, 0)
-  close:SetFrameLevel(close:GetFrameLevel() + 1)
+  close:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   close:SetHeight(20)
   close:SetWidth(100)
   close:SetText(L["Done"])
 
   local settings_frame = CreateFrame("Button", "WASettingsButton", close, "UIPanelButtonTemplate")
+  settings_frame:SetFrameLevel(close:GetFrameLevel() + 1)
   settings_frame:SetPoint("RIGHT", close, "LEFT", -10, 0)
   settings_frame:SetHeight(20)
   settings_frame:SetWidth(100)
@@ -227,6 +236,8 @@ local function ConstructTextEditor(frame)
   helpButton:SetText(L["Help"])
 
   local dropdown = CreateFrame("Frame", "SettingsMenuFrame", settings_frame, "UIDropDownMenuTemplate")
+  dropdown:SetFrameLevel(settings_frame:GetFrameLevel() + 1)
+
 
   local function settings_dropdown_initialize(frame, level, menu)
     if level == 1 then
@@ -421,14 +432,20 @@ local function ConstructTextEditor(frame)
 
   -- Make sidebar for snippets
   local snippetsFrame = CreateFrame("Frame", "WeakAurasSnippets", group.frame)
+  snippetsFrame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["PortraitFrameTemplate"](snippetsFrame)
   snippetsFrame:HidePortrait()
   snippetsFrame:SetPoint("TOPLEFT", group.frame, "TOPRIGHT", 20, 0)
   snippetsFrame:SetPoint("BOTTOMLEFT", group.frame, "BOTTOMRIGHT", 20, 0)
   snippetsFrame:SetWidth(250)
+  if snippetsFrame.Bg then
+    local r, g, b = 0.1215686275, 0.1176470588, 0.1294117647 -- PANEL_BACKGROUND_COLOR
+    snippetsFrame.Bg:SetTexture(r, g, b, 0.8)
+  end
 
   -- Add button to save new snippet
   local AddSnippetButton = CreateFrame("Button", nil, snippetsFrame, "UIPanelButtonTemplate")
+  AddSnippetButton:SetFrameLevel(snippetsFrame:GetFrameLevel() + 1)
   AddSnippetButton:SetPoint("TOPLEFT", snippetsFrame, "TOPLEFT", 13, -25)
   AddSnippetButton:SetPoint("TOPRIGHT", snippetsFrame, "TOPRIGHT", -13, -25)
   AddSnippetButton:SetHeight(20)
@@ -442,6 +459,7 @@ local function ConstructTextEditor(frame)
   snippetsScrollContainer:SetFullHeight(true)
   snippetsScrollContainer:SetLayout("Fill")
   snippetsScrollContainer.frame:SetParent(snippetsFrame)
+  snippetsScrollContainer.frame:SetFrameLevel(snippetsFrame:GetFrameLevel() + 1)
   snippetsScrollContainer.frame:SetPoint("TOPLEFT", snippetsFrame, "TOPLEFT", 17, -50)
   snippetsScrollContainer.frame:SetPoint("BOTTOMRIGHT", snippetsFrame, "BOTTOMRIGHT", -10, 10)
   local snippetsScroll = AceGUI:Create("ScrollFrame")
@@ -507,9 +525,14 @@ local function ConstructTextEditor(frame)
 
   -- Make sidebar for apiSearch
   apiSearchFrame = CreateFrame("Frame", "WeakAurasAPISearchFrame", group.frame)
+  apiSearchFrame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["PortraitFrameTemplate"](apiSearchFrame)
   apiSearchFrame:HidePortrait()
   apiSearchFrame:SetWidth(350)
+  if apiSearchFrame.Bg then
+    local r, g, b = 0.1215686275, 0.1176470588, 0.1294117647 -- PANEL_BACKGROUND_COLOR
+    apiSearchFrame.Bg:SetTexture(r, g, b, 0.8)
+  end
 
   local makeAPISearch
   local APISearchTextChangeDelay = 0.3
@@ -534,13 +557,14 @@ local function ConstructTextEditor(frame)
   filterInput:SetHeight(15)
   filterInput:SetPoint("TOPLEFT", apiSearchFrame, "TOPLEFT", 17, -30)
   filterInput:SetPoint("TOPRIGHT", apiSearchFrame, "TOPRIGHT", -10, -30)
-  filterInput:SetFont(STANDARD_TEXT_FONT, 10)
+  filterInput:SetFont(STANDARD_TEXT_FONT, 10, "")
 
   local apiSearchScrollContainer = AceGUI:Create("SimpleGroup")
   apiSearchScrollContainer:SetFullWidth(true)
   apiSearchScrollContainer:SetFullHeight(true)
   apiSearchScrollContainer:SetLayout("Fill")
   apiSearchScrollContainer.frame:SetParent(apiSearchFrame)
+  apiSearchScrollContainer.frame:SetFrameLevel(apiSearchFrame:GetFrameLevel() + 1)
   apiSearchScrollContainer.frame:SetPoint("TOPLEFT", apiSearchFrame, "TOPLEFT", 17, -50)
   apiSearchScrollContainer.frame:SetPoint("BOTTOMRIGHT", apiSearchFrame, "BOTTOMRIGHT", -10, 10)
 
@@ -594,10 +618,14 @@ local function ConstructTextEditor(frame)
     local name
     if apiInfo.Type == "System" then
       name = apiInfo.Namespace
+    elseif apiInfo.Type == "ScriptObject" then
+      name = apiInfo.Name
     elseif apiInfo.Type == "Function" then
       name = apiInfo:GetFullName()
     elseif apiInfo.Type == "Event" then
       name = apiInfo.LiteralName
+    elseif apiInfo.Type == "CVar" then
+      name = apiInfo.Name
     end
     table.insert(results, { name = name, apiInfo = apiInfo })
   end
@@ -605,7 +633,7 @@ local function ConstructTextEditor(frame)
   local function APIListSystems()
     local results = {}
     for i, systemInfo in ipairs(APIDocumentation.systems) do
-      if systemInfo.Namespace and #systemInfo.Functions > 0 then
+      if (systemInfo.Namespace or systemInfo.Type == "ScriptObject") and #systemInfo.Functions > 0 then
         addLine(results, systemInfo)
       end
     end
@@ -623,14 +651,16 @@ local function ConstructTextEditor(frame)
     -- if search is composed with name of a namespace and a word separated by a dot, show matching function for matching namespace
 
     local nsName, rest = lowerWord:match("^([%w%_]+)(.*)")
-    local funcName = rest and rest:match("^%.([%w%_]+)")
+    local funcName = rest and rest:match("^[%.:]([%w%_]+)")
 
     for _, systemInfo in ipairs(APIDocumentation.systems) do
       -- search for namespaceName or namespaceName.functionName
+      local systemName = systemInfo.Namespace or (systemInfo.Type == "ScriptObject" and systemInfo.Name)
       local systemMatch = nsName and #nsName >= 4
-        and systemInfo.Namespace and systemInfo.Namespace:lower():match(nsName)
+        and systemName and systemName:lower():match(nsName)
 
-      for _, apiInfo in ipairs(systemInfo.Functions) do
+      local functions = systemMatch and systemInfo.Type == "ScriptObject" and systemInfo:ListAllAPI().functions or systemInfo.Functions
+      for _, apiInfo in ipairs(functions) do
         if systemMatch then
           if funcName then
             if apiInfo:MatchesSearchString(funcName) then
@@ -654,6 +684,20 @@ local function ConstructTextEditor(frame)
         for _, apiInfo in ipairs(systemInfo.Events) do
           if apiInfo:MatchesSearchString(lowerWord) then
             addLine(results, apiInfo)
+          end
+        end
+      end
+
+      if systemInfo.CVars then
+        if systemMatch and rest == "" then
+          for _, apiInfo in ipairs(systemInfo.CVars) do
+            addLine(results, apiInfo)
+          end
+        else
+          for _, apiInfo in ipairs(systemInfo.CVars) do
+            if apiInfo:MatchesSearchString(lowerWord) then
+              addLine(results, apiInfo)
+            end
           end
         end
       end
@@ -686,7 +730,7 @@ local function ConstructTextEditor(frame)
         button:SetEditable(false)
         button:SetHeight(20)
         button:SetRelativeWidth(1)
-        if apiInfo.Type ~= "System" and apiInfo.GetDetailedOutputLines then
+        if apiInfo.Type ~= "System" and apiInfo.Type ~= "ScriptObject" and apiInfo.GetDetailedOutputLines then
           local desc = table.concat(apiInfo:GetDetailedOutputLines(), "\n")
           button:SetDescription(desc)
         else
@@ -694,7 +738,7 @@ local function ConstructTextEditor(frame)
         end
         button.name = element.name
         button.editor = editor
-        button.isSystem = apiInfo.Type == "System"
+        button.isSystem = apiInfo.Type == "System" or apiInfo.Type == "ScriptObject"
         button:SetCallback("OnClick", snippetOnClickCallback)
         apiSearchScroll:AddChild(button)
       end
@@ -827,7 +871,7 @@ local function ConstructTextEditor(frame)
   )
 
   local editorError = group.frame:CreateFontString(nil, "OVERLAY")
-  editorError:SetFont(STANDARD_TEXT_FONT, 12)
+  editorError:SetFont(STANDARD_TEXT_FONT, 12, "")
   editorError:SetJustifyH("LEFT")
   editorError:SetJustifyV("TOP")
   editorError:SetTextColor(1, 0, 0)
@@ -836,10 +880,11 @@ local function ConstructTextEditor(frame)
   group.editorError = editorError
 
   local editorLine = CreateFrame("EditBox", nil, group.frame)
+  editorLine:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["InputBoxTemplate"](editorLine)
   -- Set script on enter pressed..
   editorLine:SetPoint("RIGHT", snippetsButton, "LEFT", -10, 0)
-  editorLine:SetFont(STANDARD_TEXT_FONT, 10)
+  editorLine:SetFont(STANDARD_TEXT_FONT, 10, "")
   editorLine:SetJustifyH("RIGHT")
   editorLine:SetWidth(30)
   editorLine:SetHeight(20)
@@ -848,12 +893,13 @@ local function ConstructTextEditor(frame)
   editorLine:SetAutoFocus(false)
 
   local editorLineText = group.frame:CreateFontString(nil, "OVERLAY")
-  editorLineText:SetFont(STANDARD_TEXT_FONT, 10)
+  editorLineText:SetFont(STANDARD_TEXT_FONT, 10, "")
   editorLineText:SetTextColor(1, 1, 1)
   editorLineText:SetText(L["Line"])
   editorLineText:SetPoint("RIGHT", editorLine, "LEFT", -8, 0)
 
   local redoButton = CreateFrame("Button", nil, editorLine)
+  redoButton:SetFrameLevel(editorLine:GetFrameLevel() + 1)
   redoButton:SetPoint("RIGHT", editorLineText, "LEFT", -10, 0)
   redoButton:SetSize(20, 20)
   redoButton:SetNormalTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\undo")
@@ -868,6 +914,7 @@ local function ConstructTextEditor(frame)
   redoHighlight:SetBlendMode("BLEND")
 
   local undoButton = CreateFrame("Button", nil, redoButton)
+  undoButton:SetFrameLevel(redoButton:GetFrameLevel() + 1)
   undoButton:SetPoint("RIGHT", redoButton, "LEFT", -10, 0)
   undoButton:SetSize(20, 20)
   undoButton:SetNormalTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\undo")

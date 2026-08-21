@@ -1134,6 +1134,22 @@ local Uncategorized =
 			Type = "Function",
 
 		},
+		{
+			Name = "GetAvailableRoles",
+			Type = "Function",
+		},
+		{
+			Name = "GetLFDChoiceInfo",
+			Type = "Function",
+		},
+		{
+			Name = "GetLFDChoiceOrder",
+			Type = "Function",
+		},
+		{
+			Name = "QuestPOIUpdateTexture",
+			Type = "Function",
+		},
 	},
 
 	Events =
@@ -1294,6 +1310,15 @@ local Uncategorized =
 			Name = "UpdateWorldStates",
 			Type = "Event",
 			LiteralName = "UPDATE_WORLD_STATES",
+		},
+		{
+			Name = "HonorCurrencyUpdate",
+			Type = "Event",
+			LiteralName = "HONOR_CURRENCY_UPDATE",
+			Payload =
+			{
+				{ Name = "honorChange", Type = "number", Nilable = false },
+			},
 		},
 	},
 

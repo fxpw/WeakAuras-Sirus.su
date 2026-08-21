@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
@@ -35,8 +37,9 @@ local function CorrectSpellName(input)
       local spells = spellCache.GetSpellsMatching(input)
       if type(spells) == "table" then
         for id in pairs(spells) do
-          if tonumber(id) and id ~= 0 and IsSpellKnown(id) then
-            return id
+          local spellId = tonumber(id)
+          if spellId and spellId > 0 and IsSpellKnown(spellId) then
+            return spellId
           end
         end
         return next(spells)
@@ -649,7 +652,7 @@ function OptionsPrivate.ConstructOptions(prototype, data, startorder, triggernum
                   local icon = spellCache.GetIcon(value);
                   return icon and tostring(icon) or "", 18, 18;
                 elseif(arg.type == "spell") then
-                  local name, _, icon = GetSpellInfo(value);
+                  local name, _, icon = GetSpellInfo(value)
                   if arg.noValidation then
                     -- GetSpellInfo and other wow apis are case insensitive, but the later matching we do
                     -- isn't. For validted inputs, we automatically correct the casing via GetSpellName

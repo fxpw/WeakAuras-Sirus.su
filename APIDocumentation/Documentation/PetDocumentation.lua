@@ -9,6 +9,7 @@ local Pet =
 		{
 			Name = "CastPetAction",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -221,11 +222,13 @@ local Pet =
 		{
 			Name = "PetAggressiveMode",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "PetAttack",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
@@ -258,6 +261,7 @@ local Pet =
 		{
 			Name = "PetDefensiveMode",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
@@ -268,6 +272,7 @@ local Pet =
 		{
 			Name = "PetFollow",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
@@ -282,6 +287,7 @@ local Pet =
 		{
 			Name = "PetPassiveMode",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
@@ -302,11 +308,13 @@ local Pet =
 		{
 			Name = "PetStopAttack",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "PetWait",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
@@ -322,6 +330,7 @@ local Pet =
 		{
 			Name = "TargetTotem",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -332,12 +341,17 @@ local Pet =
 		{
 			Name = "TogglePetAutocast",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
 				{ Name = "index", Type = "luaIndex", Nilable = false },
 			},
 
+		},
+		{
+			Name = "GetPetHappiness",
+			Type = "Function",
 		},
 	},
 

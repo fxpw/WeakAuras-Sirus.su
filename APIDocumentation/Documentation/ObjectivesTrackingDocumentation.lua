@@ -164,6 +164,7 @@ local ObjectivesTracking =
 		{
 			Name = "UseQuestLogSpecialItem",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local SharedMedia = LibStub("LibSharedMedia-3.0");
@@ -106,6 +108,12 @@ local function createOptions(id, data)
           data.width = data.height;
           data.height = temp;
           data.icon_side = data.icon_side == "LEFT" and "RIGHT" or "LEFT";
+
+          if(data.rotateText == "LEFT" or data.rotateText == "RIGHT") then
+            data.rotateText = "NONE";
+          elseif(data.rotateText == "NONE") then
+            data.rotateText = "LEFT"
+          end
         end
 
         data.orientation = v;
@@ -122,7 +130,7 @@ local function createOptions(id, data)
     },
     smoothProgress = {
       type = "toggle",
-      width = WeakAuras.normalWidth,
+      width = WeakAuras.doubleWidth,
       name = L["Smooth Progress"],
       desc = L["Animates progress changes"],
       order = 37
@@ -133,6 +141,17 @@ local function createOptions(id, data)
       name = L["Tooltip on Mouseover"],
       hidden = function() return not OptionsPrivate.Private.CanHaveTooltip(data) end,
       order = 38
+    },
+    toolTipArea = {
+      type = "select",
+      values = OptionsPrivate.Private.aurabar_tooltip_areas,
+      width = WeakAuras.normalWidth,
+      name = L["Area"],
+      hidden = function()
+        return not (OptionsPrivate.Private.CanHaveTooltip(data) and data.useTooltip)
+      end,
+      order = 38.1,
+      default = "ALL"
     },
     bar_header = {
       type = "header",
@@ -474,10 +493,10 @@ local function createOptions(id, data)
     for id, display in ipairs(overlayInfo) do
       options["overlaytexture" .. id] = {
         type = "select",
-        dialogControl = "LSM30_Statusbar",
+        dialogControl = "WA_LSM30_StatusbarAtlas",
         width = WeakAuras.doubleWidth,
         name = string.format(L["%s Texture"], display),
-        values = AceGUIWidgetLSMlists.statusbar,
+        values = statusbarList,
         order = 58.1 + index,
         set = function(info, texture)
           if (not data.overlaysTexture) then
@@ -546,12 +565,14 @@ local function createThumbnail()
 
   -- Main region
   local region = CreateFrame("Frame", nil, borderframe);
+  region:SetFrameLevel(borderframe:GetFrameLevel() + 1)
   borderframe.region = region;
   region:SetWidth(32);
   region:SetHeight(32);
 
   -- Status-bar frame
   local bar = CreateFrame("Frame", nil, region);
+  bar:SetFrameLevel(region:GetFrameLevel() + 1)
   borderframe.bar = bar;
 
   -- Fake status-bar
@@ -573,6 +594,7 @@ local function modifyThumbnail(parent, borderframe, data, fullModify, width, hei
   local region, bar, texture, icon = borderframe.region, borderframe.bar, borderframe.texture, borderframe.icon;
 
   borderframe:SetParent(parent)
+  borderframe:SetFrameLevel(parent:GetFrameLevel() + 1)
 
   -- Default size
   width  = width or 26;
@@ -600,7 +622,7 @@ local function modifyThumbnail(parent, borderframe, data, fullModify, width, hei
   end
 
   -- Fake status-bar style
-  texture:SetTexture(SharedMedia:Fetch("statusbar", data.texture));
+  OptionsPrivate.Private.SetTextureOrAtlas(texture, SharedMedia:Fetch("statusbar", data.texture))
   texture:SetVertexColor(data.barColor[1], data.barColor[2], data.barColor[3], data.barColor[4]);
 
   -- Fake icon size
@@ -684,8 +706,11 @@ local function modifyThumbnail(parent, borderframe, data, fullModify, width, hei
         iconPath = path or data.displayIcon
       end
 
-      OptionsPrivate.Private.SetTextureOrSpellTexture(icon,
-        iconPath and iconPath ~= "" and iconPath or "Interface\\Icons\\INV_Misc_QuestionMark")
+      if iconPath and iconPath ~= "" then
+        OptionsPrivate.Private.SetTextureOrAtlas(self.icon, iconPath)
+      else
+        OptionsPrivate.Private.SetTextureOrAtlas(self.icon, "Interface\\Icons\\INV_Misc_QuestionMark")
+      end
     end
 
     if data then
@@ -738,6 +763,7 @@ local templates = {
       width = 30,
       height = 200,
       barColor = { 0, 1, 0, 1},
+      rotateText = "LEFT",
       orientation = "VERTICAL_INVERSE",
       inverse = true,
       smoothProgress = true,

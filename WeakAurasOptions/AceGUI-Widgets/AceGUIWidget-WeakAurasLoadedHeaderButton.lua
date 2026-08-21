@@ -155,6 +155,7 @@ local function Constructor()
   background:SetAllPoints(button);
 
   local expand = CreateFrame("Button", nil, button);
+  expand:SetFrameLevel(button:GetFrameLevel() + 1)
   button.expand = expand;
   expand.expanded = true;
   expand.disabled = true;
@@ -173,6 +174,7 @@ local function Constructor()
   expand:SetScript("OnLeave", Hide_Tooltip);
 
   local view = CreateFrame("Button", nil, button);
+  view:SetFrameLevel(button:GetFrameLevel() + 1)
   button.view = view;
   view:SetWidth(16);
   view:SetHeight(16);

@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
@@ -567,7 +569,7 @@ local function replaceNameDescFuncs(intable, data, subOption)
         local childOptions = OptionsPrivate.EnsureOptions(child, subOption)
         local get = getValueFor(childOptions, info, "get");
         if (combinedKeys) then
-          for key, _ in pairs(combinedKeys) do
+          for key in pairs(combinedKeys) do
             local values = {};
             if (get) then
               values = { get(info, key) };
@@ -1040,6 +1042,55 @@ local function CreateSetAll(subOption, getAll)
   end
 end
 
+local function CreateSetAllTimeMachine(subOption, getAll)
+  return function(data, info, ...)
+    OptionsPrivate.Private.pauseOptionsProcessing(true);
+    OptionsPrivate.Private.TimeMachine:StartTransaction()
+    local suspended = OptionsPrivate.Private.PauseAllDynamicGroups()
+    local before = getAll(data, info, ...)
+    for child in OptionsPrivate.Private.TraverseLeafs(data) do
+      local childOptions = OptionsPrivate.EnsureOptions(child, subOption)
+      local childOption = childOptions;
+      local childOptionTable = {[0] = childOption};
+      for i=1,#info do
+        childOption = childOption.args[info[i]];
+        childOptionTable[i] = childOption;
+      end
+
+      if (childOption and not disabledOrHiddenChild(childOptionTable, info)) then
+        for i=#childOptionTable,0,-1 do
+          local optionTable = childOptionTable[i]
+          if(optionTable.set) then
+            if (optionTable.type == "multiselect") then
+              local newValue
+              if optionTable.multiTristate then
+                if before == true then
+                  newValue = false
+                elseif before == false then
+                  newValue = nil
+                elseif before == nil then
+                  newValue = true
+                end
+              else
+                newValue = not before
+              end
+              optionTable.set(info, ..., newValue)
+            else
+              optionTable.set(info, ...);
+            end
+            break;
+          end
+        end
+      end
+    end
+
+    OptionsPrivate.Private.ResumeAllDynamicGroups(suspended)
+    OptionsPrivate.Private.pauseOptionsProcessing(false);
+
+    OptionsPrivate.Private.TimeMachine:Commit()
+  end
+end
+
 local function CreateExecuteAll(subOption)
   return function(data, info, button)
     local secondCall = nil
@@ -1283,6 +1334,11 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
                 (data.regionType == "group" or data.regionType == "dynamicgroup")
                 and OptionsPrivate.Private.anchor_frame_types_group
                 or OptionsPrivate.Private.anchor_frame_types),
+      desc = function()
+        return data.anchorFrameType == "NAMEPLATE" and not WeakAuras.IsAwesomeEnabled()
+          and OptionsPrivate.AddCompatibilityNote(nil, false, L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."])
+          or nil
+      end,
     },
     anchorFrameParent = {
       type = "toggle",
@@ -1410,13 +1466,7 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
     xOffset = {
       type = "range",
       control = "WeakAurasSpinBox",
-      name = function()
-        if data.anchor_mode == "area" then
-          return L["Extra Width"]
-        else
-          return L["X Offset"]
-        end
-      end,
+      name = L["X Offset"],
       order = 79,
       width = WeakAuras.normalWidth,
       softMin = (-1 * screenWidth),
@@ -1436,13 +1486,7 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
     yOffset = {
       type = "range",
       control = "WeakAurasSpinBox",
-      name = function()
-        if data.anchor_mode == "area" then
-          return L["Extra Height"]
-        else
-          return L["Y Offset"]
-        end
-      end,
+      name = L["Y Offset"],
       order = 80,
       width = WeakAuras.normalWidth,
       softMin = (-1 * screenHeight),
@@ -1479,12 +1523,13 @@ local function PositionOptions(id, data, _, hideWidthHeight, disableSelfPoint, g
   };
 
   OptionsPrivate.commonOptions.AddCodeOption(positionOptions, data, L["Custom Anchor"], "custom_anchor",
-                      "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-anchor-function",
+                      "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#custom-anchor-function",
                       71.5, function() return not(data.anchorFrameType == "CUSTOM" and not IsParentDynamicGroup() and not IsGroupByFrame()) end,
                       {"customAnchor"}, false, { setOnParent = group })
   return positionOptions;
 end
 
+--- @type fun(data: auraData, options: table, startOrder: number, areaAnchors: table, pointAnchors: table)
 local function PositionOptionsForSubElement(data, options, startOrder, areaAnchors, pointAnchors)
   options.anchor_mode = {
     name = L["Anchor Mode"],
@@ -1570,7 +1615,13 @@ local function PositionOptionsForSubElement(data, options, startOrder, areaAncho
   options.xOffset = {
     type = "range",
     control = "WeakAurasSpinBox",
-    name = L["X Offset"],
+    name = function()
+      if data.anchor_mode == "area" then
+        return L["Extra Width"]
+      else
+        return L["X Offset"]
+      end
+    end,
     order = startOrder + 0.7,
     width = WeakAuras.normalWidth,
     softMin = -200,
@@ -1581,7 +1632,13 @@ local function PositionOptionsForSubElement(data, options, startOrder, areaAncho
   options.yOffset = {
     type = "range",
     control = "WeakAurasSpinBox",
-    name = L["Y Offset"],
+    name = function()
+      if data.anchor_mode == "area" then
+        return L["Extra Height"]
+      else
+        return L["Y Offset"]
+      end
+    end,
     order = startOrder + 0.8,
     width = WeakAuras.normalWidth,
     softMin = -200,
@@ -1590,6 +1647,7 @@ local function PositionOptionsForSubElement(data, options, startOrder, areaAncho
   }
 end
 
+--- @type fun(parentData: auraData, data: table, options: table, startOrder: number)
 local function ProgressOptionsForSubElement(parentData, data, options, startOrder, progressSourceHidden)
   options.progress_source = {
     type = "select",
@@ -1894,6 +1952,108 @@ local function GetCustomCode(data, path)
   return data;
 end
 
+local function AddCodeOptionTimeMachine(args, data, name, prefix, url, order, hiddenFunc, path, encloseInFunction, options)
+  options = options and CopyTable(options) or {}
+  options.extraFunctions = options.extraFunctions or {};
+  tinsert(options.extraFunctions, 1, {
+    buttonLabel = L["Expand"],
+    func = function()
+      OptionsPrivate.OpenTextEditor(OptionsPrivate.GetPickedDisplay(), path, encloseInFunction, options.multipath,
+                                    options.reloadOptions, options.setOnParent, url, options.validator)
+    end
+  });
+
+  args[prefix .. "_custom"] = {
+    type = "input",
+    width = WeakAuras.doubleWidth,
+    name = name,
+    order = order,
+    multiline = true,
+    hidden = hiddenFunc,
+    control = "WeakAurasMultiLineEditBox",
+    arg = {
+      extraFunctions = options.extraFunctions,
+    },
+    set = function(info, v)
+      OptionsPrivate.Private.TimeMachine:Append({
+        actionType = "set",
+        uid = data.uid,
+        path = path,
+        payload = v
+      })
+
+      if (options.extraSetFunction) then
+        options.extraSetFunction();
+      end
+    end,
+    get = function(info)
+      return GetCustomCode(data, path);
+    end
+  };
+
+  args[prefix .. "_customError"] = {
+    type = "description",
+    name = function()
+      if hiddenFunc() then
+        return "";
+      end
+
+      local code = GetCustomCode(data, path);
+
+      if (not code or code:trim() == "") then
+        return ""
+      end
+
+      if (encloseInFunction) then
+        code = "function() "..code.."\n end";
+      end
+
+      code = "return " .. code;
+
+      local loadedFunction, errorString = OptionsPrivate.Private.LoadFunction(code, data.id, true);
+
+      if not errorString then
+        if options.validator then
+          errorString = options.validator(loadedFunction)
+        end
+      end
+      return errorString and "|cFFFF0000"..errorString or "";
+    end,
+    width = WeakAuras.doubleWidth,
+    order = order + 0.002,
+    hidden = function()
+      if (hiddenFunc()) then
+        return true;
+      end
+
+      local code = GetCustomCode(data, path);
+      if (not code or code:trim() == "") then
+        return true;
+      end
+
+      if (encloseInFunction) then
+        code = "function() "..code.."\n end";
+      end
+
+      code = "return " .. code;
+
+      local loadedFunction, errorString = loadstring(code);
+      if(errorString and not loadedFunction) then
+        return false;
+      else
+        if options.validator then
+          local ok, validate = xpcall(loadedFunction, noop)
+          if ok then
+            return options.validator(validate)
+          end
+          return false
+        end
+        return true;
+      end
+    end
+  };
+end
+
 local function AddCodeOption(args, data, name, prefix, url, order, hiddenFunc, path, encloseInFunction, options)
   options = options and CopyTable(options) or {}
   options.extraFunctions = options.extraFunctions or {};
@@ -2101,6 +2261,7 @@ OptionsPrivate.commonOptions.replaceImageFuncs = replaceImageFuncs
 OptionsPrivate.commonOptions.replaceValuesFuncs = replaceValuesFuncs
 OptionsPrivate.commonOptions.CreateGetAll = CreateGetAll
 OptionsPrivate.commonOptions.CreateSetAll = CreateSetAll
+OptionsPrivate.commonOptions.CreateSetAllTimeMachine = CreateSetAllTimeMachine
 OptionsPrivate.commonOptions.CreateExecuteAll = CreateExecuteAll
 
 OptionsPrivate.commonOptions.PositionOptions = PositionOptions
@@ -2109,6 +2270,7 @@ OptionsPrivate.commonOptions.ProgressOptions = ProgressOptions
 OptionsPrivate.commonOptions.ProgressOptionsForSubElement = ProgressOptionsForSubElement
 OptionsPrivate.commonOptions.BorderOptions = BorderOptions
 OptionsPrivate.commonOptions.AddCodeOption = AddCodeOption
+OptionsPrivate.commonOptions.AddCodeOptionTimeMachine = AddCodeOptionTimeMachine
 
 OptionsPrivate.commonOptions.AddCommonTriggerOptions = AddCommonTriggerOptions
 OptionsPrivate.commonOptions.AddTriggerGetterSetter = AddTriggerGetterSetter

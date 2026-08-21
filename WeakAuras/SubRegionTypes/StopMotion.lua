@@ -1,6 +1,8 @@
 if not WeakAuras.IsLibsOK() then return end
 
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 local L = WeakAuras.L
@@ -194,12 +196,14 @@ local function modify(parent, region, parentData, data, first)
     and data.barModelClip
   then
     -- Special anchoring for clipping !
+    -- region:SetClipsChildren(true)
     region:SetScript("OnSizeChanged", nil)
     region:ClearAllPoints()
     region:SetAllPoints(parent.bar.fgMask)
     region.stopMotion:ClearAllPoints()
     region.stopMotion:SetAllPoints(region.parent.bar)
   else
+    -- region:SetClipsChildren(false)
     local arg1 = data.anchor_mode == "point" and data.anchor_point or data.anchor_area
     local arg2 = data.anchor_mode == "point" and data.self_point or nil
 

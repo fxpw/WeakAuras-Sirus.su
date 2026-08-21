@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 -- Lua APIs
@@ -12,6 +14,7 @@ local AceGUI = LibStub("AceGUI-3.0")
 local SharedMedia = LibStub("LibSharedMedia-3.0")
 local IndentationLib = IndentationLib
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
@@ -59,6 +62,7 @@ local colorScheme = {
 local function ConstructCodeReview(frame)
   local group = AceGUI:Create("WeakAurasInlineGroup");
   group.frame:SetParent(frame);
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
   group.frame:Hide();
@@ -85,7 +89,7 @@ local function ConstructCodeReview(frame)
   IndentationLib.enable(codebox.editBox, colorScheme, 4);
   local fontPath = SharedMedia:Fetch("font", "Fira Mono Medium");
   if(fontPath) then
-    codebox.editBox:SetFont(fontPath, 12);
+    codebox.editBox:SetFont(fontPath, 12, "");
   end
   group.codebox = codebox;
 
@@ -98,6 +102,7 @@ local function ConstructCodeReview(frame)
   end);
 
   local cancel = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
+  cancel:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   cancel:SetScript("OnClick", function() group:Close() end);
   cancel:SetPoint("BOTTOMRIGHT", -20, -24);
   cancel:SetHeight(20);

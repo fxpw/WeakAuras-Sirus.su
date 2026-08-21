@@ -1,12 +1,12 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local tinsert, tremove = table.insert, table.remove
 local select, pairs, type, unpack = select, pairs, type, unpack
 local error = error
-
-local tIndexOf = OptionsPrivate.tIndexOf
 
 local Type, Version = "WeakAurasDisplayButton", 60
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
@@ -422,16 +422,6 @@ local function Show_DropIndicator(id)
   end
 end
 
-local function IsParentRecursive(needle, parent)
-  if needle.id == parent.id then
-    return true
-  end
-  if needle.parent then
-    local needleParent = WeakAuras.GetData(needle.parent)
-    return IsParentRecursive(needleParent, parent)
-  end
-end
-
 local tabsForWarning = {
   tts_condition = "conditions",
   sound_condition = "conditions",
@@ -470,16 +460,18 @@ local methods = {
           if (not fullName) then
             local name, realm = UnitName("player")
             if realm then
-              fullName = name.."-"..realm
+              fullName = name.."-".. realm
             else
               fullName = name
             end
           end
+
           local url = ""
           if self.data.url then
             url = " ".. self.data.url
           end
           editbox:Insert("[WeakAuras: "..fullName.." - "..self.data.id.."]"..url)
+
           OptionsPrivate.Private.linked = OptionsPrivate.Private.linked or {}
           OptionsPrivate.Private.linked[self.data.id] = GetTime()
         elseif not self.data.controlledChildren then
@@ -1068,7 +1060,7 @@ local methods = {
     if (WeakAuras.IsImporting()) then return end;
     local parentData = WeakAuras.GetData(self.data.parent);
     if not parentData then return end;
-    local index = tIndexOf(parentData.controlledChildren, self.data.id);
+    local index = OptionsPrivate.tIndexOf(parentData.controlledChildren, self.data.id);
     if(index) then
       tremove(parentData.controlledChildren, index);
       WeakAuras.Add(parentData);
@@ -1080,7 +1072,7 @@ local methods = {
 
     local newParent = parentData.parent and WeakAuras.GetData(parentData.parent)
     if newParent then
-      local insertIndex = tIndexOf(newParent.controlledChildren, parentData.id)
+      local insertIndex = OptionsPrivate.tIndexOf(newParent.controlledChildren, parentData.id)
       if not insertIndex then
         error("Parent Display thinks it is a member of a group which does not control it");
       end
@@ -1146,12 +1138,12 @@ local methods = {
       -- mark as being dragged, attach to mouse and raise frame strata
       self.dragging = true
       self.frame:StartMoving()
-      --self.frame:ClearAllPoints()
+      -- self.frame:ClearAllPoints()
       self.frame.temp = {
         parent = self.frame:GetParent(),
         strata = self.frame:GetFrameStrata(),
       }
-      --self.frame:SetParent(UIParent)
+      -- self.frame:SetParent(UIParent)
       self.frame:SetFrameStrata("FULLSCREEN_DIALOG")
       if self.data.id == mainAura.id then
         self.frame:SetPoint("Center", UIParent, "BOTTOMLEFT", (x+w/2)*scale/uiscale, y/uiscale)
@@ -1244,6 +1236,7 @@ local methods = {
         self:RestoreIcon();
       end
       self.frame:SetParent(self.frame.temp.parent)
+      self.frame:SetFrameLevel(self.frame.temp.parent:GetFrameLevel() + 1)
       self.frame:SetFrameStrata(self.frame.temp.strata)
       self.frame.temp = nil
     end
@@ -1384,6 +1377,7 @@ local methods = {
       iconButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
       tinsert(self.statusIcons.buttons, iconButton)
       iconButton:SetParent(self.statusIcons)
+      iconButton:SetFrameLevel(self.statusIcons:GetFrameLevel() + 1)
       iconButton.key = key
       iconButton:SetSize(16, 16)
     end
@@ -1771,6 +1765,7 @@ Constructor
 
 local function Constructor()
   local name = "WeakAurasDisplayButton"..AceGUI:GetNextWidgetNum(Type);
+  ---@class Button
   local button = CreateFrame("Button", name, UIParent, "OptionsListButtonTemplate");
   button:SetHeight(32);
   button:SetWidth(1000);
@@ -1778,6 +1773,7 @@ local function Constructor()
   button.data = {};
 
   local offset = CreateFrame("Frame", nil, button)
+  offset:SetFrameLevel(button:GetFrameLevel() + 1)
   button.offset = offset
   offset:SetPoint("TOP", button, "TOP");
   offset:SetPoint("BOTTOM", button, "BOTTOM");
@@ -1810,7 +1806,9 @@ local function Constructor()
 
   button.description = {};
 
+  ---@class Button
   local view = CreateFrame("Button", nil, button);
+  view:SetFrameLevel(button:GetFrameLevel() + 1)
   button.view = view;
   view:SetWidth(16);
   view:SetHeight(16);
@@ -1828,12 +1826,13 @@ local function Constructor()
   view.visibility = 0;
 
   local renamebox = CreateFrame("EditBox", nil, button);
+  renamebox:SetFrameLevel(button:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["InputBoxTemplate"](renamebox)
   renamebox:SetHeight(14);
   renamebox:SetPoint("TOP", button, "TOP");
   renamebox:SetPoint("LEFT", icon, "RIGHT", 6, 0);
   renamebox:SetPoint("RIGHT", button, "RIGHT", -4, 0);
-  renamebox:SetFont(STANDARD_TEXT_FONT, 10);
+  renamebox:SetFont(STANDARD_TEXT_FONT, 10, "");
   renamebox:Hide();
 
   renamebox.func = function() --[[By default, do nothing!]] end;
@@ -1856,6 +1855,7 @@ local function Constructor()
   end);
 
   local group = CreateFrame("Button", nil, button);
+  group:SetFrameLevel(button:GetFrameLevel() + 1)
   button.group = group;
   group:SetWidth(16);
   group:SetHeight(16);
@@ -1871,6 +1871,7 @@ local function Constructor()
   group:SetScript("OnLeave", Hide_Tooltip);
 
   local ungroup = CreateFrame("Button", nil, button);
+  ungroup:SetFrameLevel(button:GetFrameLevel() + 1)
   button.ungroup = ungroup;
   ungroup:SetWidth(11);
   ungroup:SetHeight(11);
@@ -1886,6 +1887,7 @@ local function Constructor()
   ungroup:Hide();
 
   local upgroup = CreateFrame("Button", nil, button);
+  upgroup:SetFrameLevel(button:GetFrameLevel() + 1)
   button.upgroup = upgroup;
   upgroup:SetWidth(11);
   upgroup:SetHeight(11);
@@ -1903,6 +1905,7 @@ local function Constructor()
   upgroup:Hide();
 
   local downgroup = CreateFrame("Button", nil, button);
+  downgroup:SetFrameLevel(button:GetFrameLevel() + 1)
   button.downgroup = downgroup;
   downgroup:SetWidth(11);
   downgroup:SetHeight(11);
@@ -1920,7 +1923,9 @@ local function Constructor()
   downgroup:SetScript("OnLeave", Hide_Tooltip);
   downgroup:Hide();
 
+  ---@class Button
   local expand = CreateFrame("Button", nil, button);
+  expand:SetFrameLevel(button:GetFrameLevel() + 1)
   button.expand = expand;
   expand.expanded = true;
   expand.disabled = true;
@@ -1938,6 +1943,7 @@ local function Constructor()
   expand:SetScript("OnLeave", Hide_Tooltip);
 
   local statusIcons = CreateFrame("Frame", nil, button);
+  statusIcons:SetFrameLevel(button:GetFrameLevel() + 1)
   button.statusIcons = statusIcons
   statusIcons:SetPoint("BOTTOM", button, "BOTTOM", 0, 1);
   statusIcons:SetPoint("LEFT", icon, "RIGHT");

@@ -1,110 +1,272 @@
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 local ipairs = ipairs
 local pairs = pairs
-local ceil, floor = math.ceil, math.floor
+local next = next
+local select = select
+local unpack = unpack
+local type = type
+local ceil = math.ceil
+local floor = math.floor
+local tInsert = table.insert
 
--- local GetNumPartyMembers = GetNumPartyMembers
--- local GetNumRaidMembers = GetNumRaidMembers
+local GetNumPartyMembers = GetNumPartyMembers
+local GetNumRaidMembers = GetNumRaidMembers
 
--- function noop()
+local TARGET_FRAME_PER_SEC = 60.0
 
--- end
+local function noop() end
 
--- function ipairs_reverse(table)
--- 	local function Enumerator(table, index)
--- 		index = index - 1;
--- 		local value = table[index];
--- 		if value ~= nil then
--- 			return index, value;
--- 		end
--- 	end
--- 	return Enumerator, table, #table + 1;
--- end
+local function SafePack(...)
+  local tbl = { ... }
+  tbl.n = select("#", ...)
+  return tbl
+end
 
--- function tInvert(tbl)
--- 	local inverted = {};
--- 	for k, v in pairs(tbl) do
--- 		inverted[v] = k;
--- 	end
--- 	return inverted;
--- end
+local function SafeUnpack(tbl, startIndex)
+  return unpack(tbl, startIndex or 1, tbl.n)
+end
 
--- function Round(value)
--- 	if value < 0 then
--- 		return ceil(value - .5);
--- 	end
--- 	return floor(value + .5);
--- end
+local function ipairs_reverse(tbl)
+  local function Enumerator(tbl, index)
+    index = index - 1
+    local value = tbl[index]
+    if value ~= nil then
+      return index, value
+    end
+  end
+  return Enumerator, tbl, #tbl + 1
+end
 
--- function tIndexOf(tbl, item)
--- 	for i, v in ipairs(tbl) do
--- 		if item == v then
--- 			return i;
--- 		end
--- 	end
--- end
+local function Mixin(object, ...)
+  for i = 1, select("#", ...) do
+    local mixin = select(i, ...)
+    for k, v in pairs(mixin) do
+      object[k] = v
+    end
+  end
+  return object
+end
 
--- function TableHasAnyEntries(tbl)
---   if tbl and type(tbl) == "table" then
---       for _ in pairs(tbl) do
---           return true
---       end
---   end
---   return false
--- end
+local function CreateFromMixins(...)
+  return Mixin({}, ...)
+end
 
--- function tAppendAll(table, addedArray)
---   for i, element in ipairs(addedArray) do
---     tinsert(table, element);
---   end
--- end
+local function MergeTable(destination, source)
+  for k, v in pairs(source) do
+    destination[k] = v
+  end
+end
 
--- function MergeTable(t1, t2)
---   local merged = {}
---   for k, v in pairs(t1) do
---     merged[k] = v
---   end
---   for k, v in pairs(t2) do
---     merged[k] = v
---   end
---   return merged
--- end
+local function tInvert(tbl)
+  local inverted = {}
+  for k, v in pairs(tbl) do
+    inverted[v] = k
+  end
+  return inverted
+end
 
--- function tCompare(t1, t2)
---   for k, v in pairs(t1) do
---     if type(v) == "table" and type(t2[k]) == "table" then
---       if not tCompare(v, t2[k]) then
---         return false
---       end
---     elseif t2[k] ~= v then
---       return false
---     end
---   end
---   for k in pairs(t2) do
---     if t1[k] == nil then
---       return false
---     end
---   end
---   return true
--- end
+local function tIndexOf(tbl, item)
+  for i, v in ipairs(tbl) do
+    if item == v then
+      return i
+    end
+  end
+end
 
--- function IsInGroup()
--- 	return GetNumPartyMembers() > 0 or GetNumRaidMembers() > 0
--- end
+local function TableHasAnyEntries(tbl)
+  return next(tbl) ~= nil
+end
 
--- function IsInRaid()
--- 	return GetNumRaidMembers() > 0
--- end
+local function tAppendAll(tbl, addedArray)
+  for i, element in ipairs(addedArray) do
+    tInsert(tbl, element)
+  end
+end
 
--- function GetNumSubgroupMembers()
--- 	return GetNumPartyMembers()
--- end
+local function tCompare(lhsTable, rhsTable, depth)
+  depth = depth or 1
+  for key, value in pairs(lhsTable) do
+    if type(value) == "table" then
+      local rhsValue = rhsTable[key]
+      if type(rhsValue) ~= "table" then
+        return false
+      end
+      if depth > 1 then
+        if not tCompare(value, rhsValue, depth - 1) then
+          return false
+        end
+      end
+    elseif value ~= rhsTable[key] then
+      return false
+    end
+  end
 
--- function GetNumGroupMembers()
--- 	return IsInRaid() and GetNumRaidMembers() or GetNumPartyMembers()
--- end
+  for key in pairs(rhsTable) do
+    if lhsTable[key] == nil then
+      return false
+    end
+  end
+
+  return true
+end
+
+local function Round(value)
+  if value < 0.0 then
+    return ceil(value - 0.5)
+  end
+  return floor(value + 0.5)
+end
+
+local function IsInGroup()
+  return GetNumPartyMembers() > 0 or GetNumRaidMembers() > 0
+end
+
+local function IsInRaid()
+  return GetNumRaidMembers() > 0
+end
+
+local function GetNumSubgroupMembers()
+  return GetNumPartyMembers()
+end
+
+local function GetNumGroupMembers()
+  local raid = GetNumRaidMembers()
+  if raid > 0 then
+    return raid
+  end
+  local party = GetNumPartyMembers()
+  return party > 0 and party + 1 or 0
+end
+
+local function WrapTextInColorCode(text, colorHexString)
+  return ("|c%s%s|r"):format(colorHexString, text)
+end
+
+local function CreateTextureMarkup(file, fileWidth, fileHeight, width, height, left, right, top, bottom, xOffset, yOffset)
+  return ("|T%s:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d|t"):format(
+    file,
+    height,
+    width,
+    xOffset or 0,
+    yOffset or 0,
+    fileWidth,
+    fileHeight,
+    left * fileWidth,
+    right * fileWidth,
+    top * fileHeight,
+    bottom * fileHeight
+  )
+end
+
+local function Clamp(value, min, max)
+  if value > max then
+    return max
+  elseif value < min then
+    return min
+  end
+  return value
+end
+
+local function Lerp(startValue, endValue, amount)
+  return (1 - amount) * startValue + amount * endValue
+end
+
+local function Saturate(value)
+  return Clamp(value, 0, 1)
+end
+
+local function DeltaLerp(startValue, endValue, amount, timeSec)
+  return Lerp(startValue, endValue, Saturate(amount * timeSec * TARGET_FRAME_PER_SEC))
+end
+
+local function FrameDeltaLerp(startValue, endValue, amount, elapsed)
+  return DeltaLerp(startValue, endValue, amount, elapsed)
+end
+
+---@private
+function Private.SetOptionTextDisabled(text, check)
+  if check == nil or not check then
+    return "|cff808080" .. text .. "|r"
+  end
+  return text
+end
+
+---@private
+function Private.AddCompatibilityNote(desc, check, note)
+  if check then
+    return desc
+  end
+  desc = desc or ""
+  return desc .. (desc ~= "" and "\n\n" or "") .. note
+end
+
+local function setDesaturated(self, desaturated, ...)
+  self.isDesaturated = desaturated and 1 or 0
+  return self._SetDesaturated(self, desaturated, ...)
+end
+
+local function setTexture(self, ...)
+  local apply = self._SetTexture(self, ...)
+  if self.isDesaturated ~= nil then
+    self._SetDesaturated(self, self.isDesaturated == 1)
+  end
+  return apply
+end
+
+--- Texture:SetTexture can clear the desaturation state.
+--- Keep the last SetDesaturated value on the texture object and
+--- re-apply it after every SetTexture call.
+--- @param texture Texture
+--- @private
+function Private.FixTextureDesaturation(texture)
+  texture._SetDesaturated = texture.SetDesaturated
+  texture._SetTexture = texture.SetTexture
+  texture.SetDesaturated = setDesaturated
+  texture.SetTexture = setTexture
+end
+
+do
+  local exports = {
+    noop = noop,
+    Mixin = Mixin,
+    CreateFromMixins = CreateFromMixins,
+    ipairs_reverse = ipairs_reverse,
+    tInvert = tInvert,
+    Round = Round,
+    tIndexOf = tIndexOf,
+    TableHasAnyEntries = TableHasAnyEntries,
+    tAppendAll = tAppendAll,
+    MergeTable = MergeTable,
+    tCompare = tCompare,
+    SafePack = SafePack,
+    SafeUnpack = SafeUnpack,
+    IsInGroup = IsInGroup,
+    IsInRaid = IsInRaid,
+    GetNumSubgroupMembers = GetNumSubgroupMembers,
+    GetNumGroupMembers = GetNumGroupMembers,
+    WrapTextInColorCode = WrapTextInColorCode,
+    CreateTextureMarkup = CreateTextureMarkup,
+    Clamp = Clamp,
+    Lerp = Lerp,
+    Saturate = Saturate,
+    DeltaLerp = DeltaLerp,
+    FrameDeltaLerp = FrameDeltaLerp,
+  }
+
+  local _G = _G
+  for name, value in pairs(exports) do
+    Private[name] = value
+    Private.AuraEnvOverrides = Private.AuraEnvOverrides or {}
+    Private.AuraEnvOverrides[name] = value
+    if not _G[name] then
+      _G[name] = value
+    end
+  end
+end
 
 RAID_CLASS_COLORS.HUNTER.colorStr = "ffabd473"
 RAID_CLASS_COLORS.WARLOCK.colorStr = "ff8788ee"
@@ -116,53 +278,6 @@ RAID_CLASS_COLORS.DRUID.colorStr = "ffff7d0a"
 RAID_CLASS_COLORS.SHAMAN.colorStr = "ff0070de"
 RAID_CLASS_COLORS.WARRIOR.colorStr = "ffc79c6e"
 RAID_CLASS_COLORS.DEATHKNIGHT.colorStr = "ffc41f3b"
-
--- function WrapTextInColorCode(text, colorHexString)
---   return ("|c%s%s|r"):format(colorHexString, text);
--- end
-
--- function CreateTextureMarkup(file, fileWidth, fileHeight, width, height, left, right, top, bottom, xOffset, yOffset)
--- 	return ("|T%s:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d|t"):format(
--- 		  file
--- 		, height
--- 		, width
--- 		, xOffset or 0
--- 		, yOffset or 0
--- 		, fileWidth
--- 		, fileHeight
--- 		, left * fileWidth
--- 		, right * fileWidth
--- 		, top * fileHeight
--- 		, bottom * fileHeight
--- 	);
--- end
-
--- function Clamp(value, min, max)
--- 	if value > max then
--- 		return max;
--- 	elseif value < min then
--- 		return min;
--- 	end
--- 	return value;
--- end
-
--- -- This section is mostly used by Private.SmoothStatusBarMixin
--- function Lerp(startValue, endValue, amount)
--- 	return (1 - amount) * startValue + amount * endValue;
--- end
-
--- function Saturate(value)
--- 	return Clamp(value, 0, 1);
--- end
-
--- local TARGET_FRAME_PER_SEC = 60.0;
--- function DeltaLerp(startValue, endValue, amount, timeSec)
--- 	return Lerp(startValue, endValue, Saturate(amount * timeSec * TARGET_FRAME_PER_SEC));
--- end
-
--- function FrameDeltaLerp(startValue, endValue, amount, elapsed)
--- 	return DeltaLerp(startValue, endValue, amount, elapsed);
--- end
 
 -- Fix FrameStrata of ChatFrame
 for i = 1, NUM_CHAT_WINDOWS do

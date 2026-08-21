@@ -142,6 +142,10 @@ local Cursor =
 			Name = "EquipCursorItem",
 			Type = "Function",
 
+			Arguments =
+			{
+				{ Name = "slot", Type = "number", Nilable = false },
+			},
 		},
 		{
 			Name = "GetCursorInfo",
@@ -395,6 +399,10 @@ local Cursor =
 			Name = "SetCursor",
 			Type = "Function",
 
+			Arguments =
+			{
+				{ Name = "cursor", Type = "string", Nilable = false },
+			},
 		},
 		{
 			Name = "ShowBuybackSellCursor",

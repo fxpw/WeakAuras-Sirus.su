@@ -84,11 +84,6 @@ local Complaint =
 			{
 				{ Name = "mailID", Type = "number", Nilable = false },
 			},
-
-			Returns =
-			{
-				{ Name = "complain", Type = "bool", Nilable = false },
-			},
 		},
 		{
 			Name = "PlayerIsPVPInactive",

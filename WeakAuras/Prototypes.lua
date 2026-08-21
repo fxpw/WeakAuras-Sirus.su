@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 -- Lua APIs
@@ -18,6 +20,7 @@ local UnitDetailedThreatSituation = UnitDetailedThreatSituation
 local MAX_NUM_TALENTS = MAX_NUM_TALENTS or 40
 -- local Round = Private.Round
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
@@ -26,6 +29,7 @@ function WeakAuras.IsSpellInRange(spellId, unit)
   return SpellRange.IsSpellInRange(spellId, unit)
 end
 
+-- TODO: Backport LibRangeCheck 3.0 to WotLK, currently 2.0 is the same as 3.0 so there is no urge, there will be changes in the future, until then it doesn't matter.
 local LibRangeCheck = LibStub("LibRangeCheck-2.0")
 
 function WeakAuras.GetRange(unit, checkVisible)
@@ -95,7 +99,8 @@ local constants = {
   guildFilterDesc = L["Supports multiple entries, separated by commas. Escape with \\. Prefix with '-' for negation."],
   encounterDBMDesc = (WeakAuras.IsDBMRegistered() and "" or "|cFFFF0000") .. L["Requires Deadly Boss Mods (DBM) to detect encounters."] .. (WeakAuras.IsDBMRegistered() and "" or "|r")
 }
-
+  ---@param unit UnitToken
+  ---@return string? role
 WeakAuras.UnitRaidRole = function(unit)
   local raidID = UnitInRaid(unit)
   if raidID then
@@ -103,10 +108,14 @@ WeakAuras.UnitRaidRole = function(unit)
   end
 end
 
+---@param school integer
+---@return string school
 function WeakAuras.SpellSchool(school)
   return Private.combatlog_spell_school_types[school] or ""
 end
 
+---@param flag integer
+---@return integer index
 function WeakAuras.RaidFlagToIndex(flag)
   return Private.combatlog_raidFlags[flag] or 0
 end
@@ -145,6 +154,19 @@ local hsvFrame = CreateFrame("ColorSelect")
 
 -- HSV transition, for a much prettier color transition in many cases
 -- see http://www.wowinterface.com/forums/showthread.php?t=48236
+---@param perc number
+---@param r1 number
+---@param g1 number
+---@param b1 number
+---@param a1 number
+---@param r2 number
+---@param g2 number
+---@param b2 number
+---@param a2 number
+---@return number r
+---@return number g
+---@return number b
+---@return number a
 function WeakAuras.GetHSVTransition(perc, r1, g1, b1, a1, r2, g2, b2, a2)
   --get hsv color for colorA
   hsvFrame:SetColorRGB(r1, g1, b1)
@@ -564,7 +586,9 @@ Private.anim_presets = {
     translateType = "bounce"
   }
 };
-
+  ---@param index integer
+  ---@param extraOption boolean?
+  ---@return boolean? hasTalent
 function WeakAuras.CheckTalentByIndex(index, extraOption)
   local tab = ceil(index / MAX_NUM_TALENTS)
   local num_talent = (index - 1) % MAX_NUM_TALENTS + 1
@@ -588,6 +612,9 @@ function WeakAuras.CheckTalentByIndex(index, extraOption)
   return result;
 end
 
+---@param loadids string
+---@param currentId string
+---@return boolean result
 function WeakAuras.CheckNumericIds(loadids, currentId)
   if (not loadids or not currentId) then
     return false;
@@ -609,6 +636,9 @@ function WeakAuras.CheckNumericIds(loadids, currentId)
   return false;
 end
 
+---@param info any?
+---@param val any
+---@return boolean isNumeric
 function WeakAuras.ValidateNumeric(info, val)
   if val ~= nil and val ~= "" and (not tonumber(val) or tonumber(val) >= 2^31) then
     return false;
@@ -616,6 +646,9 @@ function WeakAuras.ValidateNumeric(info, val)
   return true
 end
 
+---@param info any?
+---@param val any
+---@return boolean isTime
 function WeakAuras.ValidateTime(info, val)
   if val ~= nil and val ~= "" then
     if not tonumber(val) then
@@ -630,6 +663,8 @@ function WeakAuras.ValidateTime(info, val)
   return true
 end
 
+---@param val number|string
+---@return number? result
 function WeakAuras.TimeToSeconds(val)
   if tonumber(val) then
     return tonumber(val)
@@ -667,7 +702,7 @@ Private.tinySecondFormat = function(value)
      end
      local negSign = negative and "-" or ""
      if fraction > 0 then
-        return negSign .. ret .. tostring(Round(fraction * 100) / 100):sub(2)
+        return negSign .. ret .. tostring(Private.Round(fraction * 100) / 100):sub(2)
      else
         return negSign .. ret
      end
@@ -772,6 +807,9 @@ function Private.ExecEnv.ParseStringCheck(input)
   return matcher
 end
 
+---@param info any?
+---@param val string
+---@return boolean result
 function WeakAuras.ValidateNumericOrPercent(info, val)
   if val ~= nil and val ~= "" then
     local index = val:find("%% *$")
@@ -838,6 +876,7 @@ function Private.ExecEnv.CheckCombatLogFlagsObjectType(flags, flagToCheck)
   return bit.band(flags, bitToCheck) ~= 0;
 end
 
+---@private
 function WeakAuras.IsSpellKnownForLoad(spell, exact)
   local result = WeakAuras.IsSpellKnown(spell)
   if exact or result then
@@ -850,6 +889,9 @@ function WeakAuras.IsSpellKnownForLoad(spell, exact)
   end
 end
 
+---@param spell string|number
+---@param pet boolean?
+---@return boolean result
 function WeakAuras.IsSpellKnown(spell, pet)
   local id = tonumber(spell)
   if id then
@@ -861,6 +903,8 @@ function WeakAuras.IsSpellKnown(spell, pet)
   return GetSpellInfo(spell) and true or false
 end
 
+---@param spell string|number
+---@return boolean result
 function WeakAuras.IsSpellKnownIncludingPet(spell)
   if (not spell) then
     return false;
@@ -878,11 +922,13 @@ function WeakAuras.IsGlyphActive(glyphID)
   return false
 end
 
+---@return number result
 function WeakAuras.GetEffectiveAttackPower()
   local base, pos, neg = UnitAttackPower("player")
   return base + pos + neg
 end
 
+--- @type fun(): number
 function WeakAuras.GetEffectiveSpellPower()
   -- Straight from the PaperDoll
   local spellPower = 0
@@ -913,6 +959,10 @@ local function valuesForTalentFunction(trigger)
 end
 
 ---helper to check if a condition is checked and have a single value, and return it
+---@param trigger table
+---@param name string
+---@param validateFn? fun(value: any): boolean values that do not validate are ignored
+---@return any
 function Private.checkForSingleLoadCondition(trigger, name, validateFn)
   local use_name = "use_"..name
   local trigger_use_name = trigger[use_name]
@@ -988,7 +1038,7 @@ Private.load_prototype = {
     },
     {
       name = "encounter",
-      display = WeakAuras.newFeatureString .. L["In Encounter"],
+      display = L["In Encounter"],
       desc = constants.encounterDBMDesc,
       type = "tristate",
       width = WeakAuras.normalWidth,
@@ -1297,6 +1347,7 @@ Private.load_prototype = {
       type = "multiselect",
       init = "arg",
       events = {"PARTY_LEADER_CHANGED", "PLAYER_FLAGS_CHANGED", "RAID_ROSTER_UPDATE"},
+      width = WeakAuras.doubleWidth,
       values = "group_member_types",
       test = "Private.ExecEnv.CheckGroupMemberType(%s, group_leader)",
       optional = true,
@@ -1316,21 +1367,28 @@ Private.load_prototype = {
       test = "checker:Check(zone)",
       events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
+        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone"] .. "\n", GetRealZoneText(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
       end,
       optional = true,
     },
     {
       name = "zoneId",
+      enable = false,
+      hidden = true,
+      init = "arg",
+      optional = true,
+    },
+    {
+      name = "zoneIds",
       display = L["Player Location ID(s)"],
       type = "string",
       multiline = true,
-      init = "arg",
-      test = "WeakAuras.CheckNumericIds(%q, zoneId)",
       events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-	    return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
+	    return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone"] .. "\n", GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
 	    end,
+      preamble = "local zoneChecker = Private.ExecEnv.ParseZoneCheck(%q)",
+      test = "zoneChecker:Check(zoneId)",
       optional = true,
     },
     {
@@ -1343,13 +1401,13 @@ Private.load_prototype = {
       test = "subzoneChecker:Check(subzone)",
       events = { "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "VEHICLE_UPDATE", "WA_DELAYED_PLAYER_ENTERING_WORLD" },
       desc = function()
-        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone\n"], GetMinimapZoneText(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
+        return ("\n|cffffd200%s|r%s\n\n%s"):format(L["Current Zone"] .. "\n", GetMinimapZoneText(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
       end,
       optional = true,
     },
     {
       name = "encounterid",
-      display = WeakAuras.newFeatureString .. L["Encounter ID(s)"],
+      display = L["Encounter ID(s)"],
       type = "string",
       init = "arg",
       multiline = true,
@@ -1675,6 +1733,9 @@ Private.event_prototypes = {
       if trigger.use_inRange then
         AddUnitEventForEvents(result, unit, "UNIT_IN_RANGE_UPDATE")
       end
+      if trigger.use_resurrectPending ~= nil then
+        AddUnitEventForEvents(result, unit, "INCOMING_RESURRECT_CHANGED")
+      end
       return result;
     end,
     internal_events = function(trigger)
@@ -1837,7 +1898,7 @@ Private.event_prototypes = {
       },
       {
         name = "role",
-        display = L["Spec Role"],
+        display = L["Assigned Role"],
         type = "select",
         init = "WeakAuras.LGT:GetUnitRole(unit)",
         values = "role_types",
@@ -1879,6 +1940,15 @@ Private.event_prototypes = {
         type = "tristate",
         width = WeakAuras.doubleWidth,
         init = "UnitIsDeadOrGhost(unit)",
+        store = true,
+        conditionType = "bool",
+      },
+      {
+        name = "resurrectPending",
+        display = L["Resurrect Pending"],
+        type = "tristate",
+        width = WeakAuras.doubleWidth,
+        init = "UnitHasIncomingResurrection(unit)",
         store = true,
         conditionType = "bool",
       },
@@ -2532,7 +2602,7 @@ Private.event_prototypes = {
       },
       {
         name = "role",
-        display = L["Spec Role"],
+        display = L["Assigned Role"],
         type = "select",
         init = "WeakAuras.LGT:GetUnitRole(unit)",
         values = "role_types",
@@ -3012,7 +3082,7 @@ Private.event_prototypes = {
       },
       {
         name = "role",
-        display = L["Spec Role"],
+        display = L["Assigned Role"],
         type = "select",
         init = "WeakAuras.LGT:GetUnitRole(unit)",
         values = "role_types",
@@ -3157,7 +3227,7 @@ Private.event_prototypes = {
     args = {
       {}, -- timestamp ignored with _ argument
       {}, -- messageType ignored with _ argument (it is checked before the dynamic function)
-      -- {}, -- we don't have hideCaster
+      -- {}, -- hideCaster ignored with _ argument -- we do not have hideCaster
       {
         type = "header",
         name = "sourceHeader",
@@ -3407,8 +3477,8 @@ Private.event_prototypes = {
             or trigger.subeventPrefix:find("SPELL"))
 
             or trigger.subeventSuffix and (
-            -- trigger.subeventSuffix == "_ABSORBED" -- we don't have that
-            trigger.subeventSuffix == "_INTERRUPT"
+              -- trigger.subeventSuffix == "_ABSORBED" -- we don't have that
+              trigger.subeventSuffix == "_INTERRUPT"
               or trigger.subeventSuffix == "_DISPEL"
               or trigger.subeventSuffix == "_DISPEL_FAILED"
               or trigger.subeventSuffix == "_STOLEN"
@@ -3503,6 +3573,7 @@ Private.event_prototypes = {
         conditionType = "select",
         store = true
       },
+      -- we dont have SPELL_ABSORBED
       {
         name = "extraSpellId",
         display = WeakAuras.newFeatureString .. L["Extra Spell Id"],
@@ -3510,7 +3581,6 @@ Private.event_prototypes = {
         enable = function(trigger)
           return trigger.subeventSuffix and (trigger.subeventSuffix == "_INTERRUPT" or trigger.subeventSuffix == "_DISPEL" or trigger.subeventSuffix == "_DISPEL_FAILED" or trigger.subeventSuffix == "_STOLEN" or trigger.subeventSuffix == "_AURA_BROKEN_SPELL")
         end,
-        test = "GetSpellInfo(%q or '') == extraSpellName",
         type = "spell",
         showExactOption = false,
         store = true,
@@ -4089,7 +4159,7 @@ Private.event_prototypes = {
         conditionType = "bool",
         conditionTest = function(state, needle)
         return state and
-          ((IsUsableSpell((type(state.spellname) == "number" and GetSpellInfo(state.spellname)) or state.spellname) == 1 and true or false) == (needle == 1))
+          ((IsUsableSpell((tonumber(state.spellname) and (GetSpellInfo(tonumber(state.spellname)) or "")) or (state.spellname or "")) == 1 and true or false) == (needle == 1))
         end,
         conditionEvents = AddTargetConditionEvents({
           "SPELL_UPDATE_USABLE",
@@ -4104,7 +4174,7 @@ Private.event_prototypes = {
         conditionType = "bool",
         conditionTest = function(state, needle)
         return state and
-          ((select(2, IsUsableSpell((type(state.spellname) == "number" and GetSpellInfo(state.spellname)) or state.spellname)) == 1 and true or false) == (needle == 1))
+          ((select(2, IsUsableSpell((tonumber(state.spellname) and (GetSpellInfo(tonumber(state.spellname)) or "")) or (state.spellname or ""))) == 1 and true or false) == (needle == 1))
         end,
         conditionEvents = AddTargetConditionEvents({
           "SPELL_UPDATE_USABLE",
@@ -5091,8 +5161,8 @@ Private.event_prototypes = {
     end,
     loadInternalEventFunc = function(trigger)
       local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
-      if type(trigger.spellName) == "number" then
-        spellName = GetSpellInfo(spellName)
+      if tonumber(spellName) then
+        spellName = GetSpellInfo(tonumber(spellName))
       end
       if spellName == nil then return {} end
       return { "SPELL_COOLDOWN_CHANGED:" .. spellName }
@@ -5102,15 +5172,15 @@ Private.event_prototypes = {
     statesParameter = "one",
     loadFunc = function(trigger)
       local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
-      if type(trigger.spellName) == "number" then
-        spellName = GetSpellInfo(spellName)
+      if tonumber(spellName) then
+        spellName = GetSpellInfo(tonumber(spellName))
       end
       WeakAuras.WatchSpellCooldown(spellName, false);
     end,
     init = function(trigger)
       local spellName = type(trigger.spellName) ~= "table" and trigger.spellName or 0
-      if type(trigger.spellName) == "number" then
-        spellName = GetSpellInfo(spellName) or ""
+      if tonumber(spellName) then
+        spellName = GetSpellInfo(tonumber(spellName)) or ""
       end
       local ret = [=[
         local spellName = %s
@@ -7254,7 +7324,7 @@ Private.event_prototypes = {
       },
       {
         name = "role",
-        display = L["Spec Role"],
+        display = L["Assigned Role"],
         type = "select",
         init = "WeakAuras.LGT:GetUnitRole(unit)",
         values = "role_types",
@@ -7441,8 +7511,8 @@ Private.event_prototypes = {
       },
       {
         name = "onUpdateUnitTarget",
-        display = WeakAuras.newFeatureString .. L["Advanced Caster's Target Check"],
-        desc = L["Check nameplate's target every 0.2s"],
+        display = WeakAuras.newFeatureString .. Private.SetOptionTextDisabled(L["Advanced Caster's Target Check"], WeakAuras.IsAwesomeEnabled()),
+        desc = Private.AddCompatibilityNote(L["Check nameplate's target every 0.2s"], WeakAuras.IsAwesomeEnabled(), L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."]),
         type = "toggle",
         test = "true",
         enable = function(trigger)
@@ -7716,7 +7786,7 @@ Private.event_prototypes = {
       },
       {
         name = "armorpenpercent",
-        display = L["Armor Peneration (%)"],
+        display = L["Armor Peneration Percent"],
         type = "number",
         init = "GetArmorPenetration()",
         store = true,
@@ -7725,11 +7795,10 @@ Private.event_prototypes = {
           operator = "and",
           limit = 2
         },
-        formatter = "Number",
       },
       {
         name = "spellpenpercent",
-        display = L["Spell Peneration (%)"],
+        display = L["Spell Peneration Percent"],
         type = "number",
         init = "GetSpellPenetration()",
         store = true,
@@ -7896,7 +7965,6 @@ Private.event_prototypes = {
         name = "defensiveStatsHeader",
         display = L["Defensive Stats"],
       },
-
       {
         name = "defense",
         display = L["Defense"],
@@ -8022,9 +8090,6 @@ Private.event_prototypes = {
         tinsert(events, "PLAYER_REGEN_DISABLED")
         tinsert(events, "PLAYER_ENTERING_WORLD")
       end
-      if trigger.use_pvpflagged ~= nil or trigger.use_afk ~= nil then
-        tinsert(events, "PLAYER_FLAGS_CHANGED")
-      end
       if trigger.use_pvpflagged ~= nil then
         tinsert(events, "UNIT_FACTION")
         tinsert(events, "ZONE_CHANGED")
@@ -8044,6 +8109,11 @@ Private.event_prototypes = {
       end
       local unit_events = {}
       local pet_unit_events = {}
+      if trigger.use_pvpflagged ~= nil
+         or trigger.use_afk ~= nil
+      then
+        tinsert(unit_events, "PLAYER_FLAGS_CHANGED")
+      end
       if trigger.use_vehicle ~= nil then
         tinsert(unit_events, "UNIT_ENTERED_VEHICLE")
         tinsert(unit_events, "UNIT_EXITED_VEHICLE")
@@ -8057,7 +8127,7 @@ Private.event_prototypes = {
         tinsert(events, "RAID_ROSTER_UPDATE")
       end
       if trigger.use_instance_difficulty ~= nil
-          or trigger.use_instance_size ~= nil
+         or trigger.use_instance_size ~= nil
       then
         tinsert(events, "PLAYER_DIFFICULTY_CHANGED")
       end
@@ -8073,7 +8143,7 @@ Private.event_prototypes = {
     internal_events = function(trigger, untrigger)
       local events = { "CONDITIONS_CHECK"};
 
-      if trigger.use_ismoving ~= nil then
+      if (trigger.use_ismoving ~= nil) then
         tinsert(events, "PLAYER_MOVING_UPDATE");
       end
 
@@ -8085,7 +8155,7 @@ Private.event_prototypes = {
       end
 
       if (trigger.use_HasPet ~= nil) then
-        AddUnitChangeInternalEvents("pet", events);
+        AddUnitChangeInternalEvents("pet", events)
       end
 
       return events;
@@ -8132,7 +8202,7 @@ Private.event_prototypes = {
         name = "vehicle",
         display = L["In Vehicle"],
         type = "tristate",
-        init = "UnitInVehicle('player')",
+        init = "UnitInVehicle('player') or UnitOnTaxi('player')",
       },
       {
         name = "resting",
@@ -8170,17 +8240,15 @@ Private.event_prototypes = {
         type = "multiselect",
         values = "group_types",
         init = "Private.ExecEnv.GroupType()",
-        events = {"PARTY_MEMBERS_CHANGED", "RAID_ROSTER_UPDATE"}
       },
       {
         name = "instance_size",
-        display = L["Instance Type"].." "..L["|cffff0000deprecated|r"],
+        display = L["Instance Size Type"].." "..L["|cffff0000deprecated|r"],
         desc = constants.instanceFilterDeprecated,
         type = "multiselect",
         values = "instance_types",
         sorted = true,
         init = "WeakAuras.InstanceType()",
-        events = {"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA"}
       },
       {
         name = "instance_difficulty",
@@ -8346,6 +8414,12 @@ Private.event_prototypes = {
         enable = function(trigger) return trigger.use_behavior end
       },
       {
+        name = "petspec",
+        display = L["Pet Specialization"],
+        type = "select",
+        values = "pet_spec_types",
+      },
+      {
         hidden = true,
         name = "icon",
         init = "activeIcon",
@@ -8374,6 +8448,7 @@ Private.event_prototypes = {
       else
         spellName = type(trigger.spellName) == "number" and GetSpellInfo(trigger.spellName) or trigger.spellName
       end
+      spellName = spellName or ""
       local ret = [=[
         local spellname = %q
       ]=]
@@ -8394,8 +8469,7 @@ Private.event_prototypes = {
       },
     },
     iconFunc = function(trigger)
-      local _, _, icon = GetSpellInfo(trigger.spellName or 0);
-      return icon;
+      return select(3, GetSpellInfo(trigger.spellName or 0));
     end,
     automaticrequired = true,
     progressType = "none"
@@ -8602,7 +8676,7 @@ Private.event_prototypes = {
         sortOrder = function()
           local discovered_currencies_sorted = Private.GetDiscoveredCurrenciesSorted()
           local sortOrder = {}
-          for key, value in pairs(Private.ExecEnv.GetDiscoveredCurrencies()) do
+          for key in pairs(Private.ExecEnv.GetDiscoveredCurrencies()) do
             tinsert(sortOrder, key)
           end
           table.sort(sortOrder, function(aKey, bKey)
@@ -8716,12 +8790,12 @@ Private.event_prototypes = {
         name = "zoneIds",
         display = L["Player Location ID(s)"],
         desc = function()
-          return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone\n"], GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
+          return ("\n|cffffd200%s|r%s: %d\n\n%s"):format(L["Current Zone"] .. "\n", GetRealZoneText(), GetCurrentMapAreaID(), L["Supports multiple entries, separated by commas. Prefix with '-' for negation."])
         end,
         type = "string",
         multiline = true,
         preamble = "local zoneChecker = Private.ExecEnv.ParseZoneCheck(%q)",
-        test = "zoneChecker:Check(MapId)",
+        test = "zoneChecker:Check(uiMapId)",
         conditionType = "string",
         conditionPreamble = function(input)
           return Private.ExecEnv.ParseZoneCheck(input)
@@ -8743,7 +8817,7 @@ Private.event_prototypes = {
         name = "zone",
         display = L["Zone Name"],
         desc = function()
-          return ("|cffffd200%s|r%s"):format(L["Current Zone\n"], GetRealZoneText())
+          return ("|cffffd200%s|r%s"):format(L["Current Zone"] .. "\n", GetRealZoneText())
         end,
         type = "string",
         conditionType = "string",
@@ -8757,7 +8831,7 @@ Private.event_prototypes = {
         name = "subzone",
         display = L["Subzone Name"],
         desc = function()
-          return ("%s\n\n|cffffd200%s|r%s"):format(L["Name of the (sub-)zone currently shown above the minimap."], L["Current Zone\n"], GetMinimapZoneText())
+          return ("%s\n\n|cffffd200%s|r%s"):format(L["Name of the (sub-)zone currently shown above the minimap."], L["Current Zone"] .. "\n", GetMinimapZoneText())
         end,
         type = "string",
         conditionType = "string",
@@ -8807,7 +8881,7 @@ Private.event_prototypes = {
 --[[
 Disable any event here
 if () then
-  Private.event_prototypes[] = nil
+  Private.event_prototypes[""] = nil
   end
 ]]
 
@@ -8947,6 +9021,7 @@ Private.dynamic_texts = {
 
 -- Events in that list can be filtered by unitID
 Private.UnitEventList = {
+  INCOMING_RESURRECT_CHANGED = true,
   PLAYER_GUILD_UPDATE = true,
   MINIMAP_PING = true,
   PARTY_MEMBER_DISABLE = true,

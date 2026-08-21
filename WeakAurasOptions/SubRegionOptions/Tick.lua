@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L;
@@ -35,6 +37,7 @@ local function createOptions(parentData, data, index, subIndex)
       softMax = 20,
       step = 1,
     },
+
     tick_progress_source_space = {
       type = "description",
       name = "",
@@ -49,6 +52,7 @@ local function createOptions(parentData, data, index, subIndex)
       order = 3.1,
       values = OptionsPrivate.Private.tick_placement_modes,
     },
+
 
     tick_progress_source_space_2 = {
       type = "description",

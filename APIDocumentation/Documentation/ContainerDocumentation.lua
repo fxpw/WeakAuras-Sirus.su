@@ -343,6 +343,7 @@ local Container =
 		{
 			Name = "UseContainerItem",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

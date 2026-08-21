@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L;
@@ -67,6 +69,7 @@ local function createDistributeAlignOptions(id, data)
         if(#data.controlledChildren < 1) then
           return nil;
         end
+        ---@type AnchorPoint?, AnchorPoint?, AnchorPoint?
         local alignedCenter, alignedRight, alignedLeft = "CENTER", "RIGHT", "LEFT";
         for index, childId in pairs(data.controlledChildren) do
           local childData = WeakAuras.GetData(childId);
@@ -133,6 +136,7 @@ local function createDistributeAlignOptions(id, data)
         if(#data.controlledChildren < 1) then
           return nil;
         end
+        ---@type AnchorPoint?, AnchorPoint?, AnchorPoint?
         local alignedCenter, alignedBottom, alignedTop = "CENTER", "RIGHT", "LEFT";
         for index, childId in pairs(data.controlledChildren) do
           local childData = WeakAuras.GetData(childId);
@@ -175,7 +179,7 @@ local function createDistributeAlignOptions(id, data)
               end
             elseif(v == "LEFT") then
               if(childData.selfPoint:find("BOTTOM")) then
-                childData.yOffset = 0 - getHeight(childData, childRegion);
+                childData.yOffset = 0 - ( childData.height or childRegion.height);
               elseif(childData.selfPoint:find("TOP")) then
                 childData.yOffset = 0;
               else
@@ -600,8 +604,8 @@ local function createOptions(id, data)
     sharedFrameLevel = {
       type = "toggle",
       width = WeakAuras.normalWidth,
-      name = L["Flat Framelevels"],
-      desc = L["The group and all direct children will share the same base frame level."],
+      name = OptionsPrivate.SetOptionTextDisabled(L["Flat Framelevels"]),
+      desc = OptionsPrivate.AddCompatibilityNote(L["The group and all direct children will share the same base frame level."], false, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."]) .. "\n" .. L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."],
       order = 47,
       get = function()
         return true
@@ -674,6 +678,7 @@ end
 local function createDefaultIcon(parent)
   -- default Icon
   local defaultIcon = CreateFrame("Frame", nil, parent);
+  defaultIcon:SetFrameLevel(parent:GetFrameLevel() + 1)
   parent.defaultIcon = defaultIcon;
 
   local t1 = defaultIcon:CreateTexture(nil, "ARTWORK");
@@ -699,7 +704,7 @@ end
 local function modifyThumbnail(parent, frame, data)
   function frame:SetIcon()
     if data.groupIcon then
-      local success = OptionsPrivate.Private.SetTextureOrSpellTexture(frame.icon, data.groupIcon)
+      local success = OptionsPrivate.Private.SetTextureOrAtlas(frame.icon, data.groupIcon)
       if success then
         if frame.defaultIcon then
           frame.defaultIcon:Hide()

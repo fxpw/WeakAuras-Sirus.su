@@ -1,7 +1,10 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
+---@class WeakAuras
 local WeakAuras = WeakAuras;
 local L = WeakAuras.L;
 
@@ -164,7 +167,7 @@ local function SoundPlayHelper(self)
     return;
   end
 
-  if (WeakAuras.IsOptionsOpen() or Private.SquelchingActions()) then
+  if (WeakAuras.IsOptionsOpen() or Private.SquelchingActions(self.uid)) then
     Private.StopProfileSystem("sound");
     return;
   end
@@ -263,9 +266,9 @@ local function UpdatePosition(self)
   local yOffset = self.yOffset + (self.yOffsetAnim or 0) + (self.yOffsetRelative or 0)
   self:RealClearAllPoints();
 
-  local ok = pcall(self.SetPoint, self, self.anchorPoint, self.relativeTo, self.relativePoint, xOffset, yOffset);
+  local ok, err = pcall(self.SetPoint, self, self.anchorPoint, self.relativeTo, self.relativePoint, xOffset, yOffset);
   if not ok then
-    Private.GetErrorHandlerId(self.id, L["Update Position"])
+    Private.GetErrorHandlerId(self.id, L["Update Position"])(err)
   end
 end
 
@@ -582,7 +585,7 @@ end
 
 local function UpdateProgressFromManual(self, minMaxConfig, state, value, total)
   value = type(value) == "number" and value or 0
-  total = type(total) == "number" and total or 0
+  total = type(total) == "number" and total or 100
   local adjustMin
   if minMaxConfig.adjustedMin then
     adjustMin = minMaxConfig.adjustedMin
@@ -649,14 +652,14 @@ local function SetAnimAlpha(self, alpha)
   self.animAlpha = alpha;
   local errorHandler = Private.GetErrorHandlerId(self.id, L["Custom Fade Animation"])
   if (WeakAuras.IsOptionsOpen()) then
-    local ok = pcall(self.SetAlpha, self, max(self.animAlpha or self.alpha or 1, 0.5))
+    local ok, err = pcall(self.SetAlpha, self, max(self.animAlpha or self.alpha or 1, 0.5))
     if not ok then
-      errorHandler()
+      errorHandler(err)
     end
   else
-    local ok = pcall(self.SetAlpha, self, self.animAlpha or self.alpha or 1)
+    local ok, err = pcall(self.SetAlpha, self, self.animAlpha or self.alpha or 1)
     if not ok then
-      errorHandler()
+      errorHandler(err)
     end
   end
   self.subRegionEvents:Notify("AlphaChanged")
@@ -986,11 +989,11 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       if region:IsProtected() then
         if InCombatLockdown() then
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame_error", "error",
-          L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
+          L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"],
             true)
         else
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame", "warning",
-            L["Secure frame detected. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"])
+            L["Secure frame detected. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"])
           region:Hide()
         end
       else
@@ -1017,11 +1020,11 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       if region:IsProtected() then
         if InCombatLockdown() then
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame_error", "error",
-          L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
+          L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"],
             true)
         else
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame", "warning",
-            L["Secure frame detected. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"])
+            L["Secure frame detected. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"])
           region:Hide()
         end
       else
@@ -1071,11 +1074,11 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       if region:IsProtected() then
         if InCombatLockdown() then
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame_error", "error",
-            L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
+            L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"],
             true)
         else
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame", "warning",
-            L["Secure frame detected. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"])
+            L["Secure frame detected. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"])
           region:Show()
         end
       else
@@ -1138,11 +1141,11 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
       if region:IsProtected() then
         if InCombatLockdown() then
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame_error", "error",
-            L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"],
+            L["Cannot change secure frame in combat lockdown. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"],
             true)
         else
           Private.AuraWarnings.UpdateWarning(uid, "protected_frame", "warning",
-            L["Secure frame detected. Find more information:\nhttps://github.com/WeakAuras/WeakAuras2/wiki/Protected-Frames"])
+            L["Secure frame detected. Find more information:\nhttps://github.com/NoM0Re/WeakAuras-WotLK/wiki/Protected-Frames"])
           region:Show()
         end
       else
@@ -1171,7 +1174,8 @@ function Private.regionPrototype.AddExpandFunction(data, region, cloneId, parent
   end
 end
 
-function Private.SetTextureOrSpellTexture(texture, path)
+function Private.SetTextureOrAtlas(texture, path, wrapModeH, wrapModeV)
+  -- wrapModeH and wrapModeV is not supported.
   local spellID = tonumber(path)
   if spellID then
     return texture:SetTexture(select(3, GetSpellInfo(spellID)) or spellID)

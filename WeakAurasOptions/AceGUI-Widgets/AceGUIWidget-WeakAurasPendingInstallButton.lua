@@ -1,6 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
-
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local pairs, next, type, unpack = pairs, next, type, unpack
@@ -190,6 +191,7 @@ local function Constructor()
   button.description = {}
 
   local update = CreateFrame("Button", nil, button)
+  update:SetFrameLevel(button:GetFrameLevel() + 1)
   button.update = update
   update.disabled = true
   update.func = function()
@@ -231,6 +233,7 @@ local function Constructor()
   update:Hide()
   updateLogo:Hide()
 
+  --- @type table<string, any>
   local widget = {
     frame = button,
     title = title,

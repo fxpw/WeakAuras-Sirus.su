@@ -44,7 +44,9 @@ GetTriggerConditions(data, triggernum)
 Returns the potential conditions for a trigger
 ]=]--
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 local function FixDebuffClass(debuffClass)
@@ -67,6 +69,7 @@ local pairs, next, type = pairs, next, type
 -- local GetNumGroupMembers = Private.GetNumGroupMembers
 local UnitAura = UnitAura
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 local timer = WeakAuras.timer
@@ -1083,6 +1086,9 @@ local function GetAllUnits(unit, allUnits, includePets)
       end
     end
   elseif unit == "boss" or unit == "arena" or unit == "nameplate" then
+    if unit == "nameplate" and not WeakAuras.IsAwesomeEnabled() then
+      return function() end
+    end
     local i = 1
     local max
     if unit == "boss" then
@@ -1298,9 +1304,17 @@ end
 local function UpdateTriggerState(time, id, triggernum)
   local triggerStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum)
   local triggerInfo = triggerInfos[id][triggernum]
+  if triggerInfo.unit == "nameplate" and not WeakAuras.IsAwesomeEnabled() then
+    local updated
+    for cloneId in pairs(triggerStates) do
+      updated = RemoveState(triggerStates, cloneId) or updated
+    end
+    return updated
+  end
   local updated
   local nextCheck
   local matchCount = 0
+  ---@type number?
   local totalStacks = 0
   local unitCount = 0
   local auraDatas = {}

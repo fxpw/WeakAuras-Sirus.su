@@ -14,6 +14,7 @@ local Stanceshapeshift =
 		{
 			Name = "CastShapeshiftForm",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

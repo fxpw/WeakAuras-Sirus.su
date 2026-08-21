@@ -1,6 +1,8 @@
 if not WeakAuras.IsLibsOK() then return end
 
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
@@ -41,7 +43,7 @@ local function createOptions(id, data)
       name = L["Choose"],
       order = 3,
       func = function()
-         OptionsPrivate.OpenIconPicker(data, { [data.id] = {"thumbnailIcon"} })
+         OptionsPrivate.OpenIconPicker(data, { [data.id] = {"thumbnailIcon"} }, true)
        end,
        imageWidth = 24,
        imageHeight = 24,
@@ -58,6 +60,7 @@ local function createOptions(id, data)
 end
 
 local function createThumbnail()
+  ---@class frame: FrameScriptObject
   local frame = CreateFrame("Frame", nil, UIParent)
   frame:SetWidth(32)
   frame:SetHeight(32)
@@ -75,8 +78,8 @@ local function createThumbnail()
 end
 
 local function modifyThumbnail(parent, frame, data)
-  OptionsPrivate.Private.SetTextureOrSpellTexture(frame.icon, data.thumbnailIcon)
-  if frame.icon:GetTexture() then
+  local success = OptionsPrivate.Private.SetTextureOrAtlas(frame.icon, data.thumbnailIcon)
+  if success then
     frame.icon:Show()
   else
     frame.icon:Hide()

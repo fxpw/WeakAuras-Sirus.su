@@ -25,16 +25,16 @@
 -- @class file
 -- @name AceGUI-3.0
 -- @release $Id: AceGUI-3.0.lua 1288 2022-09-25 14:19:00Z funkehdude $
-local ACEGUI_MAJOR, ACEGUI_MINOR = "AceGUI-3.0", 41
+local ACEGUI_MAJOR, ACEGUI_MINOR = "AceGUI-3.0", 42
 local AceGUI, oldminor = LibStub:NewLibrary(ACEGUI_MAJOR, ACEGUI_MINOR)
 
 if not AceGUI then return end -- No upgrade needed
 
 -- Lua APIs
-local tinsert, wipe = table.insert, table.wipe
+local tconcat, tinsert, wipe = table.concat, table.insert, table.wipe
 local select, pairs, next, type = select, pairs, next, type
-local error, assert = error, assert
-local setmetatable, rawget = setmetatable, rawget
+local error, assert, loadstring = error, assert, loadstring
+local setmetatable, rawget, rawset = setmetatable, rawget, rawset
 local math_max, math_min, math_ceil = math.max, math.min, math.ceil
 
 -- WoW APIs
@@ -53,22 +53,47 @@ local LayoutRegistry = AceGUI.LayoutRegistry
 local WidgetVersions = AceGUI.WidgetVersions
 
 --[[
-	 pcall safecall implementation
+	 xpcall safecall implementation
 ]]
-local pcall = pcall
+local xpcall = xpcall
 
 local function errorhandler(err)
 	return geterrorhandler()(err)
 end
 
-local function safecall(func, ...)
-	if func then
-		local ret = {pcall(func, ...)}
-		if not ret[1] then
-			errorhandler(ret[2])
+local function CreateDispatcher(argCount)
+	local code = [[
+		local xpcall, eh = ...
+		local method, ARGS
+		local function call() return method(ARGS) end
+
+		local function dispatch(func, ...)
+			method = func
+			if not method then return end
+			ARGS = ...
+			return xpcall(call, eh)
 		end
-		return unpack(ret)
-	end
+
+		return dispatch
+	]]
+
+	local ARGS = {}
+	for i = 1, argCount do ARGS[i] = "arg"..i end
+	code = code:gsub("ARGS", tconcat(ARGS, ", "))
+	return assert(loadstring(code, "safecall Dispatcher["..argCount.."]"))(xpcall, errorhandler)
+end
+
+local Dispatchers = setmetatable({}, {__index=function(self, argCount)
+	local dispatcher = CreateDispatcher(argCount)
+	rawset(self, argCount, dispatcher)
+	return dispatcher
+end})
+Dispatchers[0] = function(func)
+	return xpcall(func, errorhandler)
+end
+
+local function safecall(func, ...)
+	return Dispatchers[select("#", ...)](func, ...)
 end
 
 -- Recycling functions
@@ -486,7 +511,7 @@ do
 		end
 	end
 
-	local function FrameResize(this, width, height)
+	local function FrameResize(this, width, height) -- backwards compatibility
 		local self = this.obj
 		if this:GetWidth() and this:GetHeight() then
 			if self.OnWidthSet then

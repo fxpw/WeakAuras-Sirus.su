@@ -20,17 +20,6 @@ local function fixlevels(parent,...)
 	end
 end
 
-local function fixstrata(strata, parent, ...)
-	local i = 1
-	local child = select(i, ...)
-	parent:SetFrameStrata(strata)
-	while child do
-		fixstrata(strata, child, child:GetChildren())
-		i = i + 1
-		child = select(i, ...)
-	end
-end
-
 -- ItemBase is the base "class" for all dropdown items.
 -- Each item has to use ItemBase.Create(widgetType) to
 -- create an initial 'self' value.
@@ -455,7 +444,7 @@ do
 
 		local line = self.frame:CreateTexture(nil, "OVERLAY")
 		line:SetHeight(1)
-		line:SetTexture(0.5, 0.5, 0.5)
+		line:SetTexture(.5, .5, .5)
 		line:SetPoint("LEFT", self.frame, "LEFT", 10, 0)
 		line:SetPoint("RIGHT", self.frame, "RIGHT", -10, 0)
 

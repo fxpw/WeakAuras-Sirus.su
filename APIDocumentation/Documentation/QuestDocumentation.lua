@@ -1041,12 +1041,17 @@ local Quest =
 		{
 			Name = "UseQuestLogSpecialItem",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
 				{ Name = "questIndex", Type = "luaIndex", Nilable = false },
 			},
 
+		},
+		{
+			Name = "GetQuestLogRewardHonor",
+			Type = "Function",
 		},
 	},
 

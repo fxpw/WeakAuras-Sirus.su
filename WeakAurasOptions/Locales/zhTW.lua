@@ -86,15 +86,16 @@ local L = WeakAuras.L
 	L["|cFFFF0000default|r texture"] = "|cFFFF0000預設|r材質"
 	L["|cFFFF0000desaturated|r "] = "|cFFFF0000去色|r "
 	L["|cFFFF0000Note:|r The unit '%s' is not a trackable unit."] = "|cFFFF0000注意:|r 單位 '%s' 不是可以監控的單位。"
-	L["|cFFFF0000Note:|r The unit '%s' requires soft target cvars to be enabled."] = "|cFFFF0000注意:|r 單位 '%s' 需要啟用軟目標 CVar 遊戲參數。"
 	L["|cFFffcc00Anchors:|r Anchored |cFFFF0000%s|r to frame's |cFFFF0000%s|r"] = "|cFFffcc00對齊:|r |cFFFF0000%s|r對齊到框架的|cFFFF0000%s|r"
 	L["|cFFffcc00Anchors:|r Anchored |cFFFF0000%s|r to frame's |cFFFF0000%s|r with offset |cFFFF0000%s/%s|r"] = "|cFFffcc00對齊:|r |cFFFF0000%s|r對齊到框架的|cFFFF0000%s|r，位移|cFFFF0000%s/%s|r"
 	L["|cFFffcc00Anchors:|r Anchored to frame's |cFFFF0000%s|r"] = "|cFFffcc00對齊:|r 對齊到框架的|cFFFF0000%s|r"
 	L["|cFFffcc00Anchors:|r Anchored to frame's |cFFFF0000%s|r with offset |cFFFF0000%s/%s|r"] = "|cFFffcc00對齊:|r 對齊到框架的|cFFFF0000%s|r，位移|cFFFF0000%s/%s|r"
 	L["|cFFffcc00Extra Options:|r"] = "|cFFffcc00額外選項:|r"
 	L["|cFFffcc00Extra:|r %s and %s %s"] = "|cFFffcc00額外:|r %s和%s%s"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"] = "|cFFffcc00文字樣式:|r |cFFFF0000%s|r和陰影|c%s顏色|r，位移|cFFFF0000%s/%s|r%s%s"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s%s"] = "|cFFffcc00文字樣式:|r |cFFFF0000%s|r和陰影|c%s顏色|r，位移|cFFFF0000%s/%s|r%s%s%s"
+	--[[Translation missing --]]
+	L["|cFFffcc00Font Flags:|r"] = "|cFFffcc00Font Flags:|r"
+	--[[Translation missing --]]
+	L["|cFFffcc00Font Flags:|r none"] = "|cFFffcc00Font Flags:|r none"
 	L["|cffffcc00Format Options|r"] = "|cffffcc00格式選項|r"
 	L[ [=[• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.
 • |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.
@@ -135,6 +136,10 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["Advanced"] = "進階"
 	L["Affected Unit Filters and Info"] = "受影響的單位過濾器和訊息"
 	L["Align"] = "對齊"
+	--[[Translation missing --]]
+	L["Aligned left"] = "Aligned left"
+	--[[Translation missing --]]
+	L["Aligned right"] = "Aligned right"
 	L["Alignment"] = "對齊方式"
 	L["All maintainers of the libraries we use, especially:"] = "我們使用函數庫的所有維護者，特別是："
 	L["All of"] = "全部的"
@@ -146,11 +151,13 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["And "] = "和 "
 	L["and"] = "和"
 	L["and %s"] = "以及 %s"
-	L["and aligned left"] = "和靠左對齊"
-	L["and aligned right"] = "和靠右對齊"
 	L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] = "還有我們的訂閱者、Discord常客和訂閱者以及插件之友："
 	L["and rotated left"] = "和向左旋轉"
 	L["and rotated right"] = "和向右旋轉"
+	--[[Translation missing --]]
+	L["and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
+	--[[Translation missing --]]
+	L["and smooth scaling"] = "and smooth scaling"
 	L["and with width |cFFFF0000%s|r and %s"] = "、寬度 |cFFFF0000%s|r 和 %s"
 	L["Angle"] = "角度"
 	L["Angle Between Auras"] = "提醒效果之間的角度"
@@ -374,7 +381,6 @@ UNIT_POWER, UNIT_AURA PLAYER_TARGET_CHANGED]=]
 	L["File Height"] = "列高"
 	L["File Width"] = "列寬"
 	L["Filter based on the spell Name string."] = "根據法術名稱字符過濾。"
-	L["Filter by Arena Spec"] = "依競技場專精過濾"
 	L["Filter by Class"] = "依職業過濾"
 	L["Filter by Group Role"] = "依角色職責過濾"
 	L["Filter by Hostility"] = "依敵方過濾"
@@ -527,7 +533,6 @@ Bleed classification via LibDispel]=] ] = "只過濾被 LibDispel 分類為流�
 	L["LibDeflate: Yoursafety"] = "LibDeflate: Yoursafety"
 	L["LibDispel: Simpy"] = "LibDispel: Simpy"
 	L["LibSerialize: Sanjo"] = "LibSerialize: Sanjo"
-	L["LibSpecialization: Funkeh"] = "LibSpecialization: Funkeh"
 	L["Limit"] = "限制"
 	L["Line"] = "線"
 	L["Linear Texture %s"] = "線性材質 %s"
@@ -683,7 +688,6 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件發�
 	L["Report bugs on our issue tracker."] = "請在我們的問題追蹤網頁回報 bug。"
 	L["Require unit from trigger"] = "需要來自觸發的單位"
 	L["Required for Activation"] = "啟用需要"
-	L["Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"] = "需要 LibSpecialization，也就是最新的 WeakAuras 版本"
 	L["Reset all options to their default values."] = "重置所有選項，恢復成預設值。"
 	L["Reset Entry"] = "重置項目"
 	L["Reset to Defaults"] = "重置為預設值"
@@ -694,6 +698,10 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件發�
 	L["Rotate In"] = "旋轉進入"
 	L["Rotate Out"] = "旋轉退出"
 	L["Rotate Text"] = "旋轉文字"
+	--[[Translation missing --]]
+	L["Rotated left"] = "Rotated left"
+	--[[Translation missing --]]
+	L["Rotated right"] = "Rotated right"
 	L["Rotation Mode"] = "旋轉模式"
 	L["Row Space"] = "列間距"
 	L["Row Width"] = "列寬度"
@@ -716,6 +724,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件發�
 	L["Set Thumbnail Icon"] = "設定縮圖圖示"
 	L["Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."] = "將對齊到的框架設為提醒效果的上一層框架，讓提醒效果能夠繼承像是顯示和縮放大小等屬性。"
 	L["Settings"] = "設定"
+	--[[Translation missing --]]
+	L["Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
 	L["Shadow Color"] = "陰影顏色"
 	L["Shadow X Offset"] = "陰影水平位移"
 	L["Shadow Y Offset"] = "陰影垂直位移"
@@ -766,7 +776,13 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件發�
 	L["Slide Out"] = "滑出"
 	L["Slider Step Size"] = "滑桿數值間距"
 	L["Small Icon"] = "小圖示"
+	--[[Translation missing --]]
+	L["Smooth Font"] = "Smooth Font"
 	L["Smooth Progress"] = "平順顯示進度"
+	--[[Translation missing --]]
+	L["Smooth scaling"] = "Smooth scaling"
+	--[[Translation missing --]]
+	L["Smooths text height, preventing it from snapping to the nearest whole number when scaled."] = "Smooths text height, preventing it from snapping to the nearest whole number when scaled."
 	L["Snippets"] = "程式碼片段"
 	L["Soft Max"] = "最大軟上限"
 	L["Soft Min"] = "最小軟上限"
@@ -781,6 +797,10 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件發�
 	L["Specific Currency ID"] = "特定兌換通貨ID"
 	L["Spell Selection Filters"] = "法術選擇過濾器"
 	L["Spells found:"] = "找到的法術："
+	--[[Translation missing --]]
+	L["Squelch Sounds/Actions on Load"] = "Squelch Sounds/Actions on Load"
+	--[[Translation missing --]]
+	L["Squelched"] = "Squelched"
 	L["Stack Info"] = "堆疊層數資訊"
 	L["Stacks - The number of stacks of an aura (usually)"] = "層數 - 光環的疊加數（通常）"
 	L["Standby"] = "準備就緒"
@@ -812,8 +832,10 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=] ] = [=[事件發�
 	L["Texture X Offset"] = "材質水平位移"
 	L["Texture Y Offset"] = "材質垂直位移"
 	L["Thanks"] = "感謝"
-	L["The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings"] = "ElvUI 插件已啟用，它可能會在倒數轉圈動畫上面加入冷卻時間數字，這些可以在 ElvUI 的設定中調整。"
-	L["The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings"] = "冷卻時間插件 OmniCC 已啟用，它可能會在倒數轉圈動畫上面加入冷卻時間數字，這些可以在 OmniCC 的設定中調整。"
+	--[[Translation missing --]]
+	L["The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings."] = "The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings."
+	--[[Translation missing --]]
+	L["The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings."] = "The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings."
 	L["The duration of the animation in seconds."] = "動畫的持續時間(秒)。"
 	L["The duration of the animation in seconds. The finish animation does not start playing until after the display would normally be hidden."] = "動畫的持續時間 (秒)。直到提醒效果正常隱藏後，才會播放結束時的動畫。"
 	L["The group and all direct children will share the same base frame level."] = "此群組和所有直接的子項目將共用相同的基礎框架層級。"
@@ -879,7 +901,6 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["Unit %s is not a valid unit for RegisterUnitEvent"] = "%s 不是 RegisterUnitEvent 的有效單位"
 	L["Unit Count"] = "單位數量"
 	L["Unknown"] = "未知"
-	L["Unknown Encounter's Spell Id"] = "未知的首領戰法術 ID"
 	L["Unknown property '%s' found in '%s'"] = "發現未知屬性 '%s'，在 '%s'"
 	L["Unknown Spell"] = "未知的法術"
 	L["Unlike the start or finish animations, the main animation will loop over and over until the display is hidden."] = "不同於開始或結束時的動畫，主要動畫將重複循環直到提醒效果被隱藏。"
@@ -910,12 +931,10 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["We thank"] = "我們感謝"
 	L["WeakAuras %s on WoW %s"] = "WeakAuras %s 在 WoW %s"
 	L["WeakAuras recommends using spell ids instead of names. Spell ids are automatically localized."] = "WeakAuras 建議使用法術ID而不是名稱。法術ID會自動本地化。"
-	--[[Translation missing --]]
-	L[ [=[WeakAuras will not support Midnight. On release of the prepatch, WeakAuras will be disabled.
-Read more on our Patreon page https://patreon.com/WeakAuras]=] ] = [=[WeakAuras will not support Midnight. On release of the prepatch, WeakAuras will be disabled.
-Read more on our Patreon page https://patreon.com/WeakAuras]=]
 	L["What do you want to do?"] = "你想要怎麼做?"
 	L["Whole Area"] = "整個區域"
+	--[[Translation missing --]]
+	L["Width |cFFFF0000%s|r and %s"] = "Width |cFFFF0000%s|r and %s"
 	L["wrapping"] = "自動換行"
 	L["X Offset"] = "水平位置"
 	L["X Rotation"] = "水平旋轉"
@@ -929,11 +948,6 @@ Read more on our Patreon page https://patreon.com/WeakAuras]=]
 	L["You already have this group/aura. Importing will create a duplicate."] = "你已經有了這個群組/提醒效果。匯入後將會建立另一個複製版本。"
 	L["You are about to delete %d aura(s). |cFFFF0000This cannot be undone!|r Would you like to continue?"] = "你正準備要刪除 %d 個提醒效果，刪除後將|cFFFF0000無法還原!|r 請問是否要繼續?"
 	L["You are about to delete a trigger. |cFFFF0000This cannot be undone!|r Would you like to continue?"] = "你正要刪除觸發。 |cFFFF0000刪除後將無法還原!|r 是否確定要繼續?"
-	L[ [=[You are about to Import an Aura with custom Lua code on a Hardcore server.
-
-|cFFFF0000There is a risk the custom code could be used to kill your hardcore character!|r
-
-Would you like to continue?]=] ] = "你即將在專家伺服器上匯入一個包含自訂 Lua 程式碼的提醒效果。|cFFFF0000存在自訂程式碼可能被利用來殺死你的專家角色的風險!|r 你確定要繼續嗎?"
 	L[ [=[You can add a comma-separated list of state values here that (when changed) WeakAuras should also run the Anchor Code on.
 
 WeakAuras will always run custom anchor code if you include 'changed' in this list, or when a region is added, removed, or re-ordered.]=] ] = "您可以在此處添加一個以逗號分隔的狀態值清單，當這些值發生變化時，WeakAuras 也會運行錨點程式碼 (Anchor Code)。如果您在此清單中包含 'changed'，或者新增、刪除或重新排序某個區塊時，WeakAuras 將會永遠運行自定錨點程式碼。"

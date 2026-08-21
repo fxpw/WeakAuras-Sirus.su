@@ -1,12 +1,14 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 local SharedMedia = LibStub("LibSharedMedia-3.0")
 
--- local tIndexOf = Private.tIndexOf
 
 local default = {
   controlledChildren = {},
@@ -345,7 +347,7 @@ local sorters = {
       if ok then
         return result
       else
-        Private.GetErrorHandlerId(data.id, L["Custom Sort"])
+        Private.GetErrorHandlerId(data.id, L["Custom Sort"])(result)
       end
     end, sortOn
   end
@@ -382,11 +384,18 @@ end
 local anchorers = {
   ["NAMEPLATE"] = function(data)
     return function(frames, activeRegions)
+      if not WeakAuras.IsAwesomeEnabled() and not WeakAuras.IsOptionsOpen() then
+        frames[WeakAuras.HiddenFrames] = frames[WeakAuras.HiddenFrames] or {}
+        for _, regionData in ipairs(activeRegions) do
+          tinsert(frames[WeakAuras.HiddenFrames], regionData)
+        end
+        return
+      end
       for _, regionData in ipairs(activeRegions) do
         local unit = regionData.region.state and regionData.region.state.unit
         local found
         if unit then
-          local frame = WeakAuras.GetNamePlateForUnit(unit)
+          local frame = WeakAuras.GetUnitNameplate(unit)
           if frame then
             frames[frame] = frames[frame] or {}
             tinsert(frames[frame], regionData)
@@ -431,9 +440,9 @@ local anchorers = {
 
     return function(frames, activeRegions)
       Private.ActivateAuraEnvironment(data.id)
-      local ok = pcall(anchorFunc, frames, activeRegions)
+      local ok, err = pcall(anchorFunc, frames, activeRegions)
       if not ok then
-        Private.GetErrorHandlerUid(data.uid, L["Custom Anchor"])
+        Private.GetErrorHandlerUid(data.uid, L["Custom Anchor"])(err)
       end
       Private.ActivateAuraEnvironment()
     end, anchorOn
@@ -671,6 +680,8 @@ local growers = {
         end
         local x, y = midX - totalWidth/2, midY - (stagger * (numVisible - 1)/2)
         newPositions[frame] = {}
+
+        --- @type integer?
         local i = FirstIndex(numVisible)
         while i do
           local regionData = regionDatas[i]
@@ -985,10 +996,10 @@ local growers = {
     end
     return function(newPositions, activeRegions)
       Private.ActivateAuraEnvironment(data.id)
-      local ok = pcall(growFunc, newPositions, activeRegions)
+      local ok, err = pcall(growFunc, newPositions, activeRegions)
       Private.ActivateAuraEnvironment()
       if not ok then
-        Private.GetErrorHandlerId(data.id, L["Custom Grow"])
+        Private.GetErrorHandlerId(data.id, L["Custom Grow"])(err)
         wipe(newPositions)
       end
     end, growOn
@@ -1006,6 +1017,19 @@ local function SafeGetPos(region, func)
   if ok then
     return value1, value2
   end
+end
+
+local function SafeGetRect(region)
+  local left, right, top, bottom = SafeGetPos(region, region.GetLeft), SafeGetPos(region, region.GetRight),
+                                   SafeGetPos(region, region.GetTop), SafeGetPos(region, region.GetBottom)
+  if not (left and right and top and bottom) then
+    -- Workaround for 3.3.5a: Querying the size can force WoW to calculate a missing frame rect
+    SafeGetPos(region, region.GetWidth)
+
+    left, right, top, bottom = SafeGetPos(region, region.GetLeft), SafeGetPos(region, region.GetRight),
+                               SafeGetPos(region, region.GetTop), SafeGetPos(region, region.GetBottom)
+  end
+  return left, right, top, bottom
 end
 
 local function isDifferent(regionData, cache, events)
@@ -1051,28 +1075,6 @@ local function clearCache(cache, id, cloneId)
     cache[id][cloneId] = nil
   end
 end
-
--- Resize queue
-local RunNextFrame = CreateFrame("Frame")
-local q = {}
-RunNextFrame:Hide()
-
-local function QueueResize(g)
-  if not g then return end
-  q[#q+1] = g
-  RunNextFrame:Show()
-end
-
-RunNextFrame:SetScript("OnUpdate", function(self)
-  self:Hide()
-  for i = 1, #q do
-    local g = q[i]
-    q[i] = nil
-    if g and g.Resize then
-      g:Resize()
-    end
-  end
-end)
 
 local function modify(parent, region, data)
   Private.FixGroupChildrenOrderForGroup(data)
@@ -1234,7 +1236,7 @@ local function modify(parent, region, data)
     if self.controlledChildren[childID] and self.controlledChildren[childID][cloneID] then
       return
     end
-    local dataIndex = tIndexOf(data.controlledChildren, childID)
+    local dataIndex = Private.tIndexOf(data.controlledChildren, childID)
     if not dataIndex then return end
     local childData = WeakAuras.GetData(childID)
     local childRegion = WeakAuras.GetRegion(childID, cloneID)
@@ -1553,7 +1555,7 @@ local function modify(parent, region, data)
 
     Private.StopProfileSystem("dynamicgroup")
     Private.StopProfileAura(data.id)
-    QueueResize(self)
+    self:Resize()
   end
 
 
@@ -1565,24 +1567,33 @@ local function modify(parent, region, data)
       Private.StartProfileSystem("dynamicgroup")
       Private.StartProfileAura(data.id)
       local numVisible, minX, maxX, maxY, minY = 0, nil, nil, nil, nil
+      local hasInvalidRect = false
       for active, regionData in ipairs(self.sortedChildren) do
         if regionData.shown then
           numVisible = numVisible + 1
+
+          -- Workaround for 3.3.5a: WoW does not update the child rect after moving its control point.
+          -- Query the control point first so the child returns the correct position.
+          local controlPoint = regionData.controlPoint
+          SafeGetPos(controlPoint, controlPoint.GetRect)
+
           local childRegion = regionData.region
-          local regionLeft, regionRight, regionTop, regionBottom
-             = SafeGetPos(childRegion, childRegion.GetLeft), SafeGetPos(childRegion, childRegion.GetRight),
-               SafeGetPos(childRegion, childRegion.GetTop), SafeGetPos(childRegion, childRegion.GetBottom)
+          local regionLeft, regionRight, regionTop, regionBottom = SafeGetRect(childRegion)
 
           if(regionLeft and regionRight and regionTop and regionBottom) then
             minX = minX and min(regionLeft, minX) or regionLeft
             maxX = maxX and max(regionRight, maxX) or regionRight
             minY = minY and min(regionBottom, minY) or regionBottom
             maxY = maxY and max(regionTop, maxY) or regionTop
+          else
+            hasInvalidRect = true
           end
         end
       end
 
-      if numVisible > 0 then
+      if hasInvalidRect then
+        self.needToResize = true
+      elseif numVisible > 0 then
         self:Show()
         minX, maxX, minY, maxY = (minX or 0), (maxX or 0), (minY or 0), (maxY or 0)
 

@@ -51,11 +51,14 @@ local LuaLibrary =
 
 			Arguments =
 			{
-				{ Name = "month", Type = "number", Nilable = false },
-				{ Name = "day", Type = "number", Nilable = false },
-				{ Name = "year", Type = "number", Nilable = false },
+				{ Name = "format", Type = "string", Nilable = true },
+				{ Name = "time", Type = "number", Nilable = true },
 			},
 
+			Returns =
+			{
+				{ Name = "dateValue", Type = "string", Nilable = false },
+			},
 		},
 		{
 			Name = "deg",
@@ -294,6 +297,15 @@ local LuaLibrary =
 			Name = "log",
 			Type = "Function",
 
+			Arguments =
+			{
+				{ Name = "x", Type = "number", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "naturalLog", Type = "number", Nilable = false },
+			},
 		},
 		{
 			Name = "log10",
@@ -313,9 +325,14 @@ local LuaLibrary =
 			Name = "max",
 			Type = "Function",
 
+			Arguments =
+			{
+				{ Name = "...", Type = "any", Nilable = false },
+			},
+
 			Returns =
 			{
-				{ Name = "count", Type = "number", Nilable = false },
+				{ Name = "maximum", Type = "number", Nilable = false },
 			},
 		},
 		{
@@ -324,10 +341,13 @@ local LuaLibrary =
 
 			Arguments =
 			{
-				{ Name = "team", Type = "number", Nilable = false },
-				{ Name = "name", Type = "string", Nilable = false },
+				{ Name = "...", Type = "any", Nilable = false },
 			},
 
+			Returns =
+			{
+				{ Name = "maximum", Type = "number", Nilable = false },
+			},
 		},
 		{
 			Name = "next",
@@ -335,13 +355,14 @@ local LuaLibrary =
 
 			Arguments =
 			{
-				{ Name = "id", Type = "number", Nilable = false },
+				{ Name = "t", Type = "table", Nilable = false },
+				{ Name = "key", Type = "any", Nilable = true },
 			},
 
 			Returns =
 			{
-				{ Name = "nextID", Type = "number", Nilable = false },
-				{ Name = "completed", Type = "bool", Nilable = false },
+				{ Name = "nextKey", Type = "any", Nilable = false },
+				{ Name = "nextValue", Type = "any", Nilable = false },
 			},
 		},
 		{
@@ -380,11 +401,30 @@ local LuaLibrary =
 			Name = "rad",
 			Type = "Function",
 
+			Arguments =
+			{
+				{ Name = "degrees", Type = "number", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "radians", Type = "number", Nilable = false },
+			},
 		},
 		{
 			Name = "random",
 			Type = "Function",
 
+			Arguments =
+			{
+				{ Name = "m", Type = "number", Nilable = true },
+				{ Name = "n", Type = "number", Nilable = true },
+			},
+
+			Returns =
+			{
+				{ Name = "randomNum", Type = "number", Nilable = false },
+			},
 		},
 		{
 			Name = "rawequal",
@@ -432,6 +472,16 @@ local LuaLibrary =
 			Name = "select",
 			Type = "Function",
 
+			Arguments =
+			{
+				{ Name = "index", Type = "any", Nilable = false },
+				{ Name = "...", Type = "any", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "...", Type = "any", Nilable = false },
+			},
 		},
 		{
 			Name = "setfenv",
@@ -468,10 +518,10 @@ local LuaLibrary =
 			Name = "sort",
 			Type = "Function",
 
-			Returns =
+			Arguments =
 			{
-				{ Name = "criterion", Type = "string", Nilable = false },
-				{ Name = "reverse", Type = "bool", Nilable = false },
+				{ Name = "table", Type = "table", Nilable = false },
+				{ Name = "comparator", Type = "function", Nilable = true },
 			},
 		},
 		{
@@ -648,17 +698,12 @@ local LuaLibrary =
 
 			Arguments =
 			{
-				{ Name = "index", Type = "luaIndex", Nilable = false },
+				{ Name = "timeDesc", Type = "table", Nilable = true },
 			},
 
 			Returns =
 			{
-				{ Name = "weekday", Type = "number", Nilable = false },
-				{ Name = "month", Type = "number", Nilable = false },
-				{ Name = "day", Type = "number", Nilable = false },
-				{ Name = "year", Type = "number", Nilable = false },
-				{ Name = "hour", Type = "number", Nilable = false },
-				{ Name = "minute", Type = "number", Nilable = false },
+				{ Name = "t", Type = "number", Nilable = false },
 			},
 		},
 		{
@@ -708,16 +753,14 @@ local LuaLibrary =
 
 			Arguments =
 			{
-				{ Name = "location", Type = "number", Nilable = true },
+				{ Name = "t", Type = "table", Nilable = false },
+				{ Name = "i", Type = "number", Nilable = true },
+				{ Name = "j", Type = "number", Nilable = true },
 			},
 
 			Returns =
 			{
-				{ Name = "player", Type = "bool", Nilable = false },
-				{ Name = "bank", Type = "bool", Nilable = false },
-				{ Name = "bags", Type = "bool", Nilable = false },
-				{ Name = "location or slot", Type = "number", Nilable = false },
-				{ Name = "bag", Type = "number", Nilable = false },
+				{ Name = "...", Type = "any", Nilable = false },
 			},
 		},
 		{
@@ -734,6 +777,60 @@ local LuaLibrary =
 			{
 				{ Name = "status", Type = "bool", Nilable = false },
 				{ Name = "...", Type = "list", Nilable = false },
+			},
+		},
+		{
+			Name = "assert",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "condition", Type = "any", Nilable = false },
+				{ Name = "message", Type = "string", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "value", Type = "any", Nilable = true },
+			},
+		},
+		{
+			Name = "mod",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "x", Type = "number", Nilable = false },
+				{ Name = "y", Type = "number", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "remainder", Type = "number", Nilable = false },
+			},
+		},
+		{
+			Name = "tremove",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "table", Type = "table", Nilable = false },
+				{ Name = "position", Type = "number", Nilable = false },
+			},
+		},
+		{
+			Name = "type",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "v", Type = "any", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "typeString", Type = "string", Nilable = false },
 			},
 		},
 	},

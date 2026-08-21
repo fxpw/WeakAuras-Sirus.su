@@ -1,4 +1,4 @@
-local Type, Version = "MultiLineEditBox", 34
+local Type, Version = "MultiLineEditBox", 35
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -286,6 +286,7 @@ local function Constructor()
 	label:SetHeight(10)
 
 	local button = CreateFrame("Button", ("%s%dButton"):format(Type, widgetNum), frame, "UIPanelButtonTemplate")
+	button:SetFrameLevel(frame:GetFrameLevel() + 1)
 	button:SetPoint("BOTTOMLEFT", 0, 4)
 	button:SetHeight(22)
 	button:SetWidth(label:GetStringWidth() + 24)
@@ -300,11 +301,13 @@ local function Constructor()
 	text:SetJustifyV("MIDDLE")
 
 	local scrollBG = CreateFrame("Frame", nil, frame)
+	scrollBG:SetFrameLevel(frame:GetFrameLevel() + 1)
 	scrollBG:SetBackdrop(backdrop)
 	scrollBG:SetBackdropColor(0, 0, 0)
 	scrollBG:SetBackdropBorderColor(0.4, 0.4, 0.4)
 
 	local scrollFrame = CreateFrame("ScrollFrame", ("%s%dScrollFrame"):format(Type, widgetNum), frame, "UIPanelScrollFrameTemplate")
+	scrollFrame:SetFrameLevel(frame:GetFrameLevel() + 1)
 
 	local scrollBar = _G[scrollFrame:GetName() .. "ScrollBar"]
 	scrollBar:ClearAllPoints()
@@ -321,11 +324,13 @@ local function Constructor()
 	scrollFrame:SetScript("OnLeave", OnLeave)
 	scrollFrame:SetScript("OnMouseUp", OnMouseUp)
 	scrollFrame:SetScript("OnReceiveDrag", OnReceiveDrag)
+	scrollFrame:EnableMouse(true)
 	scrollFrame:SetScript("OnSizeChanged", OnSizeChanged)
 	scrollFrame:HookScript("OnVerticalScroll", OnVerticalScroll)
 	scrollFrame:HookScript("OnScrollRangeChanged", OnScrollRangeChanged)
 
 	local editBox = CreateFrame("EditBox", ("%s%dEdit"):format(Type, widgetNum), scrollFrame)
+	editBox:SetFrameLevel(scrollFrame:GetFrameLevel() + 1)
 	editBox:SetAllPoints()
 	editBox:SetFontObject(ChatFontNormal)
 	editBox:SetMultiLine(true)

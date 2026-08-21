@@ -389,6 +389,7 @@ local Inventory =
 		{
 			Name = "UseInventoryItem",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

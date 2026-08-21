@@ -1,6 +1,8 @@
 local addonName, Private = ...
 
-SystemsAPIMixin = Private.CreateFromMixins(BaseAPIMixin);
+local BaseAPIMixin = Private.BaseAPIMixin;
+local SystemsAPIMixin = Private.CreateFromMixins(BaseAPIMixin);
+Private.SystemsAPIMixin = SystemsAPIMixin;
 
 function SystemsAPIMixin:GetType()
 	return "system";
@@ -67,6 +69,13 @@ function SystemsAPIMixin:GetDetailedOutputLines()
 		end
 	end
 
+	if self.CVars and #self.CVars > 0 then
+		table.insert(lines, APIDocumentation:GetIndentString() .. "CVars");
+		for i, cvarInfo in ipairs(self.CVars) do
+			table.insert(lines, APIDocumentation:GetIndentString(2) .. cvarInfo:GetSingleOutputLine());
+		end
+	end
+
 	return lines;
 end
 
@@ -93,11 +102,13 @@ function SystemsAPIMixin:FindAllAPIMatches(apiToSearchFor)
 		tables = {},
 		functions = {},
 		events = {},
+		cvars = {},
 	};
 
-	APIDocumentationMixin:AddAllMatches(self.Tables, matches.tables, apiToSearchFor);
-	APIDocumentationMixin:AddAllMatches(self.Functions, matches.functions, apiToSearchFor);
-	APIDocumentationMixin:AddAllMatches(self.Events, matches.events, apiToSearchFor);
+	Private.APIDocumentationMixin:AddAllMatches(self.Tables, matches.tables, apiToSearchFor);
+	Private.APIDocumentationMixin:AddAllMatches(self.Functions, matches.functions, apiToSearchFor);
+	Private.APIDocumentationMixin:AddAllMatches(self.Events, matches.events, apiToSearchFor);
+	Private.APIDocumentationMixin:AddAllMatches(self.CVars, matches.cvars, apiToSearchFor);
 
 	-- Only return something if we matched anything
 	for name, subTable in pairs(matches) do
@@ -122,11 +133,13 @@ function SystemsAPIMixin:ListAllAPI()
 		tables = {},
 		functions = {},
 		events = {},
+		cvars = {},
 	};
 
 	AddAll(self.Tables, allAPI.tables);
 	AddAll(self.Functions, allAPI.functions);
 	AddAll(self.Events, allAPI.events);
+	AddAll(self.CVars, allAPI.cvars);
 
 	return allAPI;
 end
@@ -141,4 +154,8 @@ end
 
 function SystemsAPIMixin:GetNumEvents()
 	return self.Events and #self.Events or 0;
+end
+
+function SystemsAPIMixin:GetNumCVars()
+	return self.CVars and #self.CVars or 0;
 end

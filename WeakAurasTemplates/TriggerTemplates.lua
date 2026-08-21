@@ -5,7 +5,7 @@ local AddonName, TemplatePrivate = ...
 local AceGUI = LibStub("AceGUI-3.0");
 local floor, ceil, tinsert = floor, ceil, tinsert;
 local CreateFrame, UnitClass, UnitRace = CreateFrame, UnitClass, UnitRace;
-
+---@class WeakAuras
 local WeakAuras = WeakAuras;
 local L = WeakAuras.L
 
@@ -465,6 +465,8 @@ end
 local function createThumbnail(parent)
   -- Preview frame
   local borderframe = CreateFrame("Frame", nil, parent);
+  borderframe:SetFrameLevel(parent:GetFrameLevel() + 1)
+  --- @cast borderframe table|Frame
   borderframe:SetWidth(32);
   borderframe:SetHeight(32);
 
@@ -476,6 +478,8 @@ local function createThumbnail(parent)
 
   -- Main region
   local region = CreateFrame("Frame", nil, borderframe);
+  region:SetFrameLevel(borderframe:GetFrameLevel() + 1)
+  --- @cast region table|Frame
   borderframe.region = region;
 
   -- Preview children
@@ -491,7 +495,7 @@ local function subTypesFor(item, regionType)
     target = function()
       local thumbnail = createThumbnail();
       local t1 = thumbnail:CreateTexture(nil, "ARTWORK");
-      t1:SetTexture([[Interface/Icons/INV_Misc_PocketWatch_01]]);
+      t1:SetTexture([[Interface/Icons/INV_Misc_PocketWatch_01]]); -- 134376
       t1:SetAllPoints(thumbnail);
 
       thumbnail.elapsed = 0;
@@ -512,7 +516,7 @@ local function subTypesFor(item, regionType)
     glow = function()
       local thumbnail = createThumbnail();
       local t1 = thumbnail:CreateTexture(nil, "ARTWORK");
-      t1:SetTexture([[Interface/Icons/INV_Misc_PocketWatch_01]]);
+      t1:SetTexture([[Interface/Icons/INV_Misc_PocketWatch_01]]); -- 134376
       t1:SetAllPoints(thumbnail);
       WeakAuras.ShowOverlayGlow(thumbnail); -- where to call HideOverlayGlow() ?
       return thumbnail;
@@ -520,7 +524,7 @@ local function subTypesFor(item, regionType)
     charges = function()
       local thumbnail = createThumbnail();
       local t1 = thumbnail:CreateTexture(nil, "ARTWORK");
-      t1:SetTexture([[Interface/Icons/INV_Misc_PocketWatch_01]]);
+      t1:SetTexture([[Interface/Icons/INV_Misc_PocketWatch_01]]); -- 134376
       t1:SetAllPoints(thumbnail);
       local t2 = thumbnail:CreateFontString(nil, "ARTWORK");
       t2:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE");
@@ -529,8 +533,8 @@ local function subTypesFor(item, regionType)
       t2:SetPoint("BOTTOMRIGHT", -2, 2);
       return thumbnail;
     end,
-    cd = [[Interface/Icons/INV_Misc_PocketWatch_02]],
-    cd2 = [[Interface/Icons/INV_Misc_PocketWatch_01]],
+    cd = [[Interface/Icons/INV_Misc_PocketWatch_02]], -- 134377
+    cd2 = [[Interface/Icons/INV_Misc_PocketWatch_01]], -- 134376
   };
   local data = {}
   local dataGlow = {}
@@ -1044,8 +1048,8 @@ local function subTypesFor(item, regionType)
       icon = icon.glow,
       title = L["Always Show"],
       description = L["Always show the aura, highlight it if debuffed."],
-      createTriggers = function(triggers, item)
-        createBuffTrigger(triggers, 1, item, "showAlways", false);
+      createTriggers = function(triggers, item, data)
+        createBuffTrigger(triggers, 1, item, "showAlways", false, data);
       end,
       createConditions = function(conditions, item, regionType)
         isBuffedGlowAuraAlways(conditions, 1, regionType);
@@ -1234,6 +1238,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
 
   local newView = AceGUI:Create("InlineGroup");
   newView.frame:SetParent(frame);
+  newView.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   newView.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 42);
   newView.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -50);
   newView.frame:Hide();
@@ -1241,6 +1246,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
 
   local newViewScroll = AceGUI:Create("ScrollFrame");
   newViewScroll:SetLayout("flow");
+  -- newViewScroll.frame:SetClipsChildren(true);
   newView:AddChild(newViewScroll);
 
   local function createConditionsFor(item, subType, regionType)
@@ -1748,9 +1754,10 @@ function WeakAuras.CreateTemplateView(Private, frame)
   end
 
   local batchModeLabel = CreateFrame("Frame", "batchModeLabel", newView.frame);
+  batchModeLabel:SetFrameLevel(newView.frame:GetFrameLevel() + 1)
   batchModeLabel:SetSize(300, 20);
   local batchModeLabelString = batchModeLabel:CreateFontString(nil, "ARTWORK");
-  batchModeLabelString:SetFont(STANDARD_TEXT_FONT, 10); -- "OUTLINE"
+  batchModeLabelString:SetFont(STANDARD_TEXT_FONT, 10, ""); -- "OUTLINE"
   batchModeLabelString:SetTextColor(1,1,1,1);
   batchModeLabelString:SetText(L["Hold CTRL to create multiple auras at once"]);
   batchModeLabelString:SetJustifyH("LEFT")
@@ -1759,6 +1766,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
   newView.batchModeLabel = batchModeLabel;
 
   local newViewMakeBatch = CreateFrame("Button", nil, newView.frame, "UIPanelButtonTemplate");
+  newViewMakeBatch:SetFrameLevel(newView.frame:GetFrameLevel() + 1)
   newViewMakeBatch:SetScript("OnClick", function()
     local saveData = CopyTable(newView.data);
     for item in pairs(newView.chosenItemBatch) do
@@ -1789,6 +1797,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
   newView.makeBatchButton:Hide();
 
   local newViewBatch = CreateFrame("Button", nil, newView.frame, "UIPanelButtonTemplate");
+  newViewBatch:SetFrameLevel(newView.frame:GetFrameLevel() + 1)
   newViewBatch:SetScript("OnClick", function()
     newView.batchStep = true;
     newView.batchButton:Hide();
@@ -1802,6 +1811,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
   newView.batchButton:Hide();
 
   local newViewBack = CreateFrame("Button", nil, newView.frame, "UIPanelButtonTemplate");
+  newViewBack:SetFrameLevel(newView.frame:GetFrameLevel() + 1)
   newViewBack:SetScript("OnClick", function()
     if (newView.existingAura) then
       if newView.chosenSubType then
@@ -1838,6 +1848,7 @@ function WeakAuras.CreateTemplateView(Private, frame)
   newView.backButton = newViewBack;
 
   local newViewCancel = CreateFrame("Button", nil, newView.frame, "UIPanelButtonTemplate");
+  newViewCancel:SetFrameLevel(newView.frame:GetFrameLevel() + 1)
   newViewCancel:SetScript("OnClick", function() newView:CancelClose() end);
   newViewCancel:SetPoint("BOTTOMRIGHT", -27, -23);
   newViewCancel:SetHeight(20);

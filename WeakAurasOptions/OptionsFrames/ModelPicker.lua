@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 -- Lua APIs
@@ -10,6 +12,7 @@ local CreateFrame = CreateFrame
 
 local AceGUI = LibStub("AceGUI-3.0")
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
@@ -52,14 +55,15 @@ local function ConstructModelPicker(frame)
 
   local group = AceGUI:Create("SimpleGroup");
   group.frame:SetParent(frame);
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 87);
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -63);
   group.frame:Hide();
   group:SetLayout("flow");
 
-  local filterInput = CreateFrame("EditBox", "WeakAurasFilterInput", nil)
+  local filterInput = CreateFrame("EditBox", "WeakAurasFilterInput", group.frame)
+  filterInput:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["SearchBoxTemplate"](filterInput)
-  filterInput:SetParent(group.frame)
   filterInput:SetScript("OnTextChanged", function(self)
     WA_SearchBoxTemplate_OnTextChanged(self)
     local filterText = filterInput:GetText()
@@ -70,13 +74,15 @@ local function ConstructModelPicker(frame)
   filterInput:SetHeight(15)
   filterInput:SetPoint("BOTTOMRIGHT", group.frame, "TOPRIGHT", -3, 5)
   filterInput:SetWidth(200)
-  filterInput:SetFont(STANDARD_TEXT_FONT, 10)
+  filterInput:SetFont(STANDARD_TEXT_FONT, 10, "")
   group.frame.filterInput = filterInput
 
+  -- Old X Y Z controls
   local modelPickerZ = AceGUI:Create("Slider");
   modelPickerZ:SetSliderValues(-20, 20, 0.05);
   modelPickerZ:SetLabel(L["Z Offset"]);
   modelPickerZ.frame:SetParent(group.frame);
+  modelPickerZ.frame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   modelPickerZ:SetCallback("OnValueChanged", function()
     group:Pick(nil, modelPickerZ:GetValue());
   end);
@@ -85,6 +91,7 @@ local function ConstructModelPicker(frame)
   modelPickerX:SetSliderValues(-20, 20, 0.05);
   modelPickerX:SetLabel(L["X Offset"]);
   modelPickerX.frame:SetParent(group.frame);
+  modelPickerX.frame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   modelPickerX:SetCallback("OnValueChanged", function()
     group:Pick(nil, nil, modelPickerX:GetValue());
   end);
@@ -93,6 +100,7 @@ local function ConstructModelPicker(frame)
   modelPickerY:SetSliderValues(-20, 20, 0.05);
   modelPickerY:SetLabel(L["Y Offset"]);
   modelPickerY.frame:SetParent(group.frame);
+  modelPickerY.frame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   modelPickerY:SetCallback("OnValueChanged", function()
     group:Pick(nil, nil, nil, modelPickerY:GetValue());
   end);
@@ -101,6 +109,7 @@ local function ConstructModelPicker(frame)
   modelPickerRotation:SetSliderValues(0, 360, 0.05);
   modelPickerRotation:SetLabel(L["Rotation"]);
   modelPickerRotation.frame:SetParent(group.frame);
+  modelPickerRotation.frame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   modelPickerRotation:SetCallback("OnValueChanged", function()
     group:Pick(nil, nil, nil, nil, modelPickerRotation:GetValue());
   end);
@@ -110,7 +119,6 @@ local function ConstructModelPicker(frame)
   group.frame:SetScript("OnSizeChanged", function()
     local frameWidth = frame:GetWidth();
     local sliderWidth = (frameWidth - 50) / 4;
-    local narrowSliderWidth = (frameWidth - 50) / 7;
 
     modelTree:SetTreeWidth(frameWidth - 370);
 
@@ -131,12 +139,14 @@ local function ConstructModelPicker(frame)
   modelTree:SetCallback("OnGroupSelected", function(self, event, value, fileId)
     local path = string.gsub(value, "\001", "/");
     if(string.lower(string.sub(path, -3, -1)) == ".m2") then
-      group:Pick(path, fileId);
+      group:Pick(fileId or path);
     end
   end);
   group:AddChild(modelTree);
 
   local model = CreateFrame("PlayerModel", nil, group.content);
+  model:SetFrameLevel(group.content:GetFrameLevel() + 1)
+  -- model.SetTransformFixed = OptionsPrivate.Private.ModelSetTransformFixed
   model:SetAllPoints(modelTree.content);
   model:SetFrameStrata("FULLSCREEN");
   group.model = model;
@@ -149,7 +159,7 @@ local function ConstructModelPicker(frame)
     rotation = (rotation + 180 / screenW * diffX) % 360
     model:SetFacing(rad(rotation))
   end
-  model:EnableMouse()
+  model:EnableMouse(false)
   model:SetScript("OnMouseDown", function(self)
     startX = GetCursorPosition()
     rotation = group.selectedValues.rotation or 0
@@ -159,10 +169,11 @@ local function ConstructModelPicker(frame)
     self:SetScript("OnUpdate", nil)
     group:Pick(nil, nil, nil, nil, rotation)
   end)
+  model:EnableMouse(true)
 
-  local function SetOnObject(object, model_path, model_z, model_x, model_y, rotation)
-    if model_path then
-      object.model_path = model_path
+  local function SetOnObject(object, model_fileId, model_z, model_x, model_y, rotation)
+    if model_fileId then
+      object.model_fileId = model_fileId
     end
     if model_z then
       object.model_z = model_z
@@ -178,24 +189,25 @@ local function ConstructModelPicker(frame)
     end
   end
 
-  function group.Pick(self, model_path, model_z, model_x, model_y, rotation)
+  function group.Pick(self, model_fileId, model_z, model_x, model_y, rotation)
     local valueFromPath = OptionsPrivate.Private.ValueFromPath
 
-    self.selectedValues.model_path = model_path or self.selectedValues.model_path
+    self.selectedValues.model_fileId = model_fileId or self.selectedValues.model_fileId
     self.selectedValues.model_x = model_x or self.selectedValues.model_x
     self.selectedValues.model_y = model_y or self.selectedValues.model_y
     self.selectedValues.model_z = model_z or self.selectedValues.model_z
     self.selectedValues.rotation = rotation or self.selectedValues.rotation
 
-    WeakAuras.SetModel(self.model, self.selectedValues.model_path)
+    WeakAuras.SetModel(self.model, nil, self.selectedValues.model_fileId)
 
+    -- self.model:ClearTransform();
     self.model:SetPosition(self.selectedValues.model_z, self.selectedValues.model_x, self.selectedValues.model_y);
     self.model:SetFacing(rad(self.selectedValues.rotation));
 
     for child in OptionsPrivate.Private.TraverseLeafsOrAura(self.baseObject) do
       local object = valueFromPath(child, self.path)
       if(object) then
-        SetOnObject(object, model_path, model_z, model_x, model_y, rotation)
+        SetOnObject(object, model_fileId, model_z, model_x, model_y, rotation)
         WeakAuras.Add(child)
         WeakAuras.UpdateThumbnail(child)
       end
@@ -209,15 +221,16 @@ local function ConstructModelPicker(frame)
     self.path = path
     self.selectedValues = {}
 
-    self.selectedValues.model_path = GetAll(baseObject, path, "model_path", "spells/arcanepower_state_chest.m2")
+    self.selectedValues.model_fileId = GetAll(baseObject, path, "model_fileId", "Creature/Arthaslichking/arthaslichking.m2")
 
-    WeakAuras.SetModel(self.model, self.selectedValues.model_path)
+    WeakAuras.SetModel(self.model, nil, self.selectedValues.model_fileId)
 
     self.selectedValues.model_x = GetAll(baseObject, path, "model_x", 0)
     self.selectedValues.model_y = GetAll(baseObject, path, "model_y", 0)
     self.selectedValues.model_z = GetAll(baseObject, path, "model_z", 0)
     self.selectedValues.rotation = GetAll(baseObject, path, "rotation", 0)
 
+    -- self.model:ClearTransform();
     self.model:SetPosition(self.selectedValues.model_z, self.selectedValues.model_x, self.selectedValues.model_y);
     self.model:SetFacing(rad(self.selectedValues.rotation));
     modelPickerZ:SetValue(self.selectedValues.model_z);
@@ -229,8 +242,13 @@ local function ConstructModelPicker(frame)
     modelPickerRotation:SetValue(self.selectedValues.rotation);
     modelPickerRotation.editbox:SetText(("%.2f"):format(self.selectedValues.rotation));
 
+    modelPickerZ.frame:Show();
+    modelPickerY.frame:Show();
+    modelPickerX.frame:Show();
+    modelPickerRotation.frame:Show();
+
     if(baseObject.controlledChildren) then
-      self.givenModel = {};
+      self.givenModelId = {};
       self.givenZ = {};
       self.givenX = {};
       self.givenY = {};
@@ -239,7 +257,7 @@ local function ConstructModelPicker(frame)
         local childId = child.id
         local object = valueFromPath(child, path)
         if(object) then
-          self.givenModel[childId] = object.model_path;
+          self.givenModelId[childId] = object.model_fileId;
           self.givenZ[childId] = object.model_z;
           self.givenX[childId] = object.model_x;
           self.givenY[childId] = object.model_y;
@@ -249,7 +267,7 @@ local function ConstructModelPicker(frame)
     else
       local object = valueFromPath(baseObject, path)
 
-      self.givenModel = object.model_path;
+      self.givenModelId = object.model_fileId;
       self.givenZ = object.model_z;
       self.givenX = object.model_x;
       self.givenY = object.model_y;
@@ -272,7 +290,7 @@ local function ConstructModelPicker(frame)
         local childId = child.id
         local object = valueFromPath(child, group.path)
         if(object) then
-          object.model_path = group.givenModel[childId];
+          object.model_fileId = group.givenModelId[childId];
           object.model_z = group.givenZ[childId];
           object.model_x = group.givenX[childId];
           object.model_y = group.givenY[childId];
@@ -285,7 +303,7 @@ local function ConstructModelPicker(frame)
       local object = valueFromPath(group.baseObject, group.path)
 
       if(object) then
-        object.model_path = group.givenModel
+        object.model_fileId = group.givenModelId
         object.model_z = group.givenZ
         object.model_x = group.givenX
         object.model_y = group.givenY
@@ -298,6 +316,7 @@ local function ConstructModelPicker(frame)
   end
 
   local cancel = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
+  cancel:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   cancel:SetScript("OnClick", group.CancelClose);
   cancel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -27, 20);
   cancel:SetHeight(20);
@@ -305,6 +324,7 @@ local function ConstructModelPicker(frame)
   cancel:SetText(L["Cancel"]);
 
   local close = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
+  close:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   close:SetScript("OnClick", group.Close);
   close:SetPoint("RIGHT", cancel, "LEFT", -10, 0);
   close:SetHeight(20);

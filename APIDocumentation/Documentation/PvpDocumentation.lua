@@ -179,11 +179,6 @@ local Pvp =
 		{
 			Name = "HearthAndResurrectFromArea",
 			Type = "Function",
-
-			Returns =
-			{
-				{ Name = "status", Type = "bool", Nilable = false },
-			},
 		},
 		{
 			Name = "IsPVPTimerRunning",
@@ -282,6 +277,10 @@ local Pvp =
 			{
 				{ Name = "rank", Type = "number", Nilable = false },
 			},
+		},
+		{
+			Name = "GetWintergraspWaitTime",
+			Type = "Function",
 		},
 	},
 

@@ -1,8 +1,12 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L;
+
+local compatibilityNote = L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."]
 
 local function createOptions(parentData, data, index, subIndex)
   local options = {
@@ -14,11 +18,11 @@ local function createOptions(parentData, data, index, subIndex)
       name = L["Show Model"],
       order = 9,
     },
-    model_path = {
+    model_fileId = {
       type = "input",
       width = WeakAuras.doubleWidth - 0.15,
       name = L["Model"],
-      order =  10.5
+      order =  10.5,
     },
     chooseModel = {
       type = "execute",
@@ -33,34 +37,52 @@ local function createOptions(parentData, data, index, subIndex)
       control = "WeakAurasIcon",
       image = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\browse",
     },
-    bar_model_clip = {
+    bar_model_attach = {
       type = "toggle",
-      width = WeakAuras.doubleWidth,
-      name = L["Clipped by Progress"],
+      width = WeakAuras.normalWidth,
+      name = L["Attach to Foreground"],
       order = 12,
       hidden = function() return parentData.regionType ~= "aurabar" end
+    },
+    bar_model_stretch = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = L["Stretched by Foreground"],
+      order = 12.1,
+      hidden = function()
+        return parentData.regionType ~= "aurabar" or not data.bar_model_attach
+      end
+    },
+    bar_model_spacer = {
+      type = "description",
+      width = WeakAuras.normalWidth,
+      name = "",
+      order = 12.15,
+      hidden = function()
+        return parentData.regionType ~= "aurabar" or data.bar_model_attach
+      end
     },
     extra_width = {
       type = "range",
       control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Extra Width"],
-      order = 12.1,
+      order = 12.2,
       softMin = -100,
       softMax = 500,
       step = 1,
-      hidden = function() return data.bar_model_clip and parentData.regionType == "aurabar" end
+      hidden = function() return data.bar_model_attach and parentData.regionType == "aurabar" end
     },
     extra_height = {
       type = "range",
       control = "WeakAurasSpinBox",
       width = WeakAuras.normalWidth,
       name = L["Extra Height"],
-      order = 12.2,
+      order = 12.3,
       softMin = -100,
       softMax = 500,
       step = 1,
-      hidden = function() return data.bar_model_clip and parentData.regionType == "aurabar" end
+      hidden = function() return data.bar_model_attach and parentData.regionType == "aurabar" end
     },
     model_alpha = {
       type = "range",
@@ -72,6 +94,13 @@ local function createOptions(parentData, data, index, subIndex)
       max = 1,
       bigStep = 0.1
     },
+    api = {
+      type = "toggle",
+      name = OptionsPrivate.SetOptionTextDisabled(L["Use SetTransform"]),
+      desc = compatibilityNote,
+      order = 14,
+      width = WeakAuras.normalWidth,
+    },
     model_z = {
       type = "range",
       control = "WeakAurasSpinBox",
@@ -82,6 +111,7 @@ local function createOptions(parentData, data, index, subIndex)
       step = .001,
       bigStep = 0.05,
       order = 20,
+      hidden = function() return data.api end
     },
     model_x = {
       type = "range",
@@ -93,6 +123,7 @@ local function createOptions(parentData, data, index, subIndex)
       step = .001,
       bigStep = 0.05,
       order = 30,
+      hidden = function() return data.api end
     },
     model_y = {
       type = "range",
@@ -104,6 +135,7 @@ local function createOptions(parentData, data, index, subIndex)
       step = .001,
       bigStep = 0.05,
       order = 40,
+      hidden = function() return data.api end
     },
     rotation = {
       type = "range",
@@ -115,6 +147,99 @@ local function createOptions(parentData, data, index, subIndex)
       step = 1,
       bigStep = 3,
       order = 45,
+      hidden = function() return data.api end
+    },
+    -- New Settings
+    model_st_tx = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = OptionsPrivate.SetOptionTextDisabled(L["X Offset"]),
+      desc = compatibilityNote,
+      softMin = -1000,
+      softMax = 1000,
+      step = 1,
+      bigStep = 5,
+      order = 20,
+      hidden = function() return not data.api end
+    },
+    model_st_ty = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = OptionsPrivate.SetOptionTextDisabled(L["Y Offset"]),
+      desc = compatibilityNote,
+      softMin = -1000,
+      softMax = 1000,
+      step = 1,
+      bigStep = 5,
+      order = 21,
+      hidden = function() return not data.api end
+    },
+    model_st_tz = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = OptionsPrivate.SetOptionTextDisabled(L["Z Offset"]),
+      desc = compatibilityNote,
+      softMin = -1000,
+      softMax = 1000,
+      step = 1,
+      bigStep = 5,
+      order = 22,
+      hidden = function() return not data.api end
+    },
+    model_st_rx = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = OptionsPrivate.SetOptionTextDisabled(L["X Rotation"]),
+      desc = compatibilityNote,
+      min = 0,
+      max = 360,
+      step = 1,
+      bigStep = 3,
+      order = 23,
+      hidden = function() return not data.api end
+    },
+    model_st_ry = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = OptionsPrivate.SetOptionTextDisabled(L["Y Rotation"]),
+      desc = compatibilityNote,
+      min = 0,
+      max = 360,
+      step = 1,
+      bigStep = 3,
+      order = 24,
+      hidden = function() return not data.api end
+    },
+    model_st_rz = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = OptionsPrivate.SetOptionTextDisabled(L["Z Rotation"]),
+      desc = compatibilityNote,
+      min = 0,
+      max = 360,
+      step = 1,
+      bigStep = 3,
+      order = 25,
+      hidden = function() return not data.api end
+    },
+    model_st_us = {
+      type = "range",
+      control = "WeakAurasSpinBox",
+      width = WeakAuras.normalWidth,
+      name = OptionsPrivate.SetOptionTextDisabled(L["Scale"]),
+      desc = compatibilityNote,
+      min = 5,
+      max = 1000,
+      step = 0.1,
+      bigStep = 5,
+      order = 26,
+      hidden = function() return not data.api end
     },
   }
 

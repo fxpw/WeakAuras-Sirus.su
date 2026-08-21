@@ -43,6 +43,7 @@ local GmTicket =
 		{
 			Name = "NewGMTicket",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -54,11 +55,13 @@ local GmTicket =
 		{
 			Name = "Stuck",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "UpdateGMTicket",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

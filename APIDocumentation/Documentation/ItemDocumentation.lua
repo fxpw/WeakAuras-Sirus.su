@@ -481,6 +481,7 @@ local Item =
 		{
 			Name = "SpellTargetItem",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -493,6 +494,7 @@ local Item =
 		{
 			Name = "UseItemByName",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

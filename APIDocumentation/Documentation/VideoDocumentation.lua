@@ -205,6 +205,34 @@ local Video =
 			},
 
 		},
+		{
+			Name = "GetBaseMip",
+			Type = "Function",
+		},
+		{
+			Name = "GetWaterDetail",
+			Type = "Function",
+		},
+		{
+			Name = "RestoreVideoEffectsDefaults",
+			Type = "Function",
+		},
+		{
+			Name = "RestoreVideoResolutionDefaults",
+			Type = "Function",
+		},
+		{
+			Name = "SetBaseMip",
+			Type = "Function",
+		},
+		{
+			Name = "SetFarclip",
+			Type = "Function",
+		},
+		{
+			Name = "SetTerrainMip",
+			Type = "Function",
+		},
 	},
 
 	Events =
