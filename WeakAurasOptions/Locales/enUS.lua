@@ -86,15 +86,14 @@ local L = WeakAuras.L
 	L["|cFFFF0000default|r texture"] = "|cFFFF0000default|r texture"
 	L["|cFFFF0000desaturated|r "] = "|cFFFF0000desaturated|r "
 	L["|cFFFF0000Note:|r The unit '%s' is not a trackable unit."] = "|cFFFF0000Note:|r The unit '%s' is not a trackable unit."
-	L["|cFFFF0000Note:|r The unit '%s' requires soft target cvars to be enabled."] = "|cFFFF0000Note:|r The unit '%s' requires soft target cvars to be enabled."
 	L["|cFFffcc00Anchors:|r Anchored |cFFFF0000%s|r to frame's |cFFFF0000%s|r"] = "|cFFffcc00Anchors:|r Anchored |cFFFF0000%s|r to frame's |cFFFF0000%s|r"
 	L["|cFFffcc00Anchors:|r Anchored |cFFFF0000%s|r to frame's |cFFFF0000%s|r with offset |cFFFF0000%s/%s|r"] = "|cFFffcc00Anchors:|r Anchored |cFFFF0000%s|r to frame's |cFFFF0000%s|r with offset |cFFFF0000%s/%s|r"
 	L["|cFFffcc00Anchors:|r Anchored to frame's |cFFFF0000%s|r"] = "|cFFffcc00Anchors:|r Anchored to frame's |cFFFF0000%s|r"
 	L["|cFFffcc00Anchors:|r Anchored to frame's |cFFFF0000%s|r with offset |cFFFF0000%s/%s|r"] = "|cFFffcc00Anchors:|r Anchored to frame's |cFFFF0000%s|r with offset |cFFFF0000%s/%s|r"
 	L["|cFFffcc00Extra Options:|r"] = "|cFFffcc00Extra Options:|r"
 	L["|cFFffcc00Extra:|r %s and %s %s"] = "|cFFffcc00Extra:|r %s and %s %s"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"] = "|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s"
-	L["|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s%s"] = "|cFFffcc00Font Flags:|r |cFFFF0000%s|r and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r%s%s%s"
+	L["|cFFffcc00Font Flags:|r"] = "|cFFffcc00Font Flags:|r"
+	L["|cFFffcc00Font Flags:|r none"] = "|cFFffcc00Font Flags:|r none"
 	L["|cffffcc00Format Options|r"] = "|cffffcc00Format Options|r"
 	L[ [=[• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.
 • |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.
@@ -144,6 +143,8 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["Advanced"] = "Advanced"
 	L["Affected Unit Filters and Info"] = "Affected Unit Filters and Info"
 	L["Align"] = "Align"
+	L["Aligned left"] = "Aligned left"
+	L["Aligned right"] = "Aligned right"
 	L["Alignment"] = "Alignment"
 	L["All maintainers of the libraries we use, especially:"] = "All maintainers of the libraries we use, especially:"
 	L["All of"] = "All of"
@@ -155,11 +156,11 @@ Enable this setting if you want this timer to be hidden, or when using a WeakAur
 	L["And "] = "And "
 	L["and"] = "and"
 	L["and %s"] = "and %s"
-	L["and aligned left"] = "and aligned left"
-	L["and aligned right"] = "and aligned right"
 	L["And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"] = "And our Patreons, Discord Regulars and Subscribers, and Friends of the Addon:"
 	L["and rotated left"] = "and rotated left"
 	L["and rotated right"] = "and rotated right"
+	L["and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "and shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
+	L["and smooth scaling"] = "and smooth scaling"
 	L["and with width |cFFFF0000%s|r and %s"] = "and with width |cFFFF0000%s|r and %s"
 	L["Angle"] = "Angle"
 	L["Angle Between Auras"] = "Angle Between Auras"
@@ -392,7 +393,6 @@ UNIT_POWER_UPDATE:player, UNIT_AURA:nameplate:group PLAYER_TARGET_CHANGED CLEU:S
 	L["File Height"] = "File Height"
 	L["File Width"] = "File Width"
 	L["Filter based on the spell Name string."] = "Filter based on the spell Name string."
-	L["Filter by Arena Spec"] = "Filter by Arena Spec"
 	L["Filter by Class"] = "Filter by Class"
 	L["Filter by Group Role"] = "Filter by Group Role"
 	L["Filter by Hostility"] = "Filter by Hostility"
@@ -546,7 +546,6 @@ If the entered number is a decimal (e.g. 0.5), fraction (e.g. 1/2), or percentag
 	L["LibDeflate: Yoursafety"] = "LibDeflate: Yoursafety"
 	L["LibDispel: Simpy"] = "LibDispel: Simpy"
 	L["LibSerialize: Sanjo"] = "LibSerialize: Sanjo"
-	L["LibSpecialization: Funkeh"] = "LibSpecialization: Funkeh"
 	L["Limit"] = "Limit"
 	L["Line"] = "Line"
 	L["Linear Texture %s"] = "Linear Texture %s"
@@ -702,7 +701,6 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Report bugs on our issue tracker."] = "Report bugs on our issue tracker."
 	L["Require unit from trigger"] = "Require unit from trigger"
 	L["Required for Activation"] = "Required for Activation"
-	L["Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"] = "Requires LibSpecialization, that is e.g. a up-to date WeakAuras version"
 	L["Reset all options to their default values."] = "Reset all options to their default values."
 	L["Reset Entry"] = "Reset Entry"
 	L["Reset to Defaults"] = "Reset to Defaults"
@@ -713,6 +711,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Rotate In"] = "Rotate In"
 	L["Rotate Out"] = "Rotate Out"
 	L["Rotate Text"] = "Rotate Text"
+	L["Rotated left"] = "Rotated left"
+	L["Rotated right"] = "Rotated right"
 	L["Rotation Mode"] = "Rotation Mode"
 	L["Row Space"] = "Row Space"
 	L["Row Width"] = "Row Width"
@@ -735,6 +735,7 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Set Thumbnail Icon"] = "Set Thumbnail Icon"
 	L["Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."] = "Sets the anchored frame as the aura's parent, causing the aura to inherit attributes such as visibility and scale."
 	L["Settings"] = "Settings"
+	L["Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"] = "Shadow |c%sColor|r with offset |cFFFF0000%s/%s|r"
 	L["Shadow Color"] = "Shadow Color"
 	L["Shadow X Offset"] = "Shadow X Offset"
 	L["Shadow Y Offset"] = "Shadow Y Offset"
@@ -785,7 +786,10 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Slide Out"] = "Slide Out"
 	L["Slider Step Size"] = "Slider Step Size"
 	L["Small Icon"] = "Small Icon"
+	L["Smooth Font"] = "Smooth Font"
 	L["Smooth Progress"] = "Smooth Progress"
+	L["Smooth scaling"] = "Smooth scaling"
+	L["Smooths text height, preventing it from snapping to the nearest whole number when scaled."] = "Smooths text height, preventing it from snapping to the nearest whole number when scaled."
 	L["Snippets"] = "Snippets"
 	L["Soft Max"] = "Soft Max"
 	L["Soft Min"] = "Soft Min"
@@ -800,6 +804,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Specific Currency ID"] = "Specific Currency ID"
 	L["Spell Selection Filters"] = "Spell Selection Filters"
 	L["Spells found:"] = "Spells found:"
+	L["Squelch Sounds/Actions on Load"] = "Squelch Sounds/Actions on Load"
+	L["Squelched"] = "Squelched"
 	L["Stack Info"] = "Stack Info"
 	L["Stacks - The number of stacks of an aura (usually)"] = "Stacks - The number of stacks of an aura (usually)"
 	L["Standby"] = "Standby"
@@ -831,8 +837,8 @@ every 3 events starting from 2nd and ending at 11th: 2-11/3]=]
 	L["Texture X Offset"] = "Texture X Offset"
 	L["Texture Y Offset"] = "Texture Y Offset"
 	L["Thanks"] = "Thanks"
-	L["The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings"] = "The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings"
-	L["The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings"] = "The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings"
+	L["The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings."] = "The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings."
+	L["The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings."] = "The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings."
 	L["The duration of the animation in seconds."] = "The duration of the animation in seconds."
 	L["The duration of the animation in seconds. The finish animation does not start playing until after the display would normally be hidden."] = "The duration of the animation in seconds. The finish animation does not start playing until after the display would normally be hidden."
 	L["The group and all direct children will share the same base frame level."] = "The group and all direct children will share the same base frame level."
@@ -900,7 +906,6 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["Unit %s is not a valid unit for RegisterUnitEvent"] = "Unit %s is not a valid unit for RegisterUnitEvent"
 	L["Unit Count"] = "Unit Count"
 	L["Unknown"] = "Unknown"
-	L["Unknown Encounter's Spell Id"] = "Unknown Encounter's Spell Id"
 	L["Unknown property '%s' found in '%s'"] = "Unknown property '%s' found in '%s'"
 	L["Unknown Spell"] = "Unknown Spell"
 	L["Unlike the start or finish animations, the main animation will loop over and over until the display is hidden."] = "Unlike the start or finish animations, the main animation will loop over and over until the display is hidden."
@@ -931,11 +936,9 @@ Upgrade your version of WeakAuras or wait for next release before installing thi
 	L["We thank"] = "We thank"
 	L["WeakAuras %s on WoW %s"] = "WeakAuras %s on WoW %s"
 	L["WeakAuras recommends using spell ids instead of names. Spell ids are automatically localized."] = "WeakAuras recommends using spell ids instead of names. Spell ids are automatically localized."
-	L[ [=[WeakAuras will not support Midnight. On release of the prepatch, WeakAuras will be disabled.
-Read more on our Patreon page https://patreon.com/WeakAuras]=] ] = [=[WeakAuras will not support Midnight. On release of the prepatch, WeakAuras will be disabled.
-Read more on our Patreon page https://patreon.com/WeakAuras]=]
 	L["What do you want to do?"] = "What do you want to do?"
 	L["Whole Area"] = "Whole Area"
+	L["Width |cFFFF0000%s|r and %s"] = "Width |cFFFF0000%s|r and %s"
 	L["wrapping"] = "wrapping"
 	L["X Offset"] = "X Offset"
 	L["X Rotation"] = "X Rotation"
@@ -949,15 +952,6 @@ Read more on our Patreon page https://patreon.com/WeakAuras]=]
 	L["You already have this group/aura. Importing will create a duplicate."] = "You already have this group/aura. Importing will create a duplicate."
 	L["You are about to delete %d aura(s). |cFFFF0000This cannot be undone!|r Would you like to continue?"] = "You are about to delete %d aura(s). |cFFFF0000This cannot be undone!|r Would you like to continue?"
 	L["You are about to delete a trigger. |cFFFF0000This cannot be undone!|r Would you like to continue?"] = "You are about to delete a trigger. |cFFFF0000This cannot be undone!|r Would you like to continue?"
-	L[ [=[You are about to Import an Aura with custom Lua code on a Hardcore server.
-
-|cFFFF0000There is a risk the custom code could be used to kill your hardcore character!|r
-
-Would you like to continue?]=] ] = [=[You are about to Import an Aura with custom Lua code on a Hardcore server.
-
-|cFFFF0000There is a risk the custom code could be used to kill your hardcore character!|r
-
-Would you like to continue?]=]
 	L[ [=[You can add a comma-separated list of state values here that (when changed) WeakAuras should also run the Anchor Code on.
 
 WeakAuras will always run custom anchor code if you include 'changed' in this list, or when a region is added, removed, or re-ordered.]=] ] = [=[You can add a comma-separated list of state values here that (when changed) WeakAuras should also run the Anchor Code on.

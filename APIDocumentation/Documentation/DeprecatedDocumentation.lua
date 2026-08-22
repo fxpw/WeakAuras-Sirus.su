@@ -31,6 +31,22 @@ local Deprecated =
 			Type = "Function",
 
 		},
+		{
+			Name = "BuySkillTier",
+			Type = "Function",
+		},
+		{
+			Name = "CancelSkillUps",
+			Type = "Function",
+		},
+		{
+			Name = "GetAdjustedSkillPoints",
+			Type = "Function",
+		},
+		{
+			Name = "RemoveSkillUp",
+			Type = "Function",
+		},
 	},
 
 	Events =

@@ -1,6 +1,8 @@
 local addonName, Private = ...
 
-TablesAPIMixin = Private.CreateFromMixins(BaseAPIMixin);
+local BaseAPIMixin = Private.BaseAPIMixin;
+local TablesAPIMixin = Private.CreateFromMixins(BaseAPIMixin);
+Private.TablesAPIMixin = TablesAPIMixin;
 
 function TablesAPIMixin:GetParentName()
 	if self.System then

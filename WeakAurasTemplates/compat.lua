@@ -45,6 +45,7 @@ function AsyncCallbackSystemMixin:Init(apiType)
 	self:RegisterEvent(self.api.event);
 end
 local CANCELED_SENTINEL = -1;
+local CallErrorHandler = _G.CallErrorHandler or geterrorhandler();
 function AsyncCallbackSystemMixin:AddCallback(id, callbackFunction)
 	local callbacks = self:GetOrCreateCallbacks(id);
 	table.insert(callbacks, callbackFunction);

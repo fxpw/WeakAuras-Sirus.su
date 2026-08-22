@@ -1,17 +1,17 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local AceGUI = LibStub("AceGUI-3.0")
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
 -- Lua APIs
 local ipairs_reverse = OptionsPrivate.ipairs_reverse
-
--- WoW APIs
-local tIndexOf = OptionsPrivate.tIndexOf
 
 -- Scam Check
 local function notEmptyString(str)
@@ -375,6 +375,7 @@ local function BuildUidMap(data, children, type)
         uidMap.map[data.uid].anchorFrameFrame = idToUid[target]
       end
     end
+
   end
 
   local function handleSortHybridTable(data)
@@ -814,7 +815,7 @@ local function BuildUidMap(data, children, type)
       local parent = self.map[uid].parent
       if parent then
         local parentChildren = self:GetChildren(parent)
-        local index = tIndexOf(parentChildren, uid)
+        local index = OptionsPrivate.tIndexOf(parentChildren, uid)
 
         if otherList.before then
           for _, otherUid in ipairs(otherList.before) do
@@ -1398,7 +1399,6 @@ local methods = {
     self:ReleaseChildren()
     self:AddBasicInformationWidgets(data, sender)
 
-    --[[ Let people install auras that are newer than their version of WeakAuras, even tho it is bad
     do
       local highestVersion = data.internalVersion or 0
       if children then
@@ -1422,7 +1422,6 @@ local methods = {
         self.importButton:Show()
       end
     end
-    ]]
 
     local matchInfoResult = AceGUI:Create("Label")
     matchInfoResult:SetFontObject(GameFontHighlight)
@@ -1563,24 +1562,6 @@ local methods = {
       linkedAurasText:SetColor(1, 0, 0)
       self:AddChild(linkedAurasText)
     end
-
-    -- Let people install auras that are newer than their version of WeakAuras, even tho it is bad
-    local highestVersion = data.internalVersion or 0
-    if children then
-      for _, child in ipairs(children) do
-        highestVersion = max(highestVersion, child.internalVersion or 0)
-      end
-    end
-
-    if (highestVersion > WeakAuras.InternalVersion()) then
-      local highestVersionWarning = AceGUI:Create("Label")
-      highestVersionWarning:SetFontObject(GameFontHighlight)
-      highestVersionWarning:SetFullWidth(true)
-      highestVersionWarning:SetText(L["This aura was created with a newer version of WeakAuras.\nIt might not work correctly with your version!"])
-      highestVersionWarning:SetColor(1, 0, 0)
-      self:AddChild(highestVersionWarning)
-    end
-
 
     local currentBuild = floor(WeakAuras.BuildInfo / 10000)
     local importBuild = data.tocversion and floor(data.tocversion / 10000)
@@ -2256,6 +2237,7 @@ local function ConstructUpdateFrame(frame)
   ---@class GroupUpdateFrame: AceGUIFrame
   local group = AceGUI:Create("ScrollFrame");
   group.frame:SetParent(frame);
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -63);
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -16, 46);
   group.frame:Hide();
@@ -2267,7 +2249,7 @@ local function ConstructUpdateFrame(frame)
   local viewCodeButton = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
   viewCodeButton:SetScript("OnClick", function() OptionsPrivate.OpenCodeReview(group.scamCheckResult) end);
   viewCodeButton:SetPoint("BOTTOMLEFT", 20, -24);
-  viewCodeButton:SetFrameLevel(viewCodeButton:GetFrameLevel() + 1)
+  viewCodeButton:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   viewCodeButton:SetHeight(20);
   viewCodeButton:SetWidth(160);
   viewCodeButton:SetText(L["View custom code"])
@@ -2275,7 +2257,7 @@ local function ConstructUpdateFrame(frame)
   local importButton = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
   importButton:SetScript("OnClick", function() group:Import() end);
   importButton:SetPoint("BOTTOMRIGHT", -190, -24);
-  importButton:SetFrameLevel(importButton:GetFrameLevel() + 1)
+  importButton:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   importButton:SetHeight(20);
   importButton:SetWidth(160);
   importButton:SetText(L["Import"])
@@ -2283,7 +2265,7 @@ local function ConstructUpdateFrame(frame)
   local closeButton = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
   closeButton:SetScript("OnClick", function() group:Close(false) end);
   closeButton:SetPoint("BOTTOMRIGHT", -20, -24);
-  closeButton:SetFrameLevel(closeButton:GetFrameLevel() + 1)
+  closeButton:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   closeButton:SetHeight(20);
   closeButton:SetWidth(160);
   closeButton:SetText(L["Close"])

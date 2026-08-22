@@ -1,7 +1,10 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
@@ -35,8 +38,8 @@ end
 
 -- Function to assist iterating group members whether in a party or raid.
 local WA_IterateGroupMembers = function(reversed, forceParty)
-  local unit = (not forceParty and IsInRaid()) and 'raid' or 'party'
-  local numGroupMembers = unit == 'party' and GetNumSubgroupMembers() or GetNumGroupMembers()
+  local unit = (not forceParty and Private.IsInRaid()) and 'raid' or 'party'
+  local numGroupMembers = unit == 'party' and Private.GetNumSubgroupMembers() or Private.GetNumGroupMembers()
   local i = reversed and numGroupMembers or (unit == 'party' and 0 or 1)
   return function()
     local ret
@@ -142,11 +145,15 @@ WeakAuras.HideOverlayGlow = LCG.ButtonGlow_Stop
 
 local LGF = LibStub("LibGetFrame-1.0")
 WeakAuras.GetUnitFrame = LGF.GetUnitFrame
-WeakAuras.GetNamePlateForUnit = function(unit)
-  if Private.multiUnitUnits.nameplate[unit] then
-    return LGF.GetUnitNameplate(unit)
+WeakAuras.GetUnitNameplate = function(unit, ...)
+  if WeakAuras.IsAwesomeEnabled() and Private.multiUnitUnits.nameplate[unit] then
+    return LGF.GetUnitNameplate(unit) or Private.GetUnitNameplate(unit, ...)
+  else
+    return Private.GetUnitNameplate(unit, ...)
   end
 end
+-- ! deprecated
+WeakAuras.GetNamePlateForUnit = WeakAuras.GetUnitNameplate
 
 local blockedFunctions = {
   -- Lua functions that may allow breaking out of the environment
@@ -184,6 +191,10 @@ local blockedFunctions = {
   CastSpellByName = true,
   CastSpell = true,
   CastSpellByID = true,
+  -- GetButtonMetatable = true,
+  -- GetEditBoxMetatable = true,
+  -- GetFontStringMetatable = true,
+  -- GetFrameMetatable = true,
 }
 
 local blockedTables = {
@@ -225,8 +236,25 @@ end
 
 local current_uid = nil
 local current_aura_env = nil
--- Stack of of aura environments/uids, allows use of recursive aura activations through calls to WeakAuras.ScanEvents().
+-- Stacks of aura environments/uids, allow use of recursive aura activations through calls to WeakAuras.ScanEvents().
 local aura_env_stack = {}
+local aura_uid_stack = {}
+
+local function PushAuraEnvironment()
+  local index = #aura_env_stack + 1
+  aura_env_stack[index] = current_aura_env
+  aura_uid_stack[index] = current_uid
+end
+
+local function PopAuraEnvironment()
+  local index = #aura_env_stack
+  if index > 0 then
+    aura_env_stack[index] = nil
+    aura_uid_stack[index] = nil
+  end
+  current_aura_env = aura_env_stack[index - 1]
+  current_uid = aura_uid_stack[index - 1]
+end
 
 
 local function UpdateSavedDataWarning(uid, size)
@@ -304,13 +332,7 @@ function Private.ActivateAuraEnvironment(id, cloneId, state, states, onlyConfig)
   local data = id and WeakAuras.GetData(id)
   if not data then
     -- Pop the last aura_env from the stack, and update current_aura_env appropriately.
-    tremove(aura_env_stack)
-    if aura_env_stack[#aura_env_stack] then
-      current_aura_env, current_uid = unpack(aura_env_stack[#aura_env_stack])
-    else
-      current_aura_env = nil
-      current_uid = nil
-    end
+    PopAuraEnvironment()
   else
     -- Existing config is initialized to a high enough value
     if environment_initialized[id] == 2 or (onlyConfig and environment_initialized[id] == 1) then
@@ -324,7 +346,7 @@ function Private.ActivateAuraEnvironment(id, cloneId, state, states, onlyConfig)
       current_aura_env.states = states
       current_aura_env.region = region
       -- Push the new environment onto the stack
-      tinsert(aura_env_stack, {current_aura_env, data.uid})
+      PushAuraEnvironment()
     elseif onlyConfig then
       environment_initialized[id] = 1
       aura_environments[id] = {}
@@ -335,7 +357,7 @@ function Private.ActivateAuraEnvironment(id, cloneId, state, states, onlyConfig)
       current_aura_env.cloneId = cloneId
       current_aura_env.state = state
       current_aura_env.states = states
-      tinsert(aura_env_stack, {current_aura_env, data.uid})
+      PushAuraEnvironment()
 
       if not data.controlledChildren then
         current_aura_env.config = CopyTable(data.config)
@@ -355,7 +377,7 @@ function Private.ActivateAuraEnvironment(id, cloneId, state, states, onlyConfig)
       current_aura_env.region = region
       Private.RestoreAuraEnvironment(id)
       -- push new environment onto the stack
-      tinsert(aura_env_stack, {current_aura_env, data.uid})
+      PushAuraEnvironment()
 
       if data.controlledChildren then
         current_aura_env.child_envs = {}
@@ -419,6 +441,10 @@ local function MakeReadOnly(input, options)
 end
 
 --- Wraps a table, so that accessing any key in it creates a deprecated warning
+---@param input table
+---@param name string
+---@param warningMsg string
+---@return table
 local function MakeDeprecated(input, name, warningMsg)
   return setmetatable({},
   {
@@ -482,7 +508,7 @@ local FakeWeakAurasMixin = {
     loaded = true
   },
   override = {
-    me = UnitName("player"),
+    me = GetUnitName("player", true),
     myGUID = UnitGUID("player"),
     GetData = function(id)
       if current_uid then
@@ -500,6 +526,11 @@ local FakeWeakAurasMixin = {
                 L["Using WeakAuras.clones is deprecated. Use WeakAuras.GetRegion(id, cloneId) instead."]),
     regions = MakeDeprecated(Private.regions, "regions",
                 L["Using WeakAuras.regions is deprecated. Use WeakAuras.GetRegion(id) instead."]),
+    GetNamePlateForUnit = function(...)
+      Private.AuraWarnings.UpdateWarning(current_uid, "Deprecated_GetNamePlateForUnit", "warning",
+                  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."])
+      return WeakAuras.GetNamePlateForUnit(...)
+    end,
     GetAllDBMTimers = function() return Private.ExecEnv.BossMods.DBM:GetAllTimers() end,
     GetDBMTimerById = function(...) return Private.ExecEnv.BossMods.DBM:GetTimerById(...) end,
     GetDBMTimer = function(...) return Private.ExecEnv.BossMods.DBM:GetTimer(...) end,
@@ -528,6 +559,7 @@ local overridden = {
   WA_Utf8Sub = WA_Utf8Sub,
   ActionButton_ShowOverlayGlow = WeakAuras.ShowOverlayGlow,
   ActionButton_HideOverlayGlow = WeakAuras.HideOverlayGlow,
+  UnitHasIncomingResurrection = WeakAuras.UnitHasIncomingResurrection,
   WeakAuras = FakeWeakAuras
 }
 -- for k, v in pairs(Private.AuraEnvOverrides) do
@@ -675,6 +707,7 @@ local function CreateFunctionCache(exec_env)
         end
         return nil, errorString
       elseif loadedFunction then
+        --- @cast loadedFunction -nil
         setfenv(loadedFunction, exec_env)
         local success, func = pcall(assert(loadedFunction))
         if success then

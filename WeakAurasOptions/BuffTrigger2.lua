@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
@@ -26,7 +28,7 @@ local function getAuraMatchesList(name, showSpellIdRecommendation)
     local playerSpells = {}
     local otherSpells = {}
 
-    for id, _ in pairs(ids) do
+    for id in pairs(ids) do
       numMatches = numMatches + 1
 
       if WeakAuras.IsSpellKnownIncludingPet(id) then
@@ -37,7 +39,7 @@ local function getAuraMatchesList(name, showSpellIdRecommendation)
     end
 
     local function addSpellToDesc(id)
-      local icon = select(3,GetSpellInfo(id))
+      local icon = select(3, GetSpellInfo(id))
       if icon then
         if descText == "" then
           descText = "|T"..icon..":0|t: "..id
@@ -129,9 +131,9 @@ local function CanHaveMatchCheck(trigger)
   return trigger.showClones
 end
 
-
 local function CreateNameOptions(aura_options, data, triggernum, size, isExactSpellId, isIgnoreList, prefix, baseOrder, useKey, optionKey, name, desc, inverse)
   local trigger = data.triggers[triggernum].trigger
+
   local spellCache = WeakAuras.spellCache
 
   for i = 1, size do
@@ -318,7 +320,7 @@ local function GetBuffTriggerOptions(data, triggernum)
       values = function()
         return OptionsPrivate.Private.unit_types_bufftrigger_2
       end,
-      desc = L["• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.\n• |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.\n|cffff0000Note|r: The game will not fire events for all valid unitIDs, making some untrackable by this trigger.\n• |cffffff00Party|r, |cffffff00Raid|r, |cffffff00Boss|r, |cffffff00Arena|r, and |cffffff00Nameplate|r can match multiple corresponding unitIDs.\n• |cffffff00Smart Group|r adjusts to your current group type, matching just the \"player\" when solo, \"party\" units (including \"player\") in a party or \"raid\" units in a raid.\n• |cffffff00Multi-target|r attempts to use the Combat Log events, rather than unitID, to track affected units.\n|cffff0000Note|r: Without a direct relationship to actual unitIDs, results may vary.\n\n|cffffff00*|r Yellow Unit settings can match multiple units and will default to being active even while no affected units are found without a Unit Count or Match Count setting."],
+      desc = OptionsPrivate.AddCompatibilityNote(L["• |cff00ff00Player|r, |cff00ff00Target|r, |cff00ff00Focus|r, and |cff00ff00Pet|r correspond directly to those individual unitIDs.\n• |cff00ff00Specific Unit|r lets you provide a specific valid unitID to watch.\n|cffff0000Note|r: The game will not fire events for all valid unitIDs, making some untrackable by this trigger.\n• |cffffff00Party|r, |cffffff00Raid|r, |cffffff00Boss|r, |cffffff00Arena|r, and |cffffff00Nameplate|r can match multiple corresponding unitIDs.\n• |cffffff00Smart Group|r adjusts to your current group type, matching just the \"player\" when solo, \"party\" units (including \"player\") in a party or \"raid\" units in a raid.\n• |cffffff00Multi-target|r attempts to use the Combat Log events, rather than unitID, to track affected units.\n|cffff0000Note|r: Without a direct relationship to actual unitIDs, results may vary.\n\n|cffffff00*|r Yellow Unit settings can match multiple units and will default to being active even while no affected units are found without a Unit Count or Match Count setting."], WeakAuras.IsAwesomeEnabled(), L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."]),
     },
     multiWarning = {
       type = "description",

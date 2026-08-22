@@ -14,7 +14,8 @@ Private.CreateFromMixins = function(...)
 	return Private.Mixin({}, ...)
 end
 
-BaseAPIMixin = {};
+Private.BaseAPIMixin = {};
+local BaseAPIMixin = Private.BaseAPIMixin;
 
 function BaseAPIMixin:GetType()
 	return assert(false);

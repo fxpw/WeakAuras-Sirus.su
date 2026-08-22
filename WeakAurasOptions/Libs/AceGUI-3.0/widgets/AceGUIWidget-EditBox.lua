@@ -1,7 +1,7 @@
 --[[-----------------------------------------------------------------------------
 EditBox Widget
 -------------------------------------------------------------------------------]]
-local Type, Version = "EditBox", 30
+local Type, Version = "EditBox", 31
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -211,6 +211,7 @@ local function Constructor()
 	frame:Hide()
 
 	local editbox = CreateFrame("EditBox", "AceGUI-3.0EditBox"..num, frame, "InputBoxTemplate")
+	editbox:SetFrameLevel(frame:GetFrameLevel() + 1)
 	editbox:SetAutoFocus(false)
 	editbox:SetFontObject(ChatFontNormal)
 	editbox:SetScript("OnEnter", Control_OnEnter)
@@ -234,6 +235,7 @@ local function Constructor()
 	label:SetHeight(18)
 
 	local button = CreateFrame("Button", nil, editbox, "UIPanelButtonTemplate")
+	button:SetFrameLevel(editbox:GetFrameLevel() + 1)
 	button:SetWidth(40)
 	button:SetHeight(20)
 	button:SetPoint("RIGHT", -2, 0)

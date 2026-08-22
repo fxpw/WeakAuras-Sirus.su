@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 local L = WeakAuras.L;
@@ -191,14 +193,17 @@ local function modify(parent, region, data)
     self.texture:SetDesaturated(b)
   end
 
+  --- @type fun(degrees: number?)
   function region:SetAnimRotation(degrees)
     self.texture:SetAnimRotation(degrees)
   end
 
+  --- @type fun(degrees: number)
   function region:SetRotation(degrees)
     self.texture:SetRotation(degrees)
   end
 
+  --- @type fun(): number
   function region:GetBaseRotation()
     return self.texture:GetBaseRotation()
   end

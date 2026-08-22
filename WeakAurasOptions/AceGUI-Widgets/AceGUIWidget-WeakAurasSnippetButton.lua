@@ -123,10 +123,10 @@ local methods = {
   end,
   ["SetDynamicTextStyle"] = function(self)
     self.ntex:SetTexture(nil)
-    self.htex:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\Options")
+    self.htex:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\Options") -- "Options_List_Hover"
     self.htex:SetTexCoord(0.774414, 0.957031, 0.000976562, 0.0214844)
     self.htex:SetVertexColor(1, 1, 1, 1)
-    self.ptex:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\Options")
+    self.ptex:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\Options") -- "Options_List_Hover"
     self.ptex:SetTexCoord(0.589844, 0.772461, 0.000976562, 0.0214844)
   end
 }
@@ -148,6 +148,7 @@ local function Constructor()
   button:SetWidth(170)
 
   local deleteButton = CreateFrame("Button", nil, button)
+  deleteButton:SetFrameLevel(button:GetFrameLevel() + 1)
   deleteButton:SetPoint("RIGHT", button, "RIGHT", -3, 0)
   deleteButton:SetSize(20, 20)
   local deleteTex = deleteButton:CreateTexture()
@@ -195,6 +196,7 @@ local function Constructor()
   button.deleteHighlight = delHighlight
 
   local renameEditBox = CreateFrame("EditBox", nil, button)
+  renameEditBox:SetFrameLevel(button:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["InputBoxTemplate"](renameEditBox)
   renameEditBox:SetHeight(14)
   renameEditBox:SetPoint("TOPLEFT", title, "TOPLEFT")

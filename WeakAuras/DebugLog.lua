@@ -1,13 +1,26 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
+--- @type table<uid, string[]|nil>
 local debugLogs = {}
+--- @type table<uid, boolean|nil>
 local enabled = {}
 
+--- @class debugLog
+--- @field Print fun(uid: uid, text: string, ...: any)
+--- @field Clear fun(uid: uid)
+--- @field SetEnabled fun(uid: uid, enabled: uid)
+--- @field IsEnabled fun(uid: uid) : boolean|nil
+--- @field GetLogs fun(uid: uid) : string|nil
+
+--- @type debugLog
 Private.DebugLog = {
   Print = function(uid, text, ...) end,
   Clear = function(uid) end,
@@ -41,8 +54,13 @@ local function serialize(log, input)
   end
 end
 
+--- DebugLog.Print the DebugPrint function for custom auras to call
+---@param uid uid
+---@param text string
+---@param ... any
 function Private.DebugLog.Print(uid, text, ...)
   if enabled[uid] then
+    --- @type string[]
     local log = debugLogs[uid]
     tinsert(log, "")
     if select('#', ...) == 0 then
@@ -64,10 +82,15 @@ function Private.DebugLog.Print(uid, text, ...)
   end
 end
 
+--- Adds a message to the debug log
+---@param self any
+---@param msg string
 local function AddMessage(self, msg)
   tinsert(self, msg)
 end
 
+--- Clears the debug log for a given uid
+---@param uid uid
 function Private.DebugLog.Clear(uid)
   if enabled[uid] then
     debugLogs[uid] = {
@@ -79,6 +102,9 @@ function Private.DebugLog.Clear(uid)
   end
 end
 
+--- Enables/Disables the debug logging for a aura
+---@param uid uid
+---@param enable boolean
 function Private.DebugLog.SetEnabled(uid, enable)
   if enabled[uid] == enable then
     return
@@ -95,16 +121,25 @@ function Private.DebugLog.SetEnabled(uid, enable)
   end
 end
 
+---Returns whether debug logging is enabled for the given aura uid
+---@param uid uid
+---@return boolean
 function Private.DebugLog.IsEnabled(uid)
   return enabled[uid]
 end
 
+--- Returns the logs for a given aura uid
+---@param uid uid
+---@return string?
 function Private.DebugLog.GetLogs(uid)
   if debugLogs[uid] then
     return table.concat(debugLogs[uid], "\n")
   end
 end
 
+--- Handles the deletion of an aura
+---@param _ any
+---@param uid uid
 local function OnDelete(_, uid)
   debugLogs[uid] = nil
   enabled[uid] = nil

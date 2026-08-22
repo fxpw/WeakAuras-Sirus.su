@@ -58,6 +58,42 @@ local Awesome_WotLK =
 			},
 		},
 		{
+			Name = "NamePlate:GetStackingEnabled",
+			Type = "Function",
+
+			Returns =
+			{
+				{ Name = "enabled", Type = "bool", Nilable = false },
+			},
+		},
+		{
+			Name = "NamePlate:SetStackingEnabled",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "enabled", Type = "bool", Nilable = false },
+			},
+		},
+		{
+			Name = "NamePlate:GetOcclusionEnabled",
+			Type = "Function",
+
+			Returns =
+			{
+				{ Name = "enabled", Type = "bool", Nilable = false },
+			},
+		},
+		{
+			Name = "NamePlate:SetOcclusionEnabled",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "enabled", Type = "bool", Nilable = false },
+			},
+		},
+		{
 			Name = "C_VoiceChat.GetTtsVoices",
 			Type = "Function",
 
@@ -434,6 +470,49 @@ local Awesome_WotLK =
 			Type = "Event",
 			LiteralName = "VOICE_CHAT_TTS_VOICES_UPDATE",
 		},
+	},
+
+	CVars =
+	{
+		{ Name = "showPlayer", Type = "CVar", DefaultValue = "1", Category = "Camera" },
+		{ Name = "cameraFov", Type = "CVar", DefaultValue = "100", Category = "Camera" },
+		{ Name = "cameraIndirectAlpha", Type = "CVar", DefaultValue = "0.6", Category = "Camera" },
+		{ Name = "cameraIndirectVisibility", Type = "CVar", DefaultValue = "0", Category = "Camera" },
+		{ Name = "interactionAngle", Type = "CVar", DefaultValue = "60", Category = "Interaction" },
+		{ Name = "interactionMode", Type = "CVar", DefaultValue = "1", Category = "Interaction" },
+		{ Name = "objectHighlightMode", Type = "CVar", DefaultValue = "0", Category = "Graphics" },
+		{ Name = "portraitResolution", Type = "CVar", DefaultValue = "64", Category = "Graphics" },
+		{ Name = "chatLogSessionKey", Type = "CVar", DefaultValue = "1", Category = "Logging" },
+		{ Name = "combatLogSessionKey", Type = "CVar", DefaultValue = "1", Category = "Logging" },
+		{ Name = "MSDFMode", Type = "CVar", DefaultValue = "1", Category = "Graphics" },
+		{ Name = "nameplateDistance", Type = "CVar", DefaultValue = "41.0", Category = "Nameplates" },
+		{ Name = "nameplatePlacement", Type = "CVar", DefaultValue = "0.0", Category = "Nameplates" },
+		{ Name = "nameplateMouseMode", Type = "CVar", DefaultValue = "0", Category = "Nameplates" },
+		{ Name = "nameplateBandX", Type = "CVar", DefaultValue = "0.7", Category = "Nameplates" },
+		{ Name = "nameplateBandY", Type = "CVar", DefaultValue = "1.0", Category = "Nameplates" },
+		{ Name = "nameplateHitboxAnchor", Type = "CVar", DefaultValue = "1", Category = "Nameplates" },
+		{ Name = "nameplateHitboxWidthE", Type = "CVar", DefaultValue = "1.0", Category = "Nameplates" },
+		{ Name = "nameplateHitboxHeightE", Type = "CVar", DefaultValue = "1.0", Category = "Nameplates" },
+		{ Name = "nameplateHitboxWidthF", Type = "CVar", DefaultValue = "1.0", Category = "Nameplates" },
+		{ Name = "nameplateHitboxHeightF", Type = "CVar", DefaultValue = "1.0", Category = "Nameplates" },
+		{ Name = "nameplateRaiseSpeed", Type = "CVar", DefaultValue = "100.0", Category = "Nameplates" },
+		{ Name = "nameplateLowerSpeed", Type = "CVar", DefaultValue = "100.0", Category = "Nameplates" },
+		{ Name = "nameplatePullSpeed", Type = "CVar", DefaultValue = "50.0", Category = "Nameplates" },
+		{ Name = "nameplateRaiseDistance", Type = "CVar", DefaultValue = "8.0", Category = "Nameplates" },
+		{ Name = "nameplatePullDistance", Type = "CVar", DefaultValue = "0.25", Category = "Nameplates" },
+		{ Name = "nameplateOcclusionAlpha", Type = "CVar", DefaultValue = "1.0", Category = "Nameplates" },
+		{ Name = "nameplateOcclusionMode", Type = "CVar", DefaultValue = "0", Category = "Nameplates" },
+		{ Name = "nameplateNonTargetAlpha", Type = "CVar", DefaultValue = "0.5", Category = "Nameplates" },
+		{ Name = "nameplateAlphaSpeed", Type = "CVar", DefaultValue = "0.25", Category = "Nameplates" },
+		{ Name = "nameplateInertia", Type = "CVar", DefaultValue = "1", Category = "Nameplates" },
+		{ Name = "nameplateHysteresisDecay", Type = "CVar", DefaultValue = "1", Category = "Nameplates" },
+		{ Name = "nameplateClampMode", Type = "CVar", DefaultValue = "0", Category = "Nameplates" },
+		{ Name = "nameplateClampModeVOffset", Type = "CVar", DefaultValue = "0.1", Category = "Nameplates" },
+		{ Name = "nameplateClampModeHOffset", Type = "CVar", DefaultValue = "0.01", Category = "Nameplates" },
+		{ Name = "nameplateStacking", Type = "CVar", DefaultValue = "0", Category = "Nameplates" },
+		{ Name = "ttsVoice", Type = "CVar", DefaultValue = "1", Category = "Text to Speech" },
+		{ Name = "ttsSpeed", Type = "CVar", DefaultValue = "0", Category = "Text to Speech" },
+		{ Name = "ttsVolume", Type = "CVar", DefaultValue = "100", Category = "Text to Speech" },
 	},
 
 	Tables =

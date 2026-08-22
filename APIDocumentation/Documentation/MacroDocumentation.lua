@@ -226,6 +226,7 @@ local Macro =
 		{
 			Name = "RunMacro",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -238,6 +239,7 @@ local Macro =
 		{
 			Name = "RunMacroText",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -290,6 +292,7 @@ local Macro =
 		{
 			Name = "StopMacro",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 	},

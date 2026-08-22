@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 -- WoW APIs
@@ -7,6 +9,7 @@ local CreateFrame = CreateFrame
 
 local AceGUI = LibStub("AceGUI-3.0")
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
@@ -15,6 +18,7 @@ local importexport
 local function ConstructImportExport(frame)
   local group = AceGUI:Create("WeakAurasInlineGroup");
   group.frame:SetParent(frame);
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -63);
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -16, 46);
   group.frame:Hide();
@@ -22,6 +26,7 @@ local function ConstructImportExport(frame)
 
   local input = AceGUI:Create("MultiLineEditBox");
   input:DisableButton(true)
+  -- input.frame:SetClipsChildren(true);
   input:SetFullWidth(true)
   input:SetFullHeight(true)
   group:AddChild(input);
@@ -29,7 +34,7 @@ local function ConstructImportExport(frame)
   local close = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
   close:SetScript("OnClick", function() group:Close() end);
   close:SetPoint("BOTTOMRIGHT", -20, -24);
-  close:SetFrameLevel(close:GetFrameLevel() + 1)
+  close:SetFrameLevel(group.frame:GetFrameLevel() + 2)
   close:SetHeight(20);
   close:SetWidth(100);
   close:SetText(L["Close"])

@@ -44,7 +44,9 @@ GetTriggerConditions(data, triggernum)
 Returns the potential conditions for a trigger
 ]=]--
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 local function FixDebuffClass(debuffClass)
@@ -67,6 +69,7 @@ local pairs, next, type = pairs, next, type
 -- local GetNumGroupMembers = Private.GetNumGroupMembers
 local UnitAura = UnitAura
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 local timer = WeakAuras.timer
@@ -1083,6 +1086,9 @@ local function GetAllUnits(unit, allUnits, includePets)
       end
     end
   elseif unit == "boss" or unit == "arena" or unit == "nameplate" then
+    if unit == "nameplate" and not WeakAuras.IsAwesomeEnabled() then
+      return function() end
+    end
     local i = 1
     local max
     if unit == "boss" then
@@ -1298,9 +1304,17 @@ end
 local function UpdateTriggerState(time, id, triggernum)
   local triggerStates = WeakAuras.GetTriggerStateForTrigger(id, triggernum)
   local triggerInfo = triggerInfos[id][triggernum]
+  if triggerInfo.unit == "nameplate" and not WeakAuras.IsAwesomeEnabled() then
+    local updated
+    for cloneId in pairs(triggerStates) do
+      updated = RemoveState(triggerStates, cloneId) or updated
+    end
+    return updated
+  end
   local updated
   local nextCheck
   local matchCount = 0
+  ---@type number?
   local totalStacks = 0
   local unitCount = 0
   local auraDatas = {}
@@ -3282,7 +3296,14 @@ local guidToUnit = {}
 local function ReleaseUID(unit)
   local guid = unitToGuid[unit]
   if guid then
-    guidToUnit[guid][unit] = nil
+    unitToGuid[unit] = nil
+    local units = guidToUnit[guid]
+    if units then
+      units[unit] = nil
+      if not next(units) then
+        guidToUnit[guid] = nil
+      end
+    end
   end
 end
 
@@ -3338,6 +3359,9 @@ local function RemoveMatchDataMulti(base, destGUID, key, sourceGUID)
       end
     end
     base[key][sourceGUID] = nil
+    if not next(base[key]) then
+      base[key] = nil
+    end
   end
 end
 
@@ -3374,6 +3398,11 @@ local function CleanUpMulti(guid)
       cleanupTimerMulti[guid].handle = timer:ScheduleTimer(CleanUpMulti, timeUntilNext, guid)
       cleanupTimerMulti[guid].nextTime = nextCheck
    end
+  end
+
+  if matchDataMulti[guid] and not next(matchDataMulti[guid]) then
+    matchDataMulti[guid] = nil
+    cleanupTimerMulti[guid] = nil
   end
 end
 
@@ -3653,6 +3682,7 @@ end
 
 function BuffTrigger.HandlePendingTracks(unit, GUID)
   if pendingTracks[GUID] then
+    pendingTracks[GUID] = nil
     if matchDataMulti[GUID] then
       CheckAurasMulti(matchDataMulti[GUID], unit, "HELPFUL")
       CheckAurasMulti(matchDataMulti[GUID], unit, "HARMFUL")
@@ -3703,13 +3733,18 @@ function BuffTrigger.HandleMultiEvent(frame, event, ...)
       CheckAurasMulti(matchDataMulti[guid], unit, "HARMFUL")
     end
   elseif event == "PLAYER_LEAVING_WORLD" then
-    -- Remove everything..
-    for GUID, GUIDData  in pairs(matchDataMulti) do
-      for key in pairs(GUIDData) do
-        RemoveMatchDataMulti(GUIDData, GUID, key)
+    for GUID, GUIDData in pairs(matchDataMulti) do
+      for key, keyData in pairs(GUIDData) do
+        for sourceGUID in pairs(keyData) do
+          RemoveMatchDataMulti(GUIDData, GUID, key, sourceGUID)
+        end
       end
     end
     wipe(matchDataMulti)
+    wipe(cleanupTimerMulti)
+    wipe(pendingTracks)
+    wipe(guidToUnit)
+    wipe(unitToGuid)
   end
   Private.StopProfileSystem(system)
 end

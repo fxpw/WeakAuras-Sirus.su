@@ -468,12 +468,13 @@ local Unit =
 
 			Arguments =
 			{
-				{ Name = "unit", Type = "UnitToken", Nilable = false },
+				{ Name = "unit", Type = "UnitToken", Nilable = true },
+				{ Name = "name", Type = "string", Nilable = true },
 			},
 
 			Returns =
 			{
-				{ Name = "modifier", Type = "number", Nilable = false },
+				{ Name = "health", Type = "number", Nilable = false },
 			},
 		},
 		{
@@ -951,12 +952,13 @@ local Unit =
 
 			Arguments =
 			{
-				{ Name = "unit", Type = "UnitToken", Nilable = false },
+				{ Name = "unit", Type = "UnitToken", Nilable = true },
+				{ Name = "name", Type = "string", Nilable = true },
 			},
 
 			Returns =
 			{
-				{ Name = "regen", Type = "number", Nilable = false },
+				{ Name = "mana", Type = "number", Nilable = false },
 			},
 		},
 		{
@@ -980,13 +982,13 @@ local Unit =
 
 			Arguments =
 			{
-				{ Name = "unit", Type = "UnitToken", Nilable = false },
-				{ Name = "showServerName", Type = "bool", Nilable = false },
+				{ Name = "unit", Type = "string", Nilable = false },
 			},
 
 			Returns =
 			{
-				{ Name = "nameString", Type = "string", Nilable = false },
+				{ Name = "name", Type = "string", Nilable = false },
+				{ Name = "realm", Type = "string", Nilable = true },
 			},
 		},
 		{
@@ -1081,12 +1083,13 @@ local Unit =
 
 			Arguments =
 			{
-				{ Name = "unit", Type = "UnitToken", Nilable = false },
+				{ Name = "unitID", Type = "string", Nilable = false },
+				{ Name = "powerType", Type = "string", Nilable = true },
 			},
 
 			Returns =
 			{
-				{ Name = "modifier", Type = "number", Nilable = false },
+				{ Name = "power", Type = "number", Nilable = false },
 			},
 		},
 		{
@@ -1430,6 +1433,105 @@ local Unit =
 			Name = "UpdateMouseoverUnit",
 			Type = "Event",
 			LiteralName = "UPDATE_MOUSEOVER_UNIT",
+		},
+		{
+			Name = "UnitEnergy",
+			Type = "Event",
+			LiteralName = "UNIT_ENERGY",
+			Payload =
+			{
+				{ Name = "unitTarget", Type = "string", Nilable = false },
+			},
+		},
+		{
+			Name = "UnitExitedVehicle",
+			Type = "Event",
+			LiteralName = "UNIT_EXITED_VEHICLE",
+			Payload =
+			{
+				{ Name = "unitTarget", Type = "string", Nilable = false },
+			},
+		},
+		{
+			Name = "UnitFocus",
+			Type = "Event",
+			LiteralName = "UNIT_FOCUS",
+			Payload =
+			{
+				{ Name = "unitTarget", Type = "string", Nilable = false },
+			},
+		},
+		{
+			Name = "UnitHappiness",
+			Type = "Event",
+			LiteralName = "UNIT_HAPPINESS",
+			Payload =
+			{
+				{ Name = "unitTarget", Type = "string", Nilable = false },
+			},
+		},
+		{
+			Name = "UnitMaxenergy",
+			Type = "Event",
+			LiteralName = "UNIT_MAXENERGY",
+			Payload =
+			{
+				{ Name = "unitTarget", Type = "string", Nilable = false },
+			},
+		},
+		{
+			Name = "UnitMaxfocus",
+			Type = "Event",
+			LiteralName = "UNIT_MAXFOCUS",
+			Payload =
+			{
+				{ Name = "unitTarget", Type = "string", Nilable = false },
+			},
+		},
+		{
+			Name = "UnitMaxhappiness",
+			Type = "Event",
+			LiteralName = "UNIT_MAXHAPPINESS",
+			Payload =
+			{
+				{ Name = "unitTarget", Type = "string", Nilable = false },
+			},
+		},
+		{
+			Name = "UnitMaxmana",
+			Type = "Event",
+			LiteralName = "UNIT_MAXMANA",
+			Payload =
+			{
+				{ Name = "unitTarget", Type = "string", Nilable = false },
+			},
+		},
+		{
+			Name = "UnitMaxrage",
+			Type = "Event",
+			LiteralName = "UNIT_MAXRAGE",
+			Payload =
+			{
+				{ Name = "unitTarget", Type = "string", Nilable = false },
+			},
+		},
+		{
+			Name = "UnitMaxrunicPower",
+			Type = "Event",
+			LiteralName = "UNIT_MAXRUNIC_POWER",
+			Payload =
+			{
+				{ Name = "unitTarget", Type = "string", Nilable = false },
+			},
+		},
+		{
+			Name = "UnitRunicPower",
+			Type = "Event",
+			LiteralName = "UNIT_RUNIC_POWER",
+			Payload =
+			{
+				{ Name = "unitTarget", Type = "string", Nilable = false },
+			},
 		},
 	},
 

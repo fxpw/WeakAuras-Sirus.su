@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 -- Lua APIs
@@ -10,6 +12,7 @@ local CreateFrame, GetSpellInfo = CreateFrame, GetSpellInfo
 
 local AceGUI = LibStub("AceGUI-3.0")
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
@@ -20,6 +23,7 @@ local spellCache = WeakAuras.spellCache
 local function ConstructIconPicker(frame)
   local group = AceGUI:Create("InlineGroup");
   group.frame:SetParent(frame);
+  group.frame:SetFrameLevel(frame:GetFrameLevel() + 1)
   group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 46);
   group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -50);
   group.frame:Hide();
@@ -27,6 +31,7 @@ local function ConstructIconPicker(frame)
 
   local scroll = AceGUI:Create("ScrollFrame");
   scroll:SetLayout("flow");
+  -- scroll.frame:SetClipsChildren(true);
   group:AddChild(scroll);
 
   local function iconPickerFill(subname, doSort)
@@ -68,7 +73,7 @@ local function ConstructIconPicker(frame)
       for name, icons in pairs(spellCache.Get()) do
         if(name:lower():find(subname, 1, true)) then
           if icons.spells then
-            for spell, icon in icons.spells:gmatch("(%d+)=([%w_\\-]+),?") do
+            for spell, icon in icons.spells:gmatch("(%d+)=([^,]+)") do
               local iconId = icon
               if (not usedIcons[iconId]) then
                 AddButton(name, iconId)
@@ -79,7 +84,7 @@ local function ConstructIconPicker(frame)
               end
             end
           elseif icons.achievements then
-            for spell, icon in icons.achievements:gmatch("(%d+)=([%w_\\-]+),?") do
+            for spell, icon in icons.achievements:gmatch("(%d+)=([^,]+)") do
               local iconId = icon
               if (not usedIcons[iconId]) then
                 AddButton(name, iconId)
@@ -100,6 +105,7 @@ local function ConstructIconPicker(frame)
   end
 
   local input = CreateFrame("EditBox", "WeakAurasFilterInput", group.frame)
+  input:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   WeakAuras.XMLTemplates["SearchBoxTemplate"](input)
   input:SetScript("OnTextChanged", function(self)
     WA_SearchBoxTemplate_OnTextChanged(self)
@@ -109,12 +115,13 @@ local function ConstructIconPicker(frame)
   input:SetScript("OnEscapePressed", function(...) input:SetText(""); iconPickerFill(input:GetText(), true); end);
   input:SetWidth(200);
   input:SetHeight(15);
-  input:SetFont(STANDARD_TEXT_FONT, 10)
+  input:SetFont(STANDARD_TEXT_FONT, 10, "")
   input:SetPoint("BOTTOMRIGHT", group.frame, "TOPRIGHT", -3, -10);
 
   local icon = AceGUI:Create("WeakAurasIconButton");
   icon.frame:Disable();
   icon.frame:SetParent(group.frame);
+  icon.frame:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   icon.frame:SetPoint("BOTTOMLEFT", group.frame, "TOPLEFT", 44, -15);
   icon:SetHeight(36)
   icon:SetWidth(36)
@@ -199,6 +206,7 @@ local function ConstructIconPicker(frame)
   end
 
   local cancel = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
+  cancel:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   cancel:SetScript("OnClick", group.CancelClose);
   cancel:SetPoint("BOTTOMRIGHT", -20, -24)
   cancel:SetHeight(20);
@@ -206,6 +214,7 @@ local function ConstructIconPicker(frame)
   cancel:SetText(L["Cancel"]);
 
   local close = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate");
+  close:SetFrameLevel(group.frame:GetFrameLevel() + 1)
   close:SetScript("OnClick", group.Close);
   close:SetPoint("RIGHT", cancel, "LEFT", -10, 0);
   close:SetHeight(20);

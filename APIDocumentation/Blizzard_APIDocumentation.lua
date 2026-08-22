@@ -1,12 +1,23 @@
 local addonName, Private = ...
 
-APIDocumentationMixin = {};
+local TablesAPIMixin = Private.TablesAPIMixin;
+local FunctionsAPIMixin = Private.FunctionsAPIMixin;
+local CVarsAPIMixin = Private.CVarsAPIMixin;
+local EventsAPIMixin = Private.EventsAPIMixin;
+local FieldsAPIMixin = Private.FieldsAPIMixin;
+local ScriptObjectsAPIMixin = Private.ScriptObjectsAPIMixin;
+local SystemsAPIMixin = Private.SystemsAPIMixin;
+
+Private.APIDocumentationMixin = {};
+local APIDocumentationMixin = Private.APIDocumentationMixin;
 
 -- "public"
 function APIDocumentationMixin:OnLoad()
 	self.tables = {};
 	self.functions = {};
+	self.cvars = {};
 	self.systems = {};
+	self.scriptObjects = {};
 	self.fields = {};
 	self.events = {};
 	self.callbacks = {};
@@ -69,6 +80,11 @@ end
 
 function APIDocumentationMixin:HandleOpenDump(apiInfo)
 	if apiInfo.Type == "Function" then
+		if apiInfo.System and apiInfo.System.Type == "ScriptObject" then
+			self:WriteLine("Cannot /dump a script object method without an object instance");
+			return;
+		end
+
 		local dumpString;
 		local systemNamespace = apiInfo.System and apiInfo.System:GetNamespaceName() or nil;
 		if systemNamespace and systemNamespace ~= "" then
@@ -101,8 +117,12 @@ function APIDocumentationMixin:GetAPITableByTypeName(apiType)
 		return self.functions;
 	elseif apiType == "table" then
 		return self.tables;
+	elseif apiType == "cvar" then
+		return self.cvars;
 	elseif apiType == "system" then
 		return self.systems;
+	elseif apiType == "scriptobject" then
+		return self.scriptObjects;
 	elseif apiType == "field" then
 		return self.fields;
 	elseif apiType == "event" then
@@ -144,19 +164,23 @@ end
 function APIDocumentationMixin:OutputStats()
 	self:WriteLine("Stats:");
 	self:WriteLineF("Total systems: %d", #self.systems);
+	self:WriteLineF("Total script objects: %d", #self.scriptObjects);
 	local totalFunctions = 0;
 	local totalEvents = 0;
 	local totalTables = 0;
+	local totalCVars = 0;
 
 	for i, systemInfo in ipairs(self.systems) do
 		totalFunctions = totalFunctions + systemInfo:GetNumFunctions();
 		totalEvents = totalEvents + systemInfo:GetNumEvents();
 		totalTables = totalTables + systemInfo:GetNumTables();
+		totalCVars = totalCVars + systemInfo:GetNumCVars();
 	end
 
 	self:WriteLineF("Total functions: %d", totalFunctions);
 	self:WriteLineF("Total events: %d", totalEvents);
 	self:WriteLineF("Total tables: %d", totalTables);
+	self:WriteLineF("Total CVars: %d", totalCVars);
 end
 
 function APIDocumentationMixin:OutputAllSystems()
@@ -201,7 +225,7 @@ function APIDocumentationMixin:OutputAllAPIMatches(apiToSearchFor)
 
 	local apiMatches = self:FindAllAPIMatches(apiToSearchFor);
 	if apiMatches then
-		local total = #apiMatches.tables + #apiMatches.functions + #apiMatches.events + #apiMatches.systems + #apiMatches.callbacks;
+		local total = #apiMatches.tables + #apiMatches.functions + #apiMatches.events + #apiMatches.systems + #apiMatches.callbacks + #apiMatches.cvars;
 		assert(total > 0);
 		self:WriteLineF("Found %d API that matches %q", total, apiToSearchFor);
 
@@ -210,6 +234,7 @@ function APIDocumentationMixin:OutputAllAPIMatches(apiToSearchFor)
 		self:OutputAPIMatches(apiMatches.events, "events(s)");
 		self:OutputAPIMatches(apiMatches.tables, "table(s)");
 		self:OutputAPIMatches(apiMatches.callbacks, "callback(s)");
+		self:OutputAPIMatches(apiMatches.cvars, "CVar(s)");
 	else
 		self:WriteLineF("No API found that matches %q", apiToSearchFor);
 	end
@@ -218,13 +243,14 @@ end
 function APIDocumentationMixin:OutputAllSystemAPIMatches(system, apiToSearchFor)
 	local apiMatches = system:FindAllAPIMatches(apiToSearchFor);
 	if apiMatches then
-		local total = #apiMatches.tables + #apiMatches.functions + #apiMatches.events;
+		local total = #apiMatches.tables + #apiMatches.functions + #apiMatches.events + #apiMatches.cvars;
 		assert(total > 0);
 		self:WriteLineF("Found %d API that matches %q", total, apiToSearchFor);
 
 		self:OutputAPIMatches(apiMatches.functions, "function(s)");
 		self:OutputAPIMatches(apiMatches.events, "events(s)");
 		self:OutputAPIMatches(apiMatches.tables, "table(s)");
+		self:OutputAPIMatches(apiMatches.cvars, "CVar(s)");
 	else
 		self:WriteLineF("No API found that matches %q in %s", apiToSearchFor, system:GenerateAPILink());
 	end
@@ -238,12 +264,17 @@ function APIDocumentationMixin:OutputAllSystemAPI(system)
 		self:OutputAPIMatches(apiMatches.functions, "function(s)");
 		self:OutputAPIMatches(apiMatches.events, "events(s)");
 		self:OutputAPIMatches(apiMatches.tables, "table(s)");
+		self:OutputAPIMatches(apiMatches.cvars, "CVar(s)");
 	else
 		self:WriteLineF("No API found in %s", system:GenerateAPILink());
 	end
 end
 
 --[[static]] function APIDocumentationMixin:AddAllMatches(apiContainer, matchesContainer, apiToSearchFor)
+	if not apiContainer then
+		return;
+	end
+
 	for i, apiInfo in ipairs(apiContainer) do
 		if apiInfo:MatchesSearchString(apiToSearchFor) then
 			table.insert(matchesContainer, apiInfo);
@@ -260,6 +291,7 @@ function APIDocumentationMixin:FindAllAPIMatches(apiToSearchFor)
 		events = {},
 		systems = {},
 		callbacks = {},
+		cvars = {},
 	};
 
 	self:AddAllMatches(self.tables, matches.tables, apiToSearchFor);
@@ -267,6 +299,7 @@ function APIDocumentationMixin:FindAllAPIMatches(apiToSearchFor)
 	self:AddAllMatches(self.systems, matches.systems, apiToSearchFor);
 	self:AddAllMatches(self.events, matches.events, apiToSearchFor);
 	self:AddAllMatches(self.callbacks, matches.callbacks, apiToSearchFor);
+	self:AddAllMatches(self.cvars, matches.cvars, apiToSearchFor);
 
 	-- Only return something if we matched anything
 	for name, subTable in pairs(matches) do
@@ -357,6 +390,12 @@ function APIDocumentationMixin:AddFunction(documentationInfo)
 	end
 end
 
+function APIDocumentationMixin:AddCVar(documentationInfo)
+	Private.Mixin(documentationInfo, CVarsAPIMixin);
+
+	table.insert(self.cvars, documentationInfo);
+end
+
 function APIDocumentationMixin:AddEvent(documentationInfo)
 	Private.Mixin(documentationInfo, EventsAPIMixin);
 
@@ -377,7 +416,12 @@ function APIDocumentationMixin:AddField(documentationInfo)
 end
 
 function APIDocumentationMixin:AddSystem(documentationInfo)
-	Private.Mixin(documentationInfo, SystemsAPIMixin);
+	if documentationInfo.Type == "ScriptObject" then
+		Private.Mixin(documentationInfo, ScriptObjectsAPIMixin);
+		table.insert(self.scriptObjects, documentationInfo);
+	else
+		Private.Mixin(documentationInfo, SystemsAPIMixin);
+	end
 
 	table.insert(self.systems, documentationInfo);
 
@@ -394,6 +438,11 @@ function APIDocumentationMixin:AddSystem(documentationInfo)
 	for i, tableInfo in ipairs(documentationInfo.Tables) do
 		tableInfo.System = documentationInfo;
 		self:AddTable(tableInfo);
+	end
+
+	for i, cvarInfo in ipairs(documentationInfo.CVars or {}) do
+		cvarInfo.System = documentationInfo;
+		self:AddCVar(cvarInfo);
 	end
 end
 

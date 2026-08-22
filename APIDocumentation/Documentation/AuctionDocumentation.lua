@@ -52,15 +52,11 @@ local Auction =
 		{
 			Name = "CancelAuction",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
 				{ Name = "index", Type = "luaIndex", Nilable = false },
-			},
-
-			Returns =
-			{
-				{ Name = "canCancel", Type = "bool", Nilable = false },
 			},
 		},
 		{

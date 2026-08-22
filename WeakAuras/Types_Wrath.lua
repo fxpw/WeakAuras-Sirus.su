@@ -1,12 +1,15 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 -- Talent Data for normal Wrath Realms
-if not WeakAuras.IsWrath() or WeakAuras.IsWrathReborn() then
+if not WeakAuras.IsWrath() then
   return
 end
 
+---@class WeakAuras
 local WeakAuras = WeakAuras;
 local L = WeakAuras.L;
 
@@ -47,7 +50,7 @@ function Private.InitializeEncounterAndZoneLists()
         { L["Thaddius"], 1120 },
         -- Frostwyrm Lair
         { L["Sapphiron"], 1119 },
-        { L["Kel'Thuzad"], 1114 }
+        { L["Kel'Thuzad"], 1114 },
       }
     },
     {

@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 local L = WeakAuras.L
@@ -214,7 +216,7 @@ function Private.ExecEnv.CallCustomConditionTest(uid, testFunctionNumber, ...)
   if (ok) then
     return result
   else
-    Private.GetErrorHandlerUid(uid, L["Condition Custom Test"])
+    Private.GetErrorHandlerUid(uid, L["Condition Custom Test"])(result)
   end
 end
 
@@ -847,9 +849,9 @@ end
 function Private.RunConditions(region, uid, hideRegion)
   if (checkConditions[uid]) then
     Private.ActivateAuraEnvironmentForRegion(region)
-    local ok = pcall(checkConditions[uid], region, hideRegion);
+    local ok, err = pcall(checkConditions[uid], region, hideRegion);
     if not ok then
-      Private.GetErrorHandlerUid(uid, L["Execute Conditions"])
+      Private.GetErrorHandlerUid(uid, L["Execute Conditions"])(err)
     end
     Private.ActivateAuraEnvironment()
   end

@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
@@ -162,7 +164,7 @@ local function createOptions(id, data)
       order = 1.5,
       width = WeakAuras.normalWidth,
       name = L["Group by Frame"],
-      desc = L["Group and anchor each auras by frame.\n\n- Nameplates: attach to nameplates per unit.\n- Unit Frames: attach to unit frame buttons per unit.\n- Custom Frames: choose which frame each region should be anchored to."],
+      desc = OptionsPrivate.AddCompatibilityNote(L["Group and anchor each auras by frame.\n\n- Nameplates: attach to nameplates per unit.\n- Unit Frames: attach to unit frame buttons per unit.\n- Custom Frames: choose which frame each region should be anchored to."], WeakAuras.IsAwesomeEnabled(), L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."]),
       hidden = function() return data.grow == "CUSTOM" end,
     },
     anchorPerUnit = {
@@ -170,15 +172,15 @@ local function createOptions(id, data)
       width = WeakAuras.normalWidth,
       name = L["Group by Frame"],
       order = 1.6,
-      values = function()
-        local v = {
-          ["UNITFRAME"] = L["Unit Frames"],
-          ["CUSTOM"] = L["Custom Frames"]
-        }
-        if WeakAuras.IsAwesomeEnabled() then
-          v["NAMEPLATE"] = L["Nameplates"]
-        end
-        return v
+      values = {
+        ["UNITFRAME"] = L["Unit Frames"],
+        ["NAMEPLATE"] = OptionsPrivate.SetOptionTextDisabled(L["Nameplates"], WeakAuras.IsAwesomeEnabled()),
+        ["CUSTOM"] = L["Custom Frames"],
+      },
+      desc = function()
+        return data.anchorPerUnit == "NAMEPLATE" and not WeakAuras.IsAwesomeEnabled()
+          and OptionsPrivate.AddCompatibilityNote(nil, false, L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."])
+          or nil
       end,
       hidden = function() return data.grow == "CUSTOM" end,
       disabled = function() return not data.useAnchorPerUnit end
@@ -560,8 +562,8 @@ local function createOptions(id, data)
     sharedFrameLevel = {
       type = "toggle",
       width = WeakAuras.normalWidth,
-      name = L["Flat Framelevels"],
-      desc = L["The group and all direct children will share the same base frame level."],
+      name = OptionsPrivate.SetOptionTextDisabled(L["Flat Framelevels"]),
+      desc = OptionsPrivate.AddCompatibilityNote(L["The group and all direct children will share the same base frame level."], false, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."]) .. "\n" .. L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."],
       order = 30,
       get = function()
         return true
@@ -577,11 +579,11 @@ local function createOptions(id, data)
     },
   };
 
-  OptionsPrivate.commonOptions.AddCodeOption(options, data, L["Custom Grow"], "custom_grow", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#grow",
+  OptionsPrivate.commonOptions.AddCodeOption(options, data, L["Custom Grow"], "custom_grow", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#grow",
                           2, function() return data.grow ~= "CUSTOM" end, {"customGrow"}, false, { setOnParent = true })
-  OptionsPrivate.commonOptions.AddCodeOption(options, data, L["Custom Sort"], "custom_sort", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-sort",
+  OptionsPrivate.commonOptions.AddCodeOption(options, data, L["Custom Sort"], "custom_sort", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#custom-sort",
                           21, function() return data.sort ~= "custom" end, {"customSort"}, false, { setOnParent = true })
-  OptionsPrivate.commonOptions.AddCodeOption(options, data, L["Custom Anchor"], "custom_anchor_per_unit", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#group-by-frame",
+  OptionsPrivate.commonOptions.AddCodeOption(options, data, L["Custom Anchor"], "custom_anchor_per_unit", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#group-by-frame",
                           1.7, function() return not(data.grow ~= "CUSTOM" and data.useAnchorPerUnit and data.anchorPerUnit == "CUSTOM") end, {"customAnchorPerUnit"}, false, { setOnParent = true })
 
   local borderHideFunc = function() return data.useAnchorPerUnit end
@@ -631,6 +633,7 @@ end
 
 local function createAnimatedDefaultIcon(parent)
   local defaultIcon = CreateFrame("Frame", nil, parent);
+  defaultIcon:SetFrameLevel(parent:GetFrameLevel() + 1)
   parent.defaultIcon = defaultIcon;
 
   local t1 = defaultIcon:CreateTexture(nil, "ARTWORK");
@@ -673,7 +676,7 @@ local function modifyThumbnail(parent, frame, data)
       icon:SetAllPoints(frame)
       frame.icon = icon
     end
-    local success = OptionsPrivate.Private.SetTextureOrSpellTexture(frame.icon, path or data.groupIcon) and (path or data.groupIcon)
+    local success = OptionsPrivate.Private.SetTextureOrAtlas(frame.icon, path or data.groupIcon) and (path or data.groupIcon)
     if success then
       if frame.defaultIcon then
         frame.defaultIcon:Hide()

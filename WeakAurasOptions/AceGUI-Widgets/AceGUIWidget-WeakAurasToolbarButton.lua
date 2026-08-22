@@ -158,6 +158,7 @@ local function Constructor()
   frame:SetPushedTexture(pTex)
 
 
+  --- @type table<string, any>
   local widget = {
     text  = text,
     icon = icon,

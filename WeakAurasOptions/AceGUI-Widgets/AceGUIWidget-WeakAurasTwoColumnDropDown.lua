@@ -1,14 +1,11 @@
 if not WeakAuras.IsLibsOK() then return end
 
-local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local Type, Version = "WeakAurasTwoColumnDropdown", 6
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
-
--- WoW APIs
-local tIndexOf = OptionsPrivate.tIndexOf
 
 local secondLevelMt = {} -- Tag for our tables
 local function CreateSecondLevelTable()
@@ -86,12 +83,12 @@ local methods = {
           end
         end
         local secondList = {}
-        for displayName, _ in pairs(treeValue) do
+        for displayName in pairs(treeValue) do
           tinsert(secondList, displayName)
         end
         table.sort(secondList)
 
-        local oldValueIndex = tIndexOf(secondList, oldValue)
+        local oldValueIndex = OptionsPrivate.tIndexOf(secondList, oldValue)
         widget.userdata.secondList = secondList
         widget.secondDropDown:SetList(secondList)
         widget:DoLayout("two")
@@ -106,7 +103,7 @@ local methods = {
         else
           local default = widget.secondDropDown.userdata.defaultSelection[displayName]
           if default then
-            local index = tIndexOf(secondList, default)
+            local index = OptionsPrivate.tIndexOf(secondList, default)
             widget.secondDropDown:SetValue(index)
             local v = widget:GetValue()
             if (v) then
@@ -172,16 +169,16 @@ local methods = {
     for displayName, treeValue in pairs(self.userdata.tree) do
       if CompareValues(treeValue, value) then
         self:DoLayout("one")
-        self.firstDropdown:SetValue(tIndexOf(self.userdata.firstList, displayName))
+        self.firstDropdown:SetValue(OptionsPrivate.tIndexOf(self.userdata.firstList, displayName))
         return
       elseif IsSecondLevelTable(treeValue) then
         for displayName2, key in pairs(treeValue) do
           if CompareValues(key, value) then
             self:DoLayout("two")
-            local index = tIndexOf(self.userdata.firstList, displayName);
+            local index = OptionsPrivate.tIndexOf(self.userdata.firstList, displayName);
             self.firstDropdown:SetValue(index)
             self.firstDropdown:OnFirstDropdownValueChanged("", index)
-            self.secondDropDown:SetValue(tIndexOf(self.userdata.secondList, displayName2))
+            self.secondDropDown:SetValue(OptionsPrivate.tIndexOf(self.userdata.secondList, displayName2))
             return
           end
         end
@@ -226,7 +223,7 @@ local methods = {
     self.userdata.tree = tree
 
     local firstList = {}
-    for displayName, _ in pairs(tree) do
+    for displayName in pairs(tree) do
       tinsert(firstList, displayName)
     end
     table.sort(firstList)
@@ -244,6 +241,7 @@ local function Constructor()
   frame:SetWidth(50)
 
   local content = CreateFrame("Frame", nil, frame)
+  content:SetFrameLevel(frame:GetFrameLevel() + 1)
   content:SetPoint("TOPLEFT", 0, 0)
   content:SetPoint("BOTTOMRIGHT", 0, 0)
 

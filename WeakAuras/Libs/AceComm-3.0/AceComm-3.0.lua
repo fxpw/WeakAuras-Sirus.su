@@ -9,7 +9,7 @@
 -- make into AceComm.
 -- @class file
 -- @name AceComm-3.0
--- @release $Id$
+-- @release $Id: AceComm-3.0.lua 1333 2024-05-05 16:24:39Z nevcairiel $
 
 --[[ AceComm-3.0
 
@@ -20,7 +20,7 @@ TODO: Time out old data rotting around from dead senders? Not a HUGE deal since 
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 local CTL = assert(ChatThrottleLib, "AceComm-3.0 requires ChatThrottleLib")
 
-local MAJOR, MINOR = "AceComm-3.0", 12
+local MAJOR, MINOR = "AceComm-3.0", 14
 local AceComm,oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceComm then return end
@@ -31,13 +31,10 @@ local strsub, strfind = string.sub, string.find
 local tinsert, tconcat = table.insert, table.concat
 local error, assert = error, assert
 
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: LibStub, DEFAULT_CHAT_FRAME, geterrorhandler
-
 AceComm.embeds = AceComm.embeds or {}
 
 -- for my sanity and yours, let's give the message type bytes some names
+-- 3.3.5a: Keep the pre-4.1 wire format so multipart messages remain compatible with older AceComm versions.
 local MSG_MULTI_FIRST = "\001"
 local MSG_MULTI_NEXT  = "\002"
 local MSG_MULTI_LAST  = "\003"
@@ -67,7 +64,7 @@ local warnedPrefix=false
 -- @param distribution Addon channel, e.g. "RAID", "GUILD", etc; see SendAddonMessage API
 -- @param target Destination for some distributions; see SendAddonMessage API
 -- @param prio OPTIONAL: ChatThrottleLib priority, "BULK", "NORMAL" or "ALERT". Defaults to "NORMAL".
--- @param callbackFn OPTIONAL: callback function to be called as each chunk is sent. receives 3 args: the user supplied arg (see next), the number of bytes sent so far, and the number of bytes total to send.
+-- @param callbackFn OPTIONAL: callback function to be called as each chunk is sent. receives the user supplied arg (see next), the number of bytes sent so far, the number of bytes total to send, and an optional send result.
 -- @param callbackArg: OPTIONAL: first arg to the callback function. nil will be passed if not specified.
 function AceComm:SendCommMessage(prefix, text, distribution, target, prio, callbackFn, callbackArg)
 	prio = prio or "NORMAL"	-- pasta's reference implementation had different prio for singlepart and multipart, but that's a very bad idea since that can easily lead to out-of-sequence delivery!
@@ -90,15 +87,14 @@ function AceComm:SendCommMessage(prefix, text, distribution, target, prio, callb
 		end
 	end
 
-
 	local textlen = #text
 	local maxtextlen = 254 - #prefix	-- 254 is the max length of prefix + text that can be sent in one message
-	local queueName = prefix..distribution..(target or "")
+	local queueName = prefix
 
 	local ctlCallback = nil
 	if callbackFn then
-		ctlCallback = function(sent)
-			return callbackFn(callbackArg, sent, textlen)
+		ctlCallback = function(sent, sendResult)
+			return callbackFn(callbackArg, sent, textlen, sendResult)
 		end
 	end
 

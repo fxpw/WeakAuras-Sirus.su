@@ -372,10 +372,29 @@ local GuildBank =
 			Name = "WithdrawGuildBankMoney",
 			Type = "Function",
 
-			Returns =
+			Arguments =
 			{
-				{ Name = "canWithdraw", Type = "bool", Nilable = false },
+				{ Name = "amount", Type = "number", Nilable = false },
 			},
+		},
+		{
+			Name = "SetGuildBankTabInfo",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "tab", Type = "number", Nilable = false },
+				{ Name = "name", Type = "string", Nilable = false },
+				{ Name = "iconIndex", Type = "number", Nilable = false },
+			},
+		},
+		{
+			Name = "SetGuildBankTabWithdraw",
+			Type = "Function",
+		},
+		{
+			Name = "SetGuildBankWithdrawLimit",
+			Type = "Function",
 		},
 	},
 

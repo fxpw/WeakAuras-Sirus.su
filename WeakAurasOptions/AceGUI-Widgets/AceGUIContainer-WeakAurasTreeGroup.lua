@@ -116,11 +116,11 @@ local function UpdateButton(button, treeline, selected, canExpand, isExpanded)
 
 	if canExpand then
 		if not isExpanded then
-			toggle:SetNormalTexture("Interface\\Buttons\\UI-PlusButton-UP")
-			toggle:SetPushedTexture("Interface\\Buttons\\UI-PlusButton-DOWN")
+			toggle:SetNormalTexture("Interface\\Buttons\\UI-PlusButton-UP") -- 130838
+			toggle:SetPushedTexture("Interface\\Buttons\\UI-PlusButton-DOWN") -- 130836
 		else
-			toggle:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-UP")
-			toggle:SetPushedTexture("Interface\\Buttons\\UI-MinusButton-DOWN")
+			toggle:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-UP") -- 130821
+			toggle:SetPushedTexture("Interface\\Buttons\\UI-MinusButton-DOWN") -- 130820
 		end
 		toggle:Show()
 	else
@@ -645,6 +645,7 @@ local function Constructor()
 	local frame = CreateFrame("Frame", nil, UIParent)
 
 	local treeframe = CreateFrame("Frame", ("AceConfigDialogTreeFrame%d"):format(num), frame)
+	treeframe:SetFrameLevel(frame:GetFrameLevel() + 1)
 	treeframe:SetPoint("TOPLEFT")
 	treeframe:SetPoint("BOTTOMLEFT")
 	treeframe:SetWidth(DEFAULT_TREE_WIDTH)
@@ -658,12 +659,14 @@ local function Constructor()
 	treeframe:SetScript("OnMouseWheel", Tree_OnMouseWheel)
 
 	local treeframeBG = CreateFrame("Frame", nil, treeframe)
+	treeframeBG:SetFrameLevel(treeframe:GetFrameLevel() + 1)
 	treeframeBG:SetBackdrop(PaneBackdrop)
 	treeframeBG:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
 	treeframeBG:SetBackdropBorderColor(0.4, 0.4, 0.4)
 	treeframeBG:SetAllPoints(treeframe)
 
-	local dragger = CreateFrame("Button", nil, treeframe)
+	local dragger = CreateFrame("Frame", nil, treeframe)
+	dragger:SetFrameLevel(treeframe:GetFrameLevel() + 1)
 	dragger:SetWidth(8)
 	dragger:SetPoint("TOP", treeframe, "TOPRIGHT")
 	dragger:SetPoint("BOTTOM", treeframe, "BOTTOMRIGHT")
@@ -673,8 +676,10 @@ local function Constructor()
 	dragger:SetScript("OnLeave", Dragger_OnLeave)
 	dragger:SetScript("OnMouseDown", Dragger_OnMouseDown)
 	dragger:SetScript("OnMouseUp", Dragger_OnMouseUp)
+	dragger:EnableMouse(true)
 
 	local scrollbar = CreateFrame("Slider", ("AceConfigDialogTreeGroup%dScrollBar"):format(num), treeframe, "UIPanelScrollBarTemplate")
+	scrollbar:SetFrameLevel(treeframe:GetFrameLevel() + 1)
 	scrollbar:SetScript("OnValueChanged", nil)
 	scrollbar:SetPoint("TOPRIGHT", -10, -26)
 	scrollbar:SetPoint("BOTTOMRIGHT", -10, 26)
@@ -689,6 +694,7 @@ local function Constructor()
 	scrollbg:SetTexture(0, 0, 0, 0.4)
 
 	local border = CreateFrame("Frame", nil, frame)
+	border:SetFrameLevel(frame:GetFrameLevel() + 1)
 	border:SetPoint("TOPLEFT", treeframe, "TOPRIGHT")
 	border:SetPoint("BOTTOMRIGHT")
 	border:SetBackdrop(PaneBackdrop)
@@ -697,6 +703,7 @@ local function Constructor()
 
 	--Container Support
 	local content = CreateFrame("Frame", nil, border)
+	content:SetFrameLevel(border:GetFrameLevel() + 1)
 	content:SetPoint("TOPLEFT", 10, -10)
 	content:SetPoint("BOTTOMRIGHT", -10, 10)
 

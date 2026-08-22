@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
@@ -86,7 +88,7 @@ local function GetGlobalOptions(data)
   local function hideTriggerCombiner()
     return not (data.triggers.disjunctive == "custom")
   end
-  OptionsPrivate.commonOptions.AddCodeOption(globalTriggerOptions, data, L["Custom"], "custom_trigger_combination", "https://github.com/WeakAuras/WeakAuras2/wiki/Custom-Code-Blocks#custom-activation",
+  OptionsPrivate.commonOptions.AddCodeOption(globalTriggerOptions, data, L["Custom"], "custom_trigger_combination", "https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Custom-Code-Blocks#custom-activation",
                           2.4, hideTriggerCombiner, {"triggers", "customTriggerLogic"}, false);
 
   return {
@@ -252,6 +254,7 @@ local function moveTriggerDownConditionCheck(check, i)
   end
 end
 
+--- @type fun(data: auraData, i: number) : boolean
 local function moveTriggerDownImpl(data, i)
   if (i < 1 or i >= #data.triggers) then
     return false;
@@ -261,7 +264,7 @@ local function moveTriggerDownImpl(data, i)
     moveTriggerDownConditionCheck(condition.check, i);
   end
 
- local function fixUpProgressSource(data)
+  local function fixUpProgressSource(data)
     if data.progressSource then
       local trigger, property = unpack(data.progressSource)
       if trigger == i then
@@ -409,8 +412,7 @@ function OptionsPrivate.AddTriggerMetaFunctions(options, data, triggernum)
       end
     end
   }
-  local _, _, _, enabled = GetAddOnInfo("WeakAurasTemplates")
-  if enabled then
+  if GetAddOnInfo("WeakAurasTemplates") ~= "MISSING" then
     options.__applyTemplate = function()
       -- If we have more than a single aura selected,
       -- we want to open the template view with the group/multi selection

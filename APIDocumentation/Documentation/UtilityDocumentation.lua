@@ -200,14 +200,14 @@ local Utility =
 
 			Arguments =
 			{
-				{ Name = "eventType", Type = "number", Nilable = false },
+				{ Name = "token", Type = "string", Nilable = false },
+				{ Name = "gender", Type = "number", Nilable = true },
+				{ Name = "ordinal", Type = "number", Nilable = true },
 			},
 
 			Returns =
 			{
-				{ Name = "name", Type = "string", Nilable = false },
-				{ Name = "icon", Type = "string", Nilable = false },
-				{ Name = "expansion", Type = "number", Nilable = false },
+				{ Name = "text", Type = "string", Nilable = false },
 			},
 		},
 		{
@@ -245,11 +245,13 @@ local Utility =
 		{
 			Name = "RegisterForSave",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
 			Name = "RegisterForSavePerCharacter",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
@@ -444,6 +446,15 @@ local Utility =
 			Name = "wipe",
 			Type = "Function",
 
+			Arguments =
+			{
+				{ Name = "aTable", Type = "table", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "emptyTable", Type = "table", Nilable = false },
+			},
 		},
 	},
 

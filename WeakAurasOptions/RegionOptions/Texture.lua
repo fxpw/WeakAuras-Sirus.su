@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
@@ -30,7 +32,7 @@ local function createOptions(id, data)
           color = "color",
           mirror = "mirror",
           blendMode = "blendMode"
-        }, OptionsPrivate.Private.texture_types);
+        }, OptionsPrivate.Private.texture_types, nil, true)
       end,
       imageWidth = 24,
       imageHeight = 24,
@@ -73,6 +75,14 @@ local function createOptions(id, data)
       width = WeakAuras.normalWidth,
       name = L["Mirror"],
       order = 6
+    },
+    textureWrapMode = {
+      type = "select",
+      width = WeakAuras.normalWidth,
+      name = OptionsPrivate.SetOptionTextDisabled(L["Texture Wrap"]),
+      desc = OptionsPrivate.AddCompatibilityNote(nil, nil, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."]),
+      order = 7,
+      values = OptionsPrivate.Private.texture_wrap_types,
     },
     rotate = {
       type = "toggle",
@@ -145,7 +155,7 @@ local function modifyThumbnail(parent, region, data, fullModify, size)
     region.texture:SetHeight(scale * data.height);
   end
 
-  region.texture:SetTexture(data.texture);
+  OptionsPrivate.Private.SetTextureOrAtlas(region.texture, data.texture, data.textureWrapMode, data.textureWrapMode);
   region.texture:SetVertexColor(data.color[1], data.color[2], data.color[3], data.color[4]);
   region.texture:SetBlendMode(data.blendMode);
 
@@ -183,7 +193,7 @@ local templates = {
   {
     title = L["Star"],
     data = {
-      texture = "Spells\\T_Star3",
+      texture = "Spells\\T_Star3", -- "241049"
       blendMode = "ADD",
       width = 200,
       height = 200,
@@ -193,7 +203,7 @@ local templates = {
   {
     title = L["Leaf"],
     data = {
-      texture = "Spells\\Nature_Rune_128",
+      texture = "Spells\\Nature_Rune_128", -- "166606"
       blendMode = "ADD",
       width = 200,
       height = 200,
@@ -203,7 +213,7 @@ local templates = {
   {
     title = L["Hawk"],
     data = {
-      texture = "Spells\\Aspect_Hawk",
+      texture = "Spells\\Aspect_Hawk", -- "165609"
       blendMode = "ADD",
       width = 200,
       height = 200,

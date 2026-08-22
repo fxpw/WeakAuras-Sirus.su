@@ -95,6 +95,7 @@ local ClassResource =
 		{
 			Name = "TargetTotem",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

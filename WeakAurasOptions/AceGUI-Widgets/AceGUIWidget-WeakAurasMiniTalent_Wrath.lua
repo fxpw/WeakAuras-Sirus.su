@@ -1,4 +1,6 @@
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 if not WeakAuras.IsLibsOK() then
@@ -7,7 +9,7 @@ end
 
 local keepOpenForReload = {}
 
-local widgetType, widgetVersion = "WeakAurasMiniTalent", 5
+local widgetType, widgetVersion = "WeakAurasMiniTalent", 6
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(widgetType) or 0) >= widgetVersion then
   return
@@ -19,6 +21,7 @@ local buttonSizePadded = 45
 
 local function CreateTalentButton(parent)
   local button = CreateFrame("Button", nil, parent)
+  button:SetFrameLevel(parent:GetFrameLevel() + 1)
   button.obj = parent
   button:SetSize(buttonSize, buttonSize)
 
@@ -100,7 +103,6 @@ end
 local function Button_ShowToolTip(self)
   if self.spellId then
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-    --DEPRECATED GameTooltip:SetSpellByID(self.spellId)
     GameTooltip:SetHyperlink("spell:"..(self.spellId or 0))
   end
 end
@@ -120,7 +122,7 @@ local function TalentFrame_Update(self)
         if spellId == nil then
           local talentId = button.index - (button.tab - 1) * MAX_NUM_TALENTS
           local name = GetTalentInfo(button.tab, talentId)
-          print("Please report on WeakAuras Discord:\nspell missing", button.tab, tier, column, name)
+          WeakAuras.prettyPrint("Please report on WeakAuras Discord:\nspell missing", button.tab, tier, column, name)
         end
         button.tier = tier
         button.column = column
@@ -130,6 +132,7 @@ local function TalentFrame_Update(self)
         button:ClearAllPoints()
         button:SetScript("OnEnter", Button_ShowToolTip)
         button:SetScript("OnLeave", Button_HideToolTip)
+        -- button:SetMotionScriptsWhileDisabled(true)
         if self.open then
           button:SetPoint("TOPLEFT", button.obj, "TOPLEFT", buttonSizePadded * (column - 1) + (button.tab - 1) * buttonSizePadded * 4 + 5, -buttonSizePadded * (tier - 1) - 5)
           button:Enable()
@@ -287,6 +290,7 @@ local function Constructor()
   toggle.icon:SetSize(25, 36)
   toggle.frame:SetPoint("BOTTOMRIGHT", talentFrame, "TOPRIGHT", 0, 2)
   toggle.frame:SetParent(talentFrame)
+  toggle.frame:SetFrameLevel(talentFrame:GetFrameLevel() + 1)
   toggle.frame.obj.text:SetVertexColor(1, 1, 1, 1)
   toggle.frame:Show()
 

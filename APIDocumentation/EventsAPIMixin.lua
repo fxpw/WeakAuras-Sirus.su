@@ -1,6 +1,7 @@
 local addonName, Private = ...
 
-EventsAPIMixin = Private.CreateFromMixins(BaseAPIMixin);
+local EventsAPIMixin = Private.CreateFromMixins(Private.BaseAPIMixin);
+Private.EventsAPIMixin = EventsAPIMixin;
 
 function EventsAPIMixin:GetParentName() -- override
 	if self.System then

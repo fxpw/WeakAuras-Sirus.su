@@ -23,6 +23,7 @@ local Action =
 		{
 			Name = "CastPetAction",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -340,6 +341,7 @@ local Action =
 		{
 			Name = "TogglePetAutocast",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{
@@ -350,6 +352,7 @@ local Action =
 		{
 			Name = "UseAction",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 			Arguments =
 			{

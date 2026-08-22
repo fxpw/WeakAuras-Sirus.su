@@ -112,16 +112,18 @@ local PetStable =
 		{
 			Name = "StablePet",
 			Type = "Function",
-
-			Arguments =
-			{
-				{ Name = "index", Type = "luaIndex", Nilable = false },
-			},
-
-			Returns =
-			{
-				{ Name = "selected", Type = "bool", Nilable = false },
-			},
+		},
+		{
+			Name = "GetNextStableSlotCost",
+			Type = "Function",
+		},
+		{
+			Name = "GetNumStableSlots",
+			Type = "Function",
+		},
+		{
+			Name = "UnstablePet",
+			Type = "Function",
 		},
 	},
 

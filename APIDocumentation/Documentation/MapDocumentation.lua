@@ -85,6 +85,12 @@ local Map =
 			Name = "GetMapInfo",
 			Type = "Function",
 
+			Returns =
+			{
+				{ Name = "mapFileName", Type = "string", Nilable = false },
+				{ Name = "textureHeight", Type = "number", Nilable = false },
+				{ Name = "textureWidth", Type = "string", Nilable = false },
+			},
 		},
 		{
 			Name = "GetMapLandmarkInfo",

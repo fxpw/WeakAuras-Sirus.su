@@ -199,10 +199,19 @@ local EquipmentManager =
 			Name = "UseEquipmentSet",
 			Type = "Function",
 
+			Arguments =
+			{
+				{ Name = "name", Type = "string", Nilable = false },
+			},
+
 			Returns =
 			{
-				{ Name = "enabled", Type = "bool", Nilable = false },
+				{ Name = "equipped", Type = "bool", Nilable = true },
 			},
+		},
+		{
+			Name = "RenameEquipmentSet",
+			Type = "Function",
 		},
 	},
 

@@ -61,6 +61,18 @@ local Skill =
 				{ Name = "skillDescription", Type = "string", Nilable = false },
 			},
 		},
+		{
+			Name = "CollapseSkillHeader",
+			Type = "Function",
+		},
+		{
+			Name = "GetSelectedSkill",
+			Type = "Function",
+		},
+		{
+			Name = "SetSelectedSkill",
+			Type = "Function",
+		},
 	},
 
 	Events =

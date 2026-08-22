@@ -39,12 +39,12 @@ local Threat =
 			{
 				{ Name = "unit", Type = "UnitToken", Nilable = true },
 				{ Name = "name", Type = "string", Nilable = true },
-				{ Name = "mobUnit", Type = "UnitToken", Nilable = true },
+				{ Name = "mobUnit", Type = "UnitToken", Nilable = false },
 			},
 
 			Returns =
 			{
-				{ Name = "isTanking", Type = "bool", Nilable = false },
+				{ Name = "isTanking", Type = "bool", Nilable = true },
 				{ Name = "status", Type = "number", Nilable = false },
 				{ Name = "scaledPercent", Type = "number", Nilable = false },
 				{ Name = "rawPercent", Type = "number", Nilable = false },

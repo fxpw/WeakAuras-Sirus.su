@@ -105,11 +105,6 @@ local Petition =
 		{
 			Name = "SignPetition",
 			Type = "Function",
-
-			Returns =
-			{
-				{ Name = "canSign", Type = "bool", Nilable = false },
-			},
 		},
 		{
 			Name = "TurnInGuildCharter",
@@ -120,6 +115,26 @@ local Petition =
 			Name = "TurnInPetition",
 			Type = "Function",
 
+		},
+		{
+			Name = "BuyPetition",
+			Type = "Function",
+		},
+		{
+			Name = "ClosePetitionVendor",
+			Type = "Function",
+		},
+		{
+			Name = "GetPetitionItemInfo",
+			Type = "Function",
+		},
+		{
+			Name = "HasFilledPetition",
+			Type = "Function",
+		},
+		{
+			Name = "TurnInArenaPetition",
+			Type = "Function",
 		},
 	},
 

@@ -9,6 +9,7 @@ local ClientControlAndInformation =
 		{
 			Name = "CancelLogout",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{
@@ -137,6 +138,7 @@ local ClientControlAndInformation =
 		{
 			Name = "ReloadUI",
 			Type = "Function",
+			-- IsProtectedFunction = true,
 
 		},
 		{

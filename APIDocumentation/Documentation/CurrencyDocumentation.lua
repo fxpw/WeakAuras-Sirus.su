@@ -158,6 +158,10 @@ local Currency =
 			},
 
 		},
+		{
+			Name = "GetArenaCurrency",
+			Type = "Function",
+		},
 	},
 
 	Events =

@@ -1,6 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
-
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local createCenterLines = true -- Creates only the middle lines
@@ -15,10 +16,8 @@ local pairs = pairs
 
 -- WoW APIs
 local IsShiftKeyDown, CreateFrame = IsShiftKeyDown, CreateFrame
-local Round = OptionsPrivate.Round
-local tIndexOf = OptionsPrivate.tIndexOf
-local CreateLine = OptionsPrivate.CreateLine
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
@@ -68,27 +67,33 @@ end
 
 local function ConstructMover(frame)
   local topAndBottom = CreateFrame("Frame", nil, frame)
+  topAndBottom:SetFrameLevel(frame:GetFrameLevel() + 1)
   topAndBottom:SetClampedToScreen(true)
   topAndBottom:SetSize(25, 45)
   topAndBottom:SetPoint("LEFT", frame, "RIGHT", 1, 0)
   local top = CreateFrame("Button", nil, topAndBottom)
+  top:SetFrameLevel(topAndBottom:GetFrameLevel() + 1)
   top:SetSize(25, 25)
   top:SetPoint("TOP", topAndBottom)
   top:SetFrameStrata("BACKGROUND")
   local bottom = CreateFrame("Button", nil, topAndBottom)
+  bottom:SetFrameLevel(topAndBottom:GetFrameLevel() + 1)
   bottom:SetSize(25, 25)
   bottom:SetPoint("BOTTOM", topAndBottom)
   bottom:SetFrameStrata("BACKGROUND")
 
   local leftAndRight = CreateFrame("Frame", nil, frame)
+  leftAndRight:SetFrameLevel(frame:GetFrameLevel() + 1)
   leftAndRight:SetClampedToScreen(true)
   leftAndRight:SetSize(55, 35)
   leftAndRight:SetPoint("TOP", frame, "BOTTOM", 0, 1)
   local left = CreateFrame("Button", nil, leftAndRight)
+  left:SetFrameLevel(leftAndRight:GetFrameLevel() + 1)
   left:SetSize(35, 35)
   left:SetPoint("LEFT", leftAndRight, 0, 0.9)
   left:SetFrameStrata("BACKGROUND")
   local right = CreateFrame("Button", nil, leftAndRight)
+  right:SetFrameLevel(leftAndRight:GetFrameLevel() + 1)
   right:SetSize(35, 35)
   right:SetPoint("RIGHT", leftAndRight)
   right:SetFrameStrata("BACKGROUND")
@@ -146,7 +151,8 @@ local function ConstructSizer(frame)
   -- topright, bottomright, bottomleft, topleft
 
   local topright = CreateFrame("Frame", nil, frame)
-  topright:EnableMouse()
+  topright:SetFrameLevel(frame:GetFrameLevel() + 1)
+  topright:EnableMouse(false)
   topright:SetWidth(16)
   topright:SetHeight(16)
   topright:SetPoint("TOPRIGHT", frame, "TOPRIGHT")
@@ -178,7 +184,8 @@ local function ConstructSizer(frame)
   end
 
   local bottomright = CreateFrame("Frame", nil, frame)
-  bottomright:EnableMouse()
+  bottomright:SetFrameLevel(frame:GetFrameLevel() + 1)
+  bottomright:EnableMouse(false)
   bottomright:SetWidth(16)
   bottomright:SetHeight(16)
   bottomright:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
@@ -210,7 +217,8 @@ local function ConstructSizer(frame)
   end
 
   local bottomleft = CreateFrame("Frame", nil, frame)
-  bottomleft:EnableMouse()
+  bottomleft:SetFrameLevel(frame:GetFrameLevel() + 1)
+  bottomleft:EnableMouse(false)
   bottomleft:SetSize(16, 16)
   bottomleft:SetHeight(16)
   bottomleft:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT")
@@ -242,7 +250,8 @@ local function ConstructSizer(frame)
   end
 
   local topleft = CreateFrame("Frame", nil, frame)
-  topleft:EnableMouse()
+  topleft:SetFrameLevel(frame:GetFrameLevel() + 1)
+  topleft:EnableMouse(false)
   topleft:SetWidth(16)
   topleft:SetHeight(16)
   topleft:SetPoint("TOPLEFT", frame, "TOPLEFT")
@@ -276,7 +285,8 @@ local function ConstructSizer(frame)
   -- top, right, bottom, left
 
   local top = CreateFrame("Frame", nil, frame)
-  top:EnableMouse()
+  top:SetFrameLevel(frame:GetFrameLevel() + 1)
+  top:EnableMouse(false)
   top:SetHeight(8)
   top:SetPoint("TOPRIGHT", topright, "TOPLEFT")
   top:SetPoint("TOPLEFT", topleft, "TOPRIGHT")
@@ -298,7 +308,8 @@ local function ConstructSizer(frame)
   end
 
   local right = CreateFrame("Frame", nil, frame)
-  right:EnableMouse()
+  right:SetFrameLevel(frame:GetFrameLevel() + 1)
+  right:EnableMouse(false)
   right:SetWidth(8)
   right:SetPoint("BOTTOMRIGHT", bottomright, "TOPRIGHT")
   right:SetPoint("TOPRIGHT", topright, "BOTTOMRIGHT")
@@ -320,7 +331,8 @@ local function ConstructSizer(frame)
   end
 
   local bottom = CreateFrame("Frame", nil, frame)
-  bottom:EnableMouse()
+  bottom:SetFrameLevel(frame:GetFrameLevel() + 1)
+  bottom:EnableMouse(false)
   bottom:SetHeight(8)
   bottom:SetPoint("BOTTOMLEFT", bottomleft, "BOTTOMRIGHT")
   bottom:SetPoint("BOTTOMRIGHT", bottomright, "BOTTOMLEFT")
@@ -343,7 +355,8 @@ local function ConstructSizer(frame)
   end
 
   local left = CreateFrame("Frame", nil, frame)
-  left:EnableMouse()
+  left:SetFrameLevel(frame:GetFrameLevel() + 1)
+  left:EnableMouse(false)
   left:SetWidth(8)
   left:SetPoint("TOPLEFT", topleft, "BOTTOMLEFT")
   left:SetPoint("BOTTOMLEFT", bottomleft, "TOPLEFT")
@@ -369,7 +382,44 @@ local function ConstructSizer(frame)
   return top, topright, right, bottomright, bottom, bottomleft, left, topleft
 end
 
-local AlignmentLines = CreateFrame("Frame", nil, UIParent)
+--- @class AlignmentLineReference
+--- @field id auraId
+--- @field side "LEFT"|"RIGHT"|"TOP"|"BOTTOM"|"CENTERX"|"CENTERY" The side the reference
+--- @field pos1 number The bottom position for vertical or the left position for horizontal lines
+--- @field pos2 number The top position for vertical or the right position for horizontal lines
+
+--- @class AlignmentLine
+--- @field SetStartPoint fun(self: AlignmentLine, relativePoint: AnchorPoint, relativeTo: Region, offsetX: number?, offsetY: number?)
+--- @field SetEndPoint fun(self: AlignmentLine, relativePoint: AnchorPoint, relativeTo: Region, offsetX: number?, offsetY: number?)
+--- @field SetThickness fun(self: AlignmentLine, thickness: number)
+--- @field SetHighlighted fun(self: AlignmentLine, highlight: boolean)
+
+--- @class LineObjectPool
+--- @field Acquire fun(self: LineObjectPool): AlignmentLine
+--- @field Release fun(self: LineObjectPool, line: AlignmentLine)
+
+--- @class LineInformation
+--- @field position number
+--- @field delta number
+--- @field gridLine boolean
+--- @field references AlignmentLineReference[]
+--- @field highlightTextures Texture[]
+--- @field line AlignmentLine?
+--- @field SetStartPoint fun(self: LineInformation, relativePoint: AnchorPoint, relativeTo: Region, offsetX: number?, offsetY: number?)
+--- @field SetEndPoint fun(self: LineInformation, relativePoint: AnchorPoint, relativeTo: Region, offsetX: number?, offsetY: number?)
+--- @field SetThickness fun(self: LineInformation, thickness: number)
+--- @field SetHighlighted fun(self: LineInformation, highlight: boolean)
+--- @field Hide fun(self: LineInformation)
+--- @field Show fun(self: LineInformation)
+--- @field UpdateColor fun(self: LineInformation)
+--- @field UpdateHighlight fun(self: LineInformation)
+--- @field AcquireLine fun(self: LineInformation)
+--- @field ReleaseLine fun(self: LineInformation)
+--- @field Release fun(self: LineInformation)
+--- @field Score fun(self: LineInformation, positions: table<"LEFT"|"RIGHT"|"TOP"|"BOTTOM"|"CENTERX"|"CENTERY", number>): number
+
+--- @class AlignmentLines
+local AlignmentLines = CreateFrame("Frame", nil, UIParent) --[[@as AlignmentLines]]
 AlignmentLines:SetAllPoints(UIParent)
 AlignmentLines:SetFrameStrata("BACKGROUND")
 
@@ -377,9 +427,10 @@ local HighlightFrame = CreateFrame("Frame", nil, UIParent)
 HighlightFrame:SetAllPoints(UIParent)
 HighlightFrame:SetFrameStrata("TOOLTIP")
 
+--- @type LineObjectPool
 AlignmentLines.linePool = CreateObjectPool(
   function(self)
-    return CreateLine(AlignmentLines)
+    return OptionsPrivate.CreateLine(AlignmentLines)
   end,
   function(self, line)
     line:Hide()
@@ -397,6 +448,7 @@ HighlightFrame.texturePool = CreateObjectPool(
     texture:ClearAllPoints()
   end)
 
+--- @type fun(side: "LEFT"|"RIGHT"|"BOTTOM"|"TOP"|"CENTERX"|"CENTERY"): "LEFT"|"RIGHT"|"BOTTOM"|"TOP"|"CENTERX"|"CENTERY"
 local function MirrorSide(side)
   if side == "LEFT" then
     return "RIGHT"
@@ -411,6 +463,7 @@ local function MirrorSide(side)
   end
 end
 
+--- @type fun(side: "LEFT"|"RIGHT"|"BOTTOM"|"TOP"|"CENTERX"|"CENTERY"): "LEFT"|"RIGHT"|"BOTTOM"|"TOP"|"CENTERX"|"CENTERY"|nil
 local function Pos1Side(side)
   if side == "LEFT" or side == "RIGHT" or side == "CENTERX" then
     return "BOTTOM"
@@ -419,6 +472,7 @@ local function Pos1Side(side)
   end
 end
 
+--- @type fun(side: "LEFT"|"RIGHT"|"BOTTOM"|"TOP"|"CENTERX"|"CENTERY"): "LEFT"|"RIGHT"|"BOTTOM"|"TOP"|"CENTERX"|"CENTERY"|nil
 local function Pos2Side(side)
   if side == "LEFT" or side == "RIGHT" or side == "CENTERX" then
     return "TOP"
@@ -427,6 +481,7 @@ local function Pos2Side(side)
   end
 end
 
+--- @class LineInformation
 local LineInformationFuncs = {
   SetStartPoint = function(self, relativePoint, relativeTo, offsetX, offsetY)
     self.startPoint = {relativePoint, relativeTo, offsetX, offsetY}
@@ -527,6 +582,7 @@ local LineInformationFuncs = {
   AddReference = function(self, id, side, pos1, pos2)
     tinsert(self.references, {id = id, side = side, pos1 = pos1, pos2 = pos2})
   end,
+  --- @type fun(self: LineInformation, positions: table<"LEFT"|"RIGHT"|"BOTTOM"|"TOP"|"CENTERX"|"CENTERY", number>) : number
   Score = function(self, positions)
     if self.gridLine then
       return 0 -- Prefer aura lines
@@ -568,6 +624,7 @@ local LineInformationFuncs = {
 
 }
 
+--- @type fun(position: number, gridLine: boolean): LineInformation
 local function CreateLineInformation(position, gridLine)
   local line = {}
   for k, f in pairs(LineInformationFuncs) do
@@ -581,25 +638,32 @@ local function CreateLineInformation(position, gridLine)
   return line
 end
 
+--- @type table<number, LineInformation>
 AlignmentLines.horizontalLines = {}
+--- @type table<number, LineInformation>
 AlignmentLines.verticalLines = {}
 
+--- @type fun(input: number): number
 local function RoundSmallDifference(input)
-  local r = Round(input)
+  local r = OptionsPrivate.Round(input)
   if (abs(r - input) < 0.1) then
     return r
   end
   return input
 end
 
+--- @type fun(input: number): number
 local function AlignToPixelX(virX)
-  return Round(virX * 1)
+  return OptionsPrivate.Round(virX * 1)
 end
 
+--- @type fun(input: number): number
 local function AlignToPixelY(virY)
-  return Round(virY * 1)
+  return OptionsPrivate.Round(virY * 1)
 end
 
+---@param self AlignmentLines
+---@param sizerPoint AnchorPoint?
 AlignmentLines.CreateMiddleLines = function(self, sizerPoint)
   if not createCenterLines then
     return
@@ -625,11 +689,14 @@ AlignmentLines.CreateMiddleLines = function(self, sizerPoint)
   end
 end
 
+--- @type fun(self: AlignmentLines, data: auraData, sizerPoint: AnchorPoint?): LineInformation, LineInformation
 AlignmentLines.CreateLineInformation = function(self, data, sizerPoint)
   local addVertical = not sizerPoint or sizerPoint:find("LEFT", 1) or sizerPoint:find("RIGHT", 1)
   local addHorizontal = not sizerPoint or sizerPoint:find("BOTTOM", 1) or sizerPoint:find("TOP", 1)
 
+  --- @type LineInformation, LineInformation
   local horizontalLines, verticalLines = {}, {}
+  --- @type table<auraId, boolean>
   local skipIds = {}
   for child in OptionsPrivate.Private.TraverseAll(data) do
     skipIds[child.id] = true
@@ -708,12 +775,14 @@ AlignmentLines.CreateLineInformation = function(self, data, sizerPoint)
   return self:MergeLineInformation(verticalLines), self:MergeLineInformation(horizontalLines)
 end
 
+--- @type fun(self: AlignmentLines, lines: LineInformation): LineInformation
 AlignmentLines.MergeLineInformation = function(self, lines)
   local startIndex
   local startPos
   -- Add a line at infinity at the end, this makes the loop easier
   tinsert(lines, {position = math.huge})
 
+  --- @type LineInformation
   local result = {}
   for index, line in ipairs(lines) do
     if not startPos then
@@ -748,6 +817,7 @@ AlignmentLines.MergeLineInformation = function(self, lines)
   return result
 end
 
+---@param self AlignmentLines
 AlignmentLines.CleanUpLines = function(self)
   for _, line in pairs(self.horizontalLines) do
     line:Release()
@@ -761,6 +831,9 @@ AlignmentLines.CleanUpLines = function(self)
   wipe(self.verticalLines)
 end
 
+---@param self AlignmentLines
+---@param data auraData
+---@param sizerPoint AnchorPoint?
 AlignmentLines.CreateLines = function(self, data, sizerPoint)
   self:CleanUpLines()
 
@@ -799,6 +872,13 @@ AlignmentLines.CreateLines = function(self, data, sizerPoint)
   end
 end
 
+---@param lines AlignmentLine[]
+---@param positions table<"LEFT"|"RIGHT"|"TOP"|"BOTTOM"|"CENTERX"|"CENTERY", number>
+---       The positions of the aura, that are used to score lines
+---@param auraSize number?
+---       The size of the aura, this is used to highlight additional lines that exactly
+---       auraSize away
+---@return number? -- The delta
 local function SelectLines(lines, positions, auraSize)
   if #lines == 0 then
     -- Nothing to do
@@ -806,7 +886,9 @@ local function SelectLines(lines, positions, auraSize)
     lines[1]:SetHighlighted(true)
     return lines[1].delta
   else
+    --- @type number
     local bestScore = -1
+    --- @type AlignmentLine?
     local bestLine = nil
     for _, line in ipairs(lines) do
       local lineScore = line:Score(positions)
@@ -822,6 +904,7 @@ local function SelectLines(lines, positions, auraSize)
       elseif bestLine then
         local diffBetweenLines = distance(line.position, bestLine.position)
         if auraSize and distance(diffBetweenLines, auraSize) < 1 then
+          -- Other line is the as far away as the aura is wide
           line:SetHighlighted(true)
         else
           line:SetHighlighted(false)
@@ -948,12 +1031,13 @@ end
 
 local function ConstructMoverSizer(parent)
   local frame = CreateFrame("Frame", nil, parent)
+  frame:SetFrameLevel(parent:GetFrameLevel() + 1)
   frame:SetBackdrop({
     edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
     edgeSize = 12,
     insets = {left = 0, right = 0, top = 0, bottom = 0}
   })
-  frame:EnableMouse()
+  frame:EnableMouse(false)
 
   frame.top, frame.topright, frame.right, frame.bottomright, frame.bottom, frame.bottomleft, frame.left, frame.topleft
   = ConstructSizer(frame)
@@ -970,7 +1054,8 @@ local function ConstructMoverSizer(parent)
   frame.topleft.Clear()
 
   local mover = CreateFrame("Frame", nil, frame)
-  mover:EnableMouse()
+  mover:SetFrameLevel(frame:GetFrameLevel() + 1)
+  mover:EnableMouse(false)
   mover.moving = {}
   mover.interims = {}
   mover.selfPointIcon = mover:CreateTexture()
@@ -1135,7 +1220,7 @@ local function ConstructMoverSizer(parent)
     frame:ScaleCorners(region:GetWidth(), region:GetHeight())
     local regionStrata = region:GetFrameStrata()
     if regionStrata then
-      local strata = math.min(tIndexOf(OptionsPrivate.Private.frame_strata_types, regionStrata) + 1, 9)
+      local strata = math.min(OptionsPrivate.tIndexOf(OptionsPrivate.Private.frame_strata_types, regionStrata) + 1, 9)
       frame:SetFrameStrata(OptionsPrivate.Private.frame_strata_types[strata])
       mover:SetFrameStrata(OptionsPrivate.Private.frame_strata_types[strata])
       frame:SetFrameLevel(region:GetFrameLevel() + 1)
@@ -1239,6 +1324,7 @@ local function ConstructMoverSizer(parent)
     else
       mover:SetScript("OnMouseDown", mover.startMoving)
       mover:SetScript("OnMouseUp", mover.doneMoving)
+      mover:EnableMouse(true)
       mover:SetScript("OnEvent", mover.doneMoving)
       mover:SetScript("OnHide", mover.doneMoving)
     end
@@ -1361,6 +1447,14 @@ local function ConstructMoverSizer(parent)
       frame.left:SetScript("OnMouseUp", function() frame.doneSizing("LEFT") end)
       frame.left:SetScript("OnEnter", frame.left.Highlight)
       frame.left:SetScript("OnLeave", frame.left.Clear)
+      frame.bottomleft:EnableMouse(true)
+      frame.bottom:EnableMouse(true)
+      frame.bottomright:EnableMouse(true)
+      frame.right:EnableMouse(true)
+      frame.topright:EnableMouse(true)
+      frame.top:EnableMouse(true)
+      frame.topleft:EnableMouse(true)
+      frame.left:EnableMouse(true)
 
       frame.bottomleft:Show()
       frame.bottom:Show()

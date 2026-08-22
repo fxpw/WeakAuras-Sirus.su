@@ -1,7 +1,12 @@
-if not WeakAuras.IsLibsOK() then return end
+if not WeakAuras.IsLibsOK() then
+  return
+end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
+---@class WeakAuras
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 local prettyPrint = WeakAuras.prettyPrint
@@ -11,7 +16,7 @@ local profileData = {}
 profileData.systems = {}
 profileData.auras = {}
 
-local currentProfileState, ProfilingTimer
+local currentProfileState, ProfilingTimer, stopOnEncounterEnd
 
 local RealTimeProfilingWindow = CreateFrame("Frame", "WeakAurasRealTimeProfiling", UIParent)
 WeakAuras.XMLTemplates["PortraitFrameTemplate"](RealTimeProfilingWindow)
@@ -42,15 +47,14 @@ table_to_string = function(tbl, depth)
       elseif type(v) == "function" then
         v = "function"
       elseif type(v) == "string" then
-        v = '"'.. v ..'"'
+        v = '"' .. v .. '"'
       end
 
       if type(k) == "string" then
-        k = '"' .. k ..'"'
+        k = '"' .. k .. '"'
       end
 
-      str = (str and str .. "|cff999999,|r " or "|cff999999{|r ") .. "|cffffff99["
-            .. tostring(k) .. "]|r |cff999999=|r |cffffffff" .. tostring(v) .. "|r"
+      str = (str and str .. "|cff999999,|r " or "|cff999999{|r ") .. "|cffffff99[" .. tostring(k) .. "]|r |cff999999=|r |cffffffff" .. tostring(v) .. "|r"
     end
   end
   return (str or "{ ") .. " }"
@@ -85,12 +89,15 @@ local function CreateProfilePopup()
       self.is_moving = nil
     end
   end)
+  frame:EnableMouse(true)
 
   local scrollFrame = CreateFrame("ScrollFrame", "WeakAurasProfilingReportScrollFrame", frame, "UIPanelScrollFrameTemplate")
+  scrollFrame:SetFrameLevel(frame:GetFrameLevel() + 1)
   scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -28)
   scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -27, 15)
 
   local messageFrame = CreateFrame("EditBox", nil, scrollFrame)
+  messageFrame:SetFrameLevel(scrollFrame:GetFrameLevel() + 1)
   frame.messageFrame = messageFrame
   messageFrame:SetMultiLine(true)
   messageFrame:SetAutoFocus(false)
@@ -191,13 +198,19 @@ function Private.ProfileRenameAura(oldid, id)
 end
 
 local RegisterProfile = function(startType)
-  if startType == "boss" then startType = "encounter" end
+  if startType == "boss" then
+    startType = "encounter"
+  end
   local delayedStart
   if startType == "encounter" then
     RealTimeProfilingWindow:UnregisterAllEvents()
-    prettyPrint(L["Your next instance of combat will automatically be profiled."])
-    RealTimeProfilingWindow:RegisterEvent("PLAYER_REGEN_DISABLED")
-    RealTimeProfilingWindow:RegisterEvent("PLAYER_REGEN_ENABLED")
+    if WeakAuras.IsDBMRegistered() then
+      prettyPrint(L["Your next encounter will automatically be profiled."])
+    else
+      prettyPrint(L["Your next instance of combat will automatically be profiled."])
+      RealTimeProfilingWindow:RegisterEvent("PLAYER_REGEN_DISABLED")
+      RealTimeProfilingWindow:RegisterEvent("PLAYER_REGEN_ENABLED")
+    end
     currentProfileState = startType
     delayedStart = true
   elseif startType == "combat" then
@@ -225,6 +238,7 @@ local RegisterProfile = function(startType)
   return delayedStart
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function WeakAuras.StartProfile(startType)
   if currentProfileState == "profiling" then
     prettyPrint(L["Profiling already started."])
@@ -240,6 +254,7 @@ function WeakAuras.StartProfile(startType)
   profileData.auras = {}
   profileData.systems.time = {}
   profileData.systems.time.start = debugprofilestop()
+  profileData.systems.time.elapsed = nil
   profileData.systems.time.count = 1
 
   Private.StartProfileSystem = StartProfileSystem
@@ -251,11 +266,11 @@ function WeakAuras.StartProfile(startType)
   LGF.StartProfile()
 end
 
-local function doNothing()
-end
+local function doNothing() end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function WeakAuras.StopProfile()
-  if (currentProfileState ~= "profiling") then
+  if currentProfileState ~= "profiling" then
     prettyPrint(L["Profiling not running."])
     return
   end
@@ -273,6 +288,7 @@ function WeakAuras.StopProfile()
   Private.StopProfileUID = doNothing
   LGF.StopProfile()
 
+  stopOnEncounterEnd = nil
   currentProfileState = nil
   RealTimeProfilingWindow:UnregisterAllEvents()
   RealTimeProfilingWindow:UpdateButtons()
@@ -283,7 +299,7 @@ function WeakAuras.StopProfile()
 end
 
 function WeakAuras.ToggleProfile()
-  if (not profileData.systems.time or profileData.systems.time.count ~= 1) then
+  if not profileData.systems.time or profileData.systems.time.count ~= 1 then
     WeakAuras.StartProfile()
   else
     WeakAuras.StopProfile()
@@ -292,6 +308,7 @@ end
 
 local function CancelScheduledProfile()
   prettyPrint(L["Your scheduled automatic profile has been cancelled."])
+  stopOnEncounterEnd = nil
   currentProfileState = nil
   RealTimeProfilingWindow:UnregisterAllEvents()
   RealTimeProfilingWindow:UpdateButtons()
@@ -308,10 +325,34 @@ local function AutoStartStopProfiling(frame, event)
 end
 RealTimeProfilingWindow:SetScript("OnEvent", AutoStartStopProfiling)
 
+function Private.ProfileEncounterEvent(event)
+  if event == "ENCOUNTER_START" and currentProfileState == "encounter" then
+    WeakAuras.StartProfile("autostart")
+    stopOnEncounterEnd = true
+  elseif event == "ENCOUNTER_END" and currentProfileState == "profiling" and stopOnEncounterEnd then
+    WeakAuras.StopProfile()
+  end
+end
+
+local function ColoredSpike(spike)
+  local r, g, b
+  if spike < 2 then
+    r, g, b = WeakAuras.GetHSVTransition(spike / 2, 0, 1, 0, 1, 1, 1, 0, 1)
+  elseif spike < 2.5 then
+    r, g, b = WeakAuras.GetHSVTransition((spike - 2) * 2, 1, 1, 0, 1, 1, 0.65, 0, 1)
+  elseif spike < 3 then
+    r, g, b = WeakAuras.GetHSVTransition((spike - 2.5) * 2, 1, 0.65, 0, 1, 1, 0, 0, 1)
+  else
+    r, g, b = 1, 0, 0
+  end
+  return ("|cff%02x%02x%02x%.2fms|r"):format(r * 255, g * 255, b * 255, spike)
+end
+
 local function PrintOneProfile(popup, name, map, total)
   if map.count ~= 0 then
     popup:AddText(name .. "  ERROR: count is not zero:" .. " " .. map.count)
   end
+
   local percent = ""
   if total then
     percent = (", %.2f%%"):format(100 * map.elapsed / total)
@@ -319,29 +360,26 @@ local function PrintOneProfile(popup, name, map, total)
 
   local spikeInfo = ""
   if map.spike then
-    local r, g, b
-    if map.spike < 2 then
-      r, g, b = WeakAuras.GetHSVTransition(map.spike / 2, 0, 1, 0, 1, 1, 1, 0, 1)
-    elseif map.spike < 2.5 then
-      r, g, b = WeakAuras.GetHSVTransition((map.spike - 2) * 2, 1, 1, 0, 1, 1, 0.65, 0, 1)
-    elseif map.spike < 3 then
-      r, g, b = WeakAuras.GetHSVTransition((map.spike - 2.5) * 2, 1, 0.65, 0, 1, 1, 0, 0, 1)
-    else
-      r, g, b = 1, 0, 0
-    end
-    spikeInfo = ("|cff%02x%02x%02x(%.2fms)|r"):format(r * 255, g * 255, b * 255, map.spike)
+    spikeInfo = ColoredSpike(map.spike)
   end
 
-  popup:AddText(("%s |cff999999%.2fms%s %s|r"):format(name, map.elapsed, percent, spikeInfo))
+  popup:AddText(("%s |cff999999%.2fms%s (%s)|r"):format(name, map.elapsed, percent, spikeInfo))
 end
 
-local function SortProfileMap(map)
+local function SortProfileMap(map, sortField)
   local result = {}
-  for k, v in pairs(map) do
+  for k in pairs(map) do
     tinsert(result, k)
   end
 
   sort(result, function(a, b)
+    if sortField then
+      local x, y = map[a][sortField], map[b][sortField]
+      if x and y then
+        return x > y
+      end
+    end
+
     return map[a].elapsed > map[b].elapsed
   end)
 
@@ -351,7 +389,9 @@ end
 local function TotalProfileTime(map)
   local total = 0
   for k, v in pairs(map) do
-    total = total + v.elapsed
+    if k ~= "time" and k ~= "wa" then
+      total = total + v.elapsed
+    end
   end
   return total
 end
@@ -359,21 +399,34 @@ end
 local function unitEventToMultiUnit(event)
   local count
   event, count = event:gsub("nameplate%d+$", "nameplate")
-  if count == 1 then return event end
+  if count == 1 then
+    return event
+  end
   event, count = event:gsub("boss%d$", "boss")
-  if count == 1 then return event end
+  if count == 1 then
+    return event
+  end
   event, count = event:gsub("arena%d$", "arena")
-  if count == 1 then return event end
+  if count == 1 then
+    return event
+  end
   event, count = event:gsub("raid%d+$", "group")
-  if count == 1 then return event end
+  if count == 1 then
+    return event
+  end
   event, count = event:gsub("raidpet%d+$", "group")
-  if count == 1 then return event end
+  if count == 1 then
+    return event
+  end
   event, count = event:gsub("party%d$", "party")
-  if count == 1 then return event end
+  if count == 1 then
+    return event
+  end
   event, count = event:gsub("partypet%d$", "party")
   return event
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function WeakAuras.PrintProfile()
   local popup = ProfilePopup()
   if not profileData.systems.time then
@@ -400,20 +453,19 @@ function WeakAuras.PrintProfile()
 
   popup.messageFrame:SetText("")
 
---   PrintOneProfile(popup, "|cff9900ffTotal time:|r", profileData.systems.time)
---   PrintOneProfile(popup, "|cff9900ffTime inside WA:|r", profileData.systems.wa)
---   popup:AddText(string.format("|cff9900ffTime spent inside WA:|r %.2f%%",
---                               100 * profileData.systems.wa.elapsed / profileData.systems.time.elapsed))
+  PrintOneProfile(popup, "|cff9900ffTotal time:|r", profileData.systems.time)
+  PrintOneProfile(popup, "|cff9900ffTime inside WA:|r", profileData.systems.wa)
+  popup:AddText(string.format("|cff9900ffTime spent inside WA:|r %.2f%%", 100 * profileData.systems.wa.elapsed / profileData.systems.time.elapsed))
 
---   popup:AddText("")
---   popup:AddText("Note: Not every aspect of each aura can be tracked.")
---   popup:AddText("You can ask on our discord https://discord.gg/weakauras for help interpreting this output.")
+  popup:AddText("")
+  popup:AddText("Note: Not every aspect of each aura can be tracked.")
+  popup:AddText("You can ask on our discord https://discord.gg/UXSc7nt for help interpreting this output.")
 
 --   popup:AddText("")
   popup:AddText("|cff9900ffAuras:|r")
   local total = TotalProfileTime(profileData.auras)
-  popup:AddText("Total time attributed to auras: ", floor(total) .."ms")
-  for i, k in ipairs(SortProfileMap(profileData.auras)) do
+  popup:AddText("Total time attributed to auras: ", floor(total) .. "ms")
+  for _, k in ipairs(SortProfileMap(profileData.auras), "spike") do
     PrintOneProfile(popup, k, profileData.auras[k], total)
   end
 
@@ -437,7 +489,7 @@ function WeakAuras.PrintProfile()
   end
 
   for i, k in ipairs(SortProfileMap(systemRegrouped)) do
-    if (k ~= "time" and k ~= "wa") then
+    if k ~= "time" and k ~= "wa" then
       PrintOneProfile(popup, k, systemRegrouped[k], profileData.systems.wa.elapsed)
     end
   end
@@ -458,6 +510,7 @@ function RealTimeProfilingWindow:GetBar(name)
     return self.bars[name]
   else
     local bar = CreateFrame("Frame", nil, self.barsFrame)
+    bar:SetFrameLevel(self.barsFrame:GetFrameLevel() + 1)
     self.bars[name] = bar
     Mixin(bar, Private.SmoothStatusBarMixin)
     bar.name = name
@@ -493,7 +546,7 @@ function RealTimeProfilingWindow:GetBar(name)
     txtPct:SetJustifyH("RIGHT")
 
     function bar:SetValue(value)
-      self.fg:SetWidth(self.parent.width / 100 * value)
+      self.fg:SetWidth(self:GetWidth() / 100 * value)
     end
 
     function bar:SetText(time, pct, spike)
@@ -538,7 +591,13 @@ function RealTimeProfilingWindow:GetBar(name)
   end
 end
 
-function RealTimeProfilingWindow:RefreshBars()
+local lastRefresh
+function RealTimeProfilingWindow:RefreshBars(_, force)
+  if not force and lastRefresh and lastRefresh > GetTime() - 0.05 then
+    return
+  end
+  lastRefresh = GetTime()
+
   if not profileData.systems.time or profileData.systems.time.count == 0 then
     return
   end
@@ -559,18 +618,18 @@ function RealTimeProfilingWindow:RefreshBars()
       bar:SetText(elapsed, pct, spike)
     end
   end
---   self.bars:Sort()
---   if profileData.systems.wa then
---     -- local timespent = debugprofilestop() - profileData.systems.time.start
---     self.statsFrameText:SetText(("|cFFFFFFFFTime in WA: %.4fs / %.4fs (%.1f%%)"):format(
--- 		total_spike / 1000,
--- 		total_elapsed/ 1000,
---       100 * total_spike/total_elapsed
---     ))
---   end
+  if profileData.systems.wa then
+    local timespent = profileData.systems.time.elapsed or (debugprofilestop() - profileData.systems.time.start)
+    self.statsFrameText:SetText(("|cFFFFFFFFTime in WA: %.2fs / %ds (%.1f%%)"):format(
+      profileData.systems.wa.elapsed / 1000,
+      timespent / 1000,
+      100 * profileData.systems.wa.elapsed / timespent
+    ))
+  end
 end
 
 function RealTimeProfilingWindow:ResetBars()
+  lastRefresh = nil
   for k, v in pairs(self.bars) do
     v:Hide()
   end
@@ -593,6 +652,7 @@ function RealTimeProfilingWindow:Init()
   WeakAurasRealTimeProfilingTitleText:SetText(L["WeakAuras Profiling"])
 
   local barsFrame = CreateFrame("Frame", nil, self)
+  barsFrame:SetFrameLevel(self:GetFrameLevel() + 1)
   self.barsFrame = barsFrame
   barsFrame:SetPoint("TOPLEFT", 7, -20)
   barsFrame:SetPoint("BOTTOMRIGHT", -3, 30)
@@ -601,6 +661,7 @@ function RealTimeProfilingWindow:Init()
   local statsFrameText = self:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   self.statsFrameText = statsFrameText
   statsFrameText:SetPoint("BOTTOMLEFT", 15, 25)
+  statsFrameText:SetJustifyH("LEFT")
 
   local minimizeButton = CreateFrame("Button", nil, self)
   WeakAuras.XMLTemplates["MaximizeMinimizeButtonFrameTemplate"](minimizeButton)
@@ -763,7 +824,9 @@ function RealTimeProfilingWindow:Stop()
   self.reportButton:Show()
   self:Hide()
   self:ResetBars()
-  WeakAuras.StopProfile()
+  if currentProfileState == "profiling" then
+    WeakAuras.StopProfile()
+  end
   self.toggleButton:SetText(L["Start Now"])
 end
 

@@ -2,7 +2,7 @@
 SimpleGroup Container
 Simple container widget that just groups widgets.
 -------------------------------------------------------------------------------]]
-local Type, Version = "SimpleGroup", 21
+local Type, Version = "SimpleGroup", 22
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -51,6 +51,7 @@ local function Constructor()
 
 	--Container Support
 	local content = CreateFrame("Frame", nil, frame)
+	content:SetFrameLevel(frame:GetFrameLevel() + 1)
 	content:SetPoint("TOPLEFT")
 	content:SetPoint("BOTTOMRIGHT")
 

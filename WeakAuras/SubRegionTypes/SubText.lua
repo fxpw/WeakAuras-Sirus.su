@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 local SharedMedia = LibStub("LibSharedMedia-3.0");
@@ -30,6 +32,7 @@ local default = function(parentType)
       text_shadowColor = { 0, 0, 0, 1},
       text_shadowXOffset = 0,
       text_shadowYOffset = 0,
+      rotateText = "NONE",
 
       text_automaticWidth = "Auto",
       text_fixedWidth = 64,
@@ -54,6 +57,7 @@ local default = function(parentType)
       text_shadowColor = { 0, 0, 0, 1},
       text_shadowXOffset = 1,
       text_shadowYOffset = -1,
+      rotateText = "NONE",
 
       text_automaticWidth = "Auto",
       text_fixedWidth = 64,
@@ -107,6 +111,8 @@ local properties = {
   },
 }
 
+local fontObjectCounter = 0
+
 local function create()
   local region = CreateFrame("Frame", nil, UIParent);
 
@@ -124,6 +130,11 @@ local function create()
   text:SetWordWrap(true)
   text:SetNonSpaceWrap(true)
 
+  local fontObject = CreateFont("WeakAuras-SubText-Font" .. fontObjectCounter)
+  fontObjectCounter =  fontObjectCounter + 1
+  region.text:SetFontObject(fontObject)
+  region.fontObject = fontObject
+
   return region;
 end
 
@@ -138,27 +149,33 @@ end
 local function modify(parent, region, parentData, data, first)
   region:SetParent(parent)
   local text = region.text;
+  local fontObject = region.fontObject
 
   local fontPath = SharedMedia:Fetch("font", data.text_font);
-  text:SetFont(fontPath, data.text_fontSize < 33 and data.text_fontSize or 33, data.text_fontType);
+  local fontSize = data.text_fontSize < 33 and data.text_fontSize or 33
+  local fontType = data.text_fontType == "None" and "" or data.text_fontType
+  text:SetFont(fontPath, fontSize, fontType);
   if not text:GetFont() and fontPath then -- workaround font not loading correctly
-    local objectName = "WeakAuras-Font-" .. data.text_font
-    local fontObject = _G[objectName] or CreateFont(objectName)
-    fontObject:SetFont(fontPath, data.text_fontSize < 33 and data.text_fontSize or 33, data.text_fontType == "None" and "" or data.text_fontType)
+    fontObject:SetFont(fontPath, fontSize, fontType)
     text:SetFontObject(fontObject)
   end
   if not text:GetFont() then -- Font invalid, set the font but keep the setting
-    text:SetFont(STANDARD_TEXT_FONT, data.text_fontSize < 33 and data.text_fontSize or 33, data.text_fontType);
+    text:SetFont(STANDARD_TEXT_FONT, fontSize, fontType);
   end
   if text:GetFont() then
+    text:SetText("") -- SetJustifyH is broken unless the text changes
     text:SetText(WeakAuras.ReplaceRaidMarkerSymbols(data.text_text));
   end
 
   text:SetTextHeight(data.text_fontSize);
 
-  text:SetShadowColor(unpack(data.text_shadowColor))
-  text:SetShadowOffset(data.text_shadowXOffset, data.text_shadowYOffset)
-  text:SetJustifyH(data.text_justify or "CENTER")
+  fontObject:SetShadowColor(unpack(data.text_shadowColor))
+  if data.text_fontType == "OUTLINE|SLUG" then
+    fontObject:SetShadowOffset(0, 0)
+  else
+    fontObject:SetShadowOffset(data.text_shadowXOffset, data.text_shadowYOffset)
+  end
+  fontObject:SetJustifyH(data.text_justify or "CENTER")
 
   if (data.text_automaticWidth == "Fixed") then
     if (data.text_wordWrap == "WordWrap") then
@@ -449,6 +466,8 @@ local function addDefaultsForNewAura(data)
       text_shadowColor = { 0, 0, 0, 1},
       text_shadowXOffset = 1,
       text_shadowYOffset = -1,
+
+      rotateText = "NONE",
     });
 
     tinsert(data.subRegions, {
@@ -469,6 +488,8 @@ local function addDefaultsForNewAura(data)
       text_shadowColor = { 0, 0, 0, 1},
       text_shadowXOffset = 1,
       text_shadowYOffset = -1,
+
+      rotateText = "NONE",
     });
   elseif data.regionType == "icon" then
     tinsert(data.subRegions, {
@@ -489,6 +510,8 @@ local function addDefaultsForNewAura(data)
       text_shadowColor = { 0, 0, 0, 1},
       text_shadowXOffset = 0,
       text_shadowYOffset = 0,
+
+      rotateText = "NONE",
     });
   end
 end

@@ -2,12 +2,15 @@ if not WeakAuras.IsLibsOK() then
   return
 end
 
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 local L = WeakAuras.L
 
 -- Takes as input a table of display data and attempts to update it to be compatible with the current version
 --- Modernizes the aura data
+---@param data auraData
 function Private.Modernize(data, oldSnapshot)
   if not data.internalVersion or data.internalVersion < 2 then
     WeakAuras.prettyPrint(string.format("Data for '%s' is too old, can't modernize.", data.id))
@@ -1461,6 +1464,15 @@ function Private.Modernize(data, oldSnapshot)
   end
 
   -- version 62 became 64 to fix a broken modernize
+
+  if data.internalVersion < 63 or isFromFork then
+    if data.regionType == "texture" then
+      if not data.rotate then
+        data.rotation = data.discrete_rotation
+      end
+    end
+  end
+
   if data.internalVersion < 64 or isFromFork then
     if data.regionType == "dynamicgroup" then
       if data.sort == "custom" and type(data.sortOn) ~= "string" or data.sortOn == "" then
@@ -1777,7 +1789,12 @@ function Private.Modernize(data, oldSnapshot)
         end
       end
     end
+  end
 
+  if data.internalVersion < 72 then
+      if data.model_path and data.modelIsUnit then
+        data.model_fileId = data.model_path
+      end
   end
 
   if data.internalVersion < 73 then
@@ -2011,6 +2028,24 @@ function Private.Modernize(data, oldSnapshot)
       fixData(triggerData.trigger, triggerFix)
     end
     fixData(data.load, loadFix)
+  end
+
+  if data.internalVersion < 78 then
+    if data.triggers then
+      for triggerId, triggerData in ipairs(data.triggers) do
+        local trigger = triggerData.trigger
+        -- Item Type is now always a multi selection
+        if trigger and trigger.type == "item" and trigger.event == "Item Type Equipped" then
+          local value = trigger.itemTypeName and trigger.itemTypeName.single or nil
+          if trigger.use_itemTypeName and value then
+            trigger.use_itemTypeName = false
+            trigger.itemTypeName = {multi = {[value] = true}}
+          else
+            trigger.itemTypeName = {multi = {}}
+          end
+        end
+      end
+    end
   end
 
   if data.internalVersion < 79 then
@@ -2307,6 +2342,69 @@ function Private.Modernize(data, oldSnapshot)
 
   if data.internalVersion < 89 then
     data.information.showNilIsFalse = true
+  end
+
+  if data.internalVersion < 90 then
+    if data.regionType == "aurabar" then
+      data.toolTipArea = "ICON"
+    end
+
+    -- Migrate model_path to model_fileId for model region
+    if data.model_path and (not data.model_fileId or type(data.model_fileId) == "number" or (type(data.model_fileId) == "string" and tonumber(data.model_fileId) ~= nil)) then
+      data.model_fileId = data.model_path
+      data.model_path = nil
+    end
+
+    if data.subRegions then
+      for index, subRegionData in ipairs(data.subRegions) do
+        -- Migrate submodel fields
+        if subRegionData.type == "submodel" then
+          if
+            subRegionData.model_path
+            and (
+              not subRegionData.model_fileId
+              or type(subRegionData.model_fileId) == "number"
+              or (type(subRegionData.model_fileId) == "string" and tonumber(subRegionData.model_fileId) ~= nil)
+            )
+          then
+            subRegionData.model_fileId = subRegionData.model_path
+            subRegionData.model_path = nil
+          end
+          if subRegionData.bar_model_clip ~= nil then
+            subRegionData.bar_model_attach = subRegionData.bar_model_clip
+            subRegionData.bar_model_clip = nil
+            if subRegionData.bar_model_attach then
+              subRegionData.bar_model_stretch = true
+            end
+          end
+        end
+        -- Migrate subcirculartexture again
+        if subRegionData.type == "subcirculartexture" and subRegionData.progressSource == nil and subRegionData.progressSources ~= nil then
+          subRegionData.progressSource = subRegionData.progressSources
+          subRegionData.progressSources = nil
+        end
+      end
+    end
+
+    -- Migrate spec_position to retail format
+    local specPosition = data.load and data.load.spec_position
+    if specPosition == "caster" then
+      data.load.spec_position = "RANGED"
+    elseif specPosition == "melee" then
+      data.load.spec_position = "MELEE"
+    end
+
+    -- Migrate zoneId to zoneIds
+    if data.load then
+      if data.load.zoneId ~= nil then
+        data.load.zoneIds = data.load.zoneId
+        data.load.zoneId = nil
+      end
+      if data.load.use_zoneId ~= nil then
+        data.load.use_zoneIds = data.load.use_zoneId
+        data.load.use_zoneId = nil
+      end
+    end
   end
 
   data.internalVersion = max(data.internalVersion or 0, WeakAuras.InternalVersion())

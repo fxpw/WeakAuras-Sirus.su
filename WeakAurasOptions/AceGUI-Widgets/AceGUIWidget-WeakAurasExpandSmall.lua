@@ -2,7 +2,9 @@
 Button Widget for our Expand button
 -------------------------------------------------------------------------------]]
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local Type, Version = "WeakAurasExpandSmall", 4
@@ -192,7 +194,7 @@ local function Constructor()
 
   local label = frame:CreateFontString(nil, "BACKGROUND", "GameFontHighlight")
   label:SetJustifyH("LEFT")
-  label:SetJustifyV("CENTER")
+  label:SetJustifyV("MIDDLE")
   label:SetPoint("RIGHT")
   label:SetPoint("TOP")
   label:SetPoint("BOTTOM")

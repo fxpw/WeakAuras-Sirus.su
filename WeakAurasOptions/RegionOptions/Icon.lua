@@ -1,5 +1,7 @@
 if not WeakAuras.IsLibsOK() then return end
+---@type string
 local AddonName = ...
+---@class OptionsPrivate
 local OptionsPrivate = select(2, ...)
 
 local Masque = LibStub("Masque", true)
@@ -242,6 +244,14 @@ local function createOptions(id, data)
       get = function() return data.inverse and data.cooldown; end,
       hidden = function() return not data.cooldown end
     },
+    cooldownSwipe = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = OptionsPrivate.SetOptionTextDisabled(L["Show \"Swipe\""]),
+      order = 11.3,
+      desc = OptionsPrivate.AddCompatibilityNote("|TInterface\\AddOns\\WeakAuras\\Media\\Textures\\swipe-example:30|t\n"..L["Enable \"swipe\" part of the overlay"], false, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."]),
+      hidden = function() return not data.cooldown end,
+    },
     cooldownEdge = {
       type = "toggle",
       width = WeakAuras.normalWidth,
@@ -250,14 +260,30 @@ local function createOptions(id, data)
       desc = "|TInterface\\AddOns\\WeakAuras\\Media\\Textures\\edge-example:30|t\n"..L["Enable \"Edge\" part of the overlay"],
       hidden = function() return not data.cooldown end,
     },
+    cooldownTextDisabled = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = OptionsPrivate.SetOptionTextDisabled(L["Hide Timer Text"]),
+      order = 11.5,
+      desc = OptionsPrivate.AddCompatibilityNote(L["A timer will automatically be displayed according to default Interface Settings (overridden by some addons).\nEnable this setting if you want this timer to be hidden, or when using a WeakAuras text to display the timer"], false, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."]),
+      hidden = function() return not data.cooldown end,
+    },
+    useCooldownModRate = {
+      type = "toggle",
+      width = WeakAuras.normalWidth,
+      name = OptionsPrivate.SetOptionTextDisabled(L["Blizzard Cooldown Reduction"]),
+      order = 11.6,
+      desc = OptionsPrivate.AddCompatibilityNote(L["Cooldown Reduction changes the duration of seconds instead of showing the real time seconds."], false, L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."]),
+      hidden = function() return not data.cooldown end,
+    },
     ccWarning = {
       type = "description",
       width = WeakAuras.doubleWidth,
       name = function()
         if OmniCC then
-          return L["The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings"]
+          return L["The addon OmniCC is enabled. It might add cooldown numbers to the swipe. You can configure these in the OmniCC settings."]
         elseif ElvUI then
-          return L["The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings"]
+          return L["The addon ElvUI is enabled. It might add cooldown numbers to the swipe. You can configure these in the ElvUI settings."]
         else
           return L["Cooldown Numbers might be added by WoW. You can configure these in the game settings."]
         end
@@ -280,6 +306,7 @@ local function createOptions(id, data)
 end
 
 local function createThumbnail()
+  ---@class frame: FrameScriptObject
   local frame = CreateFrame("Frame", nil, UIParent)
   local icon = frame:CreateTexture();
   icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark");
@@ -292,6 +319,7 @@ local function modifyThumbnail(parent, frame, data)
   local texWidth = 0.25 * data.zoom;
   frame.icon:SetTexCoord(texWidth, 1 - texWidth, texWidth, 1 - texWidth);
   frame:SetParent(parent)
+  frame:SetFrameLevel(parent:GetFrameLevel() + 1)
 
   function frame:SetIcon(path)
     local iconPath
@@ -300,9 +328,11 @@ local function modifyThumbnail(parent, frame, data)
     else
       iconPath = path or data.displayIcon
     end
-
-    OptionsPrivate.Private.SetTextureOrSpellTexture(self.icon,
-      iconPath and iconPath ~= "" and iconPath or "Interface\\Icons\\INV_Misc_QuestionMark")
+    if iconPath and iconPath ~= "" then
+      OptionsPrivate.Private.SetTextureOrAtlas(self.icon, iconPath)
+    else
+      OptionsPrivate.Private.SetTextureOrAtlas(self.icon, "Interface\\Icons\\INV_Misc_QuestionMark")
+    end
   end
 
   if data then

@@ -2,9 +2,24 @@ local L = WeakAuras.L
 
 local locale = GAME_LOCALE or GetLocale()
 
--- This File adds Custom Localization for
--- Specializations, Creature Types, Creature Families, TimeUtils and BossNames
+-- This File adds Custom Localizations
 if (locale == "enUS" or locale == "enGB") then
+  L["Aberration"] = "Aberration"
+  L["Air"] = "Air"
+  L["Earth"] = "Earth"
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "Install AwesomeCVar to open the Voice Chat settings."
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+  L["And our Community Heroes:"] = "And our Community Heroes:"
+  L["Awesome WotLK: FrostAtom, Widget, noname"] = "Awesome WotLK: FrostAtom, Widget, noname"
+  L["DBM Warmane: Zidras"] = "DBM Warmane: Zidras"
+  L["MerfinUI: Merfin"] = "MerfinUI: Merfin"
+  L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"] = "WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"
+  L["Open the Voice Chat settings to configure the TTS."] = "Open the Voice Chat settings to configure the TTS."
+  L["Ranged Attack Power"] = "Ranged Attack Power"
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."
+  L["Water"] = "Water"
+  L["Wild Pet"] = "Wild Pet"
+
   L["Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."] = "Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."
   L["|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"
   L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"
@@ -15,6 +30,14 @@ if (locale == "enUS" or locale == "enGB") then
   L["Please install it."] = "Please install it."
   L["Please enable it in your AddOn list."] = "Please enable it in your AddOn list."
   L["AddOn: APIDocumentation is not loaded correctly."] = "AddOn: APIDocumentation is not loaded correctly."
+  L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."] = "|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."
+  L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."] = "|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."
+  L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."] = "Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."
+  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."] = "Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."
 
   L["Affliction"] = "Affliction"
   L["Arcane"] = "Arcane"
@@ -195,6 +218,22 @@ if (locale == "enUS" or locale == "enGB") then
   end
 
 elseif (locale == "deDE") then
+  L["Aberration"] = "Entartung"
+  L["Air"] = "Luft"
+  L["Earth"] = "Erde"
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "Installiere AwesomeCVar, um die Sprachchat-Einstellungen zu öffnen."
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+  L["And our Community Heroes:"] = "Und unsere Community-Helden:"
+  L["Awesome WotLK: FrostAtom, Widget, noname"] = "Awesome WotLK: FrostAtom, Widget, noname"
+  L["DBM Warmane: Zidras"] = "DBM Warmane: Zidras"
+  L["MerfinUI: Merfin"] = "MerfinUI: Merfin"
+  L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"] = "WoW 3.3.5a HD-Client: Loriendel - In liebevoller Erinnerung, Trimitor"
+  L["Open the Voice Chat settings to configure the TTS."] = "Öffne die Sprachchat-Einstellungen, um die Sprachausgabe zu konfigurieren."
+  L["Ranged Attack Power"] = "Distanzangriffskraft"
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "Schalte die Namensplaketten-Verankerung und -Einheiten sowie die Sprachausgabe in WeakAuras mit dem Awesome-WotLK-Client-Patch frei."
+  L["Water"] = "Wasser"
+  L["Wild Pet"] = "Ungezähmtes Tier"
+
   L["Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."] = "Hinweis: Combopunkte funktionieren nur für Spieler oder Fahrzeug. Die Auswahl von Spieler berücksichtigt auch das Fahrzeug."
   L["|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Begegnungsauslöser erfordert, dass Deadly Boss Mods (DBM) installiert und auf dem neuesten Stand ist.|r"
   L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Begegnungs-Ladeoptionen erfordern, dass Deadly Boss Mods (DBM) installiert und auf dem neuesten Stand ist.|r"
@@ -204,6 +243,14 @@ elseif (locale == "deDE") then
   L["Please install it."] = "Bitte installiere es."
   L["Please enable it in your AddOn list."] = "Bitte aktiviere es in deiner AddOn-Liste."
   L["AddOn: APIDocumentation is not loaded correctly."] = "AddOn: APIDocumentation wurde nicht korrekt geladen."
+  L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."] = "|cFFff0000Hinweis:|r Diese Option bleibt für Auren aus anderen WoW-Versionen erhalten.\nIn WotLK 3.3.5a hat sie keinen Effekt."
+  L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."] = "|cFFff0000Hinweis:|r Startwinkel funktioniert auf WotLK 3.3.5a aufgrund von Client-Einschränkungen nicht wie erwartet. Verwende Endwinkel zusammen mit Texturrotation, um einen ähnlichen Effekt zu erzielen."
+  L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."] = "Framelevels sind begrenzt, daher erhöht WeakAuras sie nach Gruppentiefe statt fortlaufend."
+  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."] = "WeakAuras.GetNamePlateForUnit ist veraltet. Verwende stattdessen WeakAuras.GetUnitNameplate."
 
   --[[Translation missing --]]
   L["Requires syncing the specialization via LibGroupTalents."] = "Requires syncing the specialization via LibGroupTalents."
@@ -386,6 +433,22 @@ elseif (locale == "deDE") then
   end
 
 elseif (locale == "esES") then
+  L["Aberration"] = "Aberración"
+  L["Air"] = "Aire"
+  L["Earth"] = "Tierra"
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "Instala AwesomeCVar para abrir los ajustes del chat de voz."
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+  L["And our Community Heroes:"] = "Y nuestros héroes de la comunidad:"
+  L["Awesome WotLK: FrostAtom, Widget, noname"] = "Awesome WotLK: FrostAtom, Widget, noname"
+  L["DBM Warmane: Zidras"] = "DBM Warmane: Zidras"
+  L["MerfinUI: Merfin"] = "MerfinUI: Merfin"
+  L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"] = "Cliente HD de WoW 3.3.5a: Loriendel - En memoria, con cariño, Trimitor"
+  L["Open the Voice Chat settings to configure the TTS."] = "Abre los ajustes del chat de voz para configurar la conversión de texto a voz."
+  L["Ranged Attack Power"] = "Poder de ataque a distancia"
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "Desbloquea el anclaje y las unidades de las placas de nombre, y la conversión de texto a voz en WeakAuras con el parche de cliente Awesome WotLK."
+  L["Water"] = "Agua"
+  L["Wild Pet"] = "Mascota salvaje"
+
   L["Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."] = "Nota: Los puntos de combo solo funcionan para jugador o vehículo. Seleccionar jugador también incluye el vehículo."
   L["|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000El disparador del encuentro requiere que Deadly Boss Mods (DBM) esté instalado y actualizado.|r"
   L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Las opciones de carga del encuentro requieren que Deadly Boss Mods (DBM) esté instalado y actualizado.|r"
@@ -395,6 +458,14 @@ elseif (locale == "esES") then
   L["Please install it."] = "Por favor, instálalo."
   L["Please enable it in your AddOn list."] = "Por favor, actívalo en tu lista de AddOns."
   L["AddOn: APIDocumentation is not loaded correctly."] = "AddOn: APIDocumentation no se ha cargado correctamente."
+  L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."] = "|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."
+  L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."] = "|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."
+  L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."] = "Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."
+  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."] = "Usar WeakAuras.GetNamePlateForUnit está obsoleto. Usa WeakAuras.GetUnitNameplate en su lugar."
 
   L["Requires syncing the specialization via LibGroupTalents."] = "Requiere sincronizar la especialización mediante LibGroupTalents."
   L["Affliction"] = "Aflicción"
@@ -576,6 +647,22 @@ elseif (locale == "esES") then
   end
 
 elseif (locale == "esMX") then
+  L["Aberration"] = "Aberración"
+  L["Air"] = "Aire"
+  L["Earth"] = "Tierra"
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "Instala AwesomeCVar para abrir la configuración del chat de voz."
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+  L["And our Community Heroes:"] = "Y nuestros héroes de la comunidad:"
+  L["Awesome WotLK: FrostAtom, Widget, noname"] = "Awesome WotLK: FrostAtom, Widget, noname"
+  L["DBM Warmane: Zidras"] = "DBM Warmane: Zidras"
+  L["MerfinUI: Merfin"] = "MerfinUI: Merfin"
+  L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"] = "Cliente HD de WoW 3.3.5a: Loriendel - En memoria, con cariño, Trimitor"
+  L["Open the Voice Chat settings to configure the TTS."] = "Abre la configuración del chat de voz para configurar la conversión de texto a voz."
+  L["Ranged Attack Power"] = "Poder de ataque a distancia"
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "Desbloquea el anclaje y las unidades de las placas de nombre, y la conversión de texto a voz en WeakAuras con el parche de cliente Awesome WotLK."
+  L["Water"] = "Agua"
+  L["Wild Pet"] = "Mascota salvaje"
+
   L["Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."] = "Nota: Los puntos de combo solo funcionan para jugador o vehículo. Seleccionar jugador también incluye el vehículo."
   L["|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000El disparador del encuentro requiere que Deadly Boss Mods (DBM) esté instalado y actualizado.|r"
   L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Las opciones de carga del encuentro requieren que Deadly Boss Mods (DBM) esté instalado y actualizado.|r"
@@ -585,6 +672,14 @@ elseif (locale == "esMX") then
   L["Please install it."] = "Por favor, instálalo."
   L["Please enable it in your AddOn list."] = "Por favor, actívalo en tu lista de AddOns."
   L["AddOn: APIDocumentation is not loaded correctly."] = "AddOn: APIDocumentation no se ha cargado correctamente."
+  L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."] = "|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."
+  L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."] = "|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."
+  L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."] = "Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."
+  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."] = "Usar WeakAuras.GetNamePlateForUnit está obsoleto. Usa WeakAuras.GetUnitNameplate en su lugar."
 
   L["Requires syncing the specialization via LibGroupTalents."] = "Requiere sincronizar la especialización mediante LibGroupTalents."
   L["Affliction"] = "Aflicción"
@@ -766,6 +861,22 @@ elseif (locale == "esMX") then
   end
 
 elseif (locale == "frFR") then
+  L["Aberration"] = "Aberration"
+  L["Air"] = "Air"
+  L["Earth"] = "Terre"
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "Installez AwesomeCVar pour ouvrir les paramètres du chat vocal."
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+  L["And our Community Heroes:"] = "Et les héros de notre communauté :"
+  L["Awesome WotLK: FrostAtom, Widget, noname"] = "Awesome WotLK: FrostAtom, Widget, noname"
+  L["DBM Warmane: Zidras"] = "DBM Warmane: Zidras"
+  L["MerfinUI: Merfin"] = "MerfinUI: Merfin"
+  L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"] = "Client HD de WoW 3.3.5a : Loriendel - En tendre souvenir, Trimitor"
+  L["Open the Voice Chat settings to configure the TTS."] = "Ouvrez les paramètres du chat vocal pour configurer la synthèse vocale."
+  L["Ranged Attack Power"] = "Puissance d'attaque à distance"
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "Débloquez l'ancrage et les unités des barres de nom ainsi que la synthèse vocale dans WeakAuras avec le patch client Awesome WotLK."
+  L["Water"] = "Eau"
+  L["Wild Pet"] = "Mascotte sauvage"
+
   L["Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."] = "Remarque : les points de combo ne sont disponibles que pour le joueur ou le véhicule. Sélectionner joueur inclut également le véhicule."
   L["|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Le déclencheur de rencontre nécessite que Deadly Boss Mods (DBM) soit installé et à jour.|r"
   L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Les options de chargement de la rencontre nécessitent que Deadly Boss Mods (DBM) soit installé et à jour.|r"
@@ -775,6 +886,14 @@ elseif (locale == "frFR") then
   L["Please install it."] = "Veuillez l'installer."
   L["Please enable it in your AddOn list."] = "Veuillez l'activer dans votre liste d'Addons."
   L["AddOn: APIDocumentation is not loaded correctly."] = "Addon: APIDocumentation n'a pas été chargé correctement."
+  L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."] = "|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."
+  L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."] = "|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."
+  L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."] = "Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."
+  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."] = "L’utilisation de WeakAuras.GetNamePlateForUnit est obsolète. Utilisez WeakAuras.GetUnitNameplate à la place."
 
   --[[Translation missing --]]
   L["Requires syncing the specialization via LibGroupTalents."] = "Requires syncing the specialization via LibGroupTalents."
@@ -957,6 +1076,22 @@ elseif (locale == "frFR") then
   end
 
 elseif (locale == "itIT") then
+  L["Aberration"] = "Aberrazione"
+  L["Air"] = "Aria"
+  L["Earth"] = "Terra"
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "Installa AwesomeCVar per aprire le impostazioni della chat vocale."
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+  L["And our Community Heroes:"] = "E i nostri eroi della community:"
+  L["Awesome WotLK: FrostAtom, Widget, noname"] = "Awesome WotLK: FrostAtom, Widget, noname"
+  L["DBM Warmane: Zidras"] = "DBM Warmane: Zidras"
+  L["MerfinUI: Merfin"] = "MerfinUI: Merfin"
+  L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"] = "Client HD di WoW 3.3.5a: Loriendel - In memoria, con affetto, Trimitor"
+  L["Open the Voice Chat settings to configure the TTS."] = "Apri le impostazioni della chat vocale per configurare la sintesi vocale."
+  L["Ranged Attack Power"] = "Potenza d'attacco a distanza"
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "Sblocca l'ancoraggio e le unità delle barre dei nomi e la sintesi vocale in WeakAuras con la patch del client Awesome WotLK."
+  L["Water"] = "Acqua"
+  L["Wild Pet"] = "Mascotte Selvatica"
+
   L["Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."] = "Nota: i punti combo sono disponibili solo per il giocatore o il veicolo. Selezionando giocatore viene considerato anche il veicolo."
   L["|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Il trigger dell’incontro richiede che Deadly Boss Mods (DBM) sia installato e aggiornato.|r"
   L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Le opzioni di caricamento dell’incontro richiedono che Deadly Boss Mods (DBM) sia installato e aggiornato.|r"
@@ -968,6 +1103,14 @@ elseif (locale == "itIT") then
   L["Please install it."] = "Please install it."
   L["Please enable it in your AddOn list."] = "Please enable it in your AddOn list."
   L["AddOn: APIDocumentation is not loaded correctly."] = "AddOn: APIDocumentation is not loaded correctly."
+  L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."] = "|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."
+  L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."] = "|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."
+  L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."] = "Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."
+  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."] = "L'uso di WeakAuras.GetNamePlateForUnit è deprecato. Usa WeakAuras.GetUnitNameplate al suo posto."
 
   --[[Translation missing --]]
   L["Requires syncing the specialization via LibGroupTalents."] = "Requires syncing the specialization via LibGroupTalents."
@@ -1152,6 +1295,22 @@ elseif (locale == "itIT") then
   end
 
 elseif (locale == "koKR") then
+  L["Aberration"] = "돌연변이"
+  L["Air"] = "바람"
+  L["Earth"] = "대지"
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "음성 대화 설정을 열려면 AwesomeCVar를 설치하세요."
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+  L["And our Community Heroes:"] = "그리고 우리 커뮤니티의 영웅들:"
+  L["Awesome WotLK: FrostAtom, Widget, noname"] = "Awesome WotLK: FrostAtom, Widget, noname"
+  L["DBM Warmane: Zidras"] = "DBM Warmane: Zidras"
+  L["MerfinUI: Merfin"] = "MerfinUI: Merfin"
+  L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"] = "WoW 3.3.5a HD 클라이언트: Loriendel - 사랑을 담아 추모하며, Trimitor"
+  L["Open the Voice Chat settings to configure the TTS."] = "TTS를 설정하려면 음성 대화 설정을 여세요."
+  L["Ranged Attack Power"] = "원거리 전투력"
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "Awesome WotLK 클라이언트 패치로 WeakAuras의 이름표 고정 및 유닛과 TTS를 잠금 해제하세요."
+  L["Water"] = "물"
+  L["Wild Pet"] = "야생 애완동물"
+
   L["Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."] = "참고: 콤보 포인트는 플레이어 또는 탈것에서만 작동합니다. 플레이어를 선택하면 탈것에도 적용됩니다."
   L["|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000보스전 트리거를 사용하려면 Deadly Boss Mods (DBM)이 설치되어 최신 상태여야 합니다.|r"
   L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000보스전 로드 옵션을 사용하려면 Deadly Boss Mods (DBM)이 설치되어 최신 상태여야 합니다.|r"
@@ -1161,6 +1320,14 @@ elseif (locale == "koKR") then
   L["Please install it."] = "설치해 주십시오."
   L["Please enable it in your AddOn list."] = "애드온 목록에서 활성화해 주십시오."
   L["AddOn: APIDocumentation is not loaded correctly."] = "애드온: APIDocumentation이(가) 제대로 로드되지 않았습니다."
+  L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."] = "|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."
+  L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."] = "|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."
+  L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."] = "Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."
+  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."] = "WeakAuras.GetNamePlateForUnit 사용은 중단되었습니다. 대신 WeakAuras.GetUnitNameplate를 사용하세요."
 
   L["Requires syncing the specialization via LibGroupTalents."] = "LibGroupTalents을 통해 전문화를 동기화해야 합니다."
   L["Affliction"] = "고통"
@@ -1342,6 +1509,22 @@ elseif (locale == "koKR") then
   end
 
 elseif (locale == "ptBR") then
+  L["Aberration"] = "Aberração"
+  L["Air"] = "Ar"
+  L["Earth"] = "Terra"
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "Instale o AwesomeCVar para abrir as configurações do bate-papo por voz."
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+  L["And our Community Heroes:"] = "E nossos heróis da comunidade:"
+  L["Awesome WotLK: FrostAtom, Widget, noname"] = "Awesome WotLK: FrostAtom, Widget, noname"
+  L["DBM Warmane: Zidras"] = "DBM Warmane: Zidras"
+  L["MerfinUI: Merfin"] = "MerfinUI: Merfin"
+  L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"] = "Cliente HD do WoW 3.3.5a: Loriendel - Em memória, com carinho, Trimitor"
+  L["Open the Voice Chat settings to configure the TTS."] = "Abra as configurações do bate-papo por voz para configurar a conversão de texto em fala."
+  L["Ranged Attack Power"] = "Poder de Ataque de Longo Alcance"
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "Desbloqueie a ancoragem e as unidades das placas de identificação e a conversão de texto em fala no WeakAuras com o patch de cliente Awesome WotLK."
+  L["Water"] = "Água"
+  L["Wild Pet"] = "Mascote Selvagem"
+
   L["Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."] = "Nota: Pontos de combo funcionam apenas para jogador ou veículo. Selecionar jogador também inclui o veículo."
   L["|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000O gatilho de encontro requer que Deadly Boss Mods (DBM) esteja instalado e atualizado.|r"
   L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000As opções de carregamento do encontro requerem que Deadly Boss Mods (DBM) esteja instalado e atualizado.|r"
@@ -1353,6 +1536,14 @@ elseif (locale == "ptBR") then
   L["Please install it."] = "Please install it."
   L["Please enable it in your AddOn list."] = "Please enable it in your AddOn list."
   L["AddOn: APIDocumentation is not loaded correctly."] = "AddOn: APIDocumentation is not loaded correctly."
+  L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."] = "|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."
+  L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."] = "|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."
+  L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."] = "Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."
+  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."] = "Usar WeakAuras.GetNamePlateForUnit está obsoleto. Use WeakAuras.GetUnitNameplate em vez disso."
 
   --[[Translation missing --]]
   L["Requires syncing the specialization via LibGroupTalents."] = "Requires syncing the specialization via LibGroupTalents."
@@ -1535,6 +1726,22 @@ elseif (locale == "ptBR") then
   end
 
 elseif (locale == "ruRU") then
+  L["Aberration"] = "Аберрация"
+  L["Air"] = "Воздух"
+  L["Earth"] = "Земля"
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "Установите AwesomeCVar, чтобы открыть настройки голосового чата."
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+  L["And our Community Heroes:"] = "И герои нашего сообщества:"
+  L["Awesome WotLK: FrostAtom, Widget, noname"] = "Awesome WotLK: FrostAtom, Widget, noname"
+  L["DBM Warmane: Zidras"] = "DBM Warmane: Zidras"
+  L["MerfinUI: Merfin"] = "MerfinUI: Merfin"
+  L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"] = "HD-клиент WoW 3.3.5a: Loriendel - Светлая память, Trimitor"
+  L["Open the Voice Chat settings to configure the TTS."] = "Откройте настройки голосового чата, чтобы настроить преобразование текста в речь."
+  L["Ranged Attack Power"] = "к силе атаки дальнего боя"
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "Разблокируйте привязку и юниты индикаторов здоровья, а также преобразование текста в речь в WeakAuras с помощью клиентского патча Awesome WotLK."
+  L["Water"] = "Вода"
+  L["Wild Pet"] = "Дикий питомец"
+
   L["Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."] = "Примечание: серии приемов работают только для игрока или транспорта. Выбор игрока также учитывает транспорт."
   L["|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Триггер сражения с боссом требует, чтобы Deadly Boss Mods (DBM) был установлен и обновлён.|r"
   L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000Параметры загрузки сражения с боссом требуют, чтобы Deadly Boss Mods (DBM) был установлен и обновлён.|r"
@@ -1544,6 +1751,14 @@ elseif (locale == "ruRU") then
   L["Please install it."] = "Пожалуйста, установите его."
   L["Please enable it in your AddOn list."] = "Пожалуйста, включите его в вашем списке аддонов."
   L["AddOn: APIDocumentation is not loaded correctly."] = "Аддон: APIDocumentation загружен некорректно."
+  L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."] = "|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."
+  L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."] = "|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."
+  L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."] = "Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."
+  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."] = "WeakAuras.GetNamePlateForUnit устарела. Используйте вместо неё WeakAuras.GetUnitNameplate."
 
   L["Requires syncing the specialization via LibGroupTalents."] = "Требуется синхронизация специализации через LibGroupTalents."
   L["Affliction"] = "Колдовство"
@@ -1725,6 +1940,22 @@ elseif (locale == "ruRU") then
   end
 
 elseif (locale == "zhCN") then
+  L["Aberration"] = "畸变怪"
+  L["Air"] = "空气"
+  L["Earth"] = "大地"
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "安装 AwesomeCVar 以打开语音聊天设置。"
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+  L["And our Community Heroes:"] = "以及我们的社区英雄："
+  L["Awesome WotLK: FrostAtom, Widget, noname"] = "Awesome WotLK: FrostAtom, Widget, noname"
+  L["DBM Warmane: Zidras"] = "DBM Warmane: Zidras"
+  L["MerfinUI: Merfin"] = "MerfinUI: Merfin"
+  L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"] = "WoW 3.3.5a 高清客户端：Loriendel - 谨此深切缅怀，Trimitor"
+  L["Open the Voice Chat settings to configure the TTS."] = "打开语音聊天设置以配置文本转语音。"
+  L["Ranged Attack Power"] = "远程攻击强度"
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "通过 Awesome WotLK 客户端补丁解锁 WeakAuras 的姓名板锚定、姓名板单位和文本转语音功能。"
+  L["Water"] = "水"
+  L["Wild Pet"] = "野生宠物"
+
   L["Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."] = "注意：连击点仅对玩家或载具生效。选择玩家时也会同时应用于载具。"
   L["|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000首领战斗触发器需要已安装并更新到最新的 Deadly Boss Mods (DBM)。|r"
   L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000首领战斗加载选项需要已安装并更新到最新的 Deadly Boss Mods (DBM)。|r"
@@ -1734,6 +1965,14 @@ elseif (locale == "zhCN") then
   L["Please install it."] = "请安装它。"
   L["Please enable it in your AddOn list."] = "请在你的插件列表中启用它。"
   L["AddOn: APIDocumentation is not loaded correctly."] = "插件：APIDocumentation 未正确加载。"
+  L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."] = "|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."
+  L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."] = "|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."
+  L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."] = "Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."
+  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."] = "WeakAuras.GetNamePlateForUnit 已弃用。请改用 WeakAuras.GetUnitNameplate。"
 
   L["Requires syncing the specialization via LibGroupTalents."] = "需要通过LibGroupTalents同步专精。"
   L["Affliction"] = "痛苦"
@@ -1915,6 +2154,22 @@ elseif (locale == "zhCN") then
   end
 
 elseif (locale == "zhTW") then
+  L["Aberration"] = "變異怪"
+  L["Air"] = "風"
+  L["Earth"] = "大地"
+  L["Install AwesomeCVar to open the Voice Chat settings."] = "安裝 AwesomeCVar 以開啟語音聊天設定。"
+  L["LibGroupTalents: Zek"] = "LibGroupTalents: Zek"
+  L["And our Community Heroes:"] = "以及我們的社群英雄："
+  L["Awesome WotLK: FrostAtom, Widget, noname"] = "Awesome WotLK: FrostAtom, Widget, noname"
+  L["DBM Warmane: Zidras"] = "DBM Warmane: Zidras"
+  L["MerfinUI: Merfin"] = "MerfinUI: Merfin"
+  L["WoW 3.3.5a HD Client: Loriendel - In Loving Memory, Trimitor"] = "WoW 3.3.5a 高畫質客戶端：Loriendel - 謹此深切緬懷，Trimitor"
+  L["Open the Voice Chat settings to configure the TTS."] = "開啟語音聊天設定以設定文字轉語音。"
+  L["Ranged Attack Power"] = "遠程攻擊強度"
+  L["Unlock nameplate anchoring & units and Text-to-speech in WeakAuras with the Awesome WotLK client patch."] = "透過 Awesome WotLK 客戶端修補程式解鎖 WeakAuras 的名條錨定、名條單位和文字轉語音功能。"
+  L["Water"] = "水"
+  L["Wild Pet"] = "野生寵物"
+
   L["Note: Combo Points only work for player or vehicle. Selecting player also checks vehicle."] = "注意：連擊點僅對玩家或載具生效。選擇玩家時也會同時套用於載具。"
   L["|cFFFF0000Encounter Trigger requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000首領戰觸發需要安裝並更新到最新版本的 Deadly Boss Mods (DBM)。|r"
   L["|cFFFF0000Encounter load options requires Deadly Boss Mods (DBM) to be installed and up to date.|r"] = "|cFFFF0000首領戰載入選項需要安裝並更新到最新版本的 Deadly Boss Mods (DBM)。|r"
@@ -1924,6 +2179,14 @@ elseif (locale == "zhTW") then
   L["Please install it."] = "請安裝它。"
   L["Please enable it in your AddOn list."] = "請在你的插件清單中啟用它。"
   L["AddOn: APIDocumentation is not loaded correctly."] = "插件：APIDocumentation 未正確載入。"
+  L["|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."] = "|cFFff0000Note:|r This option is kept for compatibility with auras from other WoW versions.\nIt has no effect in WotLK 3.3.5a."
+  L["|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate units require Awesome WotLK and are kept only for compatibility.\nThey have no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Nameplate anchoring requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r Text-to-speech requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."] = "|cFFff0000Note:|r This option requires Awesome WotLK and is kept only for compatibility.\nIt has no effect without Awesome WotLK."
+  L["|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."] = "|cFFff0000Note:|r Start Angle does not work as expected on WotLK 3.3.5a due to client limitations. Use End Angle together with Texture Rotation to achieve a similar effect."
+  L["Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."] = "Frame levels are limited, so WeakAuras increases them by group depth instead of continuously."
+  L["Using WeakAuras.GetNamePlateForUnit is deprecated. Use WeakAuras.GetUnitNameplate instead."] = "WeakAuras.GetNamePlateForUnit 已棄用。請改用 WeakAuras.GetUnitNameplate。"
 
   L["Requires syncing the specialization via LibGroupTalents."] = "需要透由LibGroupTalents同步專精。"
   L["Affliction"] = "痛苦"

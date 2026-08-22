@@ -63,11 +63,6 @@ local RecruitAFriend =
 			{
 				{ Name = "unit", Type = "UnitToken", Nilable = false },
 			},
-
-			Returns =
-			{
-				{ Name = "canGrant", Type = "bool", Nilable = false },
-			},
 		},
 		{
 			Name = "IsReferAFriendLinked",
@@ -91,11 +86,6 @@ local RecruitAFriend =
 			{
 				{ Name = "name", Type = "string", Nilable = true },
 				{ Name = "unit", Type = "UnitToken", Nilable = true },
-			},
-
-			Returns =
-			{
-				{ Name = "canSummon", Type = "bool", Nilable = false },
 			},
 		},
 	},

@@ -1,0 +1,24 @@
+WeakAuras WotLK (3.3.5a)
+
+This repository is the official WeakAuras WotLK 3.3.5a port maintained at:
+
+  https://github.com/NoM0Re/WeakAuras-WotLK
+
+WeakAuras WotLK contains code derived from WeakAuras2. Original WeakAuras2
+copyrights belong to the original WeakAuras2 authors and contributors.
+
+WotLK porting work, compatibility changes, packaging changes, documentation,
+and other modifications in this repository are copyrighted by NoM0Re and
+contributors, unless otherwise noted in the relevant file history or source
+file.
+
+This project is distributed under the GNU General Public License version 2,
+as included in the LICENSE file. Copies, forks, modified versions, and
+redistributions are permitted under the GPL, provided the license terms are
+followed.
+
+Redistributors of modified versions should preserve copyright and license
+notices, keep the source code available as required by the GPL, and clearly
+mark their versions as modified so users do not confuse them with the official
+WeakAuras WotLK release from this repository.
+

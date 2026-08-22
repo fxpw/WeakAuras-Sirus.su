@@ -1,11 +1,30 @@
 if not WeakAuras.IsLibsOK() then return end
 
+---@type string
 local AddonName = ...
+---@class Private
 local Private = select(2, ...)
 
 local L = WeakAuras.L
 
+--- @class TextureBase
 Private.TextureBase = {}
+
+--- @class TextureBaseInstance
+--- @field texture Texture
+--- @field mirror_h boolean
+--- @field mirror_v boolean
+--- @field mirror boolean
+--- @field rotation number
+--- @field effectiveRotation number
+--- @field canRotate boolean
+--- @field textureWrapMode WrapMode
+
+--- @class TextureBaseOptions
+--- @field canRotate boolean
+--- @field mirror boolean
+--- @field rotation number
+--- @field textureWrapMode WrapMode
 
 local SQRT2 = sqrt(2)
 local function GetRotatedPoints(degrees, scaleForFullRotate)
@@ -18,14 +37,20 @@ local function GetRotatedPoints(degrees, scaleForFullRotate)
 end
 
 local funcs = {
+  --- @class TextureBaseInstance
+  --- @field ClearAllPoints fun(self: TextureBaseInstance)
   ClearAllPoints = function(self)
     self.texture:ClearAllPoints()
   end,
 
+  --- @class TextureBaseInstance
+  --- @field SetAllPoints fun(self: TextureBaseInstance, ... : any)
   SetAllPoints = function(self, ...)
     self.texture:SetAllPoints(...)
   end,
 
+  --- @class TextureBaseInstance
+  --- @field DoTexCoord fun(self: TextureBaseInstance)
   DoTexCoord = function(self)
     local mirror_h, mirror_v = self.mirror_h, self.mirror_v
     if(self.mirror) then
@@ -48,6 +73,8 @@ local funcs = {
     end
   end,
 
+  --- @class TextureBaseInstance
+  --- @field SetMirrorFromScale fun(self: TextureBaseInstance, h: boolean, v: boolean)
   SetMirrorFromScale = function(self, h, v)
     if self.mirror_h == h and self.mirror_v == v then
       return
@@ -57,6 +84,8 @@ local funcs = {
     self:DoTexCoord()
   end,
 
+  --- @class TextureBaseInstance
+  --- @field SetMirror fun(self: TextureBaseInstance, b: boolean)
   SetMirror = function(self, b)
     if self.mirror == b then
       return
@@ -65,53 +94,55 @@ local funcs = {
     self:DoTexCoord()
   end,
 
+  --- @class TextureBaseInstance
+  --- @field SetTexture fun(self: TextureBaseInstance, file: number|string)
   SetTexture = function(self, file)
     self.textureName = file
-    self.texture:SetTexture(file)
+    Private.SetTextureOrAtlas(self.texture, self.textureName, self.textureWrapMode, self.textureWrapMode)
     self:DoTexCoord()
   end,
 
+  --- @class TextureBaseInstance
+  --- @field SetColor fun(self: TextureBaseInstance, r: number, g: number, b: number, a: number)
   SetVertexColor = function(self, r, g, b, a)
     self.texture:SetVertexColor(r, g, b,a)
   end,
 
+  --- @class TextureBaseInstance
+  --- @field SetDesaturated fun(self: TextureBaseInstance, b: boolean)
   SetDesaturated = function(self, b)
     self.texture:SetDesaturated(b)
   end,
 
+  --- @class TextureBaseInstance
+  --- @field SetAnimRotation fun(self: TextureBaseInstance, degrees: number?)
   SetAnimRotation = function(self, degrees)
     self.animRotation = degrees
     self:UpdateEffectiveRotation()
   end,
 
+  --- @class TextureBaseInstance
+  --- @field SetRotation fun(self: TextureBaseInstance, degrees: number)
   SetRotation = function(self, degrees)
     self.rotation = degrees
     self:UpdateEffectiveRotation()
   end,
 
+  --- @class TextureBaseInstance
+  --- @field UpdateEffectiveRotation fun(self: TextureBaseInstance)
   UpdateEffectiveRotation = function(self)
     self.effectiveRotation = self.animRotation or self.rotation
     self:DoTexCoord()
   end,
 
+  --- @class TextureBaseInstance
+  --- @field GetBaseRotation fun(self: TextureBaseInstance): number
   GetBaseRotation = function(self)
     return self.rotation
   end
 }
 
-local function setDesaturated(self, desaturated, ...)
-  self.isDesaturated = desaturated and 1 or 0
-  return self._SetDesaturated(self, desaturated, ...)
-end
-
-local function setTexture(self, ...)
-  local apply = self._SetTexture(self, ...)
-  if self.isDesaturated ~= nil then
-    self._SetDesaturated(self, self.isDesaturated == 1)
-  end
-  return apply
-end
-
+--- @type fun(frame: Frame) : TextureBaseInstance
 function Private.TextureBase.create(frame)
   local base = {}
 
@@ -120,16 +151,17 @@ function Private.TextureBase.create(frame)
   end
 
   local texture = frame:CreateTexture()
-  texture._SetDesaturated = texture.SetDesaturated
-  texture._SetTexture     = texture.SetTexture
-  texture.SetDesaturated = setDesaturated
-  texture.SetTexture     = setTexture
+  Private.FixTextureDesaturation(texture)
+  -- texture:SetSnapToPixelGrid(false)
+  -- texture:SetTexelSnappingBias(0)
 
   base.texture = texture
 
+    --- @cast base TextureBaseInstance
   return base
 end
 
+--- @type fun(base: TextureBaseInstance, options: TextureBaseOptions)
 function Private.TextureBase.modify(base, options)
   base.canRotate = options.canRotate
   base.mirror = options.mirror
