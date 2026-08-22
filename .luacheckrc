@@ -38,6 +38,13 @@ globals = {
 	"bit",
 	"Constants",
 	"OKAY",
+	"AsyncCallbackAPIType",
+	"AsyncCallbackSystemMixin",
+	"ItemEventListener",
+	"SpellEventListener",
+	"QuestEventListener",
+	"Spell",
+	"SpellMixin",
 
 	-- misc custom
 	"AceGUIWeakAurasMultiLineEditBoxInsertLink",

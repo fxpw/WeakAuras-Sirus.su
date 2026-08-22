@@ -20,8 +20,6 @@ local InCombatLockdown, UnitAffectingCombat, GetInstanceInfo, IsInInstance
   = InCombatLockdown, UnitAffectingCombat, GetInstanceInfo, IsInInstance
 local GetCurrentMapAreaID, GetRealZoneText, GetSubZoneText, SetMapToCurrentZone
   = GetCurrentMapAreaID, GetRealZoneText, GetSubZoneText, SetMapToCurrentZone
-local GetCurrentMapAreaID, GetRealZoneText, GetSubZoneText, SetMapToCurrentZone
-  = GetCurrentMapAreaID, GetRealZoneText, GetSubZoneText, SetMapToCurrentZone
 local UnitIsPVPFreeForAll, UnitIsPVP, UnitOnTaxi, IsMounted
   = UnitIsPVPFreeForAll, UnitIsPVP, UnitOnTaxi, IsMounted
 local UnitInVehicle, UnitHasVehicleUI, UnitIsUnit, UnitIsDeadOrGhost

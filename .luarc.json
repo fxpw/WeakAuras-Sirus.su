@@ -13,6 +13,13 @@
   ],
   "diagnostics.globals": [
     "AbbreviateLargeNumbers",
+    "AsyncCallbackAPIType",
+    "AsyncCallbackSystemMixin",
+    "ItemEventListener",
+    "SpellEventListener",
+    "QuestEventListener",
+    "Spell",
+    "SpellMixin",
     "ACCEPT",
     "AceGUIWeakAurasMultiLineEditBoxInsertLink",
     "AceGUIWidgetLSMlists",

@@ -5,6 +5,7 @@ local AddonName, TemplatePrivate = ...
 local AceGUI = LibStub("AceGUI-3.0");
 local floor, ceil, tinsert = floor, ceil, tinsert;
 local CreateFrame, UnitClass, UnitRace = CreateFrame, UnitClass, UnitRace;
+local C_Talent = _G.C_Talent;
 ---@class WeakAuras
 local WeakAuras = WeakAuras;
 local L = WeakAuras.L
