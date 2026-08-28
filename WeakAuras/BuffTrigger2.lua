@@ -3741,6 +3741,11 @@ function BuffTrigger.HandleMultiEvent(frame, event, ...)
       end
     end
     wipe(matchDataMulti)
+    for _, rec in pairs(cleanupTimerMulti) do
+      if rec.handle then
+        timer:CancelTimer(rec.handle)
+      end
+    end
     wipe(cleanupTimerMulti)
     wipe(pendingTracks)
     wipe(guidToUnit)
