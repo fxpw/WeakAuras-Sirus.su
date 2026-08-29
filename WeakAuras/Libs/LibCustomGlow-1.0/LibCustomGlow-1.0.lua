@@ -11,9 +11,56 @@ if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
-local pairs, ipairs = pairs, ipairs
+local select, pairs, ipairs = select, pairs, ipairs
 local ceil, floor, min, mod = math.ceil, math.floor, math.min, mod
 local tinsert, tremove = table.insert, table.remove
+
+local function Mixin(object, ...)
+  for i = 1, select("#", ...) do
+    local mixin = select(i, ...);
+    for k, v in pairs(mixin) do
+      object[k] = v;
+    end
+  end
+
+  return object;
+end
+
+local function CreateFromMixins(...)
+  return Mixin({}, ...)
+end
+
+local FramePoolMixin = CreateFromMixins(ObjectPoolMixin);
+
+local function FramePoolFactory(framePool)
+  return CreateFrame(framePool.frameType, nil, framePool.parent, framePool.frameTemplate);
+end
+
+local function ForbiddenFramePoolFactory(framePool)
+  return CreateForbiddenFrame(framePool.frameType, nil, framePool.parent, framePool.frameTemplate);
+end
+
+function FramePoolMixin:OnLoad(frameType, parent, frameTemplate, resetterFunc, forbidden)
+  if forbidden then
+    ObjectPoolMixin.OnLoad(self, ForbiddenFramePoolFactory, resetterFunc);
+  else
+    ObjectPoolMixin.OnLoad(self, FramePoolFactory, resetterFunc);
+  end
+  self.frameType = frameType;
+  self.parent = parent;
+  self.frameTemplate = frameTemplate;
+end
+
+function FramePoolMixin:GetTemplate()
+  return self.frameTemplate;
+end
+
+local function CreateFramePool(frameType, parent, frameTemplate, resetterFunc, forbidden)
+  local framePool = CreateFromMixins(FramePoolMixin);
+  framePool:OnLoad(frameType, parent, frameTemplate, resetterFunc or FramePool_HideAndClearAnchors, forbidden);
+  return framePool;
+end
+
 
 -- ===============================================================================
 -- !!! IMPORTANT: Requires Pools.lua to be loaded before this file !!!
