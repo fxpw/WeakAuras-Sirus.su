@@ -468,9 +468,7 @@ do
     Private[name] = value
     Private.AuraEnvOverrides = Private.AuraEnvOverrides or {}
     Private.AuraEnvOverrides[name] = value
-    if not _G[name] then
-      _G[name] = value
-    end
+    _G[name] = value
   end
 end
 
