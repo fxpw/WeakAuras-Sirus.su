@@ -46,11 +46,9 @@ local function Wrap(id, cloneId, system, funcs)
   for _, data in ipairs(funcs) do
     wrappedSystem[data.name] = function(...)
       local packed = SafePack(...)
-      local startIndex = packed[1] == wrappedSystem and 2 or 1
-      local callbackIndex = startIndex + data.arg - 1
-      local oldArg = packed[callbackIndex]
+      local oldArg = select(data.arg, ...)
       if type(oldArg) == "function" then
-        packed[callbackIndex] = function(...)
+        packed[data.arg] = function(...)
           local region = WeakAuras.GetRegion(id, cloneId)
           if region then
             Private.ActivateAuraEnvironmentForRegion(region)
@@ -64,7 +62,7 @@ local function Wrap(id, cloneId, system, funcs)
           end
         end
       end
-      return system[data.name](SafeUnpack(packed, startIndex))
+      return system[data.name](SafeUnpack(packed))
     end
   end
   setmetatable(wrappedSystem, { __index = system, __metatable = false })
