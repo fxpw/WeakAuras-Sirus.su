@@ -115,9 +115,10 @@ Private.frames = {}
 --- @field noreset_swing_spells table<number, boolean>
 --- @field RunCustomTextFunc fun(region: table, f: function): string?
 --- @field spark_rotation_types table<string, string>
---- @field spec_types string[]
---- @field spec_types_3 string[]
---- @field spec_types_2 string[]
+--- @field spec_types_all table<number, string>
+--- @field specs_sorted number[]
+--- @field specInfoByID table<number, specInfo>
+--- @field specIDByClassAndTree table<string, number[]>
 --- @field SquelchingActions fun(uid: uid): boolean
 --- @field StartProfileAura fun(id: auraId)
 --- @field StartProfileSystem fun(system: string)
@@ -392,13 +393,6 @@ local isAwesomeEnabled = C_VoiceChat and C_VoiceChat.SpeakText and 2 -- TTS avai
                         or false
 local isDBMRegistered = (DBM and type(DBM.Revision) == "number" and DBM.Revision >= 20250929200404) and true or false
 
-local flavor
-if GetRealmName() == "Kezan" or GetRealmName() == "Menethil" or GetRealmName() == "Gurubashi" then
-  flavor = "ClassicPlus"
-else
-  flavor = "Wrath"
-end
-
 WeakAuras.versionString = versionString
 WeakAuras.buildTime = buildTime
 WeakAuras.newFeatureString = "|TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:0|t"
@@ -420,11 +414,7 @@ function WeakAuras.IsSirusVersion()
 end
 
 function WeakAuras.IsWrath()
-  return flavor == "Wrath"
-end
-
-function WeakAuras.IsClassicPlus()
-  return flavor == "ClassicPlus"
+  return true
 end
 
 ---@param ... string

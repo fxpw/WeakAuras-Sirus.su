@@ -192,9 +192,22 @@ local function StopProfileUID(uid)
   StopProfiling(profileData.auras, Private.UIDtoID(uid))
 end
 
+local function RefreshProfileBars()
+  if RealTimeProfilingWindow.barsFrame then
+    RealTimeProfilingWindow:ResetBars()
+    RealTimeProfilingWindow:RefreshBars(nil, true)
+  end
+end
+
 function Private.ProfileRenameAura(oldid, id)
-  profileData.auras[id] = profileData.auras[id]
+  profileData.auras[id] = profileData.auras[oldid]
   profileData.auras[oldid] = nil
+  RefreshProfileBars()
+end
+
+function Private.ProfileDeleteAura(id)
+  profileData.auras[id] = nil
+  RefreshProfileBars()
 end
 
 local RegisterProfile = function(startType)

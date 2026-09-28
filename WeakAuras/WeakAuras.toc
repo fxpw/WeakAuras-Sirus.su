@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: WeakAuras
 ## Author: The WeakAuras Team
-## Version: 5.21.11
+## Version: 5.22.0
 ## IconTexture: Interface\AddOns\WeakAuras\Media\Textures\icon.blp
 ## X-Flavor: 3.3.5
 ## Notes: A powerful, comprehensive utility for displaying graphics and information based on buffs, debuffs, and other triggers.
@@ -37,7 +37,6 @@ DefaultOptions.lua
 SubscribableObject.lua
 Features.lua
 TimeMachine.lua
-Types_ClassicPlus.lua
 Types_Wrath.lua
 Types.lua
 Prototypes.lua
@@ -51,7 +50,7 @@ Conditions.lua
 AnchorToWeakAuras.lua
 
 # Trigger systems
-LibGroupTalentsWrapper.lua
+LibSpecializationWrapper.lua
 BuffTrigger2.lua
 GenericTrigger.lua
 BossMods.lua

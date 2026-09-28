@@ -709,42 +709,6 @@ Private.tinySecondFormat = function(value)
   end
 end
 
-function Private.ExecEnv.GetSpecIcon(specID)
-  return specID and Private.specid_to_icon[specID] or ""
-end
-
-function Private.ExecEnv.GetSpecName(specID)
-  return specID and Private.specid_to_name[specID] or ""
-end
-
-function Private.ExecEnv.GetSpecID(specName)
-  return specName and Private.specname_to_id[specName] or 0
-end
-
-function Private.ExecEnv.GetUnitTalentSpec(unit)
-  local spec = WeakAuras.LGT:GetUnitTalentSpec(unit)
-  -- LibGroupTalents misses Guardian for tanks, so we fix it here
-  if spec == L["Feral Combat"] then
-    return (WeakAuras.LGT:GetUnitRole(unit) == "tank" and L["Guardian"]) or spec
-  end
-  return spec
-end
-
-function WeakAuras.CheckClassSpec(specID)
-  specID = tonumber(specID)
-  if not specID then return end
-  local class = select(2, UnitClass("player")) or ""
-  local currentSpec = Private.ExecEnv.GetUnitTalentSpec("player") or ""
-  return Private.ExecEnv.GetSpecName(specID) == class .. currentSpec
-end
-
-function WeakAuras.SpecForUnit(unit)
-  if not unit then return 0 end
-  local spec = Private.ExecEnv.GetUnitTalentSpec(unit)
-  local class = select(2, UnitClass(unit))
-  return (spec and class) and Private.ExecEnv.GetSpecID(class .. spec) or 0
-end
-
 function Private.ExecEnv.ParseStringCheck(input)
   if not input then return end
   local matcher = {
@@ -945,11 +909,8 @@ end
 
 local function valuesForTalentFunction(trigger)
   return function()
-    local single_class =
-      Private.specid_to_class[
-        Private.checkForSingleLoadCondition(trigger, "class_and_spec") or ""
-      ]
-      or Private.checkForSingleLoadCondition(trigger, "class")
+    local specInfo = Private.specInfoByID[Private.checkForSingleLoadCondition(trigger, "class_and_spec") or 0]
+    local single_class = specInfo and specInfo.class or Private.checkForSingleLoadCondition(trigger, "class")
     if not single_class then
       single_class = select(2, UnitClass("player"));
     end
@@ -1088,19 +1049,21 @@ Private.load_prototype = {
       type = "description",
     },
     {
-      name = "class_and_spec",
-      display = L["Class and Specialization"],
-      type = "multiselect",
-      values = "spec_types_all",
-      test = "WeakAuras.CheckClassSpec(%s)",
-      events = {"UNIT_SPEC_CHANGED_player", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
-    },
-    {
       name = "class",
       display = L["Player Class"],
       type = "multiselect",
       values = "class_types",
       init = "arg"
+    },
+    {
+      name = "class_and_spec",
+      display = L["Class and Specialization"],
+      type = "multiselect",
+      values = "spec_types_all",
+      init = "arg",
+      events = {"UNIT_SPEC_CHANGED_player", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
+      sorted = true,
+      sortOrder = Private.specs_sorted,
     },
     {
       name = "talent",
@@ -1850,6 +1813,8 @@ Private.event_prototypes = {
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "player"
         end,
         desc = L["Requires syncing the specialization via LibGroupTalents."],
+        sorted = true,
+        sortOrder = Private.specs_sorted,
       },
       {
         name = "classification",
@@ -1900,7 +1865,7 @@ Private.event_prototypes = {
         name = "role",
         display = L["Assigned Role"],
         type = "select",
-        init = "WeakAuras.LGT:GetUnitRole(unit)",
+        init = "select(2, WeakAuras.SpecRolePositionForUnit(unit))",
         values = "role_types",
         store = true,
         conditionType = "select",
@@ -2599,12 +2564,14 @@ Private.event_prototypes = {
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "player"
         end,
         desc = L["Requires syncing the specialization via LibGroupTalents."],
+        sorted = true,
+        sortOrder = Private.specs_sorted,
       },
       {
         name = "role",
         display = L["Assigned Role"],
         type = "select",
-        init = "WeakAuras.LGT:GetUnitRole(unit)",
+        init = "select(2, WeakAuras.SpecRolePositionForUnit(unit))",
         values = "role_types",
         store = true,
         conditionType = "select",
@@ -3079,12 +3046,14 @@ Private.event_prototypes = {
           return trigger.unit == "group" or trigger.unit == "raid" or trigger.unit == "party" or trigger.unit == "player"
         end,
         desc = L["Requires syncing the specialization via LibGroupTalents."],
+        sorted = true,
+        sortOrder = Private.specs_sorted,
       },
       {
         name = "role",
         display = L["Assigned Role"],
         type = "select",
-        init = "WeakAuras.LGT:GetUnitRole(unit)",
+        init = "select(2, WeakAuras.SpecRolePositionForUnit(unit))",
         values = "role_types",
         store = true,
         conditionType = "select",
@@ -4404,7 +4373,9 @@ Private.event_prototypes = {
       local itemName = type(trigger.itemName) == "number" and trigger.itemName or string.format("%q", trigger.itemName or "0")
       local ret = [=[
         local itemname = %s;
-        local name = GetItemInfo(itemname or 0) or "Invalid"
+        local name, itemLink = GetItemInfo(itemname or 0)
+        name = name or "Invalid"
+        local itemId = tonumber(itemname) or (itemLink and tonumber(itemLink:match("item:(%%d+)")))
         local icon = GetItemIcon(itemname) or ""
         local showgcd = %s
         local startTime, duration, enabled, gcdCooldown = WeakAuras.GetItemCooldown(itemname, showgcd);
@@ -4441,7 +4412,7 @@ Private.event_prototypes = {
         type = "item",
         test = "true"
       },
-      --[[{ maybe some day
+      {
         name = "itemId",
         display = WeakAuras.newFeatureString .. L["ItemId"],
         hidden = true,
@@ -4450,7 +4421,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "number",
         operator_types = "only_equal",
-      },]]
+      },
       {
         name = "remaining",
         display = L["Remaining Time"],
@@ -4735,16 +4706,6 @@ Private.event_prototypes = {
         store = true,
         conditionType = "string"
       },
-      --[[{ maybe some day
-        name = "itemId",
-        display = L["ItemId"],
-        hidden = true,
-        init = "item",
-        test = "true",
-        store = true,
-        conditionType = "number",
-        operator_types = "only_equal",
-      },]]
       {
         name = "icon",
         hidden = true,
@@ -4801,7 +4762,9 @@ Private.event_prototypes = {
     init = function(trigger)
       local ret = [[
         local itemName = %s
-        local name = GetItemInfo(itemName) or "Invalid"
+        local name, itemLink = GetItemInfo(itemName)
+        name = name or "Invalid"
+        local itemId = tonumber(itemName) or (itemLink and tonumber(itemLink:match("item:(%%d+)")))
         local icon = GetItemIcon(itemName) or ""
       ]]
 
@@ -4822,7 +4785,7 @@ Private.event_prototypes = {
         type = "item",
         init = "arg"
       },
-      --[[{ maybe some day
+      {
         name = "itemId",
         display = WeakAuras.newFeatureString .. L["ItemId"],
         hidden = true,
@@ -4831,7 +4794,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "number",
         operator_types = "only_equal",
-      },]]
+      },
       {
         name = "name",
         display = L["Name"],
@@ -5039,11 +5002,12 @@ Private.event_prototypes = {
         local inverse = %s;
         local hand = %q;
         local triggerRemaining = %s
-        local duration, expirationTime, name, icon = WeakAuras.GetSwingTimerInfo(hand)
-        local remaining = expirationTime and expirationTime - GetTime()
+        local duration, expirationTime, name, icon, paused, remaining = WeakAuras.GetSwingTimerInfo(hand)
+        paused = paused or false
+        remaining = paused and remaining or (expirationTime and expirationTime - GetTime())
         local remainingCheck = not triggerRemaining or remaining and remaining %s triggerRemaining
 
-        if triggerRemaining and remaining and remaining >= triggerRemaining and remaining > 0 then
+        if not paused and triggerRemaining and remaining and remaining >= triggerRemaining and remaining > 0 then
           Private.ExecEnv.ScheduleScan(expirationTime - triggerRemaining, "SWING_TIMER_UPDATE")
         end
       ]=];
@@ -5108,7 +5072,16 @@ Private.event_prototypes = {
         store = true
       },
       {
+        name = "paused",
+        init = "paused",
+        hidden = true,
+        test = "true",
+        store = true
+      },
+      {
         name = "remaining",
+        init = "remaining",
+        store = true,
         display = L["Remaining Time"],
         type = "number",
         enable = function(trigger) return not trigger.use_inverse end,
@@ -5433,13 +5406,10 @@ Private.event_prototypes = {
     internal_events = {"UNIT_SPEC_CHANGED_player", "WA_DELAYED_PLAYER_ENTERING_WORLD"},
     force_events = "UNIT_SPEC_CHANGED_player",
     name = L["Class and Specialization"],
-    init = function(trigger)
-      local class = select(2, UnitClass("player")) or "UNKNOWN"
-      return ([[
-        local specName = Private.ExecEnv.GetUnitTalentSpec("player") or "Unknown"
-        local specId = Private.ExecEnv.GetSpecID("%s" .. specName)
-        local specIcon = Private.ExecEnv.GetSpecIcon(specId)
-      ]]):format(class)
+    init = function()
+      return [[
+        local specId, specName, _, specIcon = Private.ExecEnv.GetSpecializationInfo(Private.ExecEnv.GetSpecialization())
+      ]]
     end,
     args = {
       {
@@ -5449,6 +5419,8 @@ Private.event_prototypes = {
         values = "spec_types_all",
         store = "true",
         conditionType = "select",
+        sorted = true,
+        sortOrder = Private.specs_sorted,
       },
       {
         hidden = true,
@@ -5692,6 +5664,8 @@ Private.event_prototypes = {
       local ret = [[
         local itemName = %s
         local exactSpellMatch = %s
+        local _, itemLink = GetItemInfo(itemName)
+        local itemId = tonumber(itemName) or (itemLink and tonumber(itemLink:match("item:(%%d+)")))
         if not exactSpellMatch and tonumber(itemName) then
           itemName = GetItemInfo(itemName)
         end
@@ -5713,7 +5687,7 @@ Private.event_prototypes = {
         showExactOption = true,
         test = "true"
       },
-      --[[{ maybe some day
+      {
         name = "itemId",
         display = WeakAuras.newFeatureString .. L["ItemId"],
         hidden = true,
@@ -5722,7 +5696,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "number",
         operator_types = "only_equal",
-      },]]
+      },
       {
         name = "name",
         display = L["Name"],
@@ -5811,9 +5785,6 @@ Private.event_prototypes = {
         "UPDATE_SHAPESHIFT_FORM",
         "UPDATE_SHAPESHIFT_COOLDOWN"
       }
-      if WeakAuras.IsClassicPlus() then -- Stances workaround for Epoch
-        tinsert(events, "ACTIONBAR_SLOT_CHANGED")
-      end
       return { ["events"] = events }
     end,
     internal_events = { "WA_DELAYED_PLAYER_ENTERING_WORLD" },
@@ -6257,7 +6228,7 @@ Private.event_prototypes = {
         },
         preamble = "local spellChecker = Private.ExecEnv.CreateSpellChecker()",
         preambleGroup = "spell",
-        test = "spellChecker:Check(spellNames)",
+        test = "spellChecker:CheckName(spellNames)",
         noValidation = true,
       },
       {
@@ -6647,6 +6618,8 @@ Private.event_prototypes = {
       local ret = [[
         local inverse = %s
         local triggerItemName = %s
+        local _, itemLink = GetItemInfo(triggerItemName)
+        local itemId = tonumber(triggerItemName) or (itemLink and tonumber(itemLink:match("item:(%%d+)")))
         local icon = GetItemIcon(triggerItemName) or ""
         local itemSlot = %s
       ]]
@@ -6673,7 +6646,7 @@ Private.event_prototypes = {
         test = "true",
         only_exact = true
       },
-      --[[{ maybe some day
+      {
         name = "itemId",
         display = WeakAuras.newFeatureString .. L["ItemId"],
         hidden = true,
@@ -6682,7 +6655,7 @@ Private.event_prototypes = {
         store = true,
         conditionType = "number",
         operator_types = "only_equal",
-      },]]
+      },
       {
         name = "itemSlot",
         display = WeakAuras.newFeatureString .. L["Item Slot"],
@@ -7326,7 +7299,7 @@ Private.event_prototypes = {
         name = "role",
         display = L["Assigned Role"],
         type = "select",
-        init = "WeakAuras.LGT:GetUnitRole(unit)",
+        init = "select(2, WeakAuras.SpecRolePositionForUnit(unit))",
         values = "role_types",
         store = true,
         conditionType = "select",

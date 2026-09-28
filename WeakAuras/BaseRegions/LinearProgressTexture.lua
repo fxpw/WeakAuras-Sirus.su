@@ -323,7 +323,6 @@ local funcs = {
     self.mirror_v = mirror_v
   end,
 
-
   --- @type fun(self: LinearProgressTextureInstance, texRotation: number)
   SetTexRotation = function(self, texRotation)
     self.texRotation = texRotation
@@ -461,5 +460,9 @@ function Private.LinearProgressTextureBase.modify(linearTexture, options)
   linearTexture.width = options.width
   linearTexture.height = options.height
   linearTexture.offset = options.offset
+  linearTexture.scalex = 1
+  linearTexture.scaley = 1
+  linearTexture.mirror_h = false
+  linearTexture.mirror_v = false
   linearTexture:UpdateTextures()
 end

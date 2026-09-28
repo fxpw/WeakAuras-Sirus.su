@@ -1939,9 +1939,6 @@ local function BorderOptions(id, data, showBackDropOptions, hiddenFunc, order)
   return borderOptions;
 end
 
-local function noop()
-end
-
 local function GetCustomCode(data, path)
   for _, key in ipairs(path) do
     if (not data or not data[key]) then
@@ -2037,14 +2034,13 @@ local function AddCodeOptionTimeMachine(args, data, name, prefix, url, order, hi
 
       code = "return " .. code;
 
-      local loadedFunction, errorString = loadstring(code);
+      local loadedFunction, errorString = OptionsPrivate.Private.LoadFunction(code, data.id, true);
       if(errorString and not loadedFunction) then
         return false;
       else
         if options.validator then
-          local ok, validate = xpcall(loadedFunction, noop)
-          if ok then
-            return options.validator(validate)
+          if loadedFunction ~= nil then
+            return options.validator(loadedFunction)
           end
           return false
         end
@@ -2144,14 +2140,13 @@ local function AddCodeOption(args, data, name, prefix, url, order, hiddenFunc, p
 
       code = "return " .. code;
 
-      local loadedFunction, errorString = loadstring(code);
+      local loadedFunction, errorString = OptionsPrivate.Private.LoadFunction(code, data.id, true);
       if(errorString and not loadedFunction) then
         return false;
       else
         if options.validator then
-          local ok, validate = xpcall(loadedFunction, noop)
-          if ok then
-            return options.validator(validate)
+          if loadedFunction ~= nil then
+            return options.validator(loadedFunction)
           end
           return false
         end

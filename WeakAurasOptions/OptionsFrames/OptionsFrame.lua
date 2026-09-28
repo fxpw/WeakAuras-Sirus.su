@@ -706,10 +706,10 @@ function OptionsPrivate.CreateFrame()
     -- Buttons behave in a strange way if they are disabled inside of the OnClick handler
     -- where the pushed texture refuses to vanish until the button is enabled & user clicks it again
     -- so, just disable the button after next frame draw, so it's imperceptible to the user but we're not in the OnClick handler
-    WeakAuras.timer:ScheduleTimer(function()
+    OptionsPrivate.Private.C_Timer.After(0, function()
       self.undo:SetDisabled(OptionsPrivate.Private.TimeMachine:DescribePrevious() == nil)
       self.redo:SetDisabled(OptionsPrivate.Private.TimeMachine:DescribeNext() == nil)
-    end, 0)
+    end)
   end
   tmControls:Step()
   OptionsPrivate.Private.TimeMachine.sub:AddSubscriber("Step", tmControls)
@@ -1698,41 +1698,6 @@ function OptionsPrivate.CreateFrame()
   local w, h = frame:GetSize()
   local left, right, top, bottom = w/2,-w/2, 0, h-25
   frame:SetClampRectInsets(left, right, top, bottom)
-
-  --[[ Add warning about Midnight support ending, to notify users about possible coming changes
-  local midnightWarning = CreateFrame("Frame", nil, frame)
-  midnightWarning:SetBackdrop({
-    bgFile = "Interface\\Addons\\WeakAuras\\Media\\Textures\\Square_FullWhite.tga",
-    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-    tile = true,
-    tileSize = 16,
-    edgeSize = 16,
-    insets = { left = 4, right = 4, top = 4, bottom = 4 }
-  })
-
-  midnightWarning:SetBackdropBorderColor(1, 0, 0, 1);
-  midnightWarning:SetBackdropColor(0, 0, 0, 1)
-
-  midnightWarning:SetPoint("TOPLEFT", frame, "BOTTOMLEFT")
-  midnightWarning:SetPoint("TOPRIGHT", frame, "BOTTOMRIGHT")
-  midnightWarning:SetHeight(50)
-
-  local text = midnightWarning:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-  text:SetPoint("LEFT", midnightWarning, "LEFT", 10, 0)
-  text:SetText(L["WeakAuras will not support Midnight. On release of the prepatch, WeakAuras will be disabled.\nRead more on our Patreon page https://patreon.com/WeakAuras"])
-
-  -- Fade-out animation and hide for rest of the session
-  local fade = midnightWarning:CreateAnimationGroup()
-  local alpha = fade:CreateAnimation("Alpha")
-  alpha:SetChange(-1)
-  alpha:SetDuration(0.5)
-  alpha:SetStartDelay(5) -- hide after 5 second
-  alpha:SetSmoothing("OUT")
-  fade:SetScript("OnFinished", function()
-    midnightWarning:Hide()
-  end)
-
-  fade:Play()]]
 
   return frame
 end

@@ -79,11 +79,11 @@ local severityLevel = {
 
 --- @type table<AuraWarningSeverity, string>
 local icons = {
-  info = [[Interface\FriendsFrame\InformationIcon]],
+  info = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\friendsframe-informationicon",
   sound = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\ChatFrame",
   tts = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\chatframe-button-icon-TTS",
   warning = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\ServicesAtlas",
-  error = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\HelpIcon-Bug",
+  error = "Interface\\AddOns\\WeakAuras\\Media\\Textures\\HelpIcon-Bug"
 }
 
 --- @type table<AuraWarningSeverity, string>
@@ -134,6 +134,7 @@ function Private.AuraWarnings.FormatWarnings(uid)
       maxSeverity = warning.severity
     elseif severityLevel[warning.severity] > severityLevel[maxSeverity] then
       maxSeverity = warning.severity
+      mixedSeverity = true
     elseif severityLevel[warning.severity] < severityLevel[maxSeverity] then
       mixedSeverity = true
     end

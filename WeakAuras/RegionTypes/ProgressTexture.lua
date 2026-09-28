@@ -251,6 +251,8 @@ local function ensureExtraTextures(region, count)
       width = region.width,
       height = region.height
     })
+    extraTexture:SetMirrorHV(region.mirror_h, region.mirror_v)
+    extraTexture:SetScale(region.scalex, region.scaley)
     extraTexture:SetOrientation(region.orientation, region.compress, region.slanted, region.slant,
                                 region.slantFirst, region.slantMode)
     region.extraTextures[i] = extraTexture;
@@ -274,6 +276,7 @@ local function ensureExtraSpinners(region, count)
       offset = 0
     })
 
+    extraSpinner:SetMirrorHV(region.mirror_h, region.mirror_v)
     extraSpinner:SetScale(region.scalex, region.scaley)
     extraSpinner:SetClockwise(region.orientation == "CLOCKWISE")
 
@@ -681,22 +684,23 @@ local funcs = {
     self.width = width;
     self:ForAllSpinners(self.foregroundSpinner.SetWidth, width)
     self:ForAllLinears(self.foreground.SetWidth, width)
-    self:Scale(self.scalex, self.scaley)
+    self:DoPosition()
   end,
   SetRegionHeight = function(self, height)
     self.height = height
     self:ForAllSpinners(self.foregroundSpinner.SetHeight, height)
     self:ForAllLinears(self.foreground.SetHeight, height)
-    self:Scale(self.scalex, self.scaley)
+    self:DoPosition()
   end,
   Scale = function(self, scalex, scaley)
+    self.mirror_h = scalex < 0
+    self.mirror_v = scaley < 0
+
     if(scalex < 0) then
-      self.mirror_h = true
       scalex = scalex * -1
     end
 
     if(scaley < 0) then
-      self.mirror_v = true
       scaley = scaley * -1
     end
 
@@ -794,6 +798,8 @@ local function modify(parent, region, data)
   region.height = data.height;
   region.scalex = 1;
   region.scaley = 1;
+  region.mirror_h = false
+  region.mirror_v = false
   region.aspect =  data.width / data.height;
   region.overlayclip = data.overlayclip;
 

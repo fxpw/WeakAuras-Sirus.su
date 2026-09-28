@@ -592,7 +592,9 @@ local exec_env_custom = setmetatable(CopyTable(mixins),
     elseif k == "C_Timer" then
       return current_aura_env and Private.AuraEnvironmentWrappedSystem.Get("C_Timer",
                                       current_aura_env.id, current_aura_env.cloneId)
-                              or C_Timer
+                              or Private.C_Timer
+    elseif k == "C_FunctionContainers" then
+      return Private.C_FunctionContainers
     elseif blockedFunctions[k] then
       blocked(k)
       return function(_) end
@@ -604,11 +606,13 @@ local exec_env_custom = setmetatable(CopyTable(mixins),
     elseif _G[k] then
       return _G[k]
     elseif k:find(".", 1, true) then
+      -- e.g. "PlayerFrame.healthbar" from the frame chooser. The first segment
+      -- goes through the sandbox so "_G.loadstring" stays blocked.
       local f
       for i, n in ipairs{strsplit(".", k)} do
         if i == 1 then
-          f = _G[n]
-        elseif f then
+          f = t[n]
+        elseif type(f) == "table" then
           f = f[n]
         else
           return

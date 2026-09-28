@@ -3,6 +3,25 @@
 Write release notes under a heading that matches the tag version, for example `## 5.0.0`.
 Use <:WALurk:1341460510360604673> or when in June <:WALurkPride:1379014370197110916>
 
+## 5.22.0
+
+<:WALurk:1341460510360604673> 5.22.0
+
+Fixes:
+Improve sandbox protection for custom aura code, including checks in the options window
+Fix Progress Textures staying mirrored after animations or losing their mirroring when resized
+Make new progress overlays match the aura's mirroring
+Fix counted triggers creating unwanted clones for filtered events
+Fix incorrect warning icons and mixed group settings
+Fix empty custom number fields disrupting later edits
+Keep profiling results when renaming auras and remove deleted auras from the display
+Fix serialization and cleanup of archived aura snapshots
+Stop animation updates when there is nothing to animate or reposition
+
+Backport Fixes:
+Keep new progress overlays scaled correctly with the linear WotLK renderer and reset scaling when reconfiguring auras
+Refresh the WotLK profiling display after renaming or deleting an aura
+
 ## 5.21.11
 
 <:WALurk:1341460510360604673> 5.21.11

@@ -43,11 +43,14 @@ local prettyPrint = WeakAuras.prettyPrint
 WeakAurasTimers = setmetatable({}, {__tostring=function() return "WeakAuras" end})
 LibStub("AceTimer-3.0"):Embed(WeakAurasTimers)
 
-WeakAuras.LGT = LibStub("LibGroupTalents-1.0") or {
+WeakAuras.LGT = LibStub("LibGroupTalents-1.0", true) or {
+  RegisterCallback = function(_, _, _) end,
   GetUnitTalentSpec = function(_) end,
   GetUnitRole = function(_) end,
+  UnitHasTalent = function(_, _) end,
+  UnitHasGlyph = function(_, _) end,
 }
-WeakAuras.LRC = LibStub("LibResComm-1.0") or {
+WeakAuras.LRC = LibStub("LibResComm-1.0", true) or {
   RegisterCallback = function(_, _, _) end,
   IsUnitBeingRessed = function(_) end,
 }
@@ -1600,10 +1603,7 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
   local race = WeakAuras.GetUnitRace()
   local faction = UnitFactionGroup("player")
   local zoneId = GetCurrentMapAreaID()
-  local role = WeakAuras.LGT:GetUnitRole("player")
-  local postion = role == "caster" and "RANGED"
-                  or role == "melee" and "MELEE"
-                  or role
+  local specId, role, position = Private.LibSpecWrapper.SpecRolePositionForUnit("player")
   local raidRole = false;
   local raidID = UnitInRaid("player")
   if raidID then
@@ -1652,8 +1652,8 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
     if (data and not data.controlledChildren) then
       local loadFunc = loadFuncs[id];
       local loadOpt = loadFuncsForOptions[id];
-      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, inEncounter, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, constellation, faction, playerLevel, role, postion, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, encounter_id, size, difficulty);
-      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, inEncounter, pvp, vehicle, vehicleUi, mounted, class, player, realm, guild, race, constellation, faction, playerLevel, role, postion, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, encounter_id, size, difficulty);
+      shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, inEncounter, pvp, vehicle, vehicleUi, mounted, class, specId, player, realm, guild, race, constellation, faction, playerLevel, role, position, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, encounter_id, size, difficulty);
+      couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, inEncounter, pvp, vehicle, vehicleUi, mounted, class, specId, player, realm, guild, race, constellation, faction, playerLevel, role, position, raidRole, group, groupSize, raidMemberType, zone, zoneId, subzone, encounter_id, size, difficulty);
 
       if(shouldBeLoaded and not loaded[id]) then
         changed = changed + 1;
@@ -2081,6 +2081,8 @@ function WeakAuras.Delete(data)
   Private.ExecEnv.conditionHelpers[data.uid] = nil
 
   Private.RemoveHistory(data.uid)
+
+  Private.ProfileDeleteAura(id)
 
   Private.AddParents(data)
   Private.callbacks:Fire("Delete", uid, id, parentUid, parentId)
@@ -2527,9 +2529,9 @@ function Private.AddMany(tbl, takeSnapshots)
       end), 'normal')
     else
       if next(WeakAuras.LoadFromArchive("Repository", "migration").stores) ~= nil then
-        timer:ScheduleTimer(function()
+        Private.C_Timer.After(1, function()
           prettyPrint(L["WeakAuras has detected empty settings. If this is unexpected, ask for assitance on https://discord.gg/addony-dlia-sirus-su-914079030125420565."])
-        end, 1)
+        end)
       end
     end
   end
